@@ -1,0 +1,13 @@
+import Banner2 from "@/components/banner2/banner2";
+
+export default function MainCheckout() {
+  return (
+    <div>
+      <Banner2
+        title="Booking and Checkout"
+        backgroundImage="/images/booking-banner.png"
+        bgPosition="50% 30%"
+      ></Banner2>
+    </div>
+  );
+}

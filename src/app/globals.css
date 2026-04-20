@@ -1,26 +1,447 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --primary-rgb: 236, 72, 153;
+  --primary-dark-rgb: 219, 39, 119;
+  --accent-rgb: 190, 18, 60;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+[data-theme='gold'] {
+  --primary-rgb: 245, 158, 11;
+  --primary-dark-rgb: 217, 119, 6;
+  --accent-rgb: 180, 83, 9;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+[data-theme='cyan'] {
+  --primary-rgb: 6, 182, 212;
+  --primary-dark-rgb: 8, 145, 178;
+  --accent-rgb: 14, 116, 144;
+}
+
+[data-theme='violet'] {
+  --primary-rgb: 139, 92, 246;
+  --primary-dark-rgb: 124, 58, 237;
+  --accent-rgb: 91, 33, 182;
+}
+
+[data-theme='emerald'] {
+  --primary-rgb: 16, 185, 129;
+  --primary-dark-rgb: 5, 150, 105;
+  --accent-rgb: 4, 120, 87;
+}
+
+[data-theme='rose'] {
+  --primary-rgb: 236, 72, 153;
+  --primary-dark-rgb: 219, 39, 119;
+  --accent-rgb: 190, 18, 60;
+}
+
+@theme {
+  --font-outfit: var(--font-outfit);
+  --font-inter: var(--font-inter);
+  --font-geist-sans: var(--font-geist-sans);
+  --font-geist-mono: var(--font-geist-mono);
+
+  --color-primary: rgb(var(--primary-rgb));
+  --color-primary-dark: rgb(var(--primary-dark-rgb));
+  --color-accent: rgb(var(--accent-rgb));
+  
+  /* Maintain compatibility for existing classes during migration */
+  --color-brand-pink: rgb(var(--primary-rgb));
+  --color-brand-pink-dark: rgb(var(--primary-dark-rgb));
+  --color-brand-rose: rgb(var(--accent-rgb));
+  --color-brand-gradient-start: rgb(var(--primary-rgb));
+  --color-brand-gradient-end: rgb(var(--primary-dark-rgb));
+}
+
+/* Base Typography Application */
+body {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  @apply bg-[#050505] text-slate-200 antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-outfit), sans-serif;
+  @apply tracking-tight;
+}
+
+/* Premium Profile Card Styling - Overhauled for "Glowing Pink Dark" Aesthetic (Dating-Focused) */
+.main-profile-card {
+  @apply relative flex flex-col bg-[#080808] overflow-hidden transition-all duration-500 ease-in-out border border-white/5;
+  border-radius: 36px;
+  width: 328px;
+  height: 507px; /* Adjusted to user specification */
+  box-shadow:
+    0 4px 50px -12px rgba(var(--primary-rgb), 0.15),
+    0 0 20px -5px rgba(0, 0, 0, 0.5);
+}
+
+.main-profile-card:hover {
+  @apply -translate-y-2 border-primary/20 shadow-[0_20px_60px_-15px_rgba(var(--primary-rgb),0.3)];
+}
+
+/* Photo-First Container: High Visibility & Precise Sizing (296x224 Internal) */
+.profile-card-image {
+  @apply relative w-full overflow-hidden shrink-0;
+  height: 256px; /* 224px image + 16px top/bottom padding */
+  padding: 16px; /* results in (328 - 16*2) = 296px width */
+}
+
+.profile-card-image img {
+  @apply rounded-[28px] transition-transform duration-700 ease-out object-cover;
+  object-position: center 20%; /* Facial focus as requested */
+}
+
+.main-profile-card:hover .profile-card-image img {
+  @apply scale-110;
+}
+
+/* Neon Glass Badge */
+.profile-card-badge {
+  @apply absolute top-6 left-6 px-4 py-1.5 rounded-full text-[11px] font-black z-20 border border-white/20 uppercase tracking-widest;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  color: rgb(var(--primary-rgb));
+  box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.2);
+}
+
+/* Content Layout: Elegant Dark Theme */
+.profile-card-content {
+  @apply px-6 py-4 flex flex-col gap-1 grow bg-linear-to-b from-transparent to-black/95;
+}
+
+.profile-card-header {
+  @apply flex items-end gap-2 mb-1;
+}
+
+.profile-card-name {
+  @apply text-2xl font-bold text-white tracking-tight leading-none;
+  font-family: var(--font-outfit), sans-serif;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.profile-card-age {
+  @apply text-primary font-bold text-sm opacity-90;
+}
+
+.profile-card-location {
+  @apply flex items-center gap-1.5 text-slate-400 text-xs font-semibold;
+}
+
+.profile-card-location-icon {
+  @apply w-3.5 h-3.5 text-primary;
+}
+
+.profile-card-rating {
+  @apply absolute top-6 right-6 flex items-center gap-1.5 bg-black/40 backdrop-blur-md text-white px-3 py-1 rounded-full text-[12px] font-bold border border-white/10 z-20;
+}
+
+.profile-card-rating-icon {
+  @apply w-3.5 h-3.5 fill-primary text-primary;
+}
+
+.profile-card-bio {
+  @apply text-slate-300/80 text-[12px] line-clamp-2 leading-relaxed mt-2 font-inter;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.profile-card-confirmation {
+  @apply flex items-center gap-1.5 text-primary/80 text-[11px] font-bold mt-2 bg-primary/10 px-3 py-1 rounded-full w-fit border border-primary/20;
+}
+
+.profile-card-confirmation-icon {
+  @apply w-3.5 h-3.5;
+}
+
+.profile-card-distance {
+  @apply flex items-center gap-1.5 text-slate-500 text-[11px] mt-1 font-semibold;
+}
+
+/* Premium Footer & Button Sync */
+.profile-card-footer {
+  @apply px-6 pb-6 pt-2 mt-auto flex flex-col grow-0;
+}
+
+.profile-card-button {
+  @apply w-full text-white text-center py-4 rounded-2xl text-[14px] font-black transition-all duration-300 shadow-xl border border-white/10 tracking-widest uppercase;
+  background: linear-gradient(135deg, rgb(var(--primary-rgb)) 0%, rgb(var(--primary-dark-rgb)) 100%);
+  box-shadow: 0 10px 25px -5px rgba(var(--primary-rgb), 0.4);
+}
+
+.profile-card-button:hover {
+  @apply -translate-y-0.5 shadow-[0_15px_35px_-5px_rgba(var(--primary-rgb),0.6)] brightness-110;
+}
+
+.profile-card-view,
+.profile-card-message,
+.profile-card-map {
+  @apply flex items-center justify-center w-12 h-12 shrink-0 rounded-2xl transition-all duration-300 shadow-lg border border-white/10 text-slate-300 bg-white/5 backdrop-blur-md;
+}
+
+.profile-card-view:hover,
+.profile-card-message:hover,
+.profile-card-map:hover {
+  @apply text-white border-primary/40 -translate-y-0.5 shadow-primary/20 bg-primary/20;
+}
+
+.profile-card-extra {
+  @apply text-[10px] text-slate-500 italic text-center mt-4 border-t border-white/5 pt-3 font-semibold tracking-wide;
+}
+
+/* Custom Animation Utilities */
+@layer utilities {
+  .animate-in {
+    animation-fill-mode: both;
+  }
+
+  .fade-in {
+    animation-name: fadeIn;
+  }
+
+  .slide-in-from-bottom-4 {
+    animation-name: slideInBottom4;
+  }
+
+  .slide-in-from-bottom-6 {
+    animation-name: slideInBottom6;
+  }
+
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .duration-700 {
+    animation-duration: 700ms;
+  }
+
+  .duration-1000 {
+    animation-duration: 1000ms;
+  }
+
+  /* Decorative Squiggle Accent Underwood */
+  .squiggle-accent {
+    @apply relative inline-block;
+  }
+  .squiggle-accent::after {
+    content: "";
+    @apply absolute -bottom-1 left-1/2 -translate-x-1/2 w-12 h-1.5 opacity-0 transition-opacity duration-300;
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='10' viewBox='0 0 100 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 5C20 5 30 1 50 1C70 1 80 9 95 9' stroke='rgb(236, 72, 153)' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+  .group:hover .squiggle-accent::after,
+  .featured-card .squiggle-accent::after {
+    @apply opacity-100;
+  }
+
+  /* Custom Shadow for Premium Cards */
+  .premium-card-shadow {
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.05),
+      0 10px 25px -5px rgba(var(--primary-rgb), 0.05),
+      0 20px 40px -10px rgba(0, 0, 0, 0.02);
+  }
+  .premium-card-shadow-hover {
+    box-shadow:
+      0 20px 25px -5px rgba(0, 0, 0, 0.1),
+      0 10px 10px -5px rgba(255, 75, 145, 0.04);
+  }
+
+  /* Premium Custom Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    transition: background 0.3s ease;
+  }
+
+  .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+    background: rgba(var(--primary-rgb), 0.3);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--primary-rgb), 0.5) !important;
+  }
+
+  /* Support for Firefox */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
+  }
+
+  /* Premium Gift Card Styles */
+  .gift-card {
+    @apply relative flex flex-col bg-[#0a0a0a] overflow-hidden transition-all duration-500 ease-in-out border border-white/5 w-full;
+    border-radius: 40px;
+    box-shadow: 0 4px 40px -12px rgba(var(--primary-rgb), 0.1);
+  }
+
+  .gift-card:hover {
+    @apply -translate-y-2 border-primary/40 shadow-[0_20px_50px_-15px_rgba(var(--primary-rgb),0.25)];
+  }
+
+  .gift-card-image-container {
+    @apply relative w-full overflow-hidden;
+    height: 240px;
+    padding: 12px;
+  }
+
+  .gift-card-image {
+    @apply w-full h-full rounded-[32px] object-cover transition-transform duration-700;
+  }
+
+  .gift-card:hover .gift-card-image {
+    @apply scale-110 rotate-2;
+  }
+
+  .gift-card-price-tag {
+    @apply absolute top-6 right-6 px-4 py-2 bg-primary/90 backdrop-blur-xl rounded-2xl text-white font-black text-sm z-20 shadow-xl border border-white/20;
+    box-shadow: 0 4px 15px rgba(var(--primary-dark-rgb), 0.4);
+  }
+  @keyframes shine {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shine {
+    animation: shine 1.5s infinite;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInBottom4 {
+  from {
+    transform: translateY(1rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInBottom6 {
+  from {
+    transform: translateY(1.5rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Premium ImpBanner Styles */
+.imp-banner-wrapper {
+  @apply relative w-full overflow-hidden flex items-center justify-center;
+  min-height: 80vh; /* Default high-end height */
+}
+
+@media (min-width: 1024px) {
+  .imp-banner-wrapper {
+    min-height: 90vh;
+  }
+}
+
+.imp-banner-bg {
+  @apply absolute inset-0 z-0;
+}
+
+.imp-banner-overlay {
+  @apply absolute inset-0 z-10;
+  background: radial-gradient(
+    circle at center,
+    rgba(10, 10, 10, 0.4) 0%,
+    rgba(10, 10, 10, 0.8) 100%
+  );
+}
+
+@media (max-width: 768px) {
+  .imp-banner-overlay {
+    background: linear-gradient(
+      to bottom,
+      rgba(10, 10, 10, 0.9) 0%,
+      rgba(10, 10, 10, 0.6) 100%
+    );
+  }
+}
+
+.imp-banner-content {
+  @apply relative z-20 flex flex-col items-center text-center gap-6 py-20 pointer-events-none;
+}
+
+.imp-banner-content > * {
+  @apply pointer-events-auto;
+}
+
+.imp-banner-content h1 {
+  @apply text-white font-black leading-[1.1] tracking-tight;
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+.imp-banner-content p {
+  @apply text-slate-300 max-w-2xl leading-relaxed;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.imp-banner-button {
+  @apply flex flex-wrap gap-4 mt-4;
+}
+
+/* Global Premium Buttons */
+.btn-primary {
+  @apply px-10 py-4 rounded-2xl font-black text-white uppercase tracking-widest transition-all duration-300 relative overflow-hidden;
+  background: linear-gradient(135deg, rgb(var(--primary-rgb)) 0%, rgb(var(--primary-dark-rgb)) 100%);
+  box-shadow: 0 10px 25px -5px rgba(var(--primary-rgb), 0.4);
+}
+
+.btn-primary:hover {
+  @apply -translate-y-1 scale-105 brightness-110 shadow-[0_20px_40px_-5px_rgba(var(--primary-rgb),0.7)];
+}
+
+.btn-secondary {
+  @apply px-10 py-4 rounded-2xl font-black text-white/90 uppercase tracking-widest transition-all duration-300 border border-white/20 bg-white/5 backdrop-blur-md;
+}
+
+.btn-secondary:hover {
+  @apply -translate-y-1 scale-105 bg-white/10 border-white/40 text-white shadow-xl;
+}
+
+@media (max-width: 640px) {
+  .btn-primary,
+  .btn-secondary {
+    @apply px-8 py-3.5 text-xs;
+  }
+
+  .imp-banner-content {
+    @apply items-center text-center;
+  }
+
+  .imp-banner-button {
+    @apply justify-center;
+  }
 }

@@ -1,0 +1,143 @@
+"use client";
+
+import { Outfit, Playfair_Display, Rochester } from "next/font/google";
+import Slider from "@/components/common/Slider";
+import ProfileCard from "@/components/ProfileCard/ProfileCard";
+import Link from "next/link";
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  style: ["italic", "normal"],
+});
+
+const rochester = Rochester({
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
+export default function RecentlyBooked() {
+  const profile = [
+    {
+      image: "/images/img8.webp",
+      hourlyRate: "₹2000/hr",
+      name: "Emily",
+      age: 25,
+      location: "New York",
+      bio: "Booked for Wedding Reception ",
+      confirmation: "Just Booked",
+      buttonText: "View Profile",
+      buttonLink: "/partner-profile-detail",
+      showViewIcon: false,
+    },
+    {
+      image: "/images/img7.webp",
+      hourlyRate: "₹2000/hr",
+      name: "Emily",
+      age: 25,
+      location: "New York",
+      bio: "Booked for Wedding Reception ",
+      confirmation: "Just Booked",
+      buttonText: "View Profile",
+      buttonLink: "/partner-profile-detail",
+      showViewIcon: false,
+    },
+    {
+      image: "/images/img6.webp",
+      hourlyRate: "₹2000/hr",
+      name: "Emily",
+      age: 25,
+      location: "New York",
+      bio: "Booked for Wedding Reception ",
+      confirmation: "Just Booked",
+      buttonText: "View Profile",
+      buttonLink: "/partner-profile-detail",
+      showViewIcon: false,
+    },
+    {
+      image: "/images/img5.webp",
+      hourlyRate: "₹2000/hr",
+      name: "Emily",
+      age: 25,
+      location: "New York",
+      bio: "Booked for Wedding Reception ",
+      confirmation: "Just Booked",
+      buttonText: "View Profile",
+      buttonLink: "/partner-profile-detail",
+      showViewIcon: false,
+    },
+    {
+      image: "/images/img4.webp",
+      hourlyRate: "₹2000/hr",
+      name: "Emily",
+      age: 25,
+      location: "New York",
+      bio: "Booked for Wedding Reception ",
+      confirmation: "Just Booked",
+      buttonText: "View Profile",
+      buttonLink: "/partner-profile-detail",
+      showViewIcon: false,
+    },
+    {
+      image: "/images/img3.webp",
+      hourlyRate: "₹2000/hr",
+      name: "Emily",
+      age: 25,
+      location: "New York",
+      bio: "Booked for Wedding Reception ",
+      confirmation: "Just Booked",
+      buttonText: "View Profile",
+      buttonLink: "/partner-profile-detail",
+      showViewIcon: false,
+    },
+    {
+      image: "/images/img2.webp",
+      hourlyRate: "₹2000/hr",
+      name: "Emily",
+      age: 25,
+      location: "New York",
+      bio: "Booked for Wedding Reception ",
+      confirmation: "Just Booked",
+      buttonText: "View Profile",
+      buttonLink: "/partner-profile-detail",
+      showViewIcon: false,
+    },
+    {
+      image: "/images/img1.webp",
+      hourlyRate: "₹2000/hr",
+      name: "Emily",
+      age: 25,
+      location: "New York",
+      bio: "Booked for Wedding Reception ",
+      confirmation: "Just Booked",
+      buttonText: "View Profile",
+      buttonLink: "/partner-profile-detail",
+      showViewIcon: false,
+    },
+  ];
+  return (
+    <section className="py-10 md:py-16 px-4 bg-[#080808] overflow-hidden border-b border-white/5">
+      <div className="max-w-[1600px] w-full mx-auto">
+        <div
+          className={`${rochester.className} text-center text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-primary to-white mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700`}
+        >
+          Recently Booked Partners
+        </div>
+        <div className="relative -mx-4 md:mx-0">
+          <div className="px-4 md:px-12 overflow-visible">
+            <Slider
+              items={profile}
+              renderItem={(item) => <ProfileCard {...item} />}
+              viewAllLink="/browse-partners"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
