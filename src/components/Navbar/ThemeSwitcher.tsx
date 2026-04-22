@@ -13,7 +13,7 @@ const themes: { id: Theme; label: string; color: string }[] = [
   { id: "emerald", label: "Emerald", color: "bg-emerald-500" },
 ];
 
-export default function ThemeSwitcher() {
+export default function ThemeSwitcher({ isScrolled = false }: { isScrolled?: boolean }) {
   const { activeTheme, setTheme, isPreferenceSet, resetToRotation, appearance, toggleAppearance } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -28,12 +28,16 @@ export default function ThemeSwitcher() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-10 h-10 flex items-center justify-center rounded-full bg-bg-secondary border border-border-main text-text-main hover:bg-bg-card transition-all active:scale-95 group"
+        className={`w-10 h-10 flex items-center justify-center rounded-full border transition-all active:scale-95 group ${
+          isScrolled 
+            ? "bg-bg-secondary border-border-main text-text-main hover:bg-bg-card" 
+            : "bg-black/20 backdrop-blur-md border-white/20 text-white hover:bg-black/40"
+        }`}
         title="Change Theme"
       >
         <Palette 
           size={20} 
-          className={isAutoRotate ? "animate-pulse text-primary" : "text-text-main group-hover:rotate-12 transition-transform"} 
+          className={isAutoRotate ? "animate-pulse text-primary" : `${isScrolled ? "text-text-main" : "text-white"} group-hover:rotate-12 transition-transform`} 
         />
       </button>
 

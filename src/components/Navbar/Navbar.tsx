@@ -53,29 +53,43 @@ export default function Navbar() {
   const menuVariants = {
     closed: {
       opacity: 0,
-      x: "100%",
+      y: "-10%",
       transition: {
-        type: "spring",
-        stiffness: 400,
-        damping: 40,
+        duration: 0.4,
+        ease: [0.32, 0, 0.67, 0],
+        staggerChildren: 0.05,
+        staggerDirection: -1,
       },
     },
     open: {
       opacity: 1,
-      x: "0%",
+      y: "0%",
       transition: {
         type: "spring",
-        stiffness: 400,
-        damping: 40,
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
+        stiffness: 120,
+        damping: 20,
+        staggerChildren: 0.08,
+        delayChildren: 0.1,
       },
     },
   };
 
   const itemVariants = {
-    closed: { opacity: 0, x: 20 },
-    open: { opacity: 1, x: 0 },
+    closed: { 
+      opacity: 0, 
+      y: 30,
+      filter: "blur(10px)"
+    },
+    open: { 
+      opacity: 1, 
+      y: 0,
+      filter: "blur(0px)",
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15
+      }
+    },
   };
 
   return (
@@ -147,7 +161,7 @@ export default function Navbar() {
           </Link>
 
           {/* Theme Switcher */}
-          <ThemeSwitcher />
+          <ThemeSwitcher isScrolled={isScrolled} />
 
           {/* Profile */}
           <Link
@@ -171,7 +185,7 @@ export default function Navbar() {
             className={`lg:hidden w-10 h-10 flex items-center justify-center rounded-full border transition-all active:scale-95 z-50 ${
               isScrolled
                 ? "bg-bg-secondary border-border-main text-text-main"
-                : "bg-bg-card border-border-main text-text-main"
+                : "bg-black/20 backdrop-blur-md border-white/20 text-white"
             }`}
           >
             <AnimatePresence mode="wait">
@@ -197,7 +211,7 @@ export default function Navbar() {
             animate="open"
             exit="closed"
             variants={menuVariants}
-            className="fixed inset-0 bg-bg-base z-[90] lg:hidden overflow-hidden"
+            className="fixed inset-0 bg-bg-base/95 backdrop-blur-2xl z-[90] lg:hidden overflow-hidden"
           >
             {/* Background Decorative Elements */}
             <div className="absolute top-0 right-0 w-[80%] h-[40%] bg-primary/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/3" />
