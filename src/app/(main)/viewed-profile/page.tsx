@@ -11,7 +11,7 @@ const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "600",
 
 export default function ViewedProfile() {
   return (
-    <div className={`bg-[#050505] min-h-screen ${outfit.className}`}>
+    <div className={`bg-bg-base min-h-screen ${outfit.className}`}>
       {/* ── REUSABLE TOGGLE DASHBOARD ── */}
       <SideDashboard activeItem="profile" />
 
@@ -37,3 +37,6 @@ export default function ViewedProfile() {
     </div>
   );
 }
+
+
+

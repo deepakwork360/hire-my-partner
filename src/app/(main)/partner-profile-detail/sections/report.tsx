@@ -29,34 +29,34 @@ export default function Report() {
 
   return (
     <section
-      className={`py-12 md:py-24 px-4 bg-[#0a0a0a] border-b border-white/5 flex justify-center ${outfit.className}`}
+      className={`py-12 md:py-24 px-4 bg-bg-secondary border-b border-border-main flex justify-center ${outfit.className}`}
     >
       <div className="max-w-[1000px] w-full">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="bg-[#111] border border-white/10 rounded-[40px] p-8 md:p-14 shadow-2xl relative"
+          className="bg-bg-card border border-border-main rounded-[40px] p-8 md:p-14 shadow-2xl shadow-black/5 relative"
         >
           {/* Subtle Red Warning Glow (isolated so it can be overflow-hidden without breaking dropdown) */}
           <div className="absolute inset-0 rounded-[40px] overflow-hidden pointer-events-none">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/10 blur-[100px] rounded-full" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 blur-[100px] rounded-full" />
           </div>
 
           <div className="flex flex-col md:flex-row gap-10 md:gap-16 items-start md:items-center">
             {/* Left: Content */}
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-                  <Flag className="w-6 h-6 text-red-400" />
+                <div className="w-12 h-12 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center">
+                  <Flag className="w-6 h-6 text-accent" />
                 </div>
                 <h2
-                  className={`${rochester.className} text-4xl md:text-5xl text-white`}
+                  className={`${rochester.className} text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-accent to-text-main`}
                 >
                   Report Profile
                 </h2>
               </div>
-              <p className="text-slate-400 text-base md:text-lg leading-relaxed max-w-lg">
+              <p className="text-text-muted text-base md:text-lg leading-relaxed max-w-lg">
                 We take our community guidelines seriously. Please let us know
                 specifically what issue you are encountering with this partner.
               </p>
@@ -68,15 +68,15 @@ export default function Report() {
               <div className="relative">
                 <button
                   onClick={() => setIsOpen(!isOpen)}
-                  className="w-full bg-black/50 border border-white/10 hover:border-white/30 text-left px-6 py-4 rounded-2xl text-slate-300 font-medium flex items-center justify-between transition-colors"
+                  className="w-full bg-bg-secondary border border-border-main hover:border-accent/30 text-left px-6 py-4 rounded-2xl text-text-main font-medium flex items-center justify-between transition-colors"
                 >
                   <span
-                    className={selectedReason ? "text-white" : "text-slate-500"}
+                    className={selectedReason ? "text-text-main font-bold" : "text-text-muted"}
                   >
                     {selectedReason || "Select the problem..."}
                   </span>
                   <ChevronDown
-                    className={`w-5 h-5 transition-transform duration-300 ${isOpen ? "rotate-180 text-white" : "text-slate-500"}`}
+                    className={`w-5 h-5 transition-transform duration-300 ${isOpen ? "rotate-180 text-text-main" : "text-text-muted"}`}
                   />
                 </button>
 
@@ -87,7 +87,7 @@ export default function Report() {
                       animate={{ opacity: 1, y: 0, scaleY: 1 }}
                       exit={{ opacity: 0, y: -10, scaleY: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute top-full left-0 w-full mt-2 bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 transform origin-top"
+                      className="absolute top-full left-0 w-full mt-2 bg-bg-base border border-border-main rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden z-[60] transform origin-top"
                     >
                       {REPORT_REASONS.map((reason, idx) => (
                         <div
@@ -96,11 +96,11 @@ export default function Report() {
                             setSelectedReason(reason);
                             setIsOpen(false);
                           }}
-                          className="px-6 py-4 hover:bg-white/5 cursor-pointer text-slate-300 hover:text-white transition-colors border-b border-white/5 last:border-0 flex items-center justify-between group"
+                          className="px-6 py-4 hover:bg-bg-secondary cursor-pointer text-text-main transition-colors border-b border-border-main last:border-0 flex items-center justify-between group"
                         >
                           {reason}
                           {selectedReason === reason && (
-                            <CheckCircle2 className="w-4 h-4 text-red-500" />
+                            <CheckCircle2 className="w-4 h-4 text-accent" />
                           )}
                         </div>
                       ))}
@@ -114,8 +114,8 @@ export default function Report() {
                 disabled={!selectedReason}
                 className={`w-full py-4 rounded-2xl font-bold text-lg tracking-wide flex items-center justify-center gap-2 transition-all duration-300 ${
                   selectedReason
-                    ? "bg-red-600/80 hover:bg-red-900 border border-red-500/50 hover:border-red-500/80 text-white shadow-[0_0_20px_rgba(220,38,38,0.2)] hover:shadow-[0_0_30px_rgba(153,27,27,0.5)] cursor-pointer"
-                    : "bg-white/5 border border-white/5 text-slate-600 cursor-not-allowed"
+                    ? "bg-accent/80 hover:bg-accent border border-accent/50 hover:border-accent/80 text-white shadow-lg shadow-accent/20 active:scale-95 cursor-pointer"
+                    : "bg-bg-secondary border border-border-main text-text-muted cursor-not-allowed"
                 }`}
               >
                 <Flag className="w-5 h-5" />
@@ -128,3 +128,6 @@ export default function Report() {
     </section>
   );
 }
+
+
+

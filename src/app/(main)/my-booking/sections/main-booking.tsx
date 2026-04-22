@@ -2,7 +2,7 @@ import Banner2 from "@/components/banner2/banner2";
 
 export default function MainBooking() {
   return (
-    <div>
+    <div className="bg-bg-base">
       <Banner2
         title="My Bookings"
         subtitle="View and manage all your sessions."
@@ -12,3 +12,6 @@ export default function MainBooking() {
     </div>
   );
 }
+
+
+

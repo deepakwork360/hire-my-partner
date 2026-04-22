@@ -45,7 +45,7 @@ export default function SendTip() {
   };
 
   return (
-    <div className="bg-[#050505] min-h-screen">
+    <div className="bg-bg-base min-h-screen">
       <MainTip />
       <BookyInfo />
       <ChooseTip
@@ -69,3 +69,6 @@ export default function SendTip() {
     </div>
   );
 }
+
+
+

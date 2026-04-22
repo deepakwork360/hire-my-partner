@@ -2,6 +2,7 @@
 
 import Slider from "@/components/common/Slider";
 import ProfileCard from "@/components/ProfileCard/ProfileCard";
+import PremiumDropdown from "@/components/ui/PremiumDropdown";
 import { Range } from "react-range";
 import { Outfit, Rochester } from "next/font/google";
 import { useState } from "react";
@@ -158,17 +159,17 @@ export default function PartnersNearby() {
   const [values, setValues] = useState<number[]>([10, 60]);
 
   return (
-    <section className="py-10 md:py-16 px-4 bg-[#0a0a0a] overflow-hidden border-b border-white/5">
+    <section className="py-10 md:py-16 px-4 bg-bg-secondary overflow-visible border-b border-border-main">
       <div className="max-w-[1600px] w-full mx-auto">
         {/* Header Section */}
         <div className="text-center mb-10 space-y-3">
           <h1
-            className={`${rochester.className} text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-primary to-white animate-in fade-in slide-in-from-bottom-4 duration-700`}
+            className={`${rochester.className} text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary animate-in fade-in slide-in-from-bottom-4 duration-700 py-4 px-4 leading-[1.2]`}
           >
             Partners Nearby You
           </h1>
           <p
-            className={`${outfit.className} text-lg md:text-2xl text-slate-400 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200`}
+            className={`${outfit.className} text-lg md:text-2xl text-text-muted max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200`}
           >
             Looking for the perfect plus-one? Explore charming companions
             nearby, available for events, dinners, or casual meetups.
@@ -176,11 +177,11 @@ export default function PartnersNearby() {
         </div>
 
         {/* Filters Section - Glassmorphic Design */}
-        <div className="mb-8 p-6 md:p-8 rounded-[32px] bg-white/5 backdrop-blur-xl border border-white/10 shadow-xl shadow-primary/5 max-w-6xl mx-auto">
+        <div className="relative z-50 mb-8 p-6 md:p-8 rounded-[32px] bg-white/5 backdrop-blur-xl border border-border-main shadow-xl shadow-primary/5 max-w-6xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
             {/* Age Filter */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1">
+              <label className="text-xs font-bold text-text-muted uppercase tracking-widest flex items-center gap-2 ml-1">
                 <User size={12} className="text-primary" /> Age Range
               </label>
               <div className="relative group">
@@ -189,10 +190,10 @@ export default function PartnersNearby() {
                   placeholder="e.g. 20-30"
                   value={age}
                   onChange={(e) => setAge(e.target.value)}
-                  className="w-full h-12 pl-4 pr-10 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-primary-dark focus:ring-4 focus:ring-primary/20 outline-hidden transition-all text-sm font-medium"
+                  className="w-full h-12 pl-4 pr-10 rounded-2xl bg-white/5 border border-border-main text-white placeholder-slate-500 focus:border-primary-dark focus:ring-4 focus:ring-primary/20 outline-hidden transition-all text-sm font-medium"
                 />
                 <ChevronDown
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:rotate-180 transition-transform"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:rotate-180 transition-transform"
                   size={16}
                 />
               </div>
@@ -200,7 +201,7 @@ export default function PartnersNearby() {
 
             {/* Event Type Filter */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1">
+              <label className="text-xs font-bold text-text-muted uppercase tracking-widest flex items-center gap-2 ml-1">
                 <Calendar size={12} className="text-primary" /> Event Type
               </label>
               <div className="relative group">
@@ -209,42 +210,34 @@ export default function PartnersNearby() {
                   placeholder="Select Event"
                   value={eventType}
                   onChange={(e) => setEventType(e.target.value)}
-                  className="w-full h-12 pl-4 pr-10 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:border-primary-dark focus:ring-4 focus:ring-primary/20 outline-hidden transition-all text-sm font-medium"
+                  className="w-full h-12 pl-4 pr-10 rounded-2xl bg-white/5 border border-border-main text-white placeholder-slate-500 focus:border-primary-dark focus:ring-4 focus:ring-primary/20 outline-hidden transition-all text-sm font-medium"
                 />
                 <Search
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted"
                   size={16}
                 />
               </div>
             </div>
 
             {/* Rating Filter */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1">
-                <Star size={12} className="text-primary" /> Min Rating
-              </label>
-              <div className="relative">
-                <select
-                  value={rating}
-                  onChange={(e) => setRating(e.target.value)}
-                  className="w-full h-12 pl-4 pr-10 appearance-none rounded-2xl bg-white/5 border border-white/10 text-white focus:border-primary-dark focus:ring-4 focus:ring-primary/20 outline-hidden transition-all text-sm font-medium [&>option]:bg-[#0a0a0a]"
-                >
-                  <option value="">Any Rating</option>
-                  <option value="4.5">4.5+ Stars</option>
-                  <option value="4.0">4.0+ Stars</option>
-                  <option value="3.5">3.5+ Stars</option>
-                </select>
-                <ChevronDown
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                  size={16}
-                />
-              </div>
-            </div>
+            <PremiumDropdown
+              label="Min Rating"
+              icon={Star}
+              value={rating}
+              onChange={setRating}
+              options={[
+                { value: "", label: "Any Rating", icon: Star },
+                { value: "4.5", label: "4.5+ Stars", icon: Star },
+                { value: "4.0", label: "4.0+ Stars", icon: Star },
+                { value: "3.5", label: "3.5+ Stars", icon: Star },
+              ]}
+              className="flex-1"
+            />
 
             {/* Distance Range */}
             <div className="space-y-4">
               <div className="flex items-center justify-between ml-1">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <label className="text-xs font-bold text-text-muted uppercase tracking-widest flex items-center gap-2">
                   <MapPin size={12} className="text-primary" /> Distance
                 </label>
                 <span className="text-[10px] font-black bg-primary/10 text-primary border border-primary/20 px-3 py-1 rounded-full uppercase tracking-tighter">
@@ -337,3 +330,6 @@ export default function PartnersNearby() {
     </section>
   );
 }
+
+
+

@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import GiftCard from "@/components/ui/GiftCard";
-import { Search, ChevronDown, Filter } from "lucide-react";
+import PremiumDropdown from "@/components/ui/PremiumDropdown";
+import { Search, ChevronDown, Filter, ArrowUpDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { Rochester } from "next/font/google";
 
@@ -77,31 +78,31 @@ export default function ChooseGift({
   }, [searchQuery, sortBy]);
 
   return (
-    <div className="w-full bg-[#050505] pt-0 pb-16 px-4 md:px-8">
+    <div className="w-full bg-bg-base pt-0 pb-16 px-4 md:px-8">
       <div className="max-w-[1400px] mx-auto">
         {/* SECTION HEADER */}
         <div className="mb-6 flex flex-col items-center text-center space-y-4">
           <motion.h2
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            className={`${rochester.className} text-4xl md:text-5xl font-black text-white tracking-tight`}
+            className={`${rochester.className} text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main tracking-tight`}
           >
             Select the{" "}
             <span className={`${rochester.className} text-primary`}>
               Perfect Gift
             </span>
           </motion.h2>
-          <p className="text-slate-400 max-w-xl">
+          <p className="text-text-muted max-w-xl">
             Browse our curated selection of premium gifts to complement your
             booking.
           </p>
         </div>
 
         {/* SEARCH & FILTER CONTROLS */}
-        <div className="mb-16 grid grid-cols-1 md:grid-cols-2 gap-6 items-center p-8 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[40px] shadow-2xl">
+        <div className="mb-16 grid grid-cols-1 md:grid-cols-2 gap-6 items-center p-8 bg-bg-card backdrop-blur-2xl border border-border-main rounded-[40px] shadow-2xl shadow-black/5 relative z-20">
           <div className="relative group">
             <Search
-              className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors"
+              className="absolute left-5 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors"
               size={22}
             />
             <input
@@ -109,31 +110,29 @@ export default function ChooseGift({
               placeholder="Search by title..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-14 pl-14 pr-6 bg-black/40 border border-white/10 rounded-2xl text-white placeholder-slate-500 focus:outline-hidden focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all font-medium"
+              className="w-full h-14 pl-14 pr-6 bg-bg-base border border-border-main rounded-2xl text-text-main placeholder:text-text-muted/50 focus:outline-none focus:border-primary/50 shadow-sm transition-all font-medium"
             />
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="hidden lg:flex items-center gap-3 text-slate-400 px-4 min-w-max">
+            <div className="hidden lg:flex items-center gap-3 text-text-muted px-4 min-w-max">
               <Filter size={20} className="text-primary" />
               <span className="text-xs font-black uppercase tracking-widest">
                 Sort Price
               </span>
             </div>
 
-            <div className="relative w-full group">
-              <select
+            <div className="w-full">
+              <PremiumDropdown
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="w-full h-14 pl-6 pr-12 appearance-none bg-black/40 border border-white/10 rounded-2xl text-white focus:outline-hidden focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all font-black text-xs tracking-widest uppercase cursor-pointer [&>option]:bg-[#0a0a0a]"
-              >
-                <option value="none">Default Selection</option>
-                <option value="low-to-high">Low to High</option>
-                <option value="high-to-low">High to Low</option>
-              </select>
-              <ChevronDown
-                className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 group-hover:text-white pointer-events-none transition-all"
-                size={20}
+                onChange={setSortBy}
+                options={[
+                  { value: "none", label: "Default Selection", icon: Filter },
+                  { value: "low-to-high", label: "Low to High", icon: ArrowUpDown },
+                  { value: "high-to-low", label: "High to Low", icon: ArrowUpDown },
+                ]}
+                placeholder="Sort Price"
+                icon={ArrowUpDown}
               />
             </div>
           </div>
@@ -154,15 +153,15 @@ export default function ChooseGift({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center py-24 bg-white/5 rounded-[40px] border border-dashed border-white/20"
+            className="text-center py-24 bg-bg-secondary rounded-[40px] border border-dashed border-border-main"
           >
-            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Search size={32} className="text-slate-600" />
+            <div className="w-20 h-20 bg-bg-card rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl shadow-black/5">
+              <Search size={32} className="text-text-muted" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">
+            <h3 className="text-xl font-bold text-text-main mb-2">
               No results found
             </h3>
-            <p className="text-slate-500 mb-8">
+            <p className="text-text-muted mb-8">
               Try adjusting your keywords or clearing the filters.
             </p>
             <button
@@ -170,7 +169,7 @@ export default function ChooseGift({
                 setSearchQuery("");
                 setSortBy("none");
               }}
-              className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold transition-all"
+              className="px-8 py-3 bg-primary text-white rounded-full font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all"
             >
               Reset All Filters
             </button>
@@ -180,3 +179,6 @@ export default function ChooseGift({
     </div>
   );
 }
+
+
+

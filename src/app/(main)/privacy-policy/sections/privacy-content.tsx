@@ -159,11 +159,11 @@ export default function PrivacyContent() {
   };
 
   return (
-    <section className={`py-12 md:py-24 bg-[#050505] relative overflow-hidden ${outfit.className}`}>
+    <section className={`py-12 md:py-24 bg-bg-base relative overflow-hidden ${outfit.className}`}>
       {/* Dynamic Background Effects */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[10%] left-[20%] w-[400px] h-[400px] bg-pink-500/5 blur-[120px] rounded-full animate-pulse" />
-        <div className="absolute bottom-[30%] right-[15%] w-[350px] h-[350px] bg-rose-500/5 blur-[100px] rounded-full" />
+        <div className="absolute top-[10%] left-[20%] w-[400px] h-[400px] bg-primary/5 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute bottom-[30%] right-[15%] w-[350px] h-[350px] bg-primary-dark/5 blur-[100px] rounded-full" />
       </div>
 
       <div className="max-w-[1400px] mx-auto px-6 relative z-10">
@@ -171,11 +171,11 @@ export default function PrivacyContent() {
           <motion.h2 
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            className={`${rochester.className} text-6xl md:text-8xl text-white mb-6`}
+            className={`${rochester.className} text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main mb-6`}
           >
-            Policy <span className="text-pink-500">Details</span>
+            Policy <span className="text-primary">Details</span>
           </motion.h2>
-          <div className="w-32 h-1 bg-linear-to-r from-pink-500 to-rose-600 rounded-full shadow-[0_0_20px_rgba(236,72,153,0.5)]" />
+          <div className="w-32 h-1 bg-linear-to-r from-primary to-primary-dark rounded-full shadow-lg shadow-primary/20" />
         </div>
 
         <motion.div 
@@ -191,15 +191,15 @@ export default function PrivacyContent() {
               variants={item}
               className={`group relative ${section.className}`}
             >
-              <div className="h-full bg-white/2 backdrop-blur-3xl border border-white/5 rounded-[40px] p-8 md:p-10 transition-all duration-700 hover:bg-white/5 hover:border-pink-500/30 hover:shadow-[0_30px_60px_rgba(236,72,153,0.08)] flex flex-col">
+              <div className="h-full bg-bg-card backdrop-blur-3xl border border-border-main rounded-[40px] p-8 md:p-10 transition-all duration-700 hover:bg-bg-secondary hover:border-primary/30 shadow-xl shadow-black/5 flex flex-col">
                 
                 {/* Section Header */}
                 <div className="flex items-start justify-between mb-8">
                   <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-pink-500 group-hover:bg-pink-500 group-hover:text-white group-hover:shadow-[0_10px_30px_rgba(236,72,153,0.4)] transition-all duration-500">
+                    <div className="w-14 h-14 rounded-2xl bg-bg-secondary border border-border-main flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white group-hover:shadow-[0_10px_30px_rgba(var(--primary-rgb),0.4)] transition-all duration-500">
                       {section.icon}
                     </div>
-                    <h3 className="text-xl font-bold text-white tracking-tight">
+                    <h3 className="text-xl font-bold text-text-main tracking-tight">
                       {section.title}
                     </h3>
                   </div>
@@ -213,14 +213,14 @@ export default function PrivacyContent() {
                         <div key={i} className="flex gap-4">
                           {typeof c === 'string' ? (
                             <>
-                              <ChevronRight className="w-4 h-4 text-pink-500 mt-1.5 flex-shrink-0" />
-                              <p className="text-slate-400 text-sm md:text-base leading-relaxed">{c}</p>
+                              <ChevronRight className="w-4 h-4 text-primary mt-1.5 flex-shrink-0" />
+                              <p className="text-text-muted text-sm md:text-base leading-relaxed">{c}</p>
                             </>
                           ) : (
                             <>
-                              <div className="w-1 h-auto bg-linear-to-b from-pink-500 to-rose-600/30 rounded-full flex-shrink-0 opacity-60" />
-                              <p className="text-slate-400 text-sm md:text-base leading-relaxed">
-                                <span className="text-white font-bold mr-2 uppercase text-[9px] tracking-widest">{c.label}:</span>
+                              <div className="w-1 h-auto bg-linear-to-b from-primary to-primary-dark/30 rounded-full flex-shrink-0 opacity-60" />
+                              <p className="text-text-muted text-sm md:text-base leading-relaxed">
+                                <span className="text-text-main font-bold mr-2 uppercase text-[9px] tracking-widest">{c.label}:</span>
                                 {c.text}
                               </p>
                             </>
@@ -229,7 +229,7 @@ export default function PrivacyContent() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-slate-400 text-base md:text-lg leading-relaxed font-light">
+                    <p className="text-text-muted text-base md:text-lg leading-relaxed font-light">
                       {section.content}
                     </p>
                   )}
@@ -242,3 +242,6 @@ export default function PrivacyContent() {
     </section>
   );
 }
+
+
+

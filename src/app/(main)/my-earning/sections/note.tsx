@@ -20,12 +20,12 @@ export default function Note() {
         </div>
         
         <div className="flex flex-col gap-1">
-           <h4 className="text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-2">
+           <h4 className="text-text-main text-[11px] font-black uppercase tracking-widest flex items-center gap-2">
               Withdrawal Policy
               <span className="w-1.5 h-1.5 rounded-full bg-primary" />
            </h4>
-           <div className="flex items-center gap-2 text-slate-500 text-xs font-medium leading-relaxed">
-              <Clock size={12} className="text-slate-600" />
+           <div className="flex items-center gap-2 text-text-muted text-xs font-medium leading-relaxed">
+              <Clock size={12} className="text-text-muted" />
               <p>Withdrawals are processed within <span className="text-primary/80 font-bold">24–48 hours</span>. Please ensure your bank details are up to date in the settings tab.</p>
            </div>
         </div>
@@ -33,3 +33,6 @@ export default function Note() {
     </div>
   );
 }
+
+
+

@@ -41,6 +41,34 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} ${inter.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var savedTheme = localStorage.getItem('theme_choice');
+                  var savedAppearance = localStorage.getItem('appearance_choice');
+                  var preferenceSet = localStorage.getItem('theme_preference_set') === 'true';
+                  
+                  if (savedAppearance) {
+                    document.documentElement.setAttribute('data-appearance', savedAppearance);
+                  }
+
+                  if (preferenceSet && savedTheme) {
+                    document.documentElement.setAttribute('data-theme', savedTheme);
+                  } else {
+                    var lastActive = localStorage.getItem('theme_last_active');
+                    if (lastActive) {
+                      document.documentElement.setAttribute('data-theme', lastActive);
+                    }
+                  }
+                } catch (e) {}
+              })()
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col ">
         <ThemeProvider>
           <ToastProvider />

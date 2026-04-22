@@ -23,7 +23,7 @@ export default function CategorySwitcher({
 }: CategorySwitcherProps) {
   return (
     <div className={`flex items-center ${className} ${outfit.className}`}>
-      <div className="flex p-1.5 bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[24px] shadow-2xl relative overflow-hidden group">
+      <div className="flex p-1.5 bg-white/5 backdrop-blur-3xl border border-border-main rounded-[24px] shadow-2xl relative overflow-hidden group">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
         <button
@@ -31,7 +31,7 @@ export default function CategorySwitcher({
           className={`relative px-6 py-2.5 rounded-[18px] text-xs font-black uppercase tracking-[0.2em] transition-all duration-500 ${
             activeCategory === "hired_by_me"
               ? "text-white shadow-[0_10px_30px_rgba(var(--primary-rgb),0.3)]"
-              : "text-slate-500 hover:text-slate-300"
+              : "text-text-muted hover:text-text-main"
           }`}
         >
           {activeCategory === "hired_by_me" && (
@@ -48,7 +48,7 @@ export default function CategorySwitcher({
           className={`relative px-6 py-2.5 rounded-[18px] text-xs font-black uppercase tracking-[0.2em] transition-all duration-500 ${
             activeCategory === "hired_me"
               ? "text-white shadow-[0_10px_30px_rgba(var(--primary-rgb),0.3)]"
-              : "text-slate-500 hover:text-slate-300"
+              : "text-text-muted hover:text-text-main"
           }`}
         >
           {activeCategory === "hired_me" && (
@@ -63,3 +63,6 @@ export default function CategorySwitcher({
     </div>
   );
 }
+
+
+

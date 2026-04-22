@@ -59,7 +59,7 @@ export default function FAQ() {
 
   return (
     <section
-      className={`py-12 md:py-16 px-4 bg-[#050505] relative overflow-hidden ${outfit.className}`}
+      className={`py-12 md:py-16 px-4 bg-bg-base relative overflow-hidden ${outfit.className}`}
     >
       {/* Decorative background orb */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
@@ -71,7 +71,7 @@ export default function FAQ() {
             initial={{ opacity: 0, y: -20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className={`${rochester.className} text-5xl md:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-white via-primary to-white font-bold mb-4`}
+            className={`${rochester.className} text-center text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary animate-in fade-in slide-in-from-bottom-4 duration-700 py-4 leading-[1.2] mb-6`}
           >
             Frequently Asked Questions
           </motion.h2>
@@ -89,8 +89,8 @@ export default function FAQ() {
               transition={{ delay: index * 0.1 }}
               className={`rounded-[32px] border transition-all duration-500 overflow-hidden ${
                 openIndex === index
-                  ? "bg-white/5 border-primary/30 shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
-                  : "bg-white/2 border-white/5 hover:border-white/10"
+                  ? "bg-bg-card border-primary/30 shadow-lg"
+                  : "bg-bg-secondary border-border-main hover:border-border-main"
               }`}
             >
               <button
@@ -101,7 +101,7 @@ export default function FAQ() {
                   className={`text-lg md:text-xl font-bold transition-colors duration-300 ${
                     openIndex === index
                       ? "text-primary-dark"
-                      : "text-slate-300 group-hover:text-white"
+                      : "text-text-main group-hover:text-primary"
                   }`}
                 >
                   {faq.question}
@@ -110,13 +110,13 @@ export default function FAQ() {
                   className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-500 ${
                     openIndex === index
                       ? "bg-gradient-to-br from-primary to-primary-dark border-primary-dark rotate-180"
-                      : "bg-white/5 border-white/10 group-hover:bg-white/10"
+                      : "bg-bg-secondary border-border-main group-hover:bg-bg-card"
                   }`}
                 >
                   {openIndex === index ? (
                     <X className="w-5 h-5 text-white" />
                   ) : (
-                    <Plus className="w-5 h-5 text-slate-400" />
+                    <Plus className="w-5 h-5 text-text-muted" />
                   )}
                 </div>
               </button>
@@ -130,8 +130,8 @@ export default function FAQ() {
                     transition={{ duration: 0.4, ease: "easeInOut" }}
                   >
                     <div className="px-8 pb-8 pt-0">
-                      <div className="h-px w-full bg-white/5 mb-6" />
-                      <p className="text-slate-400 text-base md:text-lg leading-relaxed font-light">
+                      <div className="h-px w-full bg-border-main mb-6" />
+                      <p className="text-text-muted text-base md:text-lg leading-relaxed font-light">
                         {faq.answer}
                       </p>
                     </div>
@@ -146,7 +146,7 @@ export default function FAQ() {
         <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          className="text-center mt-12 text-slate-500 text-sm font-medium"
+          className="text-center mt-12 text-text-muted text-sm font-medium"
         >
           Still have questions?{" "}
           <Link
@@ -164,3 +164,6 @@ export default function FAQ() {
     </section>
   );
 }
+
+
+

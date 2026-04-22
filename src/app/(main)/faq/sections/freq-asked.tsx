@@ -68,7 +68,7 @@ export default function FreqAsked() {
 
   return (
     <section
-      className={`py-12 md:py-16 px-4 bg-[#050505] relative overflow-hidden ${outfit.className}`}
+      className={`py-12 md:py-16 px-4 bg-bg-base relative overflow-hidden ${outfit.className}`}
     >
       {/* Decorative background orb */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
@@ -76,9 +76,9 @@ export default function FreqAsked() {
       <div className="max-w-4xl mx-auto relative z-10">
         {/* Visual Guide Badge */}
         <div className="flex justify-center mb-12">
-          <div className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 flex items-center gap-2">
+          <div className="px-4 py-1.5 rounded-full bg-bg-secondary border border-border-main flex items-center gap-2">
             <HelpCircle className="w-3.5 h-3.5 text-primary" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">
               Quick Support
             </span>
           </div>
@@ -95,8 +95,8 @@ export default function FreqAsked() {
               transition={{ delay: index * 0.1 }}
               className={`rounded-[32px] border transition-all duration-500 overflow-hidden ${
                 openIndex === index
-                  ? "bg-white/5 border-primary/30 shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
-                  : "bg-white/2 border-white/5 hover:border-white/10"
+                  ? "bg-bg-card border-primary/30 shadow-xl shadow-black/5"
+                  : "bg-bg-secondary border-border-main hover:border-primary/20"
               }`}
             >
               <button
@@ -106,8 +106,8 @@ export default function FreqAsked() {
                 <span
                   className={`text-xl md:text-2xl font-bold transition-colors duration-300 ${
                     openIndex === index
-                      ? "text-white"
-                      : "text-slate-400 group-hover:text-slate-200"
+                      ? "text-text-main"
+                      : "text-text-muted group-hover:text-text-main"
                   }`}
                 >
                   {faq.question}
@@ -115,8 +115,8 @@ export default function FreqAsked() {
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-500 ${
                     openIndex === index
-                      ? "bg-primary border-primary/50 text-white rotate-180"
-                      : "bg-white/5 border-white/10 text-slate-500 group-hover:border-white/20"
+                      ? "bg-primary border-primary/50 text-white rotate-180 shadow-lg shadow-primary/20"
+                      : "bg-bg-card border-border-main text-text-muted group-hover:border-primary/30"
                   }`}
                 >
                   {openIndex === index ? (
@@ -140,7 +140,7 @@ export default function FreqAsked() {
                   >
                     <div className="px-8 pb-8">
                       <div className="h-px w-12 bg-primary/50 mb-6 rounded-full" />
-                      <p className="text-slate-400 text-lg font-light leading-relaxed max-w-2xl">
+                      <p className="text-text-muted text-lg font-light leading-relaxed max-w-2xl">
                         {faq.answer}
                       </p>
                     </div>
@@ -158,7 +158,7 @@ export default function FreqAsked() {
           viewport={{ once: true }}
           className="mt-20 text-center"
         >
-          <p className="text-slate-500 text-sm italic font-light">
+          <p className="text-text-muted text-sm italic font-light">
             Don't see your question?{" "}
             <a
               href="/contact"
@@ -173,3 +173,6 @@ export default function FreqAsked() {
     </section>
   );
 }
+
+
+

@@ -10,7 +10,7 @@ const ProfilePage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+      <div className="min-h-screen bg-bg-base flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF0066]"></div>
       </div>
     );
@@ -18,7 +18,7 @@ const ProfilePage = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center text-white text-center p-6">
+      <div className="min-h-screen bg-bg-base flex items-center justify-center text-white text-center p-6">
         <div>
           <h2 className="text-2xl font-bold mb-4">No Profile Found</h2>
           <Link
@@ -33,7 +33,7 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white p-4 sm:p-8 lg:p-12">
+    <div className="min-h-screen bg-bg-base text-white p-4 sm:p-8 lg:p-12">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold tracking-tight">Your Profile</h1>
@@ -206,7 +206,7 @@ const ProfilePage = () => {
                 Looking for
               </h3>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-black/20 p-4 rounded-2xl border border-white/5">
+                <div className="bg-black/20 p-4 rounded-2xl border border-border-main">
                   <span className="text-xs text-zinc-400 block mb-1">
                     Prefers
                   </span>
@@ -214,7 +214,7 @@ const ProfilePage = () => {
                     {profile.preferences?.gender || "Any"}
                   </span>
                 </div>
-                <div className="bg-black/20 p-4 rounded-2xl border border-white/5">
+                <div className="bg-black/20 p-4 rounded-2xl border border-border-main">
                   <span className="text-xs text-zinc-400 block mb-1">
                     Age Range
                   </span>
@@ -233,3 +233,6 @@ const ProfilePage = () => {
 };
 
 export default ProfilePage;
+
+
+

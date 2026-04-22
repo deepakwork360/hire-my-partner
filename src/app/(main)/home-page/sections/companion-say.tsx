@@ -86,17 +86,17 @@ const Row = ({
         {[...items, ...items].map((item, idx) => (
           <div
             key={idx}
-            className="w-[350px] md:w-[450px] h-full shrink-0 bg-[#0a0a0a] backdrop-blur-md p-8 rounded-[32px] border border-white/10 shadow-sm transition-all duration-300 hover:border-white/20 hover:shadow-primary/10"
+            className="w-[350px] md:w-[450px] h-full shrink-0 bg-bg-secondary backdrop-blur-md p-8 rounded-[32px] border border-border-main shadow-sm transition-all duration-300 hover:border-white/20 hover:shadow-primary/10"
           >
             <div className="flex flex-col gap-6">
               <Quote className="w-10 h-10 text-primary/20" />
               <p
-                className={`${outfit.className} text-slate-400 italic text-lg leading-relaxed whitespace-normal`}
+                className={`${outfit.className} text-text-muted italic text-lg leading-relaxed whitespace-normal`}
               >
                 &ldquo;{item.text}&rdquo;
               </p>
               <div className="flex items-center gap-4 mt-auto">
-                <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/10">
+                <div className="relative w-12 h-12 rounded-full overflow-hidden border border-border-main">
                   <Image
                     src={item.image}
                     alt={item.name}
@@ -106,7 +106,7 @@ const Row = ({
                 </div>
                 <div>
                   <h4
-                    className={`${outfit.className} font-bold text-white leading-none`}
+                    className={`${outfit.className} font-bold text-text-main leading-none`}
                   >
                     {item.name}
                   </h4>
@@ -130,13 +130,13 @@ export default function CompanionSay() {
   const rowB = testimonials.slice(3, 6);
 
   return (
-    <section className="py-12 md:py-16 bg-[#080808] overflow-hidden relative border-b border-white/5">
+    <section className="py-12 md:py-16 bg-bg-secondary overflow-hidden relative border-b border-border-main">
       <div className="max-w-[1600px] w-full mx-auto px-4 mb-10 text-center">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className={`${rochester.className} text-4xl md:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-white via-primary to-white font-bold`}
+          className={`${rochester.className} text-center text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary animate-in fade-in slide-in-from-bottom-4 duration-700 py-4 leading-[1.2] mb-6`}
         >
           What Our Users & Companions Say
         </motion.h2>
@@ -145,8 +145,8 @@ export default function CompanionSay() {
       {/* Testimonial Wall with Fading Edges */}
       <div className="relative">
         {/* Left and Right Vignette/Fade Overlays */}
-        <div className="absolute inset-y-0 left-0 w-32 bg-linear-to-r from-[#080808] to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-32 bg-linear-to-l from-[#080808] to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 left-0 w-32 bg-linear-to-r from-bg-base to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-32 bg-linear-to-l from-bg-base to-transparent z-10 pointer-events-none" />
 
         <div className="flex flex-col gap-8">
           <Row items={rowA} direction="right" speed={30} />
@@ -156,3 +156,6 @@ export default function CompanionSay() {
     </section>
   );
 }
+
+
+

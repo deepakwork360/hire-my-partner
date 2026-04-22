@@ -5,8 +5,11 @@ export default function MainPrivacyBanner() {
     <Banner2
       title="Privacy Policy"
       subtitle="How we protect your data and respect your privacy."
-      backgroundImage="/" // Assuming a similar pattern for background images
-      bgPosition="50% 30%"
+      backgroundImage="/home/privacy-policy.png" // Assuming a similar pattern for background images
+      bgPosition="50% 50%"
     />
   );
 }
+
+
+

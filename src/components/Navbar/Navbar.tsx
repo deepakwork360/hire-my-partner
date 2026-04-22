@@ -83,7 +83,7 @@ export default function Navbar() {
       <nav
         className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 px-4 md:px-8 ${
           isScrolled
-            ? "bg-[#0a0a0a]/80 backdrop-blur-md shadow-lg border-b border-white/10 py-3"
+            ? "bg-bg-base/80 backdrop-blur-md shadow-lg border-b border-border-main py-3"
             : "bg-transparent py-6"
         } flex items-center justify-between`}
       >
@@ -103,8 +103,8 @@ export default function Navbar() {
         <div
           className={`hidden lg:flex items-center backdrop-blur-md border rounded-full px-2 py-1 shadow-sm transition-all duration-500 ${
             isScrolled
-              ? "bg-black/40 border-white/10"
-              : "bg-white/10 border-white/20"
+              ? "bg-bg-card border-border-main"
+              : "bg-bg-card border-border-main"
           }`}
         >
           {navItems.map((item) => (
@@ -114,9 +114,9 @@ export default function Navbar() {
               className={`relative px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 
               ${
                 pathname === item.href
-                  ? "bg-[#1a1a1a] border border-white/10 text-white shadow-md"
+                  ? "bg-linear-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/25 border-none"
                   : isScrolled
-                    ? "text-slate-300 hover:text-primary"
+                    ? "text-text-main font-bold hover:text-primary"
                     : "text-white/90 hover:text-white"
               }`}
             >
@@ -170,8 +170,8 @@ export default function Navbar() {
             onClick={() => setIsOpen(!isOpen)}
             className={`lg:hidden w-10 h-10 flex items-center justify-center rounded-full border transition-all active:scale-95 z-50 ${
               isScrolled
-                ? "bg-[#111111] border-white/10 text-white"
-                : "bg-white/10 border-white/20 text-white"
+                ? "bg-bg-secondary border-border-main text-text-main"
+                : "bg-bg-card border-border-main text-text-main"
             }`}
           >
             <AnimatePresence mode="wait">
@@ -197,7 +197,7 @@ export default function Navbar() {
             animate="open"
             exit="closed"
             variants={menuVariants}
-            className="fixed inset-0 bg-[#080808] z-[90] lg:hidden overflow-hidden"
+            className="fixed inset-0 bg-bg-base z-[90] lg:hidden overflow-hidden"
           >
             {/* Background Decorative Elements */}
             <div className="absolute top-0 right-0 w-[80%] h-[40%] bg-primary/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/3" />
@@ -220,7 +220,7 @@ export default function Navbar() {
                         className={`group relative flex items-center justify-between text-4xl md:text-5xl font-black tracking-tighter transition-all duration-300 ${
                           isActive
                             ? "text-primary"
-                            : "text-white hover:text-primary/80"
+                            : "text-text-main hover:text-primary/80"
                         }`}
                       >
                         <span>{item.label}</span>
@@ -256,19 +256,19 @@ export default function Navbar() {
                   <div className="flex items-center gap-6">
                     <a
                       href="#"
-                      className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white hover:bg-primary hover:border-primary/80 transition-all"
+                      className="w-12 h-12 flex items-center justify-center rounded-xl bg-bg-secondary border border-border-main text-text-main hover:bg-primary hover:border-primary/80 transition-all"
                     >
                       <MessageCircle size={22} />
                     </a>
                     <a
                       href="#"
-                      className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white hover:bg-primary hover:border-primary/80 transition-all"
+                      className="w-12 h-12 flex items-center justify-center rounded-xl bg-bg-secondary border border-border-main text-text-main hover:bg-primary hover:border-primary/80 transition-all"
                     >
                       <Send size={22} />
                     </a>
                     <a
                       href="#"
-                      className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white hover:bg-primary hover:border-primary/80 transition-all"
+                      className="w-12 h-12 flex items-center justify-center rounded-xl bg-bg-secondary border border-border-main text-text-main hover:bg-primary hover:border-primary/80 transition-all"
                     >
                       <Mail size={22} />
                     </a>
@@ -278,7 +278,7 @@ export default function Navbar() {
                     <p className="text-slate-500 text-sm font-bold uppercase tracking-widest">
                       Inquiries
                     </p>
-                    <p className="text-white text-lg font-medium">
+                    <p className="text-text-main text-lg font-medium">
                       hello@hiremypartner.com
                     </p>
                   </div>

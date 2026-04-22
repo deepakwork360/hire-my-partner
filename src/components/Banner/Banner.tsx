@@ -24,6 +24,7 @@ interface BannerProps {
     label: string;
     link: string;
     variant: "primary" | "outline";
+    style?: React.CSSProperties;
   }[];
 }
 
@@ -54,7 +55,8 @@ export default function Banner({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className={`${rochester.className} text-5xl md:text-7xl lg:text-8xl text-white mb-6 leading-tight`}
+            className={`${rochester.className} text-5xl md:text-7xl lg:text-8xl !text-white mb-6 py-4 px-4 leading-[1.2] drop-shadow-[0_4px_30px_rgba(0,0,0,0.5)]`}
+            style={{ color: 'white' }}
           >
             {title}
           </motion.h1>
@@ -81,7 +83,8 @@ export default function Banner({
                 href={btn.link}
                 variant={btn.variant}
                 size="lg"
-                className="w-full sm:w-auto"
+                style={btn.style}
+                className="w-full sm:w-auto !text-white border-white/20 hover:border-primary"
               />
             ))}
           </motion.div>

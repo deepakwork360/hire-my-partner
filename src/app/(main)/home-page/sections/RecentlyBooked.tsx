@@ -121,13 +121,13 @@ export default function RecentlyBooked() {
     },
   ];
   return (
-    <section className="py-10 md:py-16 px-4 bg-[#080808] overflow-hidden border-b border-white/5">
+    <section className="py-10 md:py-16 px-4 bg-bg-secondary overflow-hidden border-b border-border-main">
       <div className="max-w-[1600px] w-full mx-auto">
-        <div
-          className={`${rochester.className} text-center text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-primary to-white mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700`}
+        <h2
+          className={`${rochester.className} text-center text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 py-4 leading-[1.2]`}
         >
           Recently Booked Partners
-        </div>
+        </h2>
         <div className="relative -mx-4 md:mx-0">
           <div className="px-4 md:px-12 overflow-visible">
             <Slider
@@ -141,3 +141,6 @@ export default function RecentlyBooked() {
     </section>
   );
 }
+
+
+

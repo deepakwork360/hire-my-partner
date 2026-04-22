@@ -142,7 +142,7 @@ export default function CookieContent() {
 
   return (
     <section
-      className={`pt-8 pb-12 md:pb-24 bg-[#050505] relative overflow-hidden ${outfit.className}`}
+      className={`pt-4 pb-12 md:pb-24 bg-bg-base relative overflow-hidden ${outfit.className}`}
     >
       {/* Dynamic Background Effects */}
       <div className="absolute inset-0 pointer-events-none">
@@ -155,7 +155,7 @@ export default function CookieContent() {
           <motion.h2
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            className={`${rochester.className} text-6xl md:text-8xl text-white mb-6`}
+            className={`${rochester.className} text-6xl md:text-8xl text-text-main mb-6`}
           >
             Cookie <span className="text-primary">Guidelines</span>
           </motion.h2>
@@ -175,14 +175,14 @@ export default function CookieContent() {
               variants={item}
               className={`group relative ${section.className}`}
             >
-              <div className="h-full bg-white/2 backdrop-blur-3xl border border-white/5 rounded-[40px] p-8 md:p-10 transition-all duration-700 hover:bg-white/5 hover:border-primary/30 hover:shadow-[0_30px_60px_rgba(236,72,153,0.08)] flex flex-col">
+              <div className="h-full bg-bg-secondary border border-border-main rounded-[40px] p-8 md:p-10 transition-all duration-700 hover:bg-bg-base hover:border-primary/30 hover:shadow-[0_30px_60px_rgba(var(--primary-rgb),0.08)] flex flex-col">
                 {/* Section Header */}
                 <div className="flex items-start justify-between mb-8">
                   <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white group-hover:shadow-[0_10px_30px_rgba(236,72,153,0.4)] transition-all duration-500">
+                    <div className="w-14 h-14 rounded-2xl bg-bg-secondary border border-border-main flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white group-hover:shadow-[0_10px_30px_rgba(var(--primary-rgb),0.4)] transition-all duration-500">
                       {section.icon}
                     </div>
-                    <h3 className="text-xl font-bold text-white tracking-tight">
+                    <h3 className="text-xl font-bold text-text-main tracking-tight">
                       {section.title}
                     </h3>
                   </div>
@@ -197,14 +197,14 @@ export default function CookieContent() {
                           {typeof c === "string" ? (
                             <>
                               <ChevronRight className="w-4 h-4 text-primary mt-1.5 flex-shrink-0" />
-                              <p className="text-slate-400 text-sm md:text-base leading-relaxed">
+                              <p className="text-text-muted text-sm md:text-base leading-relaxed">
                                 {c}
                               </p>
                             </>
                           ) : (
                             <>
                               <div className="w-1 h-auto bg-linear-to-b from-primary to-rose-600/30 rounded-full flex-shrink-0 opacity-60" />
-                              <p className="text-slate-400 text-sm md:text-base leading-relaxed">
+                              <p className="text-text-muted text-sm md:text-base leading-relaxed">
                                 <span className="text-white font-bold mr-2 uppercase text-[9px] tracking-widest">
                                   {c.label}:
                                 </span>
@@ -216,7 +216,7 @@ export default function CookieContent() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-slate-400 text-base md:text-lg leading-relaxed font-light">
+                    <p className="text-text-muted text-base md:text-lg leading-relaxed font-light">
                       {section.content}
                     </p>
                   )}
@@ -229,3 +229,6 @@ export default function CookieContent() {
     </section>
   );
 }
+
+
+

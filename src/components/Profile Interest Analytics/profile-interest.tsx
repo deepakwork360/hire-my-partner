@@ -30,24 +30,24 @@ export default function ProfileInterest({ data }: Props) {
       label: "Total Interest Received",
       value: data.totalInterestReceived.toLocaleString(),
       icon: Heart,
-      color: "from-pink-600 to-rose-700",
-      bg: "bg-pink-500/10",
+      color: "from-primary to-primary-dark",
+      bg: "bg-primary/10",
       description: "Lifetime engagement on your profile"
     },
     {
       label: "New In Last 7 Days",
       value: data.newInLast7Days.toLocaleString(),
       icon: TrendingUp,
-      color: "from-rose-600 to-red-700",
-      bg: "bg-rose-500/10",
+      color: "from-primary-dark to-accent",
+      bg: "bg-primary-dark/10",
       description: "Recent surge in activity"
     },
     {
       label: "Connections Made",
       value: data.connectionsMade.toLocaleString(),
       icon: Users,
-      color: "from-pink-500 to-rose-600",
-      bg: "bg-zinc-500/10",
+      color: "from-primary to-primary-dark",
+      bg: "bg-primary/5",
       description: "Successful profiles reached back"
     },
   ];
@@ -72,7 +72,7 @@ export default function ProfileInterest({ data }: Props) {
               <div className={`absolute -right-4 -top-4 w-24 h-24 ${stat.bg} rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition-opacity`} />
               <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${stat.color} shadow-lg shadow-pink-600/20 group-hover:scale-110 transition-transform`}>
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${stat.color} shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform`}>
                 <Icon size={28} className="text-white" />
               </div>
 
@@ -89,7 +89,7 @@ export default function ProfileInterest({ data }: Props) {
               </div>
 
               {/* Status Indicator */}
-              <div className="mt-2 flex items-center gap-2 text-pink-500/50 group-hover:text-pink-500 transition-all">
+              <div className="mt-2 flex items-center gap-2 text-primary/50 group-hover:text-primary transition-all">
                  <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
                  <span className="text-[9px] font-black uppercase tracking-widest italic opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0">
                     Live Insights

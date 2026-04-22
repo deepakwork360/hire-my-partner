@@ -5,7 +5,7 @@ import PrivacyContent from "./sections/privacy-content";
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="bg-[#050505] min-h-screen">
+    <div className="bg-bg-base min-h-screen">
       <MainPrivacyBanner />
       <PrivacyEffectiveDate />
       <PrivacyContent />
@@ -13,3 +13,6 @@ export default function PrivacyPolicyPage() {
     </div>
   );
 }
+
+
+

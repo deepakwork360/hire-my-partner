@@ -32,7 +32,7 @@ const plans = [
     },
     description:
       "Perfect for getting started and exploring our premium community.",
-    icon: <Shield className="w-6 h-6 text-slate-400" />,
+    icon: <Shield className="w-6 h-6 text-text-muted" />,
     features: [
       { text: "Limited Booking", included: true },
       { text: "No Support", included: false },
@@ -52,7 +52,7 @@ const plans = [
     },
     description:
       "The most popular choice for regular users seeking flexibility.",
-    icon: <Zap className="w-6 h-6 text-pink-500" />,
+    icon: <Zap className="w-6 h-6 text-primary" />,
     features: [
       { text: "10 Bookings Monthly", included: true },
       { text: "Priority Email Support", included: true },
@@ -63,7 +63,7 @@ const plans = [
     buttonText: "Choose Pro",
     trialText: "Includes Free Trial",
     popular: true,
-    color: "pink",
+    color: "primary",
   },
   {
     name: "Business",
@@ -93,10 +93,10 @@ export default function PricingPlan() {
 
   return (
     <section
-      className={`py-12 md:py-16 px-4 bg-[#050505] relative overflow-hidden ${outfit.className}`}
+      className={`py-12 md:py-16 px-4 bg-bg-base relative overflow-hidden ${outfit.className}`}
     >
       {/* Background Decorative Element */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-pink-500/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Section Header */}
@@ -107,27 +107,27 @@ export default function PricingPlan() {
           className="text-center mb-12"
         >
           <h2
-            className={`${rochester.className} text-5xl md:text-7xl text-white mb-4`}
+            className={`${rochester.className} text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main mb-4`}
           >
             Pricing Plans
           </h2>
-          <div className="w-24 h-1 bg-linear-to-r from-pink-500 to-rose-500 mx-auto rounded-full shadow-[0_0_15px_rgba(255,51,119,0.5)]" />
+          <div className="w-24 h-1 bg-linear-to-r from-primary to-primary-dark mx-auto rounded-full shadow-lg shadow-primary/20" />
         </motion.div>
 
         {/* Billing Toggle */}
-        <div className="flex justify-center mb-16">
-          <div className="bg-white/5 backdrop-blur-md p-1.5 rounded-2xl border border-white/10 flex relative">
-            <motion.div
-              animate={{ x: billingCycle === "monthly" ? 0 : "100%" }}
-              className="absolute top-1.5 bottom-1.5 left-1.5 w-[calc(50%-6px)] bg-pink-500 rounded-xl shadow-lg shadow-pink-500/20"
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            />
+         <div className="flex justify-center mb-16">
+          <div className="bg-bg-secondary backdrop-blur-md p-1.5 rounded-2xl border border-border-main flex relative shadow-xl shadow-black/5">
+              <motion.div
+                animate={{ x: billingCycle === "monthly" ? 0 : "100%" }}
+                className="absolute top-1.5 bottom-1.5 left-1.5 w-[calc(50%-6px)] bg-primary rounded-xl shadow-lg shadow-primary/20"
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              />
             <button
               onClick={() => setBillingCycle("monthly")}
               className={`relative z-10 px-8 py-3 rounded-xl text-sm font-bold transition-colors duration-300 ${
                 billingCycle === "monthly"
                   ? "text-white"
-                  : "text-slate-500 hover:text-slate-300"
+                  : "text-text-muted hover:text-text-main"
               }`}
             >
               Monthly
@@ -137,11 +137,11 @@ export default function PricingPlan() {
               className={`relative z-10 px-8 py-3 rounded-xl text-sm font-bold transition-colors duration-300 flex items-center gap-2 ${
                 billingCycle === "yearly"
                   ? "text-white"
-                  : "text-slate-500 hover:text-slate-300"
+                  : "text-text-muted hover:text-text-main"
               }`}
             >
               Yearly
-              <span className="text-[10px] bg-amber-500/20 text-amber-500 px-2 py-0.5 rounded-full border border-amber-500/20">
+              <span className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${billingCycle === 'yearly' ? 'bg-white/20 text-white border-white/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20'}`}>
                 -20%
               </span>
             </button>
@@ -163,7 +163,7 @@ export default function PricingPlan() {
             >
               {plan.popular && (
                 <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-30">
-                  <div className="bg-linear-to-r from-pink-500 to-rose-600 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-[0_4px_20px_rgba(255,51,119,0.4)] flex items-center gap-2">
+                  <div className="bg-linear-to-r from-primary to-primary-dark text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-[0_4px_20px_rgba(var(--primary-rgb),0.4)] flex items-center gap-2">
                     <Star className="w-3 h-3 fill-white" />
                     Most Popular
                   </div>
@@ -171,20 +171,20 @@ export default function PricingPlan() {
               )}
 
               <div
-                className={`flex-1 rounded-[40px] p-8 md:p-10 transition-all duration-500 flex flex-col h-full bg-[#0a0a0a] border ${
+                className={`flex-1 rounded-[40px] p-8 md:p-10 transition-all duration-500 flex flex-col h-full bg-bg-card border ${
                   plan.popular
-                    ? "border-pink-500/30 shadow-[0_30px_60px_-15px_rgba(255,51,119,0.15)] ring-1 ring-pink-500/20"
-                    : "border-white/5 hover:border-white/10"
+                    ? "border-primary/30 shadow-2xl shadow-primary/10 ring-1 ring-primary/20"
+                    : "border-border-main hover:border-primary/20 shadow-xl shadow-black/5"
                 } relative overflow-hidden group-hover:scale-[1.02]`}
               >
                 {/* Visual Accent */}
                 <div
                   className={`absolute top-0 right-0 w-32 h-32 bg-linear-to-bl ${
-                    plan.color === "pink"
-                      ? "from-pink-500/10"
+                    plan.color === "primary"
+                      ? "from-primary/10"
                       : plan.color === "amber"
                         ? "from-amber-500/10"
-                        : "from-white/5"
+                        : "from-text-main/5"
                   } to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
                 />
 
@@ -193,30 +193,30 @@ export default function PricingPlan() {
                   <div className="flex items-center justify-between mb-4">
                     <div
                       className={`p-3 rounded-2xl ${
-                        plan.color === "pink"
-                          ? "bg-pink-500/10"
+                        plan.color === "primary"
+                          ? "bg-primary/10"
                           : plan.color === "amber"
                             ? "bg-amber-500/10"
-                            : "bg-white/5"
+                            : "bg-bg-secondary"
                       }`}
                     >
                       {plan.icon}
                     </div>
-                    <h3 className="text-xl font-bold text-white uppercase tracking-widest text-sm opacity-50">
+                    <h3 className="text-xl font-bold text-text-main uppercase tracking-widest text-sm opacity-50">
                       {plan.name}
                     </h3>
                   </div>
 
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl md:text-5xl font-bold text-white">
+                    <span className="text-4xl md:text-5xl font-bold text-text-main">
                       ₹
                       {billingCycle === "monthly"
                         ? plan.price.monthly
                         : plan.price.yearly}
                     </span>
-                    <span className="text-slate-500 font-medium">/Month</span>
+                    <span className="text-text-muted font-medium">/Month</span>
                   </div>
-                  <p className="mt-4 text-slate-400 text-sm leading-relaxed min-h-[48px]">
+                  <p className="mt-4 text-text-muted text-sm leading-relaxed min-h-[48px]">
                     {plan.description}
                   </p>
                 </div>
@@ -228,19 +228,19 @@ export default function PricingPlan() {
                       {feature.included ? (
                         <Check
                           className={`w-5 h-5 shrink-0 ${
-                            plan.color === "pink"
-                              ? "text-pink-500"
+                            plan.color === "primary"
+                              ? "text-primary"
                               : plan.color === "amber"
                                 ? "text-amber-500"
-                                : "text-slate-400"
+                                : "text-text-muted"
                           }`}
                         />
                       ) : (
-                        <X className="w-5 h-5 text-slate-700 shrink-0" />
+                        <X className="w-5 h-5 text-text-muted opacity-40 shrink-0" />
                       )}
                       <span
                         className={`text-sm font-medium ${
-                          feature.included ? "text-slate-300" : "text-slate-600"
+                          feature.included ? "text-text-main" : "text-text-muted"
                         }`}
                       >
                         {feature.text}
@@ -252,10 +252,10 @@ export default function PricingPlan() {
                 {/* CTA Buttons */}
                 <div className="space-y-3">
                   <button
-                    className={`w-full py-5 rounded-[24px] font-bold text-sm tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 group/btn ${
+                    className={`w-full py-5 rounded-[24px] font-black text-sm tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 group/btn relative overflow-hidden ${
                       plan.popular
-                        ? "bg-linear-to-r from-pink-500 to-rose-600 text-white shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 hover:-translate-y-1"
-                        : "bg-white/5 text-white border border-white/10 hover:bg-white/10"
+                        ? "bg-gradient-to-br from-primary via-primary-dark to-primary text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1"
+                        : "bg-bg-secondary/80 text-text-main border-2 border-border-main shadow-inner hover:bg-bg-card hover:border-primary/30"
                     }`}
                   >
                     {plan.buttonText}
@@ -263,7 +263,7 @@ export default function PricingPlan() {
                   </button>
 
                   {plan.trialText && (
-                    <button className="w-full py-3 rounded-2xl font-bold text-[10px] uppercase tracking-[3px] text-pink-500/70 hover:text-pink-500 transition-colors">
+                    <button className="w-full py-3 rounded-2xl font-bold text-[10px] uppercase tracking-[3px] text-primary/70 hover:text-primary transition-colors">
                       {plan.trialText}
                     </button>
                   )}
@@ -276,3 +276,6 @@ export default function PricingPlan() {
     </section>
   );
 }
+
+
+

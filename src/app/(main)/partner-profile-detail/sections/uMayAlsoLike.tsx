@@ -53,7 +53,7 @@ const recommendedPartners = [
 export default function UMayAlsoLike() {
   return (
     <section
-      className={`py-16 md:py-24 px-4 bg-[#0a0a0a] border-b border-white/5 ${outfit.className}`}
+      className={`py-16 md:py-24 px-4 bg-bg-secondary border-b border-border-main ${outfit.className}`}
     >
       <div className="max-w-[1600px] w-full mx-auto">
         <div className="flex flex-col items-center mb-16">
@@ -61,12 +61,12 @@ export default function UMayAlsoLike() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className={`${rochester.className} text-5xl md:text-6xl text-white mb-4 text-center drop-shadow-md`}
+            className={`${rochester.className} text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main mb-4 text-center drop-shadow-md`}
           >
             You May Also Like
           </motion.h2>
-          <div className="w-24 h-1 rounded-full bg-linear-to-r from-pink-500 to-rose-500 shadow-[0_0_15px_rgba(255,51,119,0.5)]"></div>
-          <p className="text-slate-400 mt-6 text-center max-w-lg">
+          <div className="w-24 h-1 rounded-full bg-linear-to-r from-primary to-primary-dark shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]"></div>
+          <p className="text-text-muted mt-6 text-center max-w-lg">
             Discover other highly-rated companions that match your preferences
             and style.
           </p>
@@ -101,3 +101,6 @@ export default function UMayAlsoLike() {
     </section>
   );
 }
+
+
+

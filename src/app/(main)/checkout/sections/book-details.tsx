@@ -67,7 +67,7 @@ export default function BookDetails() {
   const [dateLabel, timeRange] = selectedDateTime.split(" | ");
 
   return (
-    <section className={`bg-[#050505] py-20 px-4 md:px-8 ${outfit.className}`}>
+    <section className={`bg-bg-base py-20 px-4 md:px-8 ${outfit.className}`}>
       <div className="max-w-5xl mx-auto">
         {/* Full-width centered header above both cards */}
         <motion.div
@@ -81,7 +81,7 @@ export default function BookDetails() {
           >
             Booking Details Form
           </h2>
-          <p className="text-slate-500 text-sm">
+          <p className="text-text-muted text-sm">
             Fill in your preferences to complete your booking.
           </p>
         </motion.div>
@@ -95,7 +95,7 @@ export default function BookDetails() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="bg-white/[0.03] border border-white/10 rounded-[32px] p-6 md:p-8 flex flex-col gap-8"
+              className="bg-bg-card border border-border-main rounded-[32px] p-6 md:p-8 flex flex-col gap-8 shadow-2xl shadow-black/5"
             >
               {/* ── Booking Details ── */}
               <div>
@@ -113,11 +113,11 @@ export default function BookDetails() {
                       setShowDateMenu((p) => !p);
                       setShowDurationMenu(false);
                     }}
-                    className="w-full h-14 px-5 bg-black/40 border border-white/10 rounded-2xl text-white/80 text-sm font-medium flex items-center justify-between hover:border-white/20 transition-all group"
+                    className="w-full h-14 px-5 bg-bg-secondary/50 border border-border-main rounded-2xl text-text-main text-sm font-medium flex items-center justify-between hover:border-primary/30 transition-all group"
                   >
                     <span className="flex items-center gap-3">
                       <Clock size={15} className="text-primary shrink-0" />
-                      <span className="text-slate-400 text-xs font-bold uppercase tracking-widest mr-2">
+                      <span className="text-text-muted text-xs font-bold uppercase tracking-widest mr-2">
                         Date & Time:
                       </span>
                       {selectedDateTime}
@@ -128,7 +128,7 @@ export default function BookDetails() {
                     />
                   </button>
                   {showDateMenu && (
-                    <div className="absolute top-full mt-2 left-0 right-0 z-20 bg-[#111] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+                    <div className="absolute top-full mt-2 left-0 right-0 z-20 bg-bg-base/95 backdrop-blur-2xl border border-border-main rounded-2xl overflow-hidden shadow-2xl">
                       {dateTimeOptions.map((opt) => (
                         <button
                           key={opt}
@@ -136,10 +136,10 @@ export default function BookDetails() {
                             setSelectedDateTime(opt);
                             setShowDateMenu(false);
                           }}
-                          className={`w-full px-5 py-3.5 text-left text-sm font-medium flex items-center justify-between hover:bg-white/5 transition-colors ${
+                          className={`w-full px-5 py-3.5 text-left text-sm font-medium flex items-center justify-between hover:bg-primary/5 transition-colors ${
                             selectedDateTime === opt
                               ? "text-primary"
-                              : "text-slate-300"
+                              : "text-text-main"
                           }`}
                         >
                           {opt}
@@ -159,11 +159,11 @@ export default function BookDetails() {
                       setShowDurationMenu((p) => !p);
                       setShowDateMenu(false);
                     }}
-                    className="w-full h-14 px-5 bg-black/40 border border-white/10 rounded-2xl text-white/80 text-sm font-medium flex items-center justify-between hover:border-white/20 transition-all"
+                    className="w-full h-14 px-5 bg-bg-secondary/50 border border-border-main rounded-2xl text-text-main text-sm font-medium flex items-center justify-between hover:border-primary/30 transition-all"
                   >
                     <span className="flex items-center gap-3">
                       <Clock size={15} className="text-primary shrink-0" />
-                      <span className="text-slate-400 text-xs font-bold uppercase tracking-widest mr-2">
+                      <span className="text-text-muted text-xs font-bold uppercase tracking-widest mr-2">
                         Duration:
                       </span>
                       {selectedDuration}
@@ -174,7 +174,7 @@ export default function BookDetails() {
                     />
                   </button>
                   {showDurationMenu && (
-                    <div className="absolute top-full mt-2 left-0 right-0 z-20 bg-[#111] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+                    <div className="absolute top-full mt-2 left-0 right-0 z-20 bg-bg-base/95 backdrop-blur-2xl border border-border-main rounded-2xl overflow-hidden shadow-2xl">
                       {durationOptions.map((opt) => (
                         <button
                           key={opt}
@@ -182,10 +182,10 @@ export default function BookDetails() {
                             setSelectedDuration(opt);
                             setShowDurationMenu(false);
                           }}
-                          className={`w-full px-5 py-3.5 text-left text-sm font-medium flex items-center justify-between hover:bg-white/5 transition-colors ${
+                          className={`w-full px-5 py-3.5 text-left text-sm font-medium flex items-center justify-between hover:bg-primary/5 transition-colors ${
                             selectedDuration === opt
                               ? "text-primary"
-                              : "text-slate-300"
+                              : "text-text-main"
                           }`}
                         >
                           {opt}
@@ -217,7 +217,7 @@ export default function BookDetails() {
                         className={`w-full h-14 px-5 border rounded-2xl flex items-center gap-4 text-left transition-all group ${
                           isChecked
                             ? "bg-primary/10 border-primary/40"
-                            : "bg-black/20 border-white/10 hover:border-white/20"
+                            : "bg-bg-secondary border-border-main hover:border-primary/30"
                         }`}
                       >
                         {isChecked ? (
@@ -228,19 +228,19 @@ export default function BookDetails() {
                         ) : (
                           <Square
                             size={18}
-                            className="text-slate-600 group-hover:text-slate-400 shrink-0 transition-colors"
+                            className="text-text-muted group-hover:text-text-muted shrink-0 transition-colors"
                           />
                         )}
                         <span
                           className={`flex-1 text-sm font-medium transition-colors ${
-                            isChecked ? "text-white" : "text-slate-400"
+                            isChecked ? "text-text-main" : "text-text-muted"
                           }`}
                         >
                           {addon.label}
                         </span>
                         <span
                           className={`text-xs font-bold transition-colors ${
-                            isChecked ? "text-primary/80" : "text-slate-600"
+                            isChecked ? "text-primary/80" : "text-text-muted"
                           }`}
                         >
                           +₹{addon.price}
@@ -257,7 +257,7 @@ export default function BookDetails() {
                   <FileText size={15} className="text-primary" />
                   <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">
                     Preferences / Notes{" "}
-                    <span className="text-slate-600 normal-case tracking-normal">
+                    <span className="text-text-muted normal-case tracking-normal">
                       (Optional)
                     </span>
                   </span>
@@ -267,7 +267,7 @@ export default function BookDetails() {
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
                   placeholder="Any special requests or instructions..."
-                  className="w-full bg-black/30 border border-white/10 rounded-2xl p-5 text-slate-300 text-sm font-medium leading-relaxed placeholder-slate-700 focus:outline-none focus:border-primary/40 transition-all resize-none"
+                  className="w-full bg-bg-secondary/50 border border-border-main rounded-2xl p-5 text-text-main text-sm font-medium leading-relaxed placeholder:text-text-muted/40 focus:outline-none focus:border-primary/40 transition-all resize-none"
                 />
               </div>
 
@@ -299,10 +299,10 @@ export default function BookDetails() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="w-full max-w-sm bg-gradient-to-br from-white/[0.06] to-white/[0.01] border border-white/10 rounded-[32px] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.5)]"
+              className="w-full max-w-sm bg-bg-card border border-border-main rounded-[32px] overflow-hidden shadow-2xl shadow-black/10"
             >
               {/* Profile Header */}
-              <div className="flex flex-col items-center text-center pt-8 pb-5 px-6 border-b border-white/5 gap-4">
+              <div className="flex flex-col items-center text-center pt-8 pb-5 px-6 border-b border-border-main gap-4">
                 <div className="relative w-28 h-36 rounded-2xl overflow-hidden ring-2 ring-primary/30 shadow-[0_8px_30px_rgba(var(--primary-rgb),0.2)]">
                   <Image
                     src="/images/girl1.webp"
@@ -314,13 +314,13 @@ export default function BookDetails() {
                 </div>
                 <div>
                   <h3
-                    className={`${rochester.className} text-3xl text-white tracking-wide mb-1`}
+                    className={`${rochester.className} text-3xl text-text-main tracking-wide mb-1`}
                   >
                     Aarushi Kumari
                   </h3>
                   <div className="flex items-center justify-center gap-1.5">
                     <MapPin size={12} className="text-primary" />
-                    <span className="text-slate-400 text-xs font-medium">
+                    <span className="text-text-muted text-xs font-medium">
                       Andheri, Mumbai
                     </span>
                   </div>
@@ -339,16 +339,16 @@ export default function BookDetails() {
                       />
                     ))}
                   </div>
-                  <span className="text-white text-xs font-black">4.9</span>
-                  <span className="text-slate-600 text-xs font-medium">
+                  <span className="text-text-main text-xs font-black">4.9</span>
+                  <span className="text-text-muted text-xs font-medium">
                     (128)
                   </span>
                 </div>
               </div>
 
               {/* Bio */}
-              <div className="px-6 py-4 border-b border-white/5">
-                <p className="text-slate-400 text-xs leading-relaxed font-medium text-center">
+              <div className="px-6 py-4 border-b border-border-main">
+                <p className="text-text-muted text-xs leading-relaxed font-medium text-center">
                   Charming companion with a love for fine dining, art, and
                   meaningful conversations.
                 </p>
@@ -357,36 +357,36 @@ export default function BookDetails() {
               {/* Booking Info */}
               <div className="p-5 flex flex-col gap-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-black/30 rounded-xl p-3">
+                  <div className="bg-bg-secondary rounded-xl p-3">
                     <div className="flex items-center gap-1.5 mb-1.5">
                       <Calendar size={11} className="text-primary" />
-                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">
                         Date
                       </span>
                     </div>
-                    <p className="text-white text-xs font-bold leading-snug">
+                    <p className="text-text-main text-xs font-bold leading-snug">
                       {dateLabel}
                     </p>
                   </div>
-                  <div className="bg-black/30 rounded-xl p-3">
+                  <div className="bg-bg-secondary rounded-xl p-3">
                     <div className="flex items-center gap-1.5 mb-1.5">
                       <Clock size={11} className="text-primary" />
-                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">
                         Time
                       </span>
                     </div>
-                    <p className="text-white text-xs font-bold leading-snug">
+                    <p className="text-text-main text-xs font-bold leading-snug">
                       {timeRange}
                     </p>
                   </div>
-                  <div className="col-span-2 bg-black/30 rounded-xl p-3">
+                  <div className="col-span-2 bg-bg-secondary rounded-xl p-3">
                     <div className="flex items-center gap-1.5 mb-1.5">
                       <Clock size={11} className="text-primary" />
-                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">
                         Duration
                       </span>
                     </div>
-                    <p className="text-white text-xs font-bold">
+                    <p className="text-text-main text-xs font-bold">
                       {selectedDuration}
                     </p>
                   </div>
@@ -396,7 +396,7 @@ export default function BookDetails() {
                 <div>
                   <div className="flex items-center gap-1.5 mb-2.5">
                     <Sparkles size={11} className="text-primary" />
-                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">
                       Add-ons Selected
                     </span>
                   </div>
@@ -412,7 +412,7 @@ export default function BookDetails() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-slate-700 text-xs italic">
+                    <p className="text-text-muted text-xs italic">
                       No add-ons selected
                     </p>
                   )}
@@ -425,3 +425,6 @@ export default function BookDetails() {
     </section>
   );
 }
+
+
+

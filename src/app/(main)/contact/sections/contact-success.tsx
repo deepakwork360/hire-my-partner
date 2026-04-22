@@ -54,12 +54,12 @@ export default function ContactSuccess({
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-[40px] shadow-[0_50px_100px_rgba(0,0,0,0.5)] overflow-hidden"
+            className="relative w-full max-w-md bg-bg-secondary border border-border-main rounded-[40px] shadow-[0_50px_100px_rgba(0,0,0,0.5)] overflow-hidden"
           >
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all border border-white/5 z-10"
+              className="absolute top-6 right-6 w-10 h-10 rounded-full bg-bg-card flex items-center justify-center text-text-muted hover:text-primary hover:bg-primary/10 transition-all border border-border-main z-10"
             >
               <X size={18} />
             </button>
@@ -77,19 +77,19 @@ export default function ContactSuccess({
               </div>
 
               {/* Title */}
-              <h2 className={`${rochester.className} text-5xl text-white mb-4`}>
+              <h2 className={`${rochester.className} text-5xl text-text-main mb-4`}>
                 Message <span className="text-pink-500">Received!</span>
               </h2>
 
               {/* Subtitle */}
-              <p className="text-slate-400 text-base font-medium leading-relaxed mb-10">
+              <p className="text-text-muted text-base font-medium leading-relaxed mb-10">
                 Thank you for reaching out to Meet Me. Your request has been logged, and our team will get back to you within 24 hours.
               </p>
 
               {/* Action Button */}
               <button
                 onClick={onClose}
-                className="w-full h-14 rounded-2xl bg-white text-black font-black tracking-[0.3em] uppercase text-xs hover:bg-slate-200 transition-all active:scale-95 shadow-lg"
+                className="w-full h-14 rounded-2xl bg-text-main text-bg-base font-black tracking-[0.3em] uppercase text-xs hover:opacity-90 transition-all active:scale-95 shadow-lg"
               >
                 Brilliant
               </button>
@@ -108,3 +108,6 @@ export default function ContactSuccess({
     </AnimatePresence>
   );
 }
+
+
+

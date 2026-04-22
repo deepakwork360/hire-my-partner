@@ -12,7 +12,7 @@ import {
   X
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const rochester = Rochester({ subsets: ["latin"], weight: ["400"] });
 const outfit = Outfit({
@@ -35,7 +35,6 @@ interface SideDashboardProps {
 export default function SideDashboard({ activeItem = "earning", onItemClick }: SideDashboardProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [active, setActive] = useState(activeItem);
-  const router = useRouter();
 
   // Close dashboard on ESC key
   useEffect(() => {
@@ -46,12 +45,9 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
     return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
-  const handleItemClick = (id: string, path: string) => {
+  const handleItemClick = (id: string) => {
     setActive(id);
     if (onItemClick) onItemClick(id);
-    
-    // Navigate to the section page
-    router.push(path);
     
     // Close the sidebar smoothly after navigation
     setTimeout(() => {
@@ -66,13 +62,13 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         onClick={() => setIsOpen(true)}
-        className={`fixed left-0 top-1/2 -translate-y-1/2 group flex items-center gap-3 pl-3 pr-4 py-6 bg-[#050505] border border-pink-500/20 border-l-0 rounded-r-2xl shadow-[15px_0_40px_rgba(219,39,119,0.15)] transition-all hover:pl-5 hover:bg-zinc-900 ${
+        className={`fixed left-0 top-1/2 -translate-y-1/2 group flex items-center gap-3 pl-3 pr-4 py-6 bg-bg-base border border-primary/20 border-l-0 rounded-r-2xl shadow-[15px_0_40px_rgba(var(--primary-rgb),0.15)] transition-all hover:pl-5 hover:bg-bg-secondary ${
             isOpen ? "opacity-0 pointer-events-none" : "opacity-100"
         }`}
       >
         <div className="flex flex-col items-center gap-4">
-            <LayoutDashboard size={20} className="text-pink-500 group-hover:scale-110 group-hover:text-rose-500 transition-all drop-shadow-[0_0_8px_rgba(219,39,119,0.5)]" />
-            <span className="[writing-mode:vertical-lr] rotate-180 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-white transition-colors">
+            <LayoutDashboard size={20} className="text-primary group-hover:scale-110 group-hover:text-primary-dark transition-all drop-shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]" />
+            <span className="[writing-mode:vertical-lr] rotate-180 text-[10px] font-black uppercase tracking-[0.3em] text-text-muted group-hover:text-text-main transition-colors">
                 Dashboard
             </span>
         </div>
@@ -88,7 +84,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[-1]"
+              className="fixed inset-0 bg-bg-base/60 backdrop-blur-sm z-[-1]"
             />
 
             {/* Content Drawer */}
@@ -97,26 +93,26 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="h-full w-[320px] md:w-[380px] bg-[#050505] border-r border-white/10 shadow-[20px_0_50px_rgba(0,0,0,0.8)] p-8 md:p-10 flex flex-col relative"
+              className="h-full w-[320px] md:w-[380px] bg-bg-base border-r border-border-main shadow-[20px_0_50px_rgba(0,0,0,0.3)] p-8 md:p-10 flex flex-col relative"
             >
               {/* Close Button */}
               <button 
                 onClick={() => setIsOpen(false)}
-                className="absolute right-6 top-8 w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+                className="absolute right-6 top-8 w-10 h-10 rounded-full bg-bg-card border border-border-main flex items-center justify-center text-text-muted hover:text-text-main hover:bg-bg-card/80 transition-all"
               >
                 <X size={20} />
               </button>
 
               {/* Header */}
               <div className="mt-8 mb-12 relative">
-                <div className="absolute -left-10 -top-4 w-24 h-24 bg-pink-600/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -left-10 -top-4 w-24 h-24 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
                 <div className="flex items-center gap-2 mb-2">
-                    <LayoutDashboard size={14} className="text-pink-500" />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-rose-600 text-[10px] font-black uppercase tracking-[0.3em]">Quick Access</span>
+                    <LayoutDashboard size={14} className="text-primary" />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-dark text-[10px] font-black uppercase tracking-[0.3em]">Quick Access</span>
                 </div>
-                <h2 className={`${rochester.className} text-5xl text-white tracking-wide leading-tight relative`}>
+                <h2 className={`${rochester.className} text-5xl text-text-main tracking-wide leading-tight relative`}>
                   Your Dashboard
-                  <div className="absolute -bottom-2 left-0 w-12 h-1 bg-gradient-to-r from-pink-600 to-rose-700 rounded-full" />
+                  <div className="absolute -bottom-2 left-0 w-12 h-1 bg-gradient-to-r from-primary to-primary-dark rounded-full" />
                 </h2>
               </div>
 
@@ -127,13 +123,14 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                   const isActive = active === item.id;
 
                   return (
-                    <button
+                    <Link
                       key={item.id}
-                      onClick={() => handleItemClick(item.id, item.path)}
-                      className={`flex items-center justify-between px-6 py-5 rounded-2xl transition-all group ${
+                      href={item.path}
+                      onClick={() => handleItemClick(item.id)}
+                      className={`flex items-center justify-between px-6 py-5 rounded-2xl transition-all duration-300 group border ${
                         isActive
-                          ? "bg-gradient-to-r from-pink-600 to-rose-700 text-white shadow-xl shadow-pink-600/20"
-                          : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white"
+                          ? "bg-gradient-to-r from-primary to-primary-dark text-white shadow-[0_15px_40px_rgba(var(--primary-rgb),0.35)] border-white/20"
+                          : "bg-bg-secondary text-text-muted border-border-main/60 shadow-[0_10px_25px_rgba(0,0,0,0.2)] hover:bg-bg-card hover:text-text-main hover:shadow-[0_15px_35px_rgba(0,0,0,0.3)] hover:border-primary/30"
                       }`}
                     >
                       <div className="flex items-center gap-4">
@@ -141,7 +138,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                           className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
                             isActive
                               ? "bg-white/20"
-                              : "bg-black/20 group-hover:bg-black/40"
+                              : "bg-bg-base/20 group-hover:bg-bg-base/40"
                           }`}
                         >
                           <Icon size={20} />
@@ -151,15 +148,15 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                         </span>
                       </div>
                       <ChevronRight size={16} className={`transition-transform duration-300 ${isActive ? "translate-x-1" : "opacity-0 group-hover:opacity-100"}`} />
-                    </button>
+                    </Link>
                   );
                 })}
               </nav>
 
               {/* Footer Note */}
               <div className="mt-auto pt-8 border-t border-white/5">
-                <div className="p-6 bg-pink-600/5 rounded-2x border border-pink-500/10">
-                    <p className="text-slate-500 text-[10px] italic leading-relaxed text-center">
+                <div className="p-6 bg-primary/5 rounded-2x border border-primary/10">
+                    <p className="text-text-muted text-[10px] italic leading-relaxed text-center">
                         "Manage your profile, bookings, and earnings seamlessly from this central hub."
                     </p>
                 </div>

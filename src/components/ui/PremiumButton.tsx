@@ -2,7 +2,6 @@
 
 import React from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { useTheme } from "@/context/ThemeContext";
 
 interface PremiumButtonProps {
@@ -14,6 +13,7 @@ interface PremiumButtonProps {
   className?: string;
   icon?: React.ReactNode;
   disabled?: boolean;
+  style?: React.CSSProperties;
 }
 
 export default function PremiumButton({
@@ -25,6 +25,7 @@ export default function PremiumButton({
   className = "",
   icon,
   disabled = false,
+  style,
 }: PremiumButtonProps) {
   const { theme } = useTheme();
 
@@ -40,10 +41,10 @@ export default function PremiumButton({
 
   const variants = {
     primary:
-      "bg-linear-to-r from-primary-dark via-primary to-accent text-white shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_35px_rgba(var(--primary-rgb),0.5)] hover:-translate-y-0.5",
+      "bg-gradient-to-br from-primary via-primary-dark to-primary text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1",
     outline:
-      "bg-white/5 border border-white/10 text-white hover:border-primary/50 hover:bg-primary/5",
-    ghost: "bg-transparent text-slate-400 hover:text-white hover:bg-white/5",
+      "bg-bg-secondary/80 border-2 border-border-main text-text-main shadow-inner hover:bg-bg-card hover:border-primary/30",
+    ghost: "bg-transparent text-text-muted hover:text-text-main hover:bg-bg-secondary",
   };
 
   const content = (
@@ -62,6 +63,7 @@ export default function PremiumButton({
       <Link
         href={disabled ? "#" : href}
         className={`${baseClasses} ${sizeClasses[size]} ${variants[variant]} ${className}`}
+        style={style}
       >
         {glowEffect}
         {content}
@@ -74,6 +76,7 @@ export default function PremiumButton({
       onClick={onClick}
       disabled={disabled}
       className={`${baseClasses} ${sizeClasses[size]} ${variants[variant]} ${className}`}
+      style={style}
     >
       {glowEffect}
       {content}

@@ -27,7 +27,7 @@ export default function EarningPart() {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="bg-white/[0.03] border border-white/10 rounded-[32px] p-8 md:p-10"
+        className="bg-bg-card border border-border-main rounded-[32px] p-8 md:p-10 shadow-xl shadow-black/5"
       >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div className="flex flex-col gap-6">
@@ -36,18 +36,18 @@ export default function EarningPart() {
                <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">Earnings Summary</span>
             </div>
             
-            <h2 className={`${rochester.className} text-5xl text-white tracking-wide`}>
+            <h2 className={`${rochester.className} text-5xl text-text-main tracking-wide`}>
               My Earnings
             </h2>
 
             <div className="flex flex-col gap-4 xl:gap-6">
               <div className="flex items-baseline gap-3">
                 <span className="text-primary text-lg xl:text-xl font-black tracking-tight">Total Earnings:</span>
-                <span className="text-white text-3xl md:text-4xl xl:text-5xl font-black">₹12,350</span>
+                <span className="text-text-main text-3xl md:text-4xl xl:text-5xl font-black">₹12,350</span>
               </div>
               <div className="flex items-baseline gap-3">
                 <span className="text-primary text-lg xl:text-xl font-black tracking-tight">Withdrawable Amount:</span>
-                <span className="text-white text-3xl md:text-4xl xl:text-5xl font-black underline decoration-primary/60 underline-offset-8">₹9,000</span>
+                <span className="text-text-main text-3xl md:text-4xl xl:text-5xl font-black underline decoration-primary/60 underline-offset-8">₹9,000</span>
               </div>
             </div>
           </div>
@@ -58,7 +58,7 @@ export default function EarningPart() {
             className={`group relative overflow-hidden px-10 h-16 rounded-2xl font-black tracking-[0.2em] uppercase text-xs flex items-center justify-center gap-3 transition-all duration-500 ${
               done 
                 ? "bg-emerald-600 text-white" 
-                : "bg-linear-to-r from-primary-dark via-primary to-accent text-white shadow-[0_10px_40px_rgba(var(--primary-rgb),0.3)] hover:shadow-primary/50 active:scale-95"
+                : "bg-linear-to-r from-primary-dark via-primary to-accent text-white shadow-xl shadow-primary/20 hover:shadow-primary/40 active:scale-95"
             }`}
           >
             {isWithdrawing ? (
@@ -80,3 +80,6 @@ export default function EarningPart() {
     </div>
   );
 }
+
+
+

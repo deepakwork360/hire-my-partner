@@ -17,11 +17,11 @@ const outfit = Outfit({
 const SocialIcon = ({ d, href }: { d: string; href: string }) => (
   <Link
     href={href}
-    className="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-gradient-to-br hover:from-primary hover:to-accent transition-all duration-300 group hover:-translate-y-1 shadow-lg"
+    className="w-10 h-10 rounded-full bg-bg-card flex items-center justify-center hover:bg-gradient-to-br hover:from-primary hover:to-accent transition-all duration-300 group hover:-translate-y-1 shadow-lg border border-border-main"
   >
     <svg
       viewBox="0 0 24 24"
-      className="w-5 h-5 fill-slate-900 group-hover:scale-110 transition-transform"
+      className="w-5 h-5 fill-text-main group-hover:fill-white group-hover:scale-110 transition-transform"
     >
       <path d={d} />
     </svg>
@@ -84,7 +84,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-black pt-16 pb-10 px-4 md:pt-24">
+    <footer className="bg-bg-base pt-16 pb-10 px-4 md:pt-24 border-t border-border-main">
       <div className="max-w-[1600px] w-full mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 md:gap-8 mb-12">
           {/* Brand & Socials */}
@@ -96,7 +96,7 @@ export default function Footer() {
                 width={100}
                 height={100}
               />
-              <h1 className={`${rochester.className} text-4xl text-white mb-2`}>
+              <h1 className={`${rochester.className} text-4xl text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary mb-2`}>
                 Hire Your Partner
               </h1>
               <p className={`${outfit.className} text-transparent bg-clip-text bg-linear-to-r from-primary to-accent text-lg italic font-medium`}>
@@ -126,7 +126,7 @@ export default function Footer() {
           {/* Quick Links */}
           <div>
             <h4
-              className={`${rochester.className} text-2xl text-white mb-8 border-b border-white/10 pb-2 w-fit`}
+              className={`${rochester.className} text-2xl text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main mb-8 border-b border-border-main pb-2 w-fit`}
             >
               Contact Details
             </h4>
@@ -135,7 +135,7 @@ export default function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className={`${outfit.className} text-slate-400 hover:text-primary transition-colors`}
+                    className={`${outfit.className} text-text-muted hover:text-primary transition-colors`}
                   >
                     {link.value}
                   </Link>
@@ -147,7 +147,7 @@ export default function Footer() {
           {/* Account */}
           <div>
             <h4
-              className={`${rochester.className} text-2xl text-white mb-8 border-b border-white/10 pb-2 w-fit`}
+              className={`${rochester.className} text-2xl text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main mb-8 border-b border-border-main pb-2 w-fit`}
             >
               Quick Links
             </h4>
@@ -156,7 +156,7 @@ export default function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className={`${outfit.className} text-slate-400 hover:text-primary transition-colors`}
+                    className={`${outfit.className} text-text-muted hover:text-primary transition-colors`}
                   >
                     {link.label}
                   </Link>
@@ -168,7 +168,7 @@ export default function Footer() {
           {/* Legal */}
           <div>
             <h4
-              className={`${rochester.className} text-2xl text-white mb-8 border-b border-white/10 pb-2 w-fit`}
+              className={`${rochester.className} text-2xl text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main mb-8 border-b border-border-main pb-2 w-fit`}
             >
               Terms & Conditions
             </h4>
@@ -182,7 +182,7 @@ export default function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className={`${outfit.className} text-slate-400 hover:text-primary transition-colors`}
+                    className={`${outfit.className} text-text-muted hover:text-primary transition-colors`}
                   >
                     {link.label}
                   </Link>
@@ -193,8 +193,8 @@ export default function Footer() {
         </div>
 
         {/* Bottom Row */}
-        <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className={`${outfit.className} text-slate-500 text-sm`}>
+        <div className="pt-10 border-t border-border-main flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className={`${outfit.className} text-text-muted text-sm`}>
             Copyright HireYourPartner. All rights reserved.
           </p>
           <div className="flex gap-8">
@@ -202,7 +202,7 @@ export default function Footer() {
               <Link
                 key={item}
                 href="#"
-                className={`${outfit.className} text-slate-500 hover:text-white text-sm transition-colors`}
+                className={`${outfit.className} text-text-muted hover:text-text-main text-sm transition-colors`}
               >
                 {item}
               </Link>
@@ -213,3 +213,6 @@ export default function Footer() {
     </footer>
   );
 }
+
+
+

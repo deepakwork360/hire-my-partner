@@ -13,12 +13,12 @@ export default function EffectiveDate() {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="flex flex-col sm:flex-row items-center justify-center gap-6 p-6 md:p-8 bg-white/[0.02] border border-white/5 rounded-3xl backdrop-blur-3xl"
+        className="flex flex-col sm:flex-row items-center justify-center gap-6 p-6 md:p-8 bg-bg-card border border-border-main rounded-3xl backdrop-blur-3xl shadow-sm"
       >
         <div className="flex items-center gap-4 px-6 py-2.5 bg-primary/10 rounded-full border border-primary/20">
           <Calendar size={16} className="text-primary" />
-          <p className="text-slate-300 text-[10px] font-black uppercase tracking-widest">
-            Last Updated: <span className="text-white">April 17, 2024</span>
+          <p className="text-text-main text-[10px] font-black uppercase tracking-widest">
+            Last Updated: <span className="text-text-main drop-shadow-sm">April 17, 2024</span>
           </p>
         </div>
 
@@ -32,3 +32,6 @@ export default function EffectiveDate() {
     </div>
   );
 }
+
+
+

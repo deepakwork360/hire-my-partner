@@ -52,7 +52,7 @@ export default function ContactForm() {
 
   return (
     <section
-      className={`py-12 md:py-16 px-4 bg-[#050505] relative overflow-hidden ${outfit.className}`}
+      className={`py-12 md:py-16 px-4 bg-bg-base relative overflow-hidden ${outfit.className}`}
     >
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-start">
@@ -64,10 +64,10 @@ export default function ContactForm() {
             className="space-y-8"
           >
             <div className="space-y-4">
-              <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight">
+              <h2 className="text-3xl md:text-5xl font-bold text-text-main tracking-tight">
                 Send us a <span className="text-primary">Message</span>
               </h2>
-              <p className="text-slate-400 font-light text-lg">
+              <p className="text-text-muted font-light text-lg">
                 Fill out the form below and we'll get back to you within 24
                 hours.
               </p>
@@ -77,15 +77,15 @@ export default function ContactForm() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Full Name */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">
+                  <label className="text-xs font-bold uppercase tracking-widest text-text-muted ml-1">
                     Full Name
                   </label>
                   <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-primary transition-colors" />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors" />
                     <input
                       type="text"
                       placeholder="John Doe"
-                      className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 text-white placeholder-slate-600 outline-hidden focus:border-primary/50 focus:bg-white/8 transition-all"
+                      className="w-full h-14 bg-bg-secondary border border-border-main rounded-2xl pl-12 pr-4 text-text-main placeholder:text-text-muted/40 outline-hidden focus:border-primary/30 transition-all"
                       value={formData.name}
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
@@ -97,15 +97,15 @@ export default function ContactForm() {
 
                 {/* Email Address */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">
+                  <label className="text-xs font-bold uppercase tracking-widest text-text-muted ml-1">
                     Email Address
                   </label>
                   <div className="relative group">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-primary transition-colors" />
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors" />
                     <input
                       type="email"
                       placeholder="john@example.com"
-                      className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 text-white placeholder-slate-600 outline-hidden focus:border-primary/50 focus:bg-white/8 transition-all"
+                      className="w-full h-14 bg-bg-secondary border border-border-main rounded-2xl pl-12 pr-4 text-text-main placeholder:text-text-muted/40 outline-hidden focus:border-primary/30 transition-all"
                       value={formData.email}
                       onChange={(e) =>
                         setFormData({ ...formData, email: e.target.value })
@@ -118,18 +118,18 @@ export default function ContactForm() {
 
               {/* Subject Dropdown */}
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">
+                <label className="text-xs font-bold uppercase tracking-widest text-text-muted ml-1">
                   Subject
                 </label>
                 <div className="relative">
                   <button
                     type="button"
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-5 text-left text-white flex items-center justify-between hover:bg-white/8 transition-all"
+                    className="w-full h-14 bg-bg-secondary border border-border-main rounded-2xl px-5 text-left text-text-main flex items-center justify-between hover:bg-bg-secondary/80 transition-all"
                   >
                     <span>{formData.subject}</span>
                     <ChevronDown
-                      className={`w-5 h-5 text-slate-500 transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`}
+                      className={`w-5 h-5 text-text-muted transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`}
                     />
                   </button>
 
@@ -139,7 +139,7 @@ export default function ContactForm() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
-                        className="absolute z-50 top-16 left-0 w-full bg-[#111111] border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
+                        className="absolute z-50 top-16 left-0 w-full bg-bg-base/95 backdrop-blur-2xl border border-border-main rounded-2xl overflow-hidden shadow-2xl"
                       >
                         {subjects.map((sub) => (
                           <button
@@ -149,7 +149,7 @@ export default function ContactForm() {
                               setFormData({ ...formData, subject: sub });
                               setIsDropdownOpen(false);
                             }}
-                            className="w-full h-12 px-5 text-left text-slate-300 hover:bg-primary hover:text-white transition-colors text-sm font-medium"
+                            className="w-full h-12 px-5 text-left text-text-main hover:bg-primary/5 hover:text-primary transition-colors text-sm font-medium"
                           >
                             {sub}
                           </button>
@@ -162,15 +162,15 @@ export default function ContactForm() {
 
               {/* Message */}
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">
+                <label className="text-xs font-bold uppercase tracking-widest text-text-muted ml-1">
                   Message
                 </label>
                 <div className="relative group">
-                  <MessageSquare className="absolute left-4 top-6 w-5 h-5 text-slate-500 group-focus-within:text-primary transition-colors" />
+                  <MessageSquare className="absolute left-4 top-6 w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors" />
                   <textarea
                     placeholder="Tell us how we can help you..."
                     rows={5}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 pt-5 text-white placeholder-slate-600 outline-hidden focus:border-primary/50 focus:bg-white/8 transition-all resize-none"
+                    className="w-full bg-bg-secondary border border-border-main rounded-2xl pl-12 pr-4 pt-5 text-text-main placeholder:text-text-muted/40 outline-hidden focus:border-primary/30 transition-all resize-none"
                     value={formData.message}
                     onChange={(e) =>
                       setFormData({ ...formData, message: e.target.value })
@@ -242,3 +242,6 @@ function Sparkles(props: any) {
     </svg>
   );
 }
+
+
+

@@ -18,7 +18,7 @@ const outfit = Outfit({
 
 export default function FooterCTA() {
   return (
-    <section className="bg-black py-12 px-4 md:py-16 overflow-hidden border-b border-white/5">
+    <section className="bg-bg-base py-12 px-4 md:py-16 overflow-hidden border-b border-border-main">
       <div className="max-w-[1600px] w-full mx-auto flex flex-col md:flex-row items-center gap-16 md:gap-24">
         {/* Left Side: Form */}
         <div className="w-full md:w-1/2">
@@ -26,7 +26,7 @@ export default function FooterCTA() {
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className={`${rochester.className} text-5xl md:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-white via-primary to-white mb-6`}
+            className={`${rochester.className} text-center md:text-left text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary animate-in fade-in slide-in-from-bottom-4 duration-700 py-4 leading-[1.2] mb-6`}
           >
             Ready To Hire Or Be Hired?
           </motion.h2>
@@ -36,7 +36,7 @@ export default function FooterCTA() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className={`${outfit.className} text-slate-400 text-lg mb-8 max-w-md leading-relaxed`}
+            className={`${outfit.className} text-text-muted text-lg mb-8 max-w-md leading-relaxed`}
           >
             Whether you're looking for the perfect companion or ready to offer
             your time — the future of connection starts here.
@@ -131,3 +131,6 @@ export default function FooterCTA() {
     </section>
   );
 }
+
+
+

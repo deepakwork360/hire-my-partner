@@ -25,7 +25,7 @@ export default function SendGift() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#050505]">
+    <div className="relative min-h-screen bg-bg-base">
       <MainGift />
       <BookyInfo />
       <ChooseGift onSelectGift={handleSelectGift} />
@@ -40,3 +40,6 @@ export default function SendGift() {
     </div>
   );
 }
+
+
+

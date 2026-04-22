@@ -35,7 +35,7 @@ export default function Gallery() {
 
   return (
     <section
-      className={`py-16 md:py-20 px-4 bg-[#080808] border-b border-white/5 ${outfit.className}`}
+      className={`py-16 md:py-20 px-4 bg-bg-secondary border-b border-border-main ${outfit.className}`}
     >
       <div className="max-w-[1000px] w-full mx-auto">
         <div className="flex flex-col items-center mb-10">
@@ -43,11 +43,11 @@ export default function Gallery() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className={`${rochester.className} text-4xl md:text-5xl text-white mb-3`}
+            className={`${rochester.className} text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main mb-3`}
           >
             Photo Portfolio
           </motion.h2>
-          <div className="w-16 h-1 rounded-full bg-linear-to-r from-pink-500 to-rose-500 shadow-[0_0_15px_rgba(255,51,119,0.5)]"></div>
+          <div className="w-16 h-1 rounded-full bg-linear-to-r from-primary to-primary-dark shadow-lg shadow-primary/20"></div>
         </div>
 
         {/* Premium Editorial Grid */}
@@ -67,10 +67,10 @@ export default function Gallery() {
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.5, delay: idx * 0.05 }}
                 onClick={() => setSelectedImage(src)}
-                className={`relative group overflow-hidden bg-white/5 border border-white/5 cursor-pointer shadow-lg rounded-2xl md:rounded-3xl ${spanClasses}`}
+                className={`relative group overflow-hidden bg-bg-card border border-border-main cursor-pointer shadow-lg shadow-black/5 rounded-2xl md:rounded-3xl ${spanClasses}`}
               >
                 {/* Premium Hover Vignette Inner Rim */}
-                <div className="absolute inset-0 z-10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)] group-hover:shadow-[inset_0_0_0_2px_rgba(255,51,119,0.4)] transition-shadow duration-500 rounded-2xl md:rounded-3xl" />
+                <div className="absolute inset-0 z-10 shadow-[inset_0_0_0_1px_rgba(var(--border-main),var(--border-opacity))] group-hover:shadow-[inset_0_0_0_2px_rgba(var(--primary-rgb),0.4)] transition-shadow duration-500 rounded-2xl md:rounded-3xl" />
 
                 {/* Gradient Bottom Fade */}
                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
@@ -92,41 +92,53 @@ export default function Gallery() {
         </div>
       </div>
 
-      {/* Lightbox Modal */}
+      {/* Fully Immersive Lightbox Modal - BUG FIX VERSION */}
       <AnimatePresence>
         {selectedImage && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setSelectedImage(null)}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 md:p-10 cursor-zoom-out"
+            className="fixed inset-0 z-[2000] flex items-center justify-center bg-[#050505] cursor-default"
           >
+            {/* Backdrop Click-to-Close */}
+            <div 
+              className="absolute inset-0 z-0" 
+              onClick={() => setSelectedImage(null)} 
+            />
+
+            {/* Prominent Close Button */}
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="fixed top-6 right-6 md:top-10 md:right-10 z-[2100] w-14 h-14 rounded-full bg-white/10 hover:bg-rose-500/20 border border-white/20 hover:border-rose-500/50 flex items-center justify-center text-white transition-all duration-300 group shadow-2xl backdrop-blur-xl"
+            >
+              <X className="w-8 h-8 group-hover:rotate-90 transition-transform duration-500" />
+            </button>
+
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative max-w-[90vw] max-h-[90vh] rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+              className="relative z-10 w-full h-full max-w-[95vw] max-h-[calc(100vh-120px)] flex items-center justify-center p-4 md:p-10 pointer-events-none"
             >
-              <button
-                onClick={() => setSelectedImage(null)}
-                className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-pink-500 transition-colors duration-300 cursor-pointer"
-              >
-                <X className="w-6 h-6" />
-              </button>
-              <div className="relative w-full h-[80vh] aspect-auto">
-                <img
-                  src={selectedImage}
-                  alt="Full preview"
-                  className="w-full h-full object-contain"
-                />
-              </div>
+              <img
+                src={selectedImage}
+                alt="Portfolio Full Preview"
+                className="max-w-full max-h-full object-contain shadow-[0_50px_100px_rgba(0,0,0,0.8)] rounded-lg pointer-events-auto"
+              />
             </motion.div>
+            
+            {/* ESC Hint */}
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 text-white/30 text-[10px] font-black uppercase tracking-[0.4em] pointer-events-none">
+              Click anywhere to close
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
     </section>
   );
 }
+
+
+
 

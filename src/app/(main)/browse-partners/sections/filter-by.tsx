@@ -16,8 +16,8 @@ import {
   ShieldCheck,
   RefreshCcw,
   IndianRupee,
-  ChevronUp
 } from "lucide-react";
+import PremiumDropdown from "@/components/ui/PremiumDropdown";
 
 interface FilterState {
   age: string;
@@ -58,11 +58,9 @@ const OPTIONS = {
 export default function FilterBy({ onClose }: { onClose?: () => void }) {
   const router = useRouter();
   const [filters, setFilters] = useState<FilterState>(initialFilters);
-  const [isTimingOpen, setIsTimingOpen] = useState(false);
 
   const handleChange = (name: keyof FilterState, value: any) => {
     setFilters((prev) => {
-      // Toggle for multi-select arrays
       if (Array.isArray(prev[name]) && typeof value === 'string') {
         const arr = prev[name] as string[];
         return {
@@ -72,7 +70,6 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
             : [...arr, value]
         };
       }
-      // Standard override
       return { ...prev, [name]: value };
     });
   };
@@ -105,15 +102,15 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0a0a]/40 backdrop-blur-2xl border-r border-white/5 animate-in fade-in slide-in-from-left duration-700 relative">
+    <div className="flex flex-col h-full bg-bg-secondary/40 backdrop-blur-2xl border-r border-border-main animate-in fade-in slide-in-from-left duration-700 relative">
       {/* Fixed Header */}
-      <div className="flex items-center justify-between p-6 border-b border-white/5 bg-[#0a0a0a]/60 backdrop-blur-xl z-30">
+      <div className="flex items-center justify-between p-6 border-b border-border-main bg-bg-secondary/60 backdrop-blur-xl z-30">
         <div className="flex items-center gap-2">
           <Filter className="w-5 h-5 text-primary" />
-          <h2 className="text-xl font-bold text-white tracking-tight">Filters</h2>
+          <h2 className="text-xl font-bold text-text-main tracking-tight">Filters</h2>
         </div>
         {onClose && (
-          <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full text-slate-400">
+          <button onClick={onClose} className="p-2 hover:bg-bg-card rounded-full text-text-muted transition-colors">
             <X className="w-5 h-5" />
           </button>
         )}
@@ -122,12 +119,12 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
       {/* Scrollable Body Container */}
       <div className="flex-1 overflow-auto relative">
         {/* Top Scroll Shadow */}
-        <div className="absolute top-0 left-0 right-0 h-8 bg-linear-to-b from-[#0a0a0a] to-transparent z-20 pointer-events-none opacity-60" />
+        <div className="absolute top-0 left-0 right-0 h-8 bg-linear-to-b from-bg-base to-transparent z-20 pointer-events-none opacity-60" />
         
         <div className="h-full overflow-y-auto custom-scrollbar p-6 space-y-10 pb-32 pt-4">
           {/* Age Range */}
           <div className="space-y-4">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+            <label className="text-xs font-bold text-text-muted uppercase tracking-widest flex items-center gap-2">
               <Users className="w-3.5 h-3.5" /> Age Range
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -137,8 +134,8 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                   onClick={() => handleChange("age", range)}
                   className={`py-2 px-3 rounded-xl text-xs font-medium border transition-all ${
                     filters.age === range 
-                    ? "bg-primary border-primary text-white shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]" 
-                    : "bg-white/5 border-white/10 text-slate-400 hover:border-white/30"
+                    ? "bg-primary border-primary text-white shadow-lg" 
+                    : "bg-bg-card border-border-main text-text-muted hover:border-primary/50"
                   }`}
                 >
                   {range}
@@ -149,7 +146,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
 
           {/* Gender Select */}
           <div className="space-y-4">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Gender</label>
+            <label className="text-xs font-bold text-text-muted uppercase tracking-widest">Gender</label>
             <div className="flex gap-2">
               {["Male", "Female"].map((g) => (
                 <button
@@ -157,8 +154,8 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                   onClick={() => handleChange("gender", g)}
                   className={`flex-1 py-3 rounded-2xl text-sm font-semibold transition-all border ${
                     filters.gender === g 
-                    ? "bg-white/10 border-primary text-primary shadow-inner" 
-                    : "bg-white/5 border-white/10 text-slate-400"
+                    ? "bg-primary/10 border-primary text-primary" 
+                    : "bg-bg-card border-border-main text-text-muted"
                   }`}
                 >
                   {g}
@@ -168,26 +165,18 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
           </div>
 
           {/* Location Select */}
-          <div className="space-y-4">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-               <MapPin className="w-3.5 h-3.5" /> Location
-            </label>
-            <div className="relative group">
-              <select
-                value={filters.location}
-                onChange={(e) => handleChange("location", e.target.value)}
-                className="w-full h-12 pl-4 pr-10 appearance-none bg-[#111] border border-white/10 rounded-2xl text-white text-sm outline-hidden focus:border-primary transition-all cursor-pointer"
-              >
-                <option value="" className="bg-[#111]">Select City</option>
-                {OPTIONS.locations.map(loc => <option key={loc} value={loc} className="bg-[#111]">{loc}</option>)}
-              </select>
-              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" size={16} />
-            </div>
-          </div>
+          <PremiumDropdown
+            label="Location"
+            icon={MapPin}
+            value={filters.location}
+            onChange={(val) => handleChange("location", val)}
+            placeholder="Select City"
+            options={OPTIONS.locations.map(loc => ({ value: loc, label: loc, icon: MapPin }))}
+          />
 
           {/* Language Selection */}
           <div className="space-y-4">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+            <label className="text-xs font-bold text-text-muted uppercase tracking-widest flex items-center gap-2">
                <Languages className="w-3.5 h-3.5" /> Language
             </label>
             <div className="flex flex-wrap gap-2">
@@ -199,8 +188,8 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                     onClick={() => handleChange("language", lang)}
                     className={`px-6 py-2 rounded-xl text-xs font-semibold border transition-all ${
                       isActive 
-                      ? "bg-white/10 border-primary text-primary" 
-                      : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 underline-offset-4"
+                      ? "bg-primary/10 border-primary text-primary" 
+                      : "bg-bg-card border-border-main text-text-muted hover:bg-bg-secondary"
                     }`}
                   >
                     {lang}
@@ -212,7 +201,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
 
           {/* Tags Logic (Multi-select) */}
           <div className="space-y-4">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Interests / Tags</label>
+            <label className="text-xs font-bold text-text-muted uppercase tracking-widest">Interests / Tags</label>
             <div className="flex flex-wrap gap-2">
               {OPTIONS.tags.map((tag) => {
                 const isActive = filters.tags.includes(tag);
@@ -223,7 +212,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                     className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all flex items-center gap-1.5 ${
                       isActive 
                       ? "bg-linear-to-r from-primary-dark to-accent border-none text-white shadow-lg" 
-                      : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10"
+                      : "bg-bg-card border-border-main text-text-muted hover:bg-bg-secondary"
                     }`}
                   >
                     {isActive && <Check size={12} />}
@@ -236,7 +225,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
 
           {/* Price Brackets - REBUILT UI */}
           <div className="space-y-4">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+            <label className="text-xs font-bold text-text-muted uppercase tracking-widest flex items-center gap-2">
               <IndianRupee className="w-3.5 h-3.5" /> Price Level
             </label>
             
@@ -254,14 +243,14 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                     onClick={() => handleChange("priceRange", tier.range)}
                     className={`flex flex-col items-start p-4 rounded-2xl border transition-all text-left group ${
                       isActive 
-                      ? "bg-white/10 border-primary shadow-inner" 
-                      : "bg-white/5 border-white/10 hover:border-white/20"
+                      ? "bg-primary/10 border-primary shadow-sm" 
+                      : "bg-bg-card border-border-main hover:border-primary/30"
                     }`}
                   >
-                    <span className={`text-sm font-bold ${isActive ? "text-primary" : "text-white group-hover:text-primary/80"}`}>
+                    <span className={`text-sm font-bold ${isActive ? "text-primary" : "text-text-main group-hover:text-primary/80"}`}>
                       {tier.label}
                     </span>
-                    <span className="text-[10px] text-slate-500 font-medium">
+                    <span className="text-[10px] text-text-muted font-medium">
                       {tier.desc}
                     </span>
                   </button>
@@ -271,28 +260,28 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
           </div>
 
           {/* Verified Toggle */}
-          <div className="flex items-center justify-between p-4 bg-white/3 border border-primary/20 rounded-[24px]">
+          <div className="flex items-center justify-between p-4 bg-bg-card border border-border-main rounded-[24px]">
             <div className="flex flex-col">
-              <span className="text-sm font-bold text-white flex items-center gap-2">
-                 Verified Only <ShieldCheck className="w-4 h-4 text-blue-400" />
+              <span className="text-sm font-bold text-text-main flex items-center gap-2">
+                 Verified Only <ShieldCheck className="w-4 h-4 text-blue-500" />
               </span>
-              <span className="text-[10px] text-slate-500 mt-0.5">Show only verified profiles</span>
+              <span className="text-[10px] text-text-muted mt-0.5">Show only verified profiles</span>
             </div>
             <button 
               onClick={() => handleChange("verified", !filters.verified)}
-              className={`w-12 h-6 rounded-full relative transition-all duration-300 ${
-                filters.verified ? "bg-primary" : "bg-white/10"
+              className={`w-12 h-6 rounded-full relative transition-all duration-300 shadow-inner ${
+                filters.verified ? "bg-primary shadow-primary/30" : "bg-slate-600 dark:bg-slate-800 shadow-black/5"
               }`}
             >
               <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-300 ${
-                filters.verified ? "left-7 shadow-lg" : "left-1"
+                filters.verified ? "left-7 shadow-[0_4px_12px_rgba(var(--primary-rgb),0.5)] scale-110" : "left-1 shadow-md shadow-black/10"
               }`} />
             </button>
           </div>
 
           {/* Availability Select */}
           <div className="space-y-4">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Availability</label>
+            <label className="text-xs font-bold text-text-muted uppercase tracking-widest">Availability</label>
             <div className="grid grid-cols-4 gap-2">
               {OPTIONS.days.map((day) => {
                 const isActive = filters.availability.includes(day);
@@ -303,7 +292,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                     className={`h-10 rounded-lg text-[10px] font-bold border transition-all ${
                       isActive 
                       ? "bg-primary border-primary text-white" 
-                      : "bg-white/5 border-white/10 text-slate-500"
+                      : "bg-bg-card border-border-main text-text-muted hover:border-primary/30"
                     }`}
                   >
                     {day}
@@ -315,7 +304,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
 
           {/* Rating Select */}
           <div className="space-y-4">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+            <label className="text-xs font-bold text-text-muted uppercase tracking-widest flex items-center gap-2">
                <Star className="w-3.5 h-3.5" /> Rating
             </label>
             <div className="grid grid-cols-5 gap-2">
@@ -325,8 +314,8 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                   onClick={() => handleChange("rating", rate)}
                   className={`flex items-center justify-center gap-1 h-10 rounded-xl text-xs font-bold border transition-all ${
                     filters.rating === rate 
-                    ? "bg-amber-500/20 border-amber-500 text-amber-500" 
-                    : "bg-white/5 border-white/10 text-slate-500"
+                    ? "bg-amber-500/20 border-amber-500 text-amber-600 dark:text-amber-500" 
+                    : "bg-bg-card border-border-main text-text-muted hover:border-amber-500/50"
                   }`}
                 >
                   {rate}
@@ -336,77 +325,32 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
           </div>
 
           {/* Timing Selection - PREMIUM DROPDOWN */}
-          <div className="space-y-4">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-               <Clock className="w-3.5 h-3.5" /> Favorite Timing
-            </label>
-            
-            <div className="relative">
-              <button
-                onClick={() => setIsTimingOpen(!isTimingOpen)}
-                className={`w-full h-14 px-5 rounded-2xl bg-white/5 border transition-all flex items-center justify-between ${
-                  isTimingOpen ? "border-primary/50 bg-white/10" : "border-white/10"
-                }`}
-              >
-                <span className={`text-sm ${filters.timing ? "text-white font-bold" : "text-slate-500"}`}>
-                  {filters.timing || "Select Time Range"}
-                </span>
-                {isTimingOpen ? <ChevronUp size={18} className="text-primary" /> : <ChevronDown size={18} className="text-slate-500" />}
-              </button>
-
-              <AnimatePresence>
-                {isTimingOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 5, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    className="absolute top-full left-0 right-0 z-40 p-2 bg-[#0d0d0d]/95 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
-                  >
-                    <div className="space-y-1">
-                      {OPTIONS.timings.map((time) => {
-                        const isActive = filters.timing === time;
-                        return (
-                          <button
-                            key={time}
-                            onClick={() => {
-                              handleChange("timing", time);
-                              setIsTimingOpen(false);
-                            }}
-                            className={`w-full flex items-center justify-between p-3.5 rounded-xl text-sm transition-all ${
-                              isActive 
-                              ? "bg-primary/10 text-primary" 
-                              : "text-slate-400 hover:bg-white/5 hover:text-white"
-                            }`}
-                          >
-                            <span className="font-medium">{time}</span>
-                            {isActive && <Check size={14} />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
+          <PremiumDropdown
+            label="Favorite Timing"
+            icon={Clock}
+            value={filters.timing}
+            onChange={(val) => handleChange("timing", val)}
+            placeholder="Select Time Range"
+            options={OPTIONS.timings.map(t => ({ value: t, label: t, icon: Clock }))}
+          />
         </div>
 
         {/* Bottom Scroll Shadow */}
-        <div className="absolute bottom-0 left-0 right-0 h-12 bg-linear-to-t from-black/80 to-transparent z-20 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-12 bg-linear-to-t from-bg-base/80 to-transparent z-20 pointer-events-none" />
       </div>
 
       {/* Fixed Action Buttons Footer */}
-      <div className="p-6 bg-[#0a0a0a] border-t border-white/5 grid grid-cols-2 gap-4 z-30">
+      <div className="p-6 bg-bg-secondary border-t border-border-main grid grid-cols-2 gap-4 z-30">
         <button
           onClick={handleClearAll}
-          className="flex items-center justify-center gap-2 h-14 rounded-2xl bg-white/5 border border-white/10 text-slate-300 font-bold hover:bg-white/10 transition-all"
+          className="flex items-center justify-center gap-2 h-14 rounded-2xl bg-bg-card border border-border-main text-text-main font-bold hover:bg-bg-secondary transition-all"
         >
           <RefreshCcw className="w-4 h-4" />
           <span>Reset</span>
         </button>
         <button
           onClick={handleApply}
-          className="h-14 rounded-2xl bg-linear-to-r from-primary-dark to-accent text-white font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all"
+          className="h-14 rounded-2xl bg-linear-to-r from-primary-dark to-accent text-white font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all"
         >
           Apply
         </button>
@@ -414,4 +358,6 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
     </div>
   );
 }
+
+
 

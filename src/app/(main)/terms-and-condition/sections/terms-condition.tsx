@@ -128,7 +128,7 @@ export default function TermsCondition() {
   };
 
   return (
-    <section className={`py-12 md:py-24 bg-[#050505] relative overflow-hidden ${outfit.className}`}>
+    <section className={`py-12 md:py-24 bg-bg-base relative overflow-hidden ${outfit.className}`}>
       {/* Background Ambience */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[15%] right-[20%] w-[400px] h-[400px] bg-primary/5 blur-[120px] rounded-full animate-pulse" />
@@ -140,7 +140,7 @@ export default function TermsCondition() {
           <motion.h2 
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            className={`${rochester.className} text-6xl md:text-8xl text-white mb-6`}
+            className={`${rochester.className} text-6xl md:text-8xl text-text-main mb-6`}
           >
             User <span className="text-primary">Agreement</span>
           </motion.h2>
@@ -160,15 +160,15 @@ export default function TermsCondition() {
               variants={item}
               className={`group relative ${term.className}`}
             >
-              <div className="h-full bg-white/[0.02] backdrop-blur-3xl border border-white/5 rounded-[40px] p-8 md:p-10 transition-all duration-700 hover:bg-white/[0.04] hover:border-primary/30 hover:shadow-[0_30px_60px_rgba(var(--primary-rgb),0.08)] flex flex-col">
+              <div className="h-full bg-bg-card backdrop-blur-3xl border border-border-main rounded-[40px] p-8 md:p-10 transition-all duration-700 hover:bg-bg-secondary hover:border-primary/30 hover:shadow-[0_30px_60px_rgba(var(--primary-rgb),0.08)] flex flex-col shadow-sm">
                 
                 {/* Header */}
                 <div className="flex items-start justify-between mb-8">
                   <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white group-hover:shadow-[0_10px_30px_rgba(var(--primary-rgb),0.4)] transition-all duration-500">
+                    <div className="w-14 h-14 rounded-2xl bg-bg-secondary border border-border-main flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white group-hover:shadow-[0_10px_30px_rgba(var(--primary-rgb),0.4)] transition-all duration-500 shadow-sm">
                       {term.icon}
                     </div>
-                    <h3 className="text-xl font-bold text-white tracking-tight">
+                    <h3 className="text-xl font-bold text-text-main tracking-tight">
                       {term.title}
                     </h3>
                   </div>
@@ -179,7 +179,7 @@ export default function TermsCondition() {
                   {term.content.map((text, i) => (
                     <div key={i} className="flex gap-4">
                       <ChevronRight className="w-4 h-4 text-primary mt-1.5 flex-shrink-0" />
-                      <p className="text-slate-400 text-sm md:text-base leading-relaxed tracking-wide">
+                      <p className="text-text-muted text-sm md:text-base leading-relaxed tracking-wide">
                         {text}
                       </p>
                     </div>
@@ -193,3 +193,6 @@ export default function TermsCondition() {
     </section>
   );
 }
+
+
+

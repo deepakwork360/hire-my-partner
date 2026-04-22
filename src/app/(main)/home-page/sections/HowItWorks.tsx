@@ -54,7 +54,7 @@ export default function HowItWorks() {
   return (
     <section
       id="how-it-works"
-      className="relative py-12 px-4 md:py-16 bg-black overflow-hidden border-b border-white/5"
+      className="relative py-12 px-4 md:py-16 bg-bg-base overflow-hidden border-b border-border-main"
     >
       <div className="max-w-[1600px] w-full mx-auto">
         {/* Title Section */}
@@ -66,7 +66,7 @@ export default function HowItWorks() {
           className="text-center mb-10 md:mb-14"
         >
           <h2
-            className={`${rochester.className} text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-primary to-white`}
+            className={`${rochester.className} text-center text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary animate-in fade-in slide-in-from-bottom-4 duration-700 py-4 leading-[1.2] mb-6`}
           >
             How It Works
           </h2>
@@ -85,7 +85,7 @@ export default function HowItWorks() {
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
             >
               <div className="relative p-2 rounded-full bg-linear-to-tr from-primary to-accent shadow-[0_0_50px_rgba(var(--primary-rgb),0.3)]">
-                <div className="w-80 h-80 rounded-full overflow-hidden border-4 border-white shadow-inner">
+                <div className="w-80 h-80 rounded-full overflow-hidden border-4 border-border-main shadow-inner">
                   <Image
                     src="/assets/howitworks.webp"
                     alt="How it works"
@@ -194,7 +194,7 @@ export default function HowItWorks() {
             {/* Central Image - Scaled down for mobile */}
             <div className="flex justify-center mb-8">
               <div className="p-1 rounded-full bg-linear-to-tr from-primary to-accent">
-                <div className="w-56 h-56 rounded-full overflow-hidden border-2 border-white shadow-xl">
+                <div className="w-56 h-56 rounded-full overflow-hidden border-2 border-border-main shadow-xl">
                   <Image
                     src="/assets/howitworks.webp"
                     alt="How it works"
@@ -221,12 +221,12 @@ export default function HowItWorks() {
                   {step.id}
                 </span>
                 <h3
-                  className={`${outfit.className} text-2xl font-bold text-white`}
+                  className={`${outfit.className} text-2xl font-bold text-text-main`}
                 >
                   {step.title}
                 </h3>
                 <p
-                  className={`${outfit.className} text-slate-400 leading-relaxed text-sm max-w-xs`}
+                  className={`${outfit.className} text-text-muted leading-relaxed text-sm max-w-xs`}
                 >
                   {step.description}
                 </p>
@@ -264,15 +264,18 @@ function Step({
         </span>
       </div>
       <h3
-        className={`${outfit.className} text-2xl font-bold text-white mb-3 group-hover:text-primary transition-colors`}
+        className={`${outfit.className} text-2xl font-bold text-text-main mb-3 group-hover:text-primary transition-colors`}
       >
         {data.title}
       </h3>
       <p
-        className={`${outfit.className} text-slate-400 leading-relaxed text-[15px]`}
+        className={`${outfit.className} text-text-muted leading-relaxed text-[15px]`}
       >
         {data.description}
       </p>
     </motion.div>
   );
 }
+
+
+

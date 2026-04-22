@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
 import { Calendar, Filter, FileText, X, CheckCircle2, TrendingUp } from "lucide-react";
 import { useState, useMemo } from "react";
+import PremiumDatePicker from "@/components/ui/PremiumDatePicker";
 
 const rochester = Rochester({ subsets: ["latin"], weight: ["400"] });
 const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "800"] });
@@ -63,17 +64,17 @@ export default function Overview() {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="bg-white/[0.03] border border-white/10 rounded-[32px] p-6 md:p-10 flex flex-col gap-8"
+        className="bg-bg-card border border-border-main rounded-[32px] p-6 md:p-10 flex flex-col gap-8 shadow-xl shadow-black/5"
       >
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 relative">
           <div className="absolute -left-10 top-0 w-1 h-full bg-linear-to-b from-primary-dark to-accent rounded-full blur-[2px] opacity-70 hidden md:block" />
           <div className="flex flex-col gap-3">
-             <h2 className={`${rochester.className} text-4xl text-white tracking-wide flex items-center gap-4`}>
+             <h2 className={`${rochester.className} text-4xl text-text-main tracking-wide flex items-center gap-4`}>
                 Earnings Overview
                 <div className="h-px flex-1 bg-linear-to-r from-primary/50 to-transparent min-w-[100px]" />
              </h2>
-             <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+             <p className="text-text-muted text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 Review your daily breakdown and income history
              </p>
@@ -82,7 +83,7 @@ export default function Overview() {
           <button 
             onClick={handleExport}
             disabled={isExporting}
-            className="h-12 px-6 bg-white/5 border border-white/10 rounded-xl text-slate-300 text-[10px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50 relative overflow-hidden"
+            className="h-12 px-6 bg-bg-secondary border border-border-main rounded-xl text-text-main text-[10px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-bg-secondary/80 transition-all active:scale-95 disabled:opacity-50 relative overflow-hidden"
           >
              {isExporting ? (
                <>
@@ -99,54 +100,32 @@ export default function Overview() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col lg:flex-row items-center gap-6 p-5 bg-black/40 rounded-[24px] border border-white/10 shadow-inner">
+        <div className="flex flex-col lg:flex-row items-center gap-6 p-5 bg-bg-secondary rounded-[24px] border border-border-main shadow-inner">
            <div className="flex-1 flex flex-col sm:flex-row items-center gap-4 w-full">
-              {/* Start Date */}
-              <div className="relative flex-1 group w-full">
-                  <Calendar size={15} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary z-20 pointer-events-none transition-transform group-hover:scale-110" />
-                  <input 
-                    type="date" 
-                    value={startDate}
-                    onChange={(e) => {setStartDate(e.target.value); setFilterApplied(false);}}
-                    className={`w-full h-14 pl-14 pr-10 bg-white/[0.02] border border-white/10 rounded-2xl text-slate-200 text-xs font-bold focus:outline-none focus:border-primary/50 transition-all cursor-pointer relative z-10 [color-scheme:dark] ${
-                      !startDate ? "text-transparent" : "text-slate-200"
-                    }`}
-                  />
-                  {!startDate && (
-                    <span className="absolute left-14 top-1/2 -translate-y-1/2 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] pointer-events-none z-0">
-                      Start Date
-                    </span>
-                  )}
-              </div>
+              <PremiumDatePicker
+                value={startDate}
+                onChange={(val) => { setStartDate(val); setFilterApplied(false); }}
+                placeholder="Start Date"
+                className="flex-1"
+              />
 
-              <span className="text-slate-700 text-[10px] font-black uppercase tracking-[0.3em] px-2">To</span>
+              <span className="text-text-muted text-[10px] font-black uppercase tracking-[0.3em] px-2">To</span>
 
-              {/* End Date */}
-              <div className="relative flex-1 group w-full">
-                  <Calendar size={15} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary z-20 pointer-events-none transition-transform group-hover:scale-110" />
-                  <input 
-                    type="date" 
-                    value={endDate}
-                    onChange={(e) => {setEndDate(e.target.value); setFilterApplied(false);}}
-                    className={`w-full h-14 pl-14 pr-10 bg-white/[0.02] border border-white/10 rounded-2xl text-slate-200 text-xs font-bold focus:outline-none focus:border-primary/50 transition-all cursor-pointer relative z-10 [color-scheme:dark] ${
-                      !endDate ? "text-transparent" : "text-slate-200"
-                    }`}
-                  />
-                  {!endDate && (
-                    <span className="absolute left-14 top-1/2 -translate-y-1/2 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] pointer-events-none z-0">
-                      End Date
-                    </span>
-                  )}
-              </div>
+              <PremiumDatePicker
+                value={endDate}
+                onChange={(val) => { setEndDate(val); setFilterApplied(false); }}
+                placeholder="End Date"
+                className="flex-1"
+              />
            </div>
 
            <button 
              onClick={() => setFilterApplied(true)}
              disabled={!startDate && !endDate}
-             className={`w-full lg:w-auto h-14 px-10 text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all flex items-center justify-center gap-3 shrink-0 ${
+             className={`w-full lg:w-auto h-14 px-10 text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all flex items-center justify-center gap-3 shrink-0 ${
                (!startDate && !endDate) 
-               ? "bg-white/5 border border-white/5 text-slate-700 cursor-not-allowed" 
-               : "bg-linear-to-r from-primary-dark to-accent shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)] active:scale-95 hover:shadow-primary/50"
+               ? "bg-bg-secondary border border-border-main text-text-muted cursor-not-allowed" 
+               : "bg-linear-to-r from-primary-dark to-accent text-white shadow-xl shadow-primary/20 active:scale-95 hover:shadow-primary/40"
              }`}
            >
              <Filter size={14} />
@@ -168,8 +147,8 @@ export default function Overview() {
                   <TrendingUp size={18} className="text-primary" />
                 </div>
                 <div>
-                   <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest leading-none mb-1">Total Earned in Period</p>
-                   <p className="text-white text-xl font-black">₹{totalAmount.toLocaleString()}</p>
+                   <p className="text-text-muted text-[9px] font-black uppercase tracking-widest leading-none mb-1">Total Earned in Period</p>
+                   <p className="text-text-main text-xl font-black">₹{totalAmount.toLocaleString()}</p>
                 </div>
               </div>
 
@@ -180,7 +159,7 @@ export default function Overview() {
                 </div>
                 <button 
                   onClick={resetFilters}
-                  className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all"
+                  className="w-10 h-10 rounded-full bg-bg-card hover:bg-bg-secondary border border-border-main flex items-center justify-center text-text-muted hover:text-text-main transition-all"
                   title="Clear Filters"
                 >
                   <X size={16} />
@@ -191,16 +170,16 @@ export default function Overview() {
         </AnimatePresence>
 
         {/* Table Container */}
-        <div className="relative overflow-x-auto rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+        <div className="relative overflow-x-auto rounded-2xl border border-border-main shadow-xl shadow-black/5">
            <table className="w-full text-left">
               <thead className="bg-linear-to-r from-primary-dark via-primary to-accent text-white shadow-lg">
                  <tr>
-                    <th className="px-6 xl:px-8 py-5 xl:py-7 text-[11px] xl:text-[12px] font-black uppercase tracking-widest border-r border-white/10">Date</th>
-                    <th className="px-6 xl:px-8 py-5 xl:py-7 text-[11px] xl:text-[12px] font-black uppercase tracking-widest border-r border-white/10">Time</th>
+                    <th className="px-6 xl:px-8 py-5 xl:py-7 text-[11px] xl:text-[12px] font-black uppercase tracking-widest border-r border-border-main">Date</th>
+                    <th className="px-6 xl:px-8 py-5 xl:py-7 text-[11px] xl:text-[12px] font-black uppercase tracking-widest border-r border-border-main">Time</th>
                     <th className="px-6 xl:px-8 py-5 xl:py-7 text-[11px] xl:text-[12px] font-black uppercase tracking-widest text-right">Amount Earned</th>
                  </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-border-main">
                  <AnimatePresence mode="popLayout">
                     {items.map((row, idx) => (
                        <motion.tr 
@@ -209,20 +188,20 @@ export default function Overview() {
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: idx * 0.05 }}
-                          className="hover:bg-white/[0.04] transition-colors group"
+                          className="hover:bg-primary/5 transition-colors group"
                        >
-                          <td className="px-6 xl:px-8 py-5 xl:py-7 border-r border-white/5">
-                             <div className="inline-block px-4 py-1.5 rounded-full bg-linear-to-r from-primary/10 to-accent/5 border border-primary/10 text-slate-300 text-xs xl:text-sm font-medium">
+                          <td className="px-6 xl:px-8 py-5 xl:py-7 border-r border-border-main">
+                             <div className="inline-block px-4 py-1.5 rounded-full bg-linear-to-r from-primary/10 to-accent/5 border border-primary/10 text-text-main text-xs xl:text-sm font-medium">
                                 {row.date}
                              </div>
                           </td>
-                          <td className="px-6 xl:px-8 py-5 xl:py-7 border-r border-white/5">
-                             <div className="inline-block px-4 py-1.5 rounded-full bg-linear-to-r from-primary/5 to-white/5 border border-white/10 text-slate-500 text-xs xl:text-sm font-medium italic">
+                          <td className="px-6 xl:px-8 py-5 xl:py-7 border-r border-border-main">
+                             <div className="inline-block px-4 py-1.5 rounded-full bg-bg-card border border-border-main text-text-muted text-xs xl:text-sm font-medium italic">
                                 {row.time}
                              </div>
                           </td>
                           <td className="px-6 xl:px-8 py-5 xl:py-7 text-right">
-                             <span className="text-white text-base xl:text-lg font-black group-hover:text-primary transition-colors">₹{row.amount.toLocaleString()}</span>
+                             <span className="text-text-main text-base xl:text-lg font-black group-hover:text-primary transition-colors">₹{row.amount.toLocaleString()}</span>
                           </td>
                        </motion.tr>
                     ))}
@@ -232,9 +211,9 @@ export default function Overview() {
            
            {items.length === 0 && (
              <div className="py-20 text-center flex flex-col items-center gap-3">
-                <Filter size={32} className="text-slate-700" />
-                <p className="text-slate-600 text-xs font-bold uppercase tracking-widest">No earnings found for this range</p>
-                <button onClick={resetFilters} className="text-primary text-[10px] font-black uppercase underline underline-offset-4">Reset Filters</button>
+                <Filter size={32} className="text-text-muted" />
+                <p className="text-text-muted text-xs font-bold uppercase tracking-widest">No earnings found for this range</p>
+                <button onClick={resetFilters} className="text-primary text-[10px] font-black uppercase underline underline-offset-4 decoration-primary/30">Reset Filters</button>
              </div>
            )}
         </div>

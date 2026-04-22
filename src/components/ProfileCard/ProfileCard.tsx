@@ -28,6 +28,7 @@ interface ProfileCardProps {
   messageLink?: string;
   mapLink?: string;
   showViewIcon?: boolean;
+  tag?: string;
 }
 
 export default function ProfileCard({
@@ -46,6 +47,7 @@ export default function ProfileCard({
   messageLink,
   mapLink,
   showViewIcon = false,
+  tag,
 }: ProfileCardProps) {
   return (
     <div className={`main-profile-card group ${outfit.className}`}>
@@ -56,9 +58,13 @@ export default function ProfileCard({
           alt={name}
           fill
           sizes="(max-w-768px) 100vw, 328px"
+          className="object-cover"
           priority
         />
         
+        {/* Subtle Bottom Overlay for better text transition */}
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-bg-base/20 to-transparent z-10" />
+
         {/* Rating Badge */}
         <div className="profile-card-rating">
           <Star className="profile-card-rating-icon" />
@@ -69,6 +75,13 @@ export default function ProfileCard({
         <div className="profile-card-badge">
           {hourlyRate}
         </div>
+
+        {/* Dynamic Tag Badge */}
+        {tag && (
+          <div className="absolute bottom-6 left-6 px-3 py-1 bg-primary/20 backdrop-blur-md rounded-full text-[10px] font-bold text-primary border border-primary/30 z-20 shadow-lg">
+            {tag}
+          </div>
+        )}
       </div>
 
       {/* Content */}

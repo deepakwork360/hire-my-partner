@@ -1,9 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --primary-rgb: 236, 72, 153;
-  --primary-dark-rgb: 219, 39, 119;
-  --accent-rgb: 190, 18, 60;
+  /* Semantic Variables - Dark (Default) */
+  --bg-base: 5, 5, 5;
+  --bg-secondary: 12, 12, 12;
+  --bg-card: 255, 255, 255;
+  --bg-card-opacity: 0.05;
+  --text-main: 248, 250, 252;
+  --text-muted: 148, 163, 184;
+  --border-main: 255, 255, 255;
+  --border-opacity: 0.1;
+
+  --primary-rgb: 139, 92, 246;
+  --primary-dark-rgb: 124, 58, 237;
+  --accent-rgb: 91, 33, 182;
+}
+
+[data-appearance='light'] {
+  --bg-base: 255, 255, 255;
+  --bg-secondary: 249, 250, 251; /* Gray-50 */
+  --bg-card: 0, 0, 0;
+  --bg-card-opacity: 0.03;
+  --text-main: 15, 23, 42;
+  --text-muted: 71, 85, 105;
+  --border-main: 0, 0, 0;
+  --border-opacity: 0.08;
 }
 
 [data-theme='gold'] {
@@ -45,6 +66,13 @@
   --color-primary: rgb(var(--primary-rgb));
   --color-primary-dark: rgb(var(--primary-dark-rgb));
   --color-accent: rgb(var(--accent-rgb));
+
+  --color-bg-base: rgb(var(--bg-base));
+  --color-bg-secondary: rgb(var(--bg-secondary));
+  --color-bg-card: rgba(var(--bg-card), var(--bg-card-opacity));
+  --color-text-main: rgb(var(--text-main));
+  --color-text-muted: rgb(var(--text-muted));
+  --color-border-main: rgba(var(--border-main), var(--border-opacity));
   
   /* Maintain compatibility for existing classes during migration */
   --color-brand-pink: rgb(var(--primary-rgb));
@@ -57,7 +85,7 @@
 /* Base Typography Application */
 body {
   font-family: var(--font-inter), system-ui, sans-serif;
-  @apply bg-[#050505] text-slate-200 antialiased;
+  @apply bg-bg-base text-text-main antialiased transition-colors duration-300;
 }
 
 h1,
@@ -67,22 +95,20 @@ h4,
 h5,
 h6 {
   font-family: var(--font-outfit), sans-serif;
-  @apply tracking-tight;
+  @apply tracking-tight text-text-main;
 }
 
 /* Premium Profile Card Styling - Overhauled for "Glowing Pink Dark" Aesthetic (Dating-Focused) */
 .main-profile-card {
-  @apply relative flex flex-col bg-[#080808] overflow-hidden transition-all duration-500 ease-in-out border border-white/5;
+  @apply relative flex flex-col bg-bg-base overflow-hidden transition-all duration-500 ease-in-out border border-border-main;
   border-radius: 36px;
   width: 328px;
-  height: 507px; /* Adjusted to user specification */
-  box-shadow:
-    0 4px 50px -12px rgba(var(--primary-rgb), 0.15),
-    0 0 20px -5px rgba(0, 0, 0, 0.5);
+  height: 510px;
+  box-shadow: 0 15px 40px -20px rgba(0, 0, 0, 0.15), 0 0 20px rgba(var(--primary-rgb), 0.05);
 }
 
 .main-profile-card:hover {
-  @apply -translate-y-2 border-primary/20 shadow-[0_20px_60px_-15px_rgba(var(--primary-rgb),0.3)];
+  @apply -translate-y-2 border-primary/30 shadow-[0_20px_50px_-15px_rgba(var(--primary-rgb),0.25)];
 }
 
 /* Photo-First Container: High Visibility & Precise Sizing (296x224 Internal) */
@@ -103,16 +129,13 @@ h6 {
 
 /* Neon Glass Badge */
 .profile-card-badge {
-  @apply absolute top-6 left-6 px-4 py-1.5 rounded-full text-[11px] font-black z-20 border border-white/20 uppercase tracking-widest;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(12px);
+  @apply absolute top-6 left-6 px-4 py-1.5 rounded-full text-[11px] font-black z-20 border border-border-main uppercase tracking-widest bg-bg-base/60 backdrop-blur-xl shadow-md;
   color: rgb(var(--primary-rgb));
-  box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.2);
 }
 
-/* Content Layout: Elegant Dark Theme */
+/* Content Layout: Elegant Theme-Aware */
 .profile-card-content {
-  @apply px-6 py-4 flex flex-col gap-1 grow bg-linear-to-b from-transparent to-black/95;
+  @apply px-6 py-4 flex flex-col gap-1 grow;
 }
 
 .profile-card-header {
@@ -120,9 +143,8 @@ h6 {
 }
 
 .profile-card-name {
-  @apply text-2xl font-bold text-white tracking-tight leading-none;
+  @apply text-2xl font-black text-text-main tracking-tight leading-none;
   font-family: var(--font-outfit), sans-serif;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
 .profile-card-age {
@@ -130,7 +152,7 @@ h6 {
 }
 
 .profile-card-location {
-  @apply flex items-center gap-1.5 text-slate-400 text-xs font-semibold;
+  @apply flex items-center gap-1.5 text-text-muted text-xs font-semibold;
 }
 
 .profile-card-location-icon {
@@ -138,7 +160,7 @@ h6 {
 }
 
 .profile-card-rating {
-  @apply absolute top-6 right-6 flex items-center gap-1.5 bg-black/40 backdrop-blur-md text-white px-3 py-1 rounded-full text-[12px] font-bold border border-white/10 z-20;
+  @apply absolute top-6 right-6 flex items-center gap-1.5 bg-bg-base/60 backdrop-blur-md text-text-main px-3 py-1 rounded-full text-[12px] font-black border border-border-main z-20 shadow-md;
 }
 
 .profile-card-rating-icon {
@@ -146,7 +168,7 @@ h6 {
 }
 
 .profile-card-bio {
-  @apply text-slate-300/80 text-[12px] line-clamp-2 leading-relaxed mt-2 font-inter;
+  @apply text-text-muted text-[12px] line-clamp-2 leading-relaxed mt-2 font-medium;
   font-family: var(--font-inter), sans-serif;
 }
 
@@ -159,7 +181,7 @@ h6 {
 }
 
 .profile-card-distance {
-  @apply flex items-center gap-1.5 text-slate-500 text-[11px] mt-1 font-semibold;
+  @apply flex items-center gap-1.5 text-text-muted text-[11px] mt-1 font-semibold opacity-70;
 }
 
 /* Premium Footer & Button Sync */
@@ -180,7 +202,7 @@ h6 {
 .profile-card-view,
 .profile-card-message,
 .profile-card-map {
-  @apply flex items-center justify-center w-12 h-12 shrink-0 rounded-2xl transition-all duration-300 shadow-lg border border-white/10 text-slate-300 bg-white/5 backdrop-blur-md;
+  @apply flex items-center justify-center w-12 h-12 shrink-0 rounded-2xl transition-all duration-300 shadow-md border border-border-main text-text-muted bg-bg-secondary backdrop-blur-md;
 }
 
 .profile-card-view:hover,
@@ -190,7 +212,7 @@ h6 {
 }
 
 .profile-card-extra {
-  @apply text-[10px] text-slate-500 italic text-center mt-4 border-t border-white/5 pt-3 font-semibold tracking-wide;
+  @apply text-[10px] text-text-muted italic text-center mt-4 border-t border-border-main pt-3 font-semibold tracking-wide;
 }
 
 /* Custom Animation Utilities */
@@ -230,7 +252,7 @@ h6 {
   .squiggle-accent::after {
     content: "";
     @apply absolute -bottom-1 left-1/2 -translate-x-1/2 w-12 h-1.5 opacity-0 transition-opacity duration-300;
-    background-image: url("data:image/svg+xml,%3Csvg width='100' height='10' viewBox='0 0 100 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 5C20 5 30 1 50 1C70 1 80 9 95 9' stroke='rgb(236, 72, 153)' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='10' viewBox='0 0 100 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 5C20 5 30 1 50 1C70 1 80 9 95 9' stroke='rgb(var(--primary-rgb))' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-size: contain;
   }
@@ -262,9 +284,9 @@ h6 {
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(var(--text-main), 0.05);
     border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(var(--border-main), 0.02);
     transition: background 0.3s ease;
   }
 
@@ -279,7 +301,20 @@ h6 {
   /* Support for Firefox */
   .custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
+    scrollbar-color: rgba(var(--text-main), 0.05) transparent;
+  }
+
+  /* REUSABLE PREMIUM CLASSES */
+  .glass-card {
+    @apply bg-bg-card border border-border-main backdrop-blur-xl shadow-xl;
+  }
+
+  .premium-input {
+    @apply w-full h-14 pl-5 pr-12 bg-bg-card border border-border-main rounded-2xl text-text-main placeholder-text-muted focus:border-primary focus:ring-4 focus:ring-primary/20 outline-hidden transition-all duration-300 backdrop-blur-md;
+  }
+
+  .text-gradient {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main;
   }
 
   /* Premium Gift Card Styles */

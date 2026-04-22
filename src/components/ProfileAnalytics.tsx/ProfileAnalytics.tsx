@@ -45,8 +45,8 @@ export default function ProfileAnalytics({ data }: Props) {
       label: "Most Active City",
       value: data.mostActiveCity,
       icon: MapPin,
-      color: "from-accent-dark to-primary",
-      bg: "bg-white/5",
+      color: "from-primary-dark via-primary to-primary-dark",
+      bg: "bg-primary/10",
     },
     {
       label: "Views This Week",
@@ -62,7 +62,7 @@ export default function ProfileAnalytics({ data }: Props) {
       {/* Header Area */}
       <div className="flex flex-col gap-3 relative">
         <div className="absolute -left-10 top-0 w-1 h-full bg-linear-to-b from-primary-dark to-accent rounded-full blur-[1px] opacity-70 hidden md:block" />
-        <h1 className={`${rochester.className} text-5xl text-white tracking-wide flex items-center gap-4`}>
+        <h1 className={`${rochester.className} text-5xl text-text-main tracking-wide flex items-center gap-4`}>
           Profile Views Summary
           <div className="h-px flex-1 bg-linear-to-r from-primary/30 to-transparent min-w-[100px]" />
         </h1>
@@ -84,7 +84,7 @@ export default function ProfileAnalytics({ data }: Props) {
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
               whileHover={{ y: -5 }}
-              className="bg-white/[0.03] border border-white/10 rounded-[24px] p-8 flex flex-col gap-6 relative overflow-hidden group hover:bg-white/[0.05] transition-all"
+              className="bg-bg-card border border-border-main rounded-[24px] p-8 flex flex-col gap-6 relative overflow-hidden group hover:bg-bg-secondary transition-all shadow-sm"
             >
               {/* Decorative Accents */}
               <div className={`absolute -right-4 -top-4 w-20 h-20 ${stat.bg} rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition-opacity`} />
@@ -95,10 +95,10 @@ export default function ProfileAnalytics({ data }: Props) {
               </div>
 
               <div className="space-y-1">
-                <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">
+                <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em]">
                   {stat.label}
                 </p>
-                <h3 className="text-white text-3xl font-black tracking-tight">
+                <h3 className="text-text-main text-3xl font-black tracking-tight">
                   {stat.value}
                 </h3>
               </div>

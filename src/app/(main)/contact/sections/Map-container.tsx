@@ -73,7 +73,7 @@ export default function MapContainer() {
       initial={{ opacity: 0, scale: 0.95 }}
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
-      className="w-full h-full flex flex-col bg-[#0a0a0a] border border-white/5 rounded-[48px] overflow-hidden shadow-2xl relative group"
+      className="w-full h-full flex flex-col bg-bg-secondary border border-border-main rounded-[48px] overflow-hidden shadow-2xl relative group"
     >
       {/* Background Decorative Glow */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -z-10 group-hover:bg-primary/10 transition-colors duration-700" />
@@ -83,12 +83,12 @@ export default function MapContainer() {
         <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
           Talk to us <span className="text-primary">Directly</span>
         </h3>
-        <p className="text-slate-500 text-sm mt-1">We're just a message away.</p>
+        <p className="text-text-muted text-sm mt-1">We're just a message away.</p>
       </div>
 
       {/* Map Section */}
       <div className="px-8 mb-8">
-        <div className="w-full h-[220px] rounded-3xl overflow-hidden border border-white/10 relative group/map">
+        <div className="w-full h-[220px] rounded-3xl overflow-hidden border border-border-main relative group/map">
           <iframe 
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d224345.8392319277!2d77.06889754725782!3d28.527213141380313!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cfd5b347ec447%3A0x673400516ee758!2sNew%20Delhi%2C%20Delhi!5e0!3m2!1sen!2sin!4v1712999999999!5m2!1sen!2sin" 
             width="100%" 
@@ -105,17 +105,17 @@ export default function MapContainer() {
       <div className="px-8 flex-1 space-y-6">
         {contactInfo.map((info, idx) => (
           <div key={idx} className="flex items-start gap-4 group/item">
-            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary group-hover/item:bg-primary group-hover/item:text-white transition-all duration-300">
+            <div className="w-10 h-10 rounded-xl bg-white/5 border border-border-main flex items-center justify-center text-primary group-hover/item:bg-primary group-hover/item:text-white transition-all duration-300">
               {info.icon}
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-0.5">{info.label}</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-0.5">{info.label}</p>
               {info.href ? (
-                <a href={info.href} className="text-slate-200 hover:text-primary transition-colors font-medium">
+                <a href={info.href} className="text-text-main hover:text-primary transition-colors font-medium">
                   {info.value}
                 </a>
               ) : (
-                <p className="text-slate-200 font-medium">{info.value}</p>
+                <p className="text-text-main font-medium">{info.value}</p>
               )}
             </div>
           </div>
@@ -129,7 +129,7 @@ export default function MapContainer() {
           <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
           
           <div className="flex flex-col items-center gap-6">
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 bg-white/5 py-1.5 px-4 rounded-full border border-white/5">
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted bg-white/5 py-1.5 px-4 rounded-full border border-border-main">
               Connect With Us
             </span>
             
@@ -140,7 +140,7 @@ export default function MapContainer() {
                   href={social.href}
                   whileHover={{ y: -5, scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
-                  className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-primary hover:border-primary/50 hover:shadow-[0_10px_20px_-5px_rgba(var(--primary-rgb),0.4)] transition-all duration-300"
+                  className="w-12 h-12 rounded-2xl bg-white/5 border border-border-main flex items-center justify-center text-text-muted hover:text-white hover:bg-primary hover:border-primary/50 hover:shadow-[0_10px_20px_-5px_rgba(var(--primary-rgb),0.4)] transition-all duration-300"
                 >
                   {social.icon}
                 </motion.a>
@@ -152,3 +152,6 @@ export default function MapContainer() {
     </motion.div>
   );
 }
+
+
+

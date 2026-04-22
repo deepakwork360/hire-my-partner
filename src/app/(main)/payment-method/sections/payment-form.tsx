@@ -94,7 +94,7 @@ export default function PaymentForm() {
   };
 
   return (
-    <section className={`bg-[#050505] py-16 px-4 md:px-8 ${outfit.className}`}>
+    <section className={`bg-bg-base py-16 px-4 md:px-8 ${outfit.className}`}>
       <div className="max-w-5xl mx-auto">
         {/* Centered header */}
         <motion.div
@@ -104,11 +104,11 @@ export default function PaymentForm() {
           className="text-center mb-12"
         >
           <h2
-            className={`${rochester.className} text-5xl md:text-6xl text-pink-600 tracking-wide mb-3`}
+            className={`${rochester.className} text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main tracking-wide mb-3`}
           >
             Payment Method
           </h2>
-          <p className="text-slate-500 text-sm">
+          <p className="text-text-muted text-sm">
             Confirm your booking with a secure payment below.
           </p>
         </motion.div>
@@ -120,13 +120,13 @@ export default function PaymentForm() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="w-full lg:w-[58%] bg-white/[0.03] border border-white/10 rounded-[32px] p-6 md:p-8 flex flex-col gap-8"
+            className="w-full lg:w-[58%] bg-bg-card border border-border-main rounded-[32px] p-6 md:p-8 flex flex-col gap-8 shadow-xl shadow-black/5"
           >
             {/* Choose Payment Method */}
             <div>
               <div className="flex items-center gap-2 mb-5">
-                <CreditCard size={14} className="text-pink-500" />
-                <span className="text-pink-500 text-[10px] font-black uppercase tracking-[0.3em]">
+                <CreditCard size={14} className="text-primary" />
+                <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">
                   Choose Payment Method
                 </span>
               </div>
@@ -141,33 +141,33 @@ export default function PaymentForm() {
                       onClick={() => setSelectedPayment(opt.id)}
                       className={`h-14 px-4 border rounded-2xl flex items-center gap-3 text-left transition-all group ${
                         isSelected
-                          ? "bg-pink-500/10 border-pink-500/40 ring-1 ring-pink-500/30"
-                          : "bg-black/20 border-white/10 hover:border-white/20"
+                          ? "bg-primary/10 border-primary/40 ring-1 ring-primary/30"
+                          : "bg-bg-secondary border-border-main hover:border-primary/20"
                       }`}
                     >
                       <div
                         className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all ${
                           isSelected
-                            ? "bg-pink-500"
-                            : "bg-white/5 border border-white/10"
+                            ? "bg-primary"
+                            : "bg-bg-secondary border border-border-main"
                         }`}
                       >
                         <Icon
                           size={15}
                           className={
-                            isSelected ? "text-white" : "text-slate-400"
+                            isSelected ? "text-white" : "text-text-muted"
                           }
                         />
                       </div>
                       <span
-                        className={`text-sm font-medium flex-1 transition-colors ${isSelected ? "text-white" : "text-slate-400"}`}
+                        className={`text-sm font-medium flex-1 transition-colors ${isSelected ? "text-primary font-bold" : "text-text-main"}`}
                       >
                         {opt.label}
                       </span>
                       {isSelected && (
                         <Check
                           size={14}
-                          className="text-pink-500 shrink-0"
+                          className="text-primary shrink-0"
                           strokeWidth={3}
                         />
                       )}
@@ -178,8 +178,8 @@ export default function PaymentForm() {
 
               {/* Security note */}
               <div className="flex items-center gap-2 mt-4">
-                <Lock size={11} className="text-slate-600" />
-                <p className="text-slate-600 text-[11px] font-medium italic">
+                <Lock size={11} className="text-text-muted" />
+                <p className="text-text-muted text-[11px] font-medium italic">
                   "Your payment is secure and encrypted."
                 </p>
               </div>
@@ -196,8 +196,8 @@ export default function PaymentForm() {
                   className="flex flex-col gap-4"
                 >
                   <div className="flex items-center gap-2">
-                    <CreditCard size={13} className="text-pink-500" />
-                    <span className="text-pink-500 text-[10px] font-black uppercase tracking-[0.3em]">
+                    <CreditCard size={13} className="text-primary" />
+                    <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">
                       Card Details
                     </span>
                   </div>
@@ -207,14 +207,14 @@ export default function PaymentForm() {
                     value={cardNumber}
                     onChange={(e) => setCardNumber(formatCard(e.target.value))}
                     maxLength={19}
-                    className="w-full h-14 px-5 bg-black/40 border border-white/10 rounded-2xl text-white placeholder-slate-700 text-sm font-medium focus:outline-none focus:border-pink-500/50 transition-all"
+                    className="w-full h-14 px-5 bg-bg-secondary border border-border-main rounded-2xl text-text-main placeholder-text-muted text-sm font-medium focus:outline-none focus:border-primary/50 transition-all"
                   />
                   <input
                     type="text"
                     placeholder="Cardholder Name"
                     value={cardName}
                     onChange={(e) => setCardName(e.target.value)}
-                    className="w-full h-14 px-5 bg-black/40 border border-white/10 rounded-2xl text-white placeholder-slate-700 text-sm font-medium focus:outline-none focus:border-pink-500/50 transition-all"
+                    className="w-full h-14 px-5 bg-bg-secondary border border-border-main rounded-2xl text-text-main placeholder-text-muted text-sm font-medium focus:outline-none focus:border-primary/50 transition-all"
                   />
                   <div className="grid grid-cols-2 gap-4">
                     <input
@@ -223,7 +223,7 @@ export default function PaymentForm() {
                       value={expiry}
                       onChange={(e) => setExpiry(formatExpiry(e.target.value))}
                       maxLength={7}
-                      className="w-full h-14 px-5 bg-black/40 border border-white/10 rounded-2xl text-white placeholder-slate-700 text-sm font-medium focus:outline-none focus:border-pink-500/50 transition-all"
+                      className="w-full h-14 px-5 bg-bg-secondary border border-border-main rounded-2xl text-text-main placeholder-text-muted text-sm font-medium focus:outline-none focus:border-primary/50 transition-all"
                     />
                     <input
                       type="password"
@@ -233,7 +233,7 @@ export default function PaymentForm() {
                         setCvv(e.target.value.replace(/\D/g, "").slice(0, 3))
                       }
                       maxLength={3}
-                      className="w-full h-14 px-5 bg-black/40 border border-white/10 rounded-2xl text-white placeholder-slate-700 text-sm font-medium focus:outline-none focus:border-pink-500/50 transition-all"
+                      className="w-full h-14 px-5 bg-bg-secondary border border-border-main rounded-2xl text-text-main placeholder-text-muted text-sm font-medium focus:outline-none focus:border-primary/50 transition-all"
                     />
                   </div>
                 </motion.div>
@@ -248,8 +248,8 @@ export default function PaymentForm() {
                   className="flex flex-col gap-4"
                 >
                   <div className="flex items-center gap-2">
-                    <Smartphone size={13} className="text-pink-500" />
-                    <span className="text-pink-500 text-[10px] font-black uppercase tracking-[0.3em]">
+                    <Smartphone size={13} className="text-primary" />
+                    <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">
                       UPI ID
                     </span>
                   </div>
@@ -258,10 +258,10 @@ export default function PaymentForm() {
                     placeholder="yourname@upi"
                     value={upiId}
                     onChange={(e) => setUpiId(e.target.value)}
-                    className="w-full h-14 px-5 bg-black/40 border border-white/10 rounded-2xl text-white placeholder-slate-700 text-sm font-medium focus:outline-none focus:border-pink-500/50 transition-all"
+                    className="w-full h-14 px-5 bg-bg-secondary border border-border-main rounded-2xl text-text-main placeholder-text-muted text-sm font-medium focus:outline-none focus:border-primary/50 transition-all"
                   />
                   {upiId && !upiId.includes("@") && (
-                    <p className="text-rose-400 text-xs font-bold flex items-center gap-2">
+                    <p className="text-accent text-xs font-bold flex items-center gap-2">
                       <CircleAlert size={13} /> Enter a valid UPI ID (e.g.
                       name@okicici)
                     </p>
@@ -275,13 +275,13 @@ export default function PaymentForm() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="flex items-start gap-3 bg-amber-500/5 border border-amber-500/15 rounded-2xl p-4"
+                  className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4"
                 >
                   <CircleAlert
                     size={16}
-                    className="text-amber-500 mt-0.5 shrink-0"
+                    className="text-amber-600 mt-0.5 shrink-0"
                   />
-                  <p className="text-amber-400/80 text-xs font-medium leading-relaxed">
+                  <p className="text-amber-700 text-xs font-medium leading-relaxed">
                     Pay in cash at the time of your booking. Please carry exact
                     change. Cash on Delivery is subject to service provider
                     approval.
@@ -295,10 +295,10 @@ export default function PaymentForm() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl p-4"
+                  className="flex items-center gap-3 bg-bg-secondary border border-border-main rounded-2xl p-4"
                 >
-                  <Apple size={20} className="text-slate-300 shrink-0" />
-                  <p className="text-slate-400 text-xs font-medium leading-relaxed">
+                  <Apple size={20} className="text-text-main shrink-0" />
+                  <p className="text-text-muted text-xs font-medium leading-relaxed">
                     You'll be redirected to Apple Pay / Google Pay to complete
                     your payment securely.
                   </p>
@@ -309,8 +309,8 @@ export default function PaymentForm() {
             {/* Terms & Agreement */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <FileText size={14} className="text-pink-500" />
-                <span className="text-pink-500 text-[10px] font-black uppercase tracking-[0.3em]">
+                <FileText size={14} className="text-primary" />
+                <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">
                   Terms &amp; Agreement
                 </span>
               </div>
@@ -321,17 +321,17 @@ export default function PaymentForm() {
                 <div
                   className={`mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-all ${
                     agreedToTerms
-                      ? "bg-pink-500 border-pink-500"
-                      : "border-white/20 bg-black/30 group-hover:border-white/40"
+                      ? "bg-primary border-primary"
+                      : "border-border-main bg-bg-secondary group-hover:border-primary/40"
                   }`}
                 >
                   {agreedToTerms && (
                     <Check size={12} className="text-white" strokeWidth={3} />
                   )}
                 </div>
-                <span className="text-slate-400 text-sm font-medium leading-snug group-hover:text-slate-300 transition-colors">
+                <span className="text-text-muted text-sm font-medium leading-snug group-hover:text-text-main transition-colors">
                   I agree to the{" "}
-                  <span className="text-pink-500 underline underline-offset-2">
+                  <span className="text-primary underline underline-offset-2">
                     Terms and Booking Policy
                   </span>
                 </span>
@@ -346,10 +346,10 @@ export default function PaymentForm() {
               disabled={!canSubmit || submitted}
               className={`w-full h-16 rounded-2xl font-black tracking-[0.3em] uppercase text-xs flex items-center justify-center gap-3 relative overflow-hidden transition-all duration-500 ${
                 submitted
-                  ? "bg-emerald-600 text-white cursor-default"
+                  ? "bg-emerald-600 text-white cursor-default shadow-lg shadow-emerald-500/20"
                   : canSubmit
-                    ? "bg-gradient-to-r from-pink-600 to-rose-700 text-white shadow-[0_20px_40px_-10px_rgba(219,39,119,0.5)] cursor-pointer"
-                    : "bg-white/5 border border-white/10 text-slate-600 cursor-not-allowed"
+                    ? "bg-gradient-to-br from-primary via-primary-dark to-primary text-white shadow-2xl shadow-primary/30 cursor-pointer hover:shadow-primary/50 hover:brightness-110"
+                    : "bg-bg-secondary/80 border-2 border-border-main text-text-muted cursor-not-allowed shadow-inner"
               }`}
             >
               {canSubmit && !submitted && (
@@ -378,17 +378,17 @@ export default function PaymentForm() {
             transition={{ delay: 0.15 }}
             className="w-full lg:w-[38%] max-w-sm"
           >
-            <div className="bg-gradient-to-br from-white/[0.06] to-white/[0.01] border border-white/10 rounded-[32px] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.5)]">
+            <div className="bg-bg-card border border-border-main rounded-[32px] overflow-hidden shadow-2xl shadow-black/5">
               {/* Header */}
-              <div className="px-6 pt-8 pb-5 border-b border-white/5 text-center">
+              <div className="px-6 pt-8 pb-5 border-b border-border-main text-center">
                 <div className="flex items-center justify-center gap-2 mb-3">
-                  <Sparkles size={14} className="text-pink-500" />
-                  <span className="text-pink-500 text-[10px] font-black uppercase tracking-[0.3em]">
+                  <Sparkles size={14} className="text-primary" />
+                  <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">
                     Summary
                   </span>
                 </div>
                 <h3
-                  className={`${rochester.className} text-2xl text-white tracking-wide`}
+                  className={`${rochester.className} text-2xl text-text-main tracking-wide`}
                 >
                   Your Booking Charges
                 </h3>
@@ -398,25 +398,25 @@ export default function PaymentForm() {
               <div className="px-6 py-5 flex flex-col gap-3">
                 {/* Base Rate */}
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400 text-sm font-medium">
+                  <span className="text-text-muted text-sm font-medium">
                     Base Rate{" "}
-                    <span className="text-slate-600 text-xs">
+                    <span className="text-text-muted text-xs">
                       ×{bookingCharges.hours} hrs
                     </span>
                   </span>
-                  <span className="text-white font-bold text-sm">
+                  <span className="text-text-main font-bold text-sm">
                     ₹{baseTotal.toLocaleString("en-IN")}
                   </span>
                 </div>
-                <p className="text-slate-600 text-xs -mt-1">
+                <p className="text-text-muted text-xs -mt-1">
                   ₹{bookingCharges.baseRate} × {bookingCharges.hours} hours
                 </p>
 
                 {/* Add-ons */}
-                <div className="pt-2 border-t border-white/5">
+                <div className="pt-2 border-t border-border-main">
                   <div className="flex items-center gap-1.5 mb-3">
-                    <Sparkles size={11} className="text-pink-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                    <Sparkles size={11} className="text-primary" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">
                       Add-Ons
                     </span>
                   </div>
@@ -426,10 +426,10 @@ export default function PaymentForm() {
                         key={a.label}
                         className="flex items-center justify-between"
                       >
-                        <span className="text-slate-400 text-xs font-medium">
+                        <span className="text-text-muted text-xs font-medium">
                           {a.label}
                         </span>
-                        <span className="text-slate-300 text-xs font-bold">
+                        <span className="text-text-main text-xs font-bold">
                           ₹{a.price}
                         </span>
                       </div>
@@ -438,18 +438,18 @@ export default function PaymentForm() {
                 </div>
 
                 {/* Service Fee */}
-                <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                  <span className="text-slate-400 text-sm font-medium">
+                <div className="flex items-center justify-between pt-2 border-t border-border-main">
+                  <span className="text-text-muted text-sm font-medium">
                     Service Fee
                   </span>
-                  <span className="text-white font-bold text-sm">
+                  <span className="text-text-main font-bold text-sm">
                     ₹{bookingCharges.serviceFee}
                   </span>
                 </div>
 
                 {/* Taxes */}
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400 text-sm font-medium">
+                  <span className="text-text-muted text-sm font-medium">
                     Taxes
                   </span>
                   <span className="text-emerald-400 text-xs font-black uppercase tracking-widest">
@@ -459,19 +459,19 @@ export default function PaymentForm() {
               </div>
 
               {/* Total */}
-              <div className="mx-4 mb-4 rounded-2xl bg-pink-500/10 border border-pink-500/20 px-5 py-4 flex items-center justify-between">
-                <span className="text-white text-sm font-black uppercase tracking-wider">
+              <div className="mx-4 mb-4 rounded-2xl bg-primary/10 border border-primary/20 px-5 py-4 flex items-center justify-between">
+                <span className="text-text-main text-sm font-black uppercase tracking-wider">
                   Total Payable
                 </span>
-                <span className="text-pink-400 text-xl font-black">
+                <span className="text-primary text-xl font-black">
                   ₹{grandTotal.toLocaleString("en-IN")}
                 </span>
               </div>
 
               {/* SSL note */}
               <div className="flex items-center justify-center gap-2 pb-5">
-                <ShieldCheck size={13} className="text-slate-700" />
-                <p className="text-slate-700 text-[11px] font-medium">
+                <ShieldCheck size={13} className="text-text-muted opacity-50" />
+                <p className="text-text-muted text-[11px] font-medium opacity-50">
                   Secured by 256-bit SSL
                 </p>
               </div>
@@ -482,3 +482,6 @@ export default function PaymentForm() {
     </section>
   );
 }
+
+
+

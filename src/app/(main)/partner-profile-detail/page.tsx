@@ -5,10 +5,12 @@ import RatesBooking from "./sections/rates-booking";
 import Report from "./sections/report";
 import CompanionSay from "./sections/companion-say";
 import UMayAlsoLike from "./sections/uMayAlsoLike";
+import PageHeaderAccent from "@/components/ui/PageHeaderAccent";
 
 export default function PartnerProfileDetailPage() {
   return (
-    <div>
+    <div className="flex flex-col gap-10 relative overflow-hidden">
+      <PageHeaderAccent />
       <ProfileMain />
       <Gallery />
       <RatesBooking />
@@ -19,3 +21,6 @@ export default function PartnerProfileDetailPage() {
     </div>
   );
 }
+
+
+

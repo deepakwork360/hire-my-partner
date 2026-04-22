@@ -2,7 +2,7 @@ import Banner2 from "@/components/banner2/banner2";
 
 export default function MainBrowse() {
   return (
-    <div>
+    <div className="bg-bg-base">
       <Banner2
         title="Browse Partners"
         subtitle="Browse real profiles for real-time companionship, safely and easily."
@@ -12,3 +12,6 @@ export default function MainBrowse() {
     </div>
   );
 }
+
+
+

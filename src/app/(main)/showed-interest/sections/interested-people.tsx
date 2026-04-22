@@ -3,6 +3,8 @@
 import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ProfileCard from "@/components/ProfileCard/ProfileCard";
+import PremiumDropdown from "@/components/ui/PremiumDropdown";
+import PremiumDatePicker from "@/components/ui/PremiumDatePicker";
 import DiscoveryButton from "@/components/ui/DiscoveryButton";
 import { UserCheck, Heart, Sparkles, Search, Calendar, MapPin, Globe, RefreshCw, X, Filter } from "lucide-react";
 import { Outfit } from "next/font/google";
@@ -79,23 +81,23 @@ export default function InterestedPeople() {
   return (
     <div className={`space-y-12 ${outfit.className}`}>
       {/* Section Header */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-white/5">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-border-main">
         <div className="flex items-center gap-4">
            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
               <UserCheck className="text-primary" size={24} />
            </div>
            <div>
-              <h3 className="text-white text-xl font-black uppercase tracking-wider">Interested Profiles</h3>
-              <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+              <h3 className="text-text-main text-xl font-black uppercase tracking-wider">Interested Profiles</h3>
+              <p className="text-text-muted text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
                  <Heart size={12} className="text-primary" />
                  Engagement records from people who interacted with your profile
               </p>
            </div>
         </div>
         
-        <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10">
+        <div className="flex items-center gap-2 px-4 py-2 bg-bg-secondary rounded-full border border-border-main shadow-sm">
            <Sparkles size={14} className="text-primary animate-pulse" />
-           <span className="text-slate-300 text-[10px] font-black uppercase tracking-widest">{filteredInterests.length} Interactions Found</span>
+           <span className="text-text-main text-[10px] font-black uppercase tracking-widest">{filteredInterests.length} Interactions Found</span>
         </div>
       </div>
 
@@ -105,7 +107,7 @@ export default function InterestedPeople() {
         animate={{ opacity: 1, y: 0 }}
         className="space-y-4"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 p-5 bg-white/[0.02] border border-white/10 rounded-[28px] shadow-2xl backdrop-blur-3xl">
+        <div className="relative z-50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 p-5 bg-bg-card border border-border-main rounded-[28px] shadow-2xl shadow-black/5 backdrop-blur-3xl">
            {/* Search Name */}
            <div className="relative group lg:col-span-1">
               <Search size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary z-20 pointer-events-none group-focus-within:scale-110 transition-transform" />
@@ -114,81 +116,51 @@ export default function InterestedPeople() {
                  value={searchQuery}
                  onChange={(e) => setSearchQuery(e.target.value)}
                  placeholder="Name..."
-                 className="w-full h-14 pl-14 pr-6 bg-black/40 border border-white/10 rounded-2xl text-slate-200 text-xs font-bold focus:outline-none focus:border-primary/50 transition-all placeholder:text-slate-600"
+                 className="w-full h-14 pl-14 pr-6 bg-bg-secondary border border-border-main rounded-2xl text-text-main text-xs font-bold focus:outline-none focus:border-primary/50 transition-all placeholder:text-text-muted shadow-sm"
               />
            </div>
 
            {/* Start Date */}
-           <div className="relative group lg:col-span-1">
-              <Calendar size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary z-20 pointer-events-none transition-transform group-hover:scale-110" />
-              <div className="relative h-14">
-                <input 
-                   type="date" 
-                   value={startDate}
-                   onChange={(e) => setStartDate(e.target.value)}
-                   className="absolute inset-0 w-full h-full pl-14 pr-6 bg-black/40 border border-white/10 rounded-2xl text-slate-200 text-xs font-bold transition-all cursor-pointer [color-scheme:dark] z-10 
-                   [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                   style={{ opacity: startDate ? 1 : 0 }}
-                />
-                {!startDate && (
-                  <div className="absolute inset-0 flex items-center pl-14 pointer-events-none">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">Start Date</span>
-                  </div>
-                )}
-              </div>
-           </div>
+           <PremiumDatePicker
+             value={startDate}
+             onChange={setStartDate}
+             placeholder="Start Date"
+             className="lg:col-span-1"
+           />
 
            {/* End Date */}
-           <div className="relative group lg:col-span-1">
-              <Calendar size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary z-20 pointer-events-none transition-transform group-hover:scale-110" />
-              <div className="relative h-14">
-                <input 
-                   type="date" 
-                   value={endDate}
-                   onChange={(e) => setEndDate(e.target.value)}
-                   className="absolute inset-0 w-full h-full pl-14 pr-6 bg-black/40 border border-white/10 rounded-2xl text-slate-200 text-xs font-bold transition-all cursor-pointer [color-scheme:dark] z-10 
-                   [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                   style={{ opacity: endDate ? 1 : 0 }}
-                />
-                {!endDate && (
-                  <div className="absolute inset-0 flex items-center pl-14 pointer-events-none">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">End Date</span>
-                  </div>
-                )}
-              </div>
-           </div>
+           <PremiumDatePicker
+             value={endDate}
+             onChange={setEndDate}
+             placeholder="End Date"
+             className="lg:col-span-1"
+           />
 
            {/* Country Select */}
-           <div className="relative group lg:col-span-1">
-              <Globe size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary z-20 pointer-events-none" />
-              <select
-                 value={selectedCountry}
-                 onChange={(e) => setSelectedCountry(e.target.value)}
-                 className="w-full h-14 pl-14 pr-10 appearance-none bg-black/40 border border-white/10 rounded-2xl text-slate-200 text-xs font-bold outline-none focus:border-primary/50 transition-all cursor-pointer"
-              >
-                 <option value="" className="bg-[#050505]">Country</option>
-                 {COUNTRIES.map(c => <option key={c} value={c} className="bg-[#050505]">{c}</option>)}
-              </select>
-           </div>
+           <PremiumDropdown
+             icon={Globe}
+             value={selectedCountry}
+             onChange={setSelectedCountry}
+             placeholder="Country"
+             options={COUNTRIES.map(c => ({ value: c, label: c, icon: Globe }))}
+             className="lg:col-span-1"
+           />
 
            {/* City Select */}
-           <div className="relative group lg:col-span-1">
-              <MapPin size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-primary z-20 pointer-events-none" />
-              <select
-                 value={selectedCity}
-                 onChange={(e) => setSelectedCity(e.target.value)}
-                 className="w-full h-14 pl-14 pr-10 appearance-none bg-black/40 border border-white/10 rounded-2xl text-slate-200 text-xs font-bold outline-none focus:border-primary/50 transition-all cursor-pointer"
-              >
-                 <option value="" className="bg-[#050505]">City</option>
-                 {CITIES.map(city => <option key={city} value={city} className="bg-[#050505]">{city}</option>)}
-              </select>
-           </div>
+           <PremiumDropdown
+             icon={MapPin}
+             value={selectedCity}
+             onChange={setSelectedCity}
+             placeholder="City"
+             options={CITIES.map(city => ({ value: city, label: city, icon: MapPin }))}
+             className="lg:col-span-1"
+           />
 
            {/* Reset Button */}
            <div className="lg:col-span-1">
               <button 
                  onClick={resetFilters}
-                 className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center gap-3 text-slate-500 hover:text-white hover:bg-white/10 transition-all group font-black uppercase tracking-widest text-[10px]"
+                 className="w-full h-14 bg-bg-secondary border border-border-main rounded-2xl flex items-center justify-center gap-3 text-text-muted hover:text-text-main hover:bg-bg-card transition-all group font-black uppercase tracking-widest text-[10px] shadow-sm"
               >
                  <RefreshCw size={14} className="group-hover:rotate-180 transition-transform duration-500" />
                  Reset
@@ -203,7 +175,7 @@ export default function InterestedPeople() {
             className={`px-6 h-10 rounded-full border transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${
               repeatedOnly 
                 ? "bg-primary/20 border-primary text-primary shadow-lg shadow-primary/10" 
-                : "bg-white/5 border-white/10 text-slate-500 hover:border-white/20"
+                : "bg-bg-secondary border-border-main text-text-muted hover:border-primary/30 hover:text-text-main shadow-sm"
             }`}
           >
             <RefreshCw size={12} className={repeatedOnly ? "animate-spin-slow" : ""} />
@@ -250,20 +222,20 @@ export default function InterestedPeople() {
             <motion.div 
                initial={{ opacity: 0 }}
                animate={{ opacity: 1 }}
-               className="py-20 flex flex-col items-center justify-center text-center gap-6 bg-white/[0.01] border border-dashed border-white/10 rounded-[40px]"
+               className="py-20 flex flex-col items-center justify-center text-center gap-6 bg-white/[0.01] border border-dashed border-border-main rounded-[40px]"
             >
                <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center text-slate-700">
                   <X size={40} />
                </div>
                <div className="space-y-2">
-                  <h4 className="text-white text-xl font-bold uppercase tracking-widest">No Interests Found</h4>
-                  <p className="text-slate-500 text-sm font-medium max-w-sm">
+                  <h4 className="text-text-main text-xl font-bold uppercase tracking-widest">No Interests Found</h4>
+                  <p className="text-text-muted text-sm font-medium max-w-sm">
                      We couldn't find any profile interests matching your current filters. Try adjusting your search criteria.
                   </p>
                </div>
                <button 
                   onClick={resetFilters}
-                  className="text-primary text-[10px] font-black uppercase tracking-widest underline underline-offset-8 hover:text-white transition-colors"
+                  className="text-primary text-[10px] font-black uppercase tracking-widest underline underline-offset-8 hover:text-text-main transition-colors"
                >
                   Reset All Filters
                </button>
@@ -279,7 +251,7 @@ export default function InterestedPeople() {
             onClick={handleLoadMore}
             loading={loading}
           />
-          <p className="text-slate-600 text-[9px] font-black uppercase tracking-[0.3em]">
+          <p className="text-text-muted text-[9px] font-black uppercase tracking-[0.3em]">
             Showing {displayCount} of {filteredInterests.length} expressions of interest
           </p>
         </div>
@@ -288,7 +260,7 @@ export default function InterestedPeople() {
       {displayCount >= filteredInterests.length && filteredInterests.length > 0 && (
          <div className="flex flex-col items-center justify-center pt-8">
             <div className="w-16 h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-4" />
-            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest italic">
+            <p className="text-text-muted text-[10px] font-bold uppercase tracking-widest italic">
                Viewing all expressions of interest
             </p>
          </div>
@@ -296,3 +268,6 @@ export default function InterestedPeople() {
     </div>
   );
 }
+
+
+

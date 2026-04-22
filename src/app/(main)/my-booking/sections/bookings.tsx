@@ -243,7 +243,7 @@ function BookingCard({
             </div>
 
             {/* Session Details */}
-            <div className="flex items-center gap-4 text-[11px] text-slate-400 font-medium">
+            <div className="flex items-center gap-4 text-[11px] text-text-muted font-medium">
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-primary/60" />
                 <span>{booking.date}</span>
@@ -268,7 +268,7 @@ function BookingCard({
               <motion.button
                 whileHover={{ y: -3, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex-1 h-12 bg-white/5 border border-primary/20 rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-primary transition-all backdrop-blur-md hover:bg-primary/10 hover:shadow-[0_0_20px_rgba(236,72,153,0.2)]"
+                className="flex-1 h-12 bg-gradient-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
               >
                 <Calendar className="w-4 h-4" />
                 <span>Book Again</span>
@@ -281,18 +281,16 @@ function BookingCard({
                       onClick={() => setIsPaid(true)}
                       whileHover={{ y: -3, scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="flex-[2] h-12 bg-white/5 border border-emerald-500/20 rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500 transition-all backdrop-blur-md hover:bg-emerald-500/10 hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                      className="flex-[2] h-12 bg-gradient-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Pay Now</span>
                     </motion.button>
-
+ 
                     <motion.button
-                      whileHover={{
-                        y: -2,
-                        backgroundColor: "rgba(244, 63, 94, 0.05)",
-                      }}
-                      className="flex-1 h-12 bg-white/2 border border-white/5 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-rose-500 transition-all"
+                      whileHover={{ y: -2, scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex-1 h-12 bg-bg-secondary/80 border-2 border-border-main rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-text-muted shadow-inner hover:bg-bg-card hover:text-rose-500 transition-all"
                     >
                       <XCircle className="w-3.5 h-3.5" />
                       <span>Cancel</span>
@@ -303,18 +301,16 @@ function BookingCard({
                     <motion.button
                       whileHover={{ y: -3, scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="flex-[2] h-12 bg-white/5 border border-primary/20 rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-primary transition-all backdrop-blur-md hover:bg-primary/10 hover:shadow-[0_0_20px_rgba(236,72,153,0.2)]"
+                      className="flex-[2] h-12 bg-gradient-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
                     >
                       <MessageCircle className="w-4 h-4" />
                       <span>Message</span>
                     </motion.button>
-
+ 
                     <motion.button
-                      whileHover={{
-                        y: -2,
-                        backgroundColor: "rgba(244, 63, 94, 0.05)",
-                      }}
-                      className="flex-1 h-12 bg-white/2 border border-white/5 rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-rose-500 transition-all"
+                      whileHover={{ y: -2, scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex-1 h-12 bg-bg-secondary/80 border-2 border-border-main rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-text-muted shadow-inner hover:bg-bg-card hover:text-rose-500 transition-all"
                     >
                       <XCircle className="w-3.5 h-3.5" />
                       <span>Cancel</span>
@@ -332,17 +328,17 @@ function BookingCard({
                     onClick={() => setRequestStatus("accepted")}
                     whileHover={{ y: -3, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="flex-1 h-12 bg-white/5 border border-emerald-500/20 rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500 transition-all backdrop-blur-md hover:bg-emerald-500/10 hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                    className="flex-1 h-12 bg-gradient-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                     <span>Accept</span>
                   </motion.button>
-
+ 
                   <motion.button
                     onClick={() => setRequestStatus("rejected")}
                     whileHover={{ y: -2, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="flex-[0.6] h-12 bg-white/2 border border-rose-500/20 rounded-2xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-rose-500 hover:bg-rose-500/5 transition-all"
+                    className="flex-[0.6] h-12 bg-bg-secondary/80 border-2 border-border-main rounded-2xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-rose-500 shadow-inner hover:bg-bg-card transition-all"
                   >
                     <XCircle className="w-3.5 h-3.5" />
                     <span>Reject</span>
@@ -355,7 +351,7 @@ function BookingCard({
                   <motion.button
                     whileHover={{ y: -3, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="flex-1 h-12 bg-linear-to-r from-primary to-primary-dark rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-[0_10px_20px_rgba(236,72,153,0.3)]"
+                    className="flex-1 h-12 bg-gradient-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all"
                   >
                     <MessageCircle className="w-4 h-4" />
                     <span>Message Client</span>
@@ -385,6 +381,7 @@ interface BookingsProps {
   activeFilter: string;
   activeCategory: string;
   setActiveCategory: (category: string) => void;
+  isSidebarOpen?: boolean;
 }
 
 export default function Bookings({
@@ -403,6 +400,9 @@ export default function Bookings({
     return true;
   });
 
+  // Standardized Grid Classes (3 on laptop, 4 on monitor)
+  const gridClasses = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4";
+
   return (
     <div className={`space-y-12 ${outfit.className}`}>
       {/* Dynamic Header */}
@@ -412,7 +412,7 @@ export default function Bookings({
             key={activeFilter}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className={`${rochester.className} text-5xl md:text-7xl lg:text-8xl text-white`}
+            className={`${rochester.className} text-5xl md:text-7xl lg:text-8xl text-text-main`}
           >
             {activeFilter} <span className="text-primary">Bookings</span>
           </motion.h1>
@@ -429,15 +429,15 @@ export default function Bookings({
 
       {/* List Header & Grid */}
       <div className="space-y-8">
-        <div className="flex items-center justify-between p-4 bg-white/2 rounded-3xl border border-white/5 backdrop-blur-xl">
-          <h3 className="text-xl font-bold text-white pl-4">Session Records</h3>
-          <div className="text-xs text-slate-500 font-medium pr-4">
+        <div className="flex items-center justify-between p-4 bg-bg-card rounded-3xl border border-border-main backdrop-blur-xl">
+          <h3 className="text-xl font-bold text-text-main pl-4">Session Records</h3>
+          <div className="text-xs text-text-muted font-medium pr-4">
             Showing {filteredBookings.length} results
           </div>
         </div>
 
         {/* Grid Area */}
-        <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-8 justify-items-center lg:justify-items-start">
+        <div className={`grid ${gridClasses} gap-8 justify-items-center`}>
           {filteredBookings.map((booking) => (
             <BookingCard
               key={`${activeCategory}-${booking.id}`}
@@ -449,7 +449,7 @@ export default function Bookings({
 
         {filteredBookings.length === 0 && (
           <div className="py-20 text-center">
-            <p className="text-slate-500 text-lg">
+            <p className="text-text-muted text-lg">
               No sessions found in this category.
             </p>
           </div>
@@ -458,3 +458,6 @@ export default function Bookings({
     </div>
   );
 }
+
+
+

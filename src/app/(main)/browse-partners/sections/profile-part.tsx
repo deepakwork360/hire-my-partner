@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import ProfileCard from "@/components/ProfileCard/ProfileCard";
 import { Star, Flame, Loader2, Plus } from "lucide-react";
@@ -63,14 +63,47 @@ const generateMockProfiles = (
   });
 };
 
-export default function ProfilePart() {
+export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean }) {
   const [profiles, setProfiles] = useState<ProfileData[]>([]);
   const [sortBy, setSortBy] = useState<"top-rated" | "popular">("popular");
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const loadingRef = useRef(false);
+  const lastGeneratedIndexRef = useRef(0);
   const sectionRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
+
+  // Standardized Grid Classes (3 on laptop, 4 on monitor)
+  const gridClasses = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4";
+
+  const filterProfile = useCallback((profile: ProfileData) => {
+    const ageParam = searchParams.get("age");
+    const locationParam = searchParams.get("location") || searchParams.get("city");
+    const ratingParam = searchParams.get("rating");
+    const genderParam = searchParams.get("gender");
+
+    if (ageParam) {
+      if (ageParam === "18-25" && (profile.age < 18 || profile.age > 25)) return false;
+      if (ageParam === "25-30" && (profile.age < 25 || profile.age > 30)) return false;
+      if (ageParam === "30-40" && (profile.age < 30 || profile.age > 40)) return false;
+      if (ageParam === "40+" && profile.age < 40) return false;
+    }
+
+    if (locationParam && !profile.location.toLowerCase().includes(locationParam.toLowerCase())) return false;
+
+    if (ratingParam) {
+      const minRating = parseFloat(ratingParam);
+      if (parseFloat(profile.rating) < minRating) return false;
+    }
+
+    if (genderParam) {
+      const isFemale = ["Emily", "Sophia", "Olivia", "Ava", "Isabella"].includes(profile.name);
+      if (genderParam.toLowerCase() === "female" && !isFemale) return false;
+      if (genderParam.toLowerCase() === "male" && isFemale) return false;
+    }
+
+    return true;
+  }, [searchParams]);
 
   const loadMoreProfiles = useCallback((isInitial = false) => {
     if (loadingRef.current) return;
@@ -78,105 +111,66 @@ export default function ProfilePart() {
     loadingRef.current = true;
     setLoading(true);
 
-    // Simulate API delay
-    const delay = isInitial ? 0 : 800; // instant for first load
+    const delay = isInitial ? 0 : 800;
     setTimeout(() => {
       setProfiles((prev) => {
-        const count = isInitial ? 12 : 8; // load 12 initially, then 8 more as requested
-        const newProfiles = generateMockProfiles(prev.length, count);
+        const targetCount = isInitial ? 12 : 6;
+        const newProfiles: ProfileData[] = [];
+        let attempts = 0;
+
+        // Keep generating until we find enough matching profiles
+        while (newProfiles.length < targetCount && attempts < 500) {
+          const batch = generateMockProfiles(lastGeneratedIndexRef.current, 1);
+          if (filterProfile(batch[0])) {
+            newProfiles.push(batch[0]);
+          }
+          lastGeneratedIndexRef.current++;
+          attempts++;
+        }
+
+        if (newProfiles.length < targetCount) {
+          setHasMore(false);
+        }
+
         return [...prev, ...newProfiles];
       });
       setLoading(false);
       loadingRef.current = false;
     }, delay);
-  }, []);
+  }, [filterProfile]);
 
   // Reset profiles and handle initial load when filters change
   useEffect(() => {
     setProfiles([]);
     setHasMore(true);
-    // Trigger initial load
+    lastGeneratedIndexRef.current = 0; // Reset generation counter
     loadMoreProfiles(true);
 
-    // Smooth scroll to top of profiles section on filter change
     if (sectionRef.current) {
       sectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [searchParams, loadMoreProfiles]);
 
-  const sortedProfiles = [...profiles]
-    .filter((profile) => {
-      const ageParam = searchParams.get("age");
-      const locationParam =
-        searchParams.get("location") || searchParams.get("city");
-      const ratingParam = searchParams.get("rating");
-      const genderParam = searchParams.get("gender");
-      const priceMinParam = searchParams.get("priceMin");
-      const priceMaxParam = searchParams.get("priceMax");
-
-      // Age range filter
-      if (ageParam) {
-        if (ageParam === "18-25" && (profile.age < 18 || profile.age > 25))
-          return false;
-        if (ageParam === "25-30" && (profile.age < 25 || profile.age > 30))
-          return false;
-        if (ageParam === "30-40" && (profile.age < 30 || profile.age > 40))
-          return false;
-        if (ageParam === "40+" && profile.age < 40) return false;
-      }
-
-      // Location filter (case insensitive)
-      if (
-        locationParam &&
-        !profile.location.toLowerCase().includes(locationParam.toLowerCase())
-      ) {
-        return false;
-      }
-
-      // Rating filter
-      if (ratingParam) {
-        const minRating = parseFloat(ratingParam);
-        if (parseFloat(profile.rating) < minRating) return false;
-      }
-
-      // Gender filter
-      if (
-        genderParam &&
-        profile.name.toLowerCase() !==
-          (genderParam.toLowerCase() === "female" ? "sophia" : "emily")
-      ) {
-        // Simple mock gender mapping based on name for now
-        const isFemale = [
-          "Emily",
-          "Sophia",
-          "Olivia",
-          "Ava",
-          "Isabella",
-        ].includes(profile.name);
-        if (genderParam.toLowerCase() === "female" && !isFemale) return false;
-        if (genderParam.toLowerCase() === "male" && isFemale) return false;
-      }
-
-      return true;
-    })
-    .sort((a, b) => {
+  const sortedProfiles = useMemo(() => {
+    return [...profiles].sort((a, b) => {
       if (sortBy === "top-rated") {
         return parseFloat(b.rating) - parseFloat(a.rating);
       }
-      return a.id - b.id; // Corrected: Ascending ID ensures new items append to the bottom
+      return a.id - b.id;
     });
+  }, [profiles, sortBy]);
 
   return (
     <div ref={sectionRef} className="space-y-8">
       {/* Sorting Header */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-2 bg-white/5 rounded-2xl border border-white/10">
-        <div className="flex w-full sm:w-auto p-1 bg-black/40 rounded-xl">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-2 bg-bg-card rounded-2xl border border-border-main">
+        <div className="flex w-full sm:w-auto p-1 bg-bg-secondary rounded-xl">
           <button
             onClick={() => setSortBy("popular")}
             className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
               sortBy === "popular"
                 ? "bg-primary text-white shadow-lg shadow-primary/20"
-                : "text-slate-400 hover:text-white"
+                : "text-text-muted hover:text-text-main"
             }`}
           >
             <Flame size={16} />
@@ -187,21 +181,21 @@ export default function ProfilePart() {
             className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
               sortBy === "top-rated"
                 ? "bg-primary text-white shadow-lg shadow-primary/20"
-                : "text-slate-400 hover:text-white"
+                : "text-text-muted hover:text-text-main"
             }`}
           >
             <Star size={16} />
             Top Rated
           </button>
         </div>
-        <div className="text-xs text-slate-500 font-medium px-4">
+        <div className="text-xs text-text-muted font-medium px-4">
           Showing {sortedProfiles.length} results
         </div>
       </div>
 
       {/* Grid Area */}
       {sortedProfiles.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className={`grid ${gridClasses} gap-6 justify-items-center`}>
           {sortedProfiles.map((profile, index) => (
             <motion.div
               key={profile.id}
@@ -223,8 +217,10 @@ export default function ProfilePart() {
                 tag={profile.tag}
                 rating={profile.rating}
                 confirmation={profile.confirmation}
-                buttonText="View Profile"
+                buttonText="Book Now"
+                buttonLink="/checkout"
                 viewLink={profile.viewLink}
+                showViewIcon={true}
               />
             </motion.div>
           ))}
@@ -233,13 +229,13 @@ export default function ProfilePart() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-4 bg-white/5 rounded-[40px] border border-dashed border-white/10"
+          className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-4 bg-bg-card rounded-[40px] border border-dashed border-border-main"
         >
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
             <Star className="w-8 h-8 text-primary/50" />
           </div>
-          <h3 className="text-xl font-bold text-white">No Profiles Found</h3>
-          <p className="text-slate-500 max-w-xs mx-auto text-sm">
+          <h3 className="text-xl font-bold text-text-main">No Profiles Found</h3>
+          <p className="text-text-muted max-w-xs mx-auto text-sm">
             We couldn't find any partners matching your current filters. Try
             adjusting your preferences.
           </p>
@@ -256,7 +252,7 @@ export default function ProfilePart() {
               loading={loading}
             />
             {!loading && profiles.length > 0 && (
-              <p className="text-slate-500 text-xs font-medium tracking-widest uppercase">
+              <p className="text-text-muted text-xs font-medium tracking-widest uppercase">
                 Showing {profiles.length} profiles
               </p>
             )}
@@ -266,7 +262,7 @@ export default function ProfilePart() {
         {!hasMore && profiles.length > 0 && (
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-1 rounded-full bg-white/5" />
-            <p className="text-slate-500 text-sm italic">
+            <p className="text-text-muted text-sm italic">
               You've reached the end of the list.
             </p>
           </div>
@@ -275,3 +271,6 @@ export default function ProfilePart() {
     </div>
   );
 }
+
+
+

@@ -20,32 +20,32 @@ export default function SafetyTrust() {
       title: "Background Checks",
       description:
         "All partners go through a strict verification process, including identity checks and background screening, to ensure your experience is both safe and authentic.",
-      icon: <Search className="w-8 h-8 text-white" />,
+      icon: <Search className="w-8 h-8 text-text-main" />,
     },
     {
       title: "Privacy Guaranteed",
       description:
         "Your personal data stays private. We use industry-standard encryption to protect your information and never share your details without consent.",
-      icon: <ShieldCheck className="w-8 h-8 text-white" />,
+      icon: <ShieldCheck className="w-8 h-8 text-text-main" />,
     },
     {
       title: "24/7 Support",
       description:
         "Questions or concerns? Our dedicated support team is available around the clock to help you with anything you need — anytime, anywhere.",
-      icon: <Headphones className="w-8 h-8 text-white" />,
+      icon: <Headphones className="w-8 h-8 text-text-main" />,
     },
     {
       title: "Verified Partners Badge",
       description:
         "Look for the badge! Profiles with our “Verified Partner” badge have passed all checks and meet our highest trust and quality standards.",
-      icon: <BadgeCheck className="w-8 h-8 text-white" />,
+      icon: <BadgeCheck className="w-8 h-8 text-text-main" />,
     },
   ];
 
   return (
     <section
       id="safety-and-trust"
-      className="py-12 px-4 md:py-16 bg-[#0a0a0a] overflow-hidden border-b border-white/5"
+      className="py-12 px-4 md:py-16 bg-bg-secondary overflow-hidden border-b border-border-main"
     >
       <div className="max-w-[1600px] w-full mx-auto">
         {/* Header section */}
@@ -54,7 +54,7 @@ export default function SafetyTrust() {
             initial={{ opacity: 0, y: -20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className={`${rochester.className} text-4xl md:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-white via-primary to-white font-bold`}
+            className={`${rochester.className} text-center text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary animate-in fade-in slide-in-from-bottom-4 duration-700 py-4 leading-[1.2] mb-6`}
           >
             Safety & Trust You Can Rely On
           </motion.h2>
@@ -63,7 +63,7 @@ export default function SafetyTrust() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className={`${outfit.className} text-slate-400 max-w-2xl mx-auto text-lg md:text-xl lg:text-2xl leading-relaxed font-light`}
+            className={`${outfit.className} text-text-muted max-w-2xl mx-auto text-lg md:text-xl lg:text-2xl leading-relaxed font-light`}
           >
             Your safety and peace of mind are our top priorities. That’s why
             we’ve built a secure, transparent, and respectful platform from the
@@ -86,19 +86,18 @@ export default function SafetyTrust() {
               <div className="relative mb-8 w-20 h-20">
                 {/* Background Layer (Pink) */}
                 <div className="absolute inset-0 bg-linear-to-tr from-primary to-accent rounded-2xl transform translate-x-3 translate-y-3 opacity-100 transition-transform duration-500 group-hover:translate-x-4 group-hover:translate-y-4" />
-                {/* Foreground Layer (White) */}
-                <div className="absolute inset-0 bg-[#111111] rounded-2xl border border-white/10 flex items-center justify-center shadow-lg transition-transform duration-500 group-hover:-translate-x-1 group-hover:-translate-y-1">
+                <div className="absolute inset-0 bg-bg-base rounded-2xl border border-border-main flex items-center justify-center shadow-lg transition-transform duration-500 group-hover:-translate-x-1 group-hover:-translate-y-1">
                   {pillar.icon}
                 </div>
               </div>
 
               <h3
-                className={`${outfit.className} text-xl md:text-2xl font-bold text-primary-dark mb-4 transition-colors duration-300 group-hover:text-primary`}
+                className={`${outfit.className} text-xl md:text-2xl font-bold text-text-main mb-4 transition-colors duration-300 group-hover:text-primary`}
               >
                 {pillar.title}
               </h3>
               <p
-                className={`${outfit.className} text-slate-400 text-sm md:text-[15px] leading-relaxed font-light max-w-[280px]`}
+                className={`${outfit.className} text-text-muted text-sm md:text-[15px] leading-relaxed font-light max-w-[280px]`}
               >
                 {pillar.description}
               </p>
@@ -109,3 +108,6 @@ export default function SafetyTrust() {
     </section>
   );
 }
+
+
+

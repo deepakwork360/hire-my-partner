@@ -2,7 +2,7 @@ import Banner2 from "@/components/banner2/banner2";
 
 export default function MainConfirmation() {
   return (
-    <div>
+    <div className="bg-bg-base">
       <Banner2
         title="Booking Request Received"
         backgroundImage="/images/booking-banner.png"
@@ -11,3 +11,6 @@ export default function MainConfirmation() {
     </div>
   );
 }
+
+
+

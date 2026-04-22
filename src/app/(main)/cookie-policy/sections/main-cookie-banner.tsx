@@ -5,8 +5,11 @@ export default function MainCookieBanner() {
     <Banner2
       title="Cookie Policy"
       subtitle="How we use cookies to improve your experience and personalize our services."
-      backgroundImage="/" // Consistent with privacy policy
-      bgPosition="50% 30%"
+      backgroundImage="/home/cookie-policy.png" // Consistent with privacy policy
+      bgPosition="50% 80%"
     />
   );
 }
+
+
+

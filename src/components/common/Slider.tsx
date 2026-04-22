@@ -101,7 +101,7 @@ export default function Slider<T>({
             >
               <Link
                 href={viewAllLink}
-                className="w-full h-full min-h-[460px] relative group overflow-hidden rounded-[36px] bg-[#0a0a0a] border border-white/5 transition-all duration-500 hover:border-primary/30 hover:shadow-[0_0_60px_rgba(var(--primary-rgb),0.15)]"
+                className="w-full h-full min-h-[460px] relative group overflow-hidden rounded-[36px] bg-bg-card border border-border-main transition-all duration-500 hover:border-primary/30 hover:shadow-[0_0_60px_rgba(var(--primary-rgb),0.15)]"
               >
                 {/* Dynamic Background Glow */}
                 <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-accent/5 opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
@@ -114,7 +114,7 @@ export default function Slider<T>({
                     {/* Glowing Ring */}
                     <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl group-hover:blur-2xl transition-all duration-500 scale-150 opacity-0 group-hover:opacity-100" />
                     
-                    <div className="relative w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-primary group-hover:to-primary-dark group-hover:border-primary-dark transition-all duration-500 group-hover:scale-110 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                    <div className="relative w-24 h-24 rounded-full bg-bg-secondary border border-border-main flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-primary group-hover:to-primary-dark group-hover:border-primary-dark transition-all duration-500 group-hover:scale-110 shadow-lg">
                       <Eye className="w-10 h-10 text-primary-dark group-hover:text-white transition-colors duration-500" />
                     </div>
 
@@ -124,10 +124,10 @@ export default function Slider<T>({
                     </div>
                   </div>
 
-                  <h3 className="text-3xl font-bold text-white mb-2 tracking-tight group-hover:text-primary transition-colors">
+                  <h3 className="text-3xl font-bold text-text-main mb-2 tracking-tight group-hover:text-primary transition-colors">
                     View All
                   </h3>
-                  <p className="text-slate-400 font-medium mb-8 max-w-[180px]">
+                  <p className="text-text-muted font-medium mb-8 max-w-[180px]">
                     Discover more amazing partners nearby
                   </p>
 
@@ -152,7 +152,7 @@ export default function Slider<T>({
       >
         <button
           onClick={prev}
-          className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center bg-[#080808]/80 backdrop-blur-md text-white rounded-full shadow-lg border border-white/10 transition-all duration-300 hover:scale-110 hover:border-primary/40 hover:shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] active:scale-95 disabled:opacity-0"
+          className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center bg-bg-card/80 backdrop-blur-md text-text-main rounded-full shadow-lg border border-border-main transition-all duration-300 hover:scale-110 hover:border-primary/40 hover:shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] active:scale-95 disabled:opacity-0"
           disabled={index === 0}
         >
           <ArrowLeft className="w-5 h-5 md:w-6 md:h-6" />
@@ -164,7 +164,7 @@ export default function Slider<T>({
       >
         <button
           onClick={next}
-          className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center bg-[#080808]/80 backdrop-blur-md text-white rounded-full shadow-lg border border-white/10 transition-all duration-300 hover:scale-110 hover:border-primary/40 hover:shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] active:scale-95 disabled:opacity-0"
+          className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center bg-bg-card/80 backdrop-blur-md text-text-main rounded-full shadow-lg border border-border-main transition-all duration-300 hover:scale-110 hover:border-primary/40 hover:shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] active:scale-95 disabled:opacity-0"
           disabled={index >= maxIndex}
         >
           <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />

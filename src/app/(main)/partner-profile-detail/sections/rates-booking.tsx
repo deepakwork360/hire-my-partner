@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
-import { CheckCircle2, Circle, HeartHandshake } from "lucide-react";
+import { CheckCircle2, Circle, HeartHandshake, Zap, Clock, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 const rochester = Rochester({
@@ -17,9 +17,9 @@ const outfit = Outfit({
 });
 
 const ADD_ONS = [
-  { id: "photo", label: "Casual Photoshoot", price: 1500 },
-  { id: "playlist", label: "Personalized Playlist", price: 500 },
-  { id: "travel", label: "Extra Travel Time", price: 2000 },
+  { id: "photo", label: "Casual Photoshoot", price: 1500, icon: Zap },
+  { id: "playlist", label: "Personalized Playlist", price: 500, icon: Sparkles },
+  { id: "travel", label: "Extra Travel Time", price: 2000, icon: Clock },
 ];
 
 export default function RatesBooking() {
@@ -44,86 +44,104 @@ export default function RatesBooking() {
 
   return (
     <section
-      className={`py-16 xl:py-24 px-4 sm:px-6 bg-[#0a0a0a] min-h-screen border-b border-white/5 flex items-center justify-center ${outfit.className}`}
+      className={`relative py-10 md:py-16 lg:py-20 px-4 bg-bg-base overflow-hidden ${outfit.className}`}
     >
-      <div className="max-w-[1600px] w-full mx-auto relative z-10">
-        {/* Ambient Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[1000px] h-full bg-pink-500/10 blur-[150px] rounded-[100%] -z-10 pointer-events-none" />
+      {/* ── BACKGROUND AMBIANCE ── */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary-dark/5 rounded-full blur-[120px]" />
+      </div>
 
-        <div className="flex flex-col xl:flex-row gap-10 xl:gap-16 items-stretch bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[40px] xl:rounded-[60px] p-8 md:p-12 xl:p-16 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-          {/* Left Column: Booking Configurations */}
-          <div className="flex-1 flex flex-col">
+      <div className="max-w-[1200px] w-full mx-auto relative z-10">
+        <div className="flex flex-col lg:flex-row gap-5 lg:gap-8 items-stretch">
+          
+          {/* Left Column: Configuration Dashboard */}
+          <div className="flex-[1.4] flex flex-col bg-bg-card backdrop-blur-3xl border border-border-main rounded-[32px] p-5 md:p-8 shadow-2xl shadow-black/5 relative overflow-hidden">
+             {/* Subtitle */}
+             <div className="flex items-center gap-2 mb-2">
+                <ShieldCheck size={10} className="text-primary" />
+                <span className="text-primary text-[8px] font-black uppercase tracking-[0.3em]">Reservation Logic</span>
+             </div>
+
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="mb-8 xl:mb-12"
+              className="mb-6"
             >
               <h2
-                className={`${rochester.className} text-5xl md:text-6xl xl:text-7xl text-white mb-2 xl:mb-4 drop-shadow-md`}
+                className={`${rochester.className} text-4xl md:text-5xl text-text-main mb-0.5 leading-none`}
               >
-                Rates & Booking
+                Rates & <span className="text-primary">Options</span>
               </h2>
-              <div className="w-20 xl:w-28 h-1 rounded-full bg-linear-to-r from-pink-500 to-rose-500 shadow-[0_0_15px_rgba(255,51,119,0.5)]"></div>
+              <div className="w-12 h-1 bg-gradient-to-r from-primary to-transparent rounded-full mt-2" />
             </motion.div>
 
             {/* Base Rates */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 xl:gap-6 mb-10 xl:mb-14">
-              <div className="bg-black/40 border border-white/10 p-5 xl:p-8 rounded-2xl xl:rounded-3xl">
-                <p className="text-slate-400 text-sm xl:text-base font-semibold uppercase tracking-wider mb-1 xl:mb-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+              <div className="p-4 bg-bg-secondary border border-border-main rounded-2xl group hover:bg-bg-card transition-all">
+                <p className="text-text-muted text-[8px] font-black uppercase tracking-widest mb-1 group-hover:text-primary transition-colors">
                   Hourly Rate
                 </p>
-                <p className="text-white text-2xl xl:text-4xl font-bold tracking-wide">
-                  ₹{hourlyRate}
-                  <span className="text-sm xl:text-lg font-normal text-slate-500">
-                    {" "}
-                    / hour
-                  </span>
-                </p>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-text-main text-2xl font-black">₹{hourlyRate}</span>
+                  <span className="text-text-muted text-[9px] font-bold uppercase tracking-widest">/ Hr</span>
+                </div>
               </div>
-              <div className="bg-black/40 border border-white/10 p-5 xl:p-8 rounded-2xl xl:rounded-3xl">
-                <p className="text-slate-400 text-sm xl:text-base font-semibold uppercase tracking-wider mb-1 xl:mb-2">
-                  Minimum Booking
+              <div className="p-4 bg-bg-secondary border border-border-main rounded-2xl group hover:bg-bg-card transition-all">
+                <p className="text-text-muted text-[8px] font-black uppercase tracking-widest mb-1 group-hover:text-primary transition-colors">
+                  Min Engagement
                 </p>
-                <p className="text-white text-2xl xl:text-4xl font-bold tracking-wide">
-                  {minHours}
-                  <span className="text-sm xl:text-lg font-normal text-slate-500">
-                    {" "}
-                    hours
-                  </span>
-                </p>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-text-main text-2xl font-black">{minHours}</span>
+                  <span className="text-text-muted text-[9px] font-bold uppercase tracking-widest">Hours</span>
+                </div>
               </div>
             </div>
 
-            {/* Add-ons Checklist */}
-            <div className="mb-0">
-              <h3 className="text-xl xl:text-2xl font-bold text-white mb-4 xl:mb-6 flex items-center gap-2">
-                <span className="text-pink-500">Premium</span> Add-ons
+            {/* Add-ons */}
+            <div className="space-y-3">
+              <h3 className="text-text-main text-[8px] font-black uppercase tracking-[0.3em] flex items-center gap-2 ml-1">
+                <Sparkles size={12} className="text-primary" />
+                Experience Add-ons
               </h3>
-              <div className="flex flex-col gap-3 xl:gap-5">
+              <div className="space-y-2">
                 {ADD_ONS.map((addon) => {
                   const isSelected = selectedAddOns.includes(addon.id);
+                  const Icon = addon.icon;
                   return (
                     <div
                       key={addon.id}
                       onClick={() => handleToggle(addon.id)}
-                      className={`flex items-center justify-between p-4 xl:p-6 rounded-2xl xl:rounded-3xl cursor-pointer transition-all duration-300 border ${isSelected ? "bg-pink-500/10 border-pink-500/50 shadow-[0_0_20px_rgba(255,51,119,0.15)]" : "bg-black/20 border-white/5 hover:border-white/20"}`}
+                      className={`flex items-center justify-between p-3.5 rounded-[18px] cursor-pointer transition-all duration-300 border ${
+                        isSelected 
+                          ? "bg-primary/10 border-primary/40 shadow-[0_10px_25px_rgba(var(--primary-rgb),0.1)]" 
+                          : "bg-bg-base border-border-main hover:border-primary/30 hover:shadow-md hover:bg-bg-card"
+                      }`}
                     >
-                      <div className="flex items-center gap-3 xl:gap-5">
-                        {isSelected ? (
-                          <CheckCircle2 className="w-6 h-6 xl:w-8 xl:h-8 text-pink-500 drop-shadow-[0_0_8px_rgba(255,51,119,0.8)]" />
-                        ) : (
-                          <Circle className="w-6 h-6 xl:w-8 xl:h-8 text-slate-600" />
-                        )}
-                        <span
-                          className={`font-medium xl:text-xl transition-colors ${isSelected ? "text-white" : "text-slate-300"}`}
-                        >
-                          {addon.label}
-                        </span>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${isSelected ? "bg-primary text-white" : "bg-bg-card text-text-muted"}`}>
+                           <Icon size={16} />
+                        </div>
+                        <div>
+                           <p className={`text-xs font-bold tracking-tight transition-colors ${isSelected ? "text-primary font-black" : "text-text-main"}`}>
+                             {addon.label}
+                           </p>
+                           <p className="text-[7px] font-black uppercase tracking-widest text-text-muted">Premium Service</p>
+                        </div>
                       </div>
-                      <span className="text-slate-400 text-sm xl:text-lg font-semibold">
-                        + ₹{addon.price}
-                      </span>
+                      <div className="flex items-center gap-3">
+                         <span className={`text-[10px] font-black tracking-widest ${isSelected ? "text-primary" : "text-text-muted"}`}>
+                           + ₹{addon.price}
+                         </span>
+                         <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                           isSelected 
+                             ? "bg-primary border-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" 
+                             : "border-slate-300 dark:border-slate-600 bg-bg-secondary/50 shadow-inner"
+                         }`}>
+                            {isSelected && <CheckCircle2 size={12} className="text-white" strokeWidth={3} />}
+                         </div>
+                      </div>
                     </div>
                   );
                 })}
@@ -131,60 +149,66 @@ export default function RatesBooking() {
             </div>
           </div>
 
-          {/* Vertical Divider for Desktop (moved to xl) */}
-          <div className="hidden xl:block w-px bg-white/10" />
+          {/* Right Column: Checkout Summary */}
+          <div className="flex-1 lg:max-w-[340px] flex flex-col bg-bg-card backdrop-blur-3xl border border-border-main rounded-[32px] p-5 md:p-7 shadow-2xl shadow-black/5 relative overflow-hidden">
+             <div className="relative flex flex-col h-full">
+                <h3 className="text-text-main text-[8px] font-black uppercase tracking-[0.4em] mb-6 pb-3 border-b border-border-main">
+                  Summary
+                </h3>
 
-          {/* Right Column: Checkout Summary Box */}
-          <div className="w-full xl:w-[450px] 2xl:w-[500px] flex flex-col justify-between bg-black/30 rounded-3xl xl:rounded-[40px] p-6 md:p-8 xl:p-10 border border-white/5">
-            <div>
-              <h3 className="text-lg xl:text-xl font-semibold text-slate-300 mb-6 xl:mb-10 uppercase tracking-widest border-b border-white/10 pb-4 xl:pb-6">
-                Booking Summary
-              </h3>
+                <div className="space-y-3 mb-8 flex-grow">
+                   <div className="flex justify-between items-center group">
+                      <span className="text-text-muted text-[10px] font-bold uppercase tracking-widest">Base Investment</span>
+                      <span className="text-text-main text-sm font-black">₹{hourlyRate * minHours}</span>
+                   </div>
 
-              <div className="flex flex-col gap-3 xl:gap-6 mb-6 flex-grow text-base xl:text-lg">
-                <div className="flex justify-between items-center text-slate-400">
-                  <span>Base Rate ({minHours} hrs)</span>
-                  <span>₹{hourlyRate * minHours}</span>
+                   {ADD_ONS.map((addon) => {
+                     if (selectedAddOns.includes(addon.id)) {
+                       return (
+                         <motion.div
+                           key={`summary-${addon.id}`}
+                           initial={{ opacity: 0, x: 10 }}
+                           animate={{ opacity: 1, x: 0 }}
+                           className="flex justify-between items-center"
+                         >
+                           <span className="text-primary text-[10px] font-bold uppercase tracking-widest">{addon.label}</span>
+                           <span className="text-primary text-sm font-black">₹{addon.price}</span>
+                         </motion.div>
+                       );
+                     }
+                     return null;
+                   })}
                 </div>
 
-                {ADD_ONS.map((addon) => {
-                  if (selectedAddOns.includes(addon.id)) {
-                    return (
-                      <div
-                        key={`summary-${addon.id}`}
-                        className="flex justify-between items-center text-pink-400/80"
-                      >
-                        <span>+ {addon.label}</span>
-                        <span>₹{addon.price}</span>
-                      </div>
-                    );
-                  }
-                  return null;
-                })}
-              </div>
-            </div>
+                <div className="mt-auto pt-6 border-t border-border-main">
+                   <div className="flex flex-col gap-0.5 mb-5 text-center">
+                      <span className="text-text-muted text-[8px] font-black uppercase tracking-widest">Total Investment</span>
+                      <span className="text-text-main text-3xl md:text-4xl font-black tracking-tighter">
+                        ₹{calculateTotal()}
+                      </span>
+                   </div>
 
-            <div className="mt-auto">
-              <div className="flex justify-between items-end border-t border-white/10 pt-6 xl:pt-10 mb-6 xl:mb-10">
-                <span className="text-slate-300 uppercase tracking-wider text-sm xl:text-base font-semibold">
-                  Total Cost
-                </span>
-                <span className="text-white text-3xl xl:text-5xl font-black">
-                  ₹{calculateTotal()}
-                </span>
-              </div>
-
-              <Link
-                href="/checkout"
-                className="btn-primary w-full flex items-center justify-center gap-2 group xl:text-lg xl:py-6 xl:rounded-3xl"
-              >
-                <HeartHandshake className="w-5 h-5 xl:w-6 xl:h-6 group-hover:scale-110 transition-transform" />
-                Confirm & Book Now
-              </Link>
-            </div>
+                   <Link
+                     href="/checkout"
+                     className="group relative w-full h-12 bg-primary rounded-xl flex items-center justify-center gap-3 text-white text-[10px] font-black uppercase tracking-[0.3em] shadow-lg hover:-translate-y-1 transition-all overflow-hidden"
+                   >
+                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shine" />
+                     <HeartHandshake size={18} />
+                     <span>Secure Booking</span>
+                   </Link>
+                   
+                   <p className="text-center text-text-muted text-[7px] font-bold uppercase tracking-widest mt-4 flex items-center justify-center gap-2">
+                      <ShieldCheck size={9} />
+                      Secure Transaction
+                   </p>
+                </div>
+             </div>
           </div>
         </div>
       </div>
     </section>
   );
 }
+
+
+

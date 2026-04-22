@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Rochester, Outfit } from "next/font/google";
-import { MapPin, Star, ShieldCheck, Map, Clock, Heart, X } from "lucide-react";
+import { MapPin, Star, ShieldCheck, Map, Clock, Heart, X, MessageSquare, Award, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const rochester = Rochester({
@@ -39,136 +39,137 @@ export default function ProfileMain() {
     reviews: 128,
     verified: true,
     distance: "5 km away",
-    image:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop", // High quality placeholder
+    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop",
   };
 
   return (
     <section
-      className={`py-12 md:py-24 px-4 bg-[#0a0a0a] min-h-screen border-b border-white/5 ${outfit.className}`}
+      className={`relative pt-16 pb-8 md:pt-20 md:pb-12 lg:pt-24 lg:pb-16 px-4 overflow-hidden ${outfit.className}`}
     >
-      <div className="max-w-[1600px] w-full mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
-          {/* Left Column: Premium Image Portfolio */}
+      {/* ── BACKGROUND AMBIANCE ── */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-primary-dark/10 rounded-full blur-[120px] animate-pulse delay-700" />
+      </div>
+
+      <div className="max-w-[1250px] w-full mx-auto relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-16 items-center">
+          
+          {/* Left Column: Compact Portfolio Image */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="lg:col-span-5 relative"
           >
             <div
               onClick={() => setIsLightboxOpen(true)}
-              className="relative w-full aspect-[4/5] lg:mt-16 md:mt-16 sm:mt-0 rounded-[32px] md:rounded-[48px] overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(255,51,119,0.15)] group cursor-zoom-in"
+              className="relative w-full aspect-[4/5] max-h-[420px] md:max-h-[500px] lg:max-h-[520px] xl:max-h-[580px] rounded-[32px] overflow-hidden border border-border-main shadow-2xl shadow-black/10 group cursor-zoom-in"
             >
               <Image
                 src={profileData.image}
                 alt={profileData.name}
                 fill
                 priority
-                className="object-cover object-center transition-transform duration-700 ease-in-out group-hover:scale-105"
+                className="object-cover object-top transition-transform duration-1000 ease-in-out group-hover:scale-110"
               />
-              {/* Subtle Vignette Overlay */}
-              <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-black/80 pointer-events-none" />
-
+              
+              {/* Premium Overlays */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
+              
               {/* Dynamic Verification Badge */}
               {profileData.verified && (
-                <div className="absolute top-6 left-6 flex items-center gap-2 bg-black/40 backdrop-blur-md border border-pink-500/30 px-4 py-2 rounded-full shadow-[0_0_20px_rgba(255,51,119,0.2)]">
-                  <ShieldCheck className="w-5 h-5 text-pink-500" />
-                  <span className="text-white text-xs font-bold uppercase tracking-widest">
-                    Verified
-                  </span>
+                <div className="absolute top-4 left-4 flex items-center gap-2 bg-bg-card/60 backdrop-blur-md border border-border-main px-3 py-1.5 rounded-xl shadow-xl">
+                  <ShieldCheck className="w-3.5 h-3.5 text-primary" />
+                  <span className="text-text-main text-[8px] font-black uppercase tracking-[0.2em]">Verified</span>
                 </div>
               )}
             </div>
-
-            {/* Ambient Pink Background Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-pink-500/20 blur-[100px] rounded-full -z-10 pointer-events-none" />
           </motion.div>
 
-          {/* Right Column: Profile Details */}
+          {/* Right Column: Refined Profile Details */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-            className="lg:col-span-7 flex flex-col pt-4 md:pt-8"
+            className="lg:col-span-7 flex flex-col justify-center"
           >
+            {/* Category */}
+            <div className="flex items-center gap-2 mb-3">
+               <span className="px-2 py-0.5 bg-primary/10 border border-primary/20 rounded-md text-primary text-[8px] font-black uppercase tracking-widest">Premium Partner</span>
+               <div className="w-1 h-1 rounded-full bg-border-main" />
+               <span className="text-text-muted text-[8px] font-black uppercase tracking-widest">Active</span>
+            </div>
+
             {/* Header Area */}
-            <div className="mb-6">
+            <div className="mb-4">
               <h1
-                className={`${rochester.className} text-5xl md:text-7xl font-bold text-white mb-2 leading-tight tracking-wide drop-shadow-lg`}
+                className={`${rochester.className} text-4xl md:text-6xl lg:text-7xl text-text-main mb-1 leading-none drop-shadow-2xl`}
               >
-                {profileData.name}{" "}
+                {profileData.name}
                 <span
-                  className={`${outfit.className} text-3xl font-light text-pink-500 ml-2`}
+                  className={`${outfit.className} text-xl md:text-2xl font-light text-primary/60 ml-3`}
                 >
                   {profileData.age}
                 </span>
               </h1>
-
-              <div className="w-24 h-1 rounded-full bg-linear-to-r from-pink-500 to-rose-500 shadow-[0_0_15px_rgba(255,51,119,0.5)] mt-4"></div>
+              <div className="w-20 h-1 bg-gradient-to-r from-primary to-transparent rounded-full mt-2" />
             </div>
 
-            {/* Quote / Bio Highlight */}
-            <p className="text-xl md:text-2xl text-slate-300 italic font-light leading-relaxed mb-8 border-l-4 border-pink-500/50 pl-6">
-              "{profileData.bio}"
-            </p>
+            {/* Quote / Bio */}
+            <div className="relative mb-6">
+               <div className="absolute -left-3 top-0 w-1 h-full bg-gradient-to-b from-primary via-primary/20 to-transparent rounded-full" />
+               <p className="text-base md:text-lg lg:text-xl text-text-main italic font-light leading-relaxed line-clamp-3">
+                "{profileData.bio}"
+               </p>
+            </div>
 
-            {/* Glassmorphic Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-              <div className="flex items-center gap-4 bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl shadow-lg transition-transform hover:-translate-y-1 duration-300">
-                <div className="p-3 bg-pink-500/10 rounded-xl text-pink-500 border border-pink-500/20">
-                  <MapPin className="w-6 h-6" />
+            {/* Stats Grid - Tighter */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+              <div className="group flex items-center gap-3 p-3.5 bg-bg-secondary border border-border-main rounded-[20px] hover:bg-bg-card transition-all">
+                <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+                  <MapPin size={16} />
                 </div>
                 <div>
-                  <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
-                    Location
-                  </p>
-                  <p className="text-white font-bold tracking-wide">
-                    {profileData.location}
-                  </p>
+                  <p className="text-text-muted text-[7px] font-black uppercase tracking-widest">Base</p>
+                  <p className="text-text-main text-xs font-bold tracking-tight">{profileData.location}</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl shadow-lg transition-transform hover:-translate-y-1 duration-300">
-                <div className="p-3 bg-pink-500/10 rounded-xl text-pink-500 border border-pink-500/20">
-                  <Star className="w-6 h-6 fill-pink-500" />
+              <div className="group flex items-center gap-3 p-3.5 bg-bg-secondary border border-border-main rounded-[20px] hover:bg-bg-card transition-all">
+                <div className="w-9 h-9 bg-amber-400/10 rounded-lg flex items-center justify-center text-amber-400">
+                  <Star size={16} className="fill-amber-400" />
                 </div>
                 <div>
-                  <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
-                    Rating
-                  </p>
-                  <p className="text-white font-bold tracking-wide flex items-baseline gap-1">
-                    <span>{profileData.rating}</span>
-                    <span className="text-slate-500 text-xs font-normal">
-                      ({profileData.reviews} Reviews)
-                    </span>
-                  </p>
+                  <p className="text-text-muted text-[7px] font-black uppercase tracking-widest">Score</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-text-main text-xs font-bold">{profileData.rating}</span>
+                    <span className="text-text-muted text-[8px] font-bold uppercase">{profileData.reviews} Reviews</span>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl shadow-lg transition-transform hover:-translate-y-1 duration-300 sm:col-span-2">
-                <div className="p-3 bg-pink-500/10 rounded-xl text-pink-500 border border-pink-500/20">
-                  <Map className="w-6 h-6" />
+              <div className="group flex items-center gap-3 p-3.5 bg-bg-secondary border border-border-main rounded-[20px] hover:bg-bg-card transition-all sm:col-span-2">
+                <div className="w-9 h-9 bg-blue-400/10 rounded-lg flex items-center justify-center text-blue-400">
+                  <Map size={16} />
                 </div>
                 <div>
-                  <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
-                    Distance
-                  </p>
-                  <p className="text-white font-bold tracking-wide">
-                    {profileData.distance} from your location
-                  </p>
+                  <p className="text-text-muted text-[7px] font-black uppercase tracking-widest">Proximity</p>
+                  <p className="text-text-main text-xs font-bold tracking-tight">{profileData.distance} from you</p>
                 </div>
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-5 mt-auto pb-4">
-              <button className="btn-primary w-full sm:w-auto flex-1 flex items-center justify-center gap-2 text-sm sm:text-base">
-                <Heart className="w-5 h-5 fill-white" />
-                Book Now
+            {/* Action Buttons - Compact height */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button className="group relative flex-[1.5] h-13 bg-gradient-to-br from-primary via-primary-dark to-primary rounded-xl flex items-center justify-center gap-2 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                <Heart className="w-3.5 h-3.5 fill-white relative z-10" />
+                <span className="relative z-10">Reserve Now</span>
               </button>
-              <button className="btn-secondary w-full sm:w-auto flex-1 flex items-center justify-center gap-2 text-sm sm:text-base">
-                Message {profileData.name.split(" ")[0]}
+              <button className="flex-1 h-13 bg-bg-secondary/80 border-2 border-border-main rounded-xl flex items-center justify-center gap-2 text-text-main text-[10px] font-black uppercase tracking-[0.2em] shadow-inner hover:bg-bg-card hover:border-primary/30 transition-all">
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Message</span>
               </button>
             </div>
           </motion.div>
@@ -183,26 +184,26 @@ export default function ProfileMain() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsLightboxOpen(false)}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 md:p-10 cursor-zoom-out"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-base/95 backdrop-blur-xl p-4 md:p-20 cursor-zoom-out"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative max-w-[90vw] max-h-[90vh] rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+              className="relative max-w-full max-h-full rounded-[32px] overflow-hidden shadow-2xl border border-border-main"
             >
               <button
                 onClick={() => setIsLightboxOpen(false)}
-                className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-pink-500 transition-colors duration-300 cursor-pointer"
+                className="absolute top-5 right-5 z-20 w-10 h-10 rounded-full bg-bg-card/50 backdrop-blur-md border border-border-main flex items-center justify-center text-text-main hover:bg-primary hover:text-white transition-all cursor-pointer"
               >
-                <X className="w-6 h-6" />
+                <X size={20} />
               </button>
-              <div className="relative w-full h-[80vh] aspect-auto">
+              <div className="relative">
                 <img
                   src={profileData.image}
-                  alt="Full preview"
-                  className="w-full h-full object-contain"
+                  alt="Gallery preview"
+                  className="max-w-full max-h-[85vh] object-contain"
                 />
               </div>
             </motion.div>
@@ -212,4 +213,6 @@ export default function ProfileMain() {
     </section>
   );
 }
+
+
 

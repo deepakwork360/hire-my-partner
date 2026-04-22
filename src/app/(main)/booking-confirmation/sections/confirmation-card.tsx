@@ -64,7 +64,7 @@ const itemVariants = {
 
 export default function ConfirmationCard() {
   return (
-    <section className={`bg-[#050505] py-16 px-4 md:px-8 ${outfit.className}`}>
+    <section className={`bg-bg-base py-16 px-4 md:px-8 ${outfit.className}`}>
       <div className="max-w-2xl mx-auto">
         <motion.div
           variants={containerVariants}
@@ -93,11 +93,11 @@ export default function ConfirmationCard() {
           {/* ── Title ── */}
           <motion.div variants={itemVariants} className="text-center">
             <h1
-              className={`${rochester.className} text-5xl md:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-white via-primary to-white tracking-wide mb-3`}
+              className={`${rochester.className} text-5xl md:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main tracking-wide mb-3`}
             >
               Request Received!
             </h1>
-            <p className="text-slate-400 text-sm md:text-base max-w-sm mx-auto leading-relaxed">
+            <p className="text-text-muted text-sm md:text-base max-w-sm mx-auto leading-relaxed">
               Your booking request has been received and is currently waiting for
               approval.
             </p>
@@ -105,12 +105,12 @@ export default function ConfirmationCard() {
 
           {/* ── Booking ID badge ── */}
           <motion.div variants={itemVariants}>
-            <div className="flex items-center gap-2 bg-white/[0.04] border border-white/10 rounded-full px-5 py-2">
+            <div className="flex items-center gap-2 bg-bg-card border border-border-main rounded-full px-5 py-2">
               <BookOpen size={12} className="text-primary" />
-              <span className="text-slate-400 text-xs font-bold tracking-widest uppercase">
+              <span className="text-text-muted text-xs font-bold tracking-widest uppercase">
                 Booking&nbsp;ID:&nbsp;
               </span>
-              <span className="text-white text-xs font-black tracking-widest">
+              <span className="text-text-main text-xs font-black tracking-widest">
                 {booking.id}
               </span>
             </div>
@@ -119,17 +119,17 @@ export default function ConfirmationCard() {
           {/* ── Booking Summary Card ── */}
           <motion.div
             variants={itemVariants}
-            className="w-full bg-gradient-to-br from-white/[0.06] to-white/[0.01] border border-white/10 rounded-[36px] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.6)]"
+            className="w-full bg-linear-to-br from-bg-card to-bg-card/40 backdrop-blur-3xl border border-border-main rounded-[36px] overflow-hidden shadow-2xl"
           >
             {/* Card header */}
-            <div className="px-6 pt-6 pb-5 border-b border-white/5 text-center">
+            <div className="px-6 pt-6 pb-5 border-b border-border-main text-center">
               <span className="text-primary text-[10px] font-black uppercase tracking-[0.35em]">
                 Booking Summary
               </span>
             </div>
 
             {/* Companion profile */}
-            <div className="flex flex-col items-center text-center px-6 pt-6 pb-5 border-b border-white/5 gap-4">
+            <div className="flex flex-col items-center text-center px-6 pt-6 pb-5 border-b border-border-main gap-4">
               <div className="relative w-24 h-32 rounded-2xl overflow-hidden ring-2 ring-primary/30 shadow-[0_8px_24px_rgba(var(--primary-rgb),0.2)]">
                 <Image
                   src={booking.companion.image}
@@ -140,11 +140,11 @@ export default function ConfirmationCard() {
                 />
               </div>
               <div>
-                <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] mb-1">
+                <p className="text-text-muted text-[10px] font-black uppercase tracking-[0.3em] mb-1">
                   Your Companion
                 </p>
                 <h3
-                  className={`${rochester.className} text-3xl text-white tracking-wide mb-1.5`}
+                  className={`${rochester.className} text-3xl text-text-main tracking-wide mb-1.5`}
                 >
                   {booking.companion.name}
                 </h3>
@@ -156,7 +156,7 @@ export default function ConfirmationCard() {
                 </div>
                 <div className="flex items-center justify-center gap-1.5 mt-2">
                   <MapPin size={11} className="text-primary" />
-                  <span className="text-slate-500 text-xs font-medium">
+                  <span className="text-text-muted text-xs font-medium">
                     {booking.companion.location}
                   </span>
                 </div>
@@ -173,10 +173,10 @@ export default function ConfirmationCard() {
                       }
                     />
                   ))}
-                  <span className="text-white text-xs font-black ml-1">
+                  <span className="text-text-main text-xs font-black ml-1">
                     {booking.companion.rating}
                   </span>
-                  <span className="text-slate-600 text-xs">
+                  <span className="text-text-muted text-xs">
                     ({booking.companion.reviews})
                   </span>
                 </div>
@@ -184,16 +184,16 @@ export default function ConfirmationCard() {
             </div>
 
             {/* Booking details row */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border-main">
               <div className="flex items-center gap-3 px-5 py-4">
                 <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                   <Calendar size={13} className="text-primary" />
                 </div>
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-600 mb-0.5">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-text-muted mb-0.5">
                     Date
                   </p>
-                  <p className="text-white text-xs font-bold">{booking.date}</p>
+                  <p className="text-text-main text-xs font-bold">{booking.date}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 px-5 py-4">
@@ -201,10 +201,10 @@ export default function ConfirmationCard() {
                   <Clock size={13} className="text-violet-400" />
                 </div>
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-600 mb-0.5">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-text-muted mb-0.5">
                     Time
                   </p>
-                  <p className="text-white text-xs font-bold">
+                  <p className="text-text-main text-xs font-bold">
                     {booking.timeStart} – {booking.timeEnd}
                   </p>
                 </div>
@@ -214,7 +214,7 @@ export default function ConfirmationCard() {
                   <IndianRupee size={13} className="text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-600 mb-0.5">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-text-muted mb-0.5">
                     Amount Payable
                   </p>
                   <p className="text-amber-400 text-xs font-black">
@@ -226,8 +226,8 @@ export default function ConfirmationCard() {
 
             {/* Add-ons */}
             {booking.addOns.length > 0 && (
-              <div className="px-6 py-4 border-t border-white/5 flex flex-wrap items-center gap-2">
-                <span className="text-[9px] font-black uppercase tracking-widest text-slate-600 mr-1">
+              <div className="px-6 py-4 border-t border-border-main flex flex-wrap items-center gap-2">
+                <span className="text-[9px] font-black uppercase tracking-widest text-text-muted mr-1">
                   Add-ons:
                 </span>
                 {booking.addOns.map((a) => (
@@ -242,11 +242,11 @@ export default function ConfirmationCard() {
             )}
 
             {/* Email receipt note */}
-            <div className="mx-4 mb-4 mt-1 bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-4 flex items-start gap-3">
-              <Mail size={14} className="text-slate-500 mt-0.5 shrink-0" />
-              <p className="text-slate-500 text-xs font-medium leading-relaxed">
+            <div className="mx-4 mb-4 mt-1 bg-bg-card border border-border-main rounded-2xl px-5 py-4 flex items-start gap-3">
+              <Mail size={14} className="text-text-muted mt-0.5 shrink-0" />
+              <p className="text-text-muted text-xs font-medium leading-relaxed">
                 Confirmation of your request has been emailed to{" "}
-                <span className="text-white font-bold">
+                <span className="text-text-main font-bold">
                   {booking.companion.email}
                 </span>
               </p>
@@ -254,10 +254,10 @@ export default function ConfirmationCard() {
 
             {/* Need to coordinate */}
             <div className="px-6 pb-7 text-center">
-              <p className="text-white font-black text-sm mb-1">
+              <p className="text-text-main font-black text-sm mb-1">
                 Need to Coordinate?
               </p>
-              <p className="text-slate-500 text-xs font-medium mb-4">
+              <p className="text-text-muted text-xs font-medium mb-4">
                 Have any last-minute details or questions?
               </p>
               <Link
@@ -294,7 +294,7 @@ export default function ConfirmationCard() {
               <motion.div
                 whileHover={{ scale: 1.02, y: -1 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full h-14 rounded-2xl bg-transparent border border-white/15 text-white font-black tracking-[0.25em] uppercase text-xs flex items-center justify-center gap-2 hover:bg-white/5 hover:border-white/25 transition-all cursor-pointer"
+                className="w-full h-14 rounded-2xl bg-bg-secondary/80 border-2 border-border-main text-text-main font-black tracking-[0.25em] uppercase text-xs flex items-center justify-center gap-2 shadow-inner hover:bg-bg-card hover:border-primary/30 transition-all cursor-pointer"
               >
                 <BookOpen size={15} />
                 View My Bookings
@@ -307,15 +307,15 @@ export default function ConfirmationCard() {
             variants={itemVariants}
             className="flex items-center gap-6"
           >
-            <button className="flex items-center gap-2 text-slate-600 hover:text-slate-400 transition-colors text-xs font-bold uppercase tracking-wider group">
+            <button className="flex items-center gap-2 text-text-muted hover:text-text-muted transition-colors text-xs font-bold uppercase tracking-wider group">
               <Download
                 size={13}
                 className="group-hover:scale-110 transition-transform"
               />
               Download Receipt
             </button>
-            <div className="w-px h-4 bg-white/10" />
-            <button className="flex items-center gap-2 text-slate-600 hover:text-slate-400 transition-colors text-xs font-bold uppercase tracking-wider group">
+            <div className="w-px h-4 bg-border-main" />
+            <button className="flex items-center gap-2 text-text-muted hover:text-text-muted transition-colors text-xs font-bold uppercase tracking-wider group">
               <Share2
                 size={13}
                 className="group-hover:scale-110 transition-transform"
@@ -328,3 +328,6 @@ export default function ConfirmationCard() {
     </section>
   );
 }
+
+
+

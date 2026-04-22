@@ -5,11 +5,14 @@ import CookieContent from "./sections/cookie-content";
 
 export default function CookiePolicyPage() {
   return (
-    <div className="bg-[#050505] min-h-screen">
-      {/* <MainCookieBanner /> */}
+    <div className="bg-bg-base min-h-screen">
+      <MainCookieBanner />
       <CookieEffectiveDate />
       <CookieContent />
       <Footer />
     </div>
   );
 }
+
+
+

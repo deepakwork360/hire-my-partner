@@ -2,12 +2,16 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "rose" | "gold" | "cyan" | "violet" | "emerald";
+export type Theme = "rose" | "gold" | "cyan" | "violet" | "emerald";
+export type Appearance = "light" | "dark";
 
 interface ThemeContextType {
   activeTheme: Theme;
   isPreferenceSet: boolean;
+  appearance: Appearance;
   setTheme: (theme: Theme) => void;
+  setAppearance: (appearance: Appearance) => void;
+  toggleAppearance: () => void;
   resetToRotation: () => void;
 }
 
@@ -17,14 +21,20 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [activeTheme, setActiveTheme] = useState<Theme>("rose");
+  const [appearance, setAppearanceState] = useState<Appearance>("dark");
   const [isPreferenceSet, setIsPreferenceSet] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     // Initial load logic
     const savedTheme = localStorage.getItem("theme_choice") as Theme;
+    const savedAppearance = localStorage.getItem("appearance_choice") as Appearance;
     const preferenceFlag = localStorage.getItem("theme_preference_set") === "true";
     const sessionActive = sessionStorage.getItem("theme_session_active") === "true";
+
+    if (savedAppearance && (savedAppearance === "light" || savedAppearance === "dark")) {
+      setAppearanceState(savedAppearance);
+    }
 
     if (preferenceFlag && savedTheme && THEMES.includes(savedTheme)) {
       // User has a locked preference
@@ -48,12 +58,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  // Update data-theme attribute on <html>
+  // Update data-theme and data-appearance attribute on <html>
   useEffect(() => {
     if (mounted) {
       document.documentElement.setAttribute("data-theme", activeTheme);
+      document.documentElement.setAttribute("data-appearance", appearance);
     }
-  }, [activeTheme, mounted]);
+  }, [activeTheme, appearance, mounted]);
 
   const setTheme = (theme: Theme) => {
     setActiveTheme(theme);
@@ -61,6 +72,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("theme_choice", theme);
     localStorage.setItem("theme_last_active", theme);
     localStorage.setItem("theme_preference_set", "true");
+  };
+
+  const setAppearance = (newAppearance: Appearance) => {
+    setAppearanceState(newAppearance);
+    localStorage.setItem("appearance_choice", newAppearance);
+  };
+
+  const toggleAppearance = () => {
+    const newAppearance = appearance === "dark" ? "light" : "dark";
+    setAppearance(newAppearance);
   };
 
   const resetToRotation = () => {
@@ -74,7 +95,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <ThemeContext.Provider value={{ activeTheme, isPreferenceSet, setTheme, resetToRotation }}>
+    <ThemeContext.Provider
+      value={{
+        activeTheme,
+        isPreferenceSet,
+        appearance,
+        setTheme,
+        setAppearance,
+        toggleAppearance,
+        resetToRotation,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );

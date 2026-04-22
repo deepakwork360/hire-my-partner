@@ -30,7 +30,7 @@ export default function GiftCard({
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className={`group relative h-full bg-[#0a0a0a] border border-white/10 rounded-[40px] overflow-hidden transition-all duration-500 hover:border-primary/40 hover:shadow-[0_20px_60px_rgba(var(--primary-rgb),0.15)] flex flex-col ${outfit.className}`}
+      className={`group relative h-full bg-bg-card border border-border-main rounded-[40px] overflow-hidden transition-all duration-500 hover:border-primary/40 hover:shadow-2xl hover:shadow-black/5 flex flex-col ${outfit.className}`}
     >
       {/* IMAGE CONTAINER */}
       <div className="relative aspect-square overflow-hidden m-3 rounded-[32px]">
@@ -43,8 +43,8 @@ export default function GiftCard({
         <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
         {/* PRICE TAG */}
-        <div className="absolute top-4 right-4 px-4 py-2 bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl">
-          <span className="text-white font-black text-sm tracking-tighter">
+        <div className="absolute top-4 right-4 px-4 py-2 bg-bg-secondary/80 backdrop-blur-md border border-border-main rounded-2xl">
+          <span className="text-text-main font-black text-sm tracking-tighter">
             {price}
           </span>
         </div>
@@ -52,10 +52,10 @@ export default function GiftCard({
 
       {/* CONTENT */}
       <div className="p-6 pt-2 flex flex-col flex-1">
-        <h3 className="text-xl font-black text-white mb-2 group-hover:text-primary transition-colors">
+        <h3 className="text-xl font-black text-text-main mb-2 group-hover:text-primary transition-colors">
           {title}
         </h3>
-        <p className="text-slate-400 text-sm leading-relaxed mb-6 font-medium line-clamp-2">
+        <p className="text-text-muted text-sm leading-relaxed mb-6 font-medium line-clamp-2">
           {description}
         </p>
 

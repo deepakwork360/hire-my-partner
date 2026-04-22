@@ -17,22 +17,22 @@ type ToggleProps = {
 };
 
 const NotificationToggle = ({ label, description, icon: Icon, enabled, onToggle }: ToggleProps) => (
-  <div className="flex items-center justify-between p-6 bg-black/20 border border-white/5 rounded-2xl hover:border-white/10 transition-all group">
+  <div className="flex items-center justify-between p-6 bg-bg-secondary border border-border-main rounded-2xl transition-all group">
     <div className="flex items-center gap-4">
       <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
-        enabled ? "bg-pink-500/10 text-pink-500" : "bg-white/5 text-slate-800"
+        enabled ? "bg-primary/10 text-primary" : "bg-bg-card text-text-muted"
       }`}>
         <Icon size={20} />
       </div>
       <div>
-        <h4 className="text-white font-bold text-sm tracking-wide">{label}</h4>
-        <p className="text-slate-500 text-[11px] font-medium mt-0.5">{description}</p>
+        <h4 className="text-text-main font-bold text-sm tracking-wide">{label}</h4>
+        <p className="text-text-muted text-[11px] font-medium mt-0.5">{description}</p>
       </div>
     </div>
     <button 
       onClick={onToggle}
-      className={`relative w-12 h-6 rounded-full transition-all duration-300 ${
-        enabled ? "bg-pink-600 shadow-[0_0_15px_rgba(219,39,119,0.3)]" : "bg-white/10"
+      className={`relative w-12 h-6 rounded-full transition-all duration-300 border ${
+        enabled ? "bg-primary border-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]" : "bg-bg-card border-border-main"
       }`}
     >
       <motion.div 
@@ -76,15 +76,15 @@ export default function Notification() {
            initial={{ opacity: 0, y: 20 }}
            whileInView={{ opacity: 1, y: 0 }}
            viewport={{ once: true }}
-           className="bg-white/[0.03] border border-white/10 rounded-[32px] p-6 md:p-10 flex flex-col gap-10"
+           className="bg-bg-card border border-border-main rounded-[32px] p-6 md:p-10 flex flex-col gap-10 shadow-xl shadow-black/5"
         >
           {/* Section Header */}
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-3">
-               <Bell size={13} className="text-pink-500" />
-               <span className="text-pink-500 text-[10px] font-black uppercase tracking-[0.3em]">Preferences</span>
+               <Bell size={13} className="text-primary" />
+               <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">Preferences</span>
             </div>
-            <h2 className={`${rochester.className} text-4xl text-white tracking-wide`}>
+            <h2 className={`${rochester.className} text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main tracking-wide leading-tight`}>
               Notification Settings
             </h2>
           </div>
@@ -112,13 +112,13 @@ export default function Notification() {
               onToggle={() => setPrefs(p => ({...p, push: !p.push}))}
             />
             
-            <div className="flex items-center justify-center p-6 border border-dashed border-white/10 rounded-2xl opacity-50">
-               <p className="text-slate-600 text-[11px] font-bold uppercase tracking-widest">More options coming soon</p>
+            <div className="flex items-center justify-center p-6 border border-dashed border-border-main rounded-2xl opacity-50">
+               <p className="text-text-muted text-[11px] font-bold uppercase tracking-widest">More options coming soon</p>
             </div>
           </div>
 
-          <div className="pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-6">
-            <p className="text-slate-500 text-[10px] font-medium italic">
+          <div className="pt-6 border-t border-border-main flex flex-col sm:flex-row items-center justify-between gap-6">
+            <p className="text-text-muted text-[10px] font-medium italic">
               * Select your preferred channels to stay updated with your bookings.
             </p>
             
@@ -126,7 +126,7 @@ export default function Notification() {
                 {hasChanges && !success && (
                     <button 
                         onClick={() => setPrefs(initialPrefs)}
-                        className="text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors"
+                        className="text-text-muted text-[10px] font-black uppercase tracking-widest hover:text-text-main transition-colors"
                     >
                         Reset
                     </button>
@@ -138,8 +138,8 @@ export default function Notification() {
                         success 
                         ? "bg-emerald-600 text-white"
                         : hasChanges 
-                        ? "bg-gradient-to-r from-pink-600 to-rose-700 text-white shadow-lg active:scale-95"
-                        : "bg-white/5 text-slate-800 border border-white/5 cursor-not-allowed"
+                        ? "bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg active:scale-95"
+                        : "bg-bg-secondary text-text-muted border border-border-main cursor-not-allowed"
                     }`}
                 >
                     {isUpdating ? (
@@ -157,3 +157,6 @@ export default function Notification() {
     </section>
   );
 }
+
+
+

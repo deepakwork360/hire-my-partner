@@ -24,6 +24,12 @@ export default function HeroSection() {
               label: "Become a Partner",
               link: "/become-a-partner",
               variant: "outline",
+              style: {
+                background: "linear-gradient(135deg, rgba(var(--primary-rgb), 0.15) 0%, rgba(var(--primary-rgb), 0.05) 100%)",
+                border: "1px solid rgba(var(--primary-rgb), 0.3)",
+                backdropFilter: "blur(10px)",
+                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
+              }
             },
           ]}
         />
@@ -59,7 +65,7 @@ export default function HeroSection() {
           </motion.div>
 
           {/* Inner Logo & Glow */}
-          <div className="absolute inset-[15%] rounded-full bg-white/5 backdrop-blur-3xl border border-white/10 flex items-center justify-center p-5 group shadow-[0_0_80px_rgba(var(--primary-rgb),0.15)]">
+          <div className="absolute inset-[15%] rounded-full bg-bg-card backdrop-blur-3xl border border-border-main flex items-center justify-center p-5 group shadow-[0_0_80px_rgba(var(--primary-rgb),0.15)]">
             {/* Pulsing Aura */}
             <motion.div
               animate={{
@@ -95,3 +101,6 @@ export default function HeroSection() {
     </section>
   );
 }
+
+
+

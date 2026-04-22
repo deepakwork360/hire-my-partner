@@ -35,10 +35,10 @@ export default function FAQ() {
 
   return (
     <section
-      className={`py-12 md:py-16 px-4 bg-[#050505] relative overflow-hidden ${outfit.className}`}
+      className={`py-12 md:py-16 px-4 bg-bg-base relative overflow-hidden ${outfit.className}`}
     >
       {/* Decorative background orb */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pink-500/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-4xl mx-auto relative z-10">
         {/* Title Section */}
@@ -47,11 +47,11 @@ export default function FAQ() {
             initial={{ opacity: 0, y: -20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className={`${rochester.className} text-5xl md:text-7xl text-white font-bold mb-4`}
+            className={`${rochester.className} text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main mb-4`}
           >
             Frequently Asked Questions
           </motion.h2>
-          <div className="w-24 h-1 bg-linear-to-r from-pink-500 to-rose-500 mx-auto rounded-full shadow-[0_0_15px_rgba(219,39,119,0.5)]" />
+          <div className="w-24 h-1 bg-linear-to-r from-primary to-primary-dark mx-auto rounded-full shadow-lg shadow-primary/20" />
         </div>
 
         {/* FAQ List */}
@@ -65,8 +65,8 @@ export default function FAQ() {
               transition={{ delay: index * 0.1 }}
               className={`rounded-[32px] border transition-all duration-500 overflow-hidden ${
                 openIndex === index
-                  ? "bg-white/5 border-pink-500/30 shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
-                  : "bg-white/2 border-white/5 hover:border-white/10"
+                  ? "bg-bg-card border-primary/30 shadow-2xl shadow-black/5"
+                  : "bg-bg-secondary border-border-main hover:border-primary/20"
               }`}
             >
               <button
@@ -74,19 +74,19 @@ export default function FAQ() {
                 className="w-full px-8 py-6 flex items-center justify-between text-left group"
               >
                 <span className={`text-lg md:text-xl font-bold transition-colors duration-300 ${
-                  openIndex === index ? "text-pink-400" : "text-slate-300 group-hover:text-white"
+                  openIndex === index ? "text-primary" : "text-text-main"
                 }`}>
                   {faq.question}
                 </span>
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-500 ${
                   openIndex === index 
-                    ? "bg-pink-500 border-pink-400 rotate-180" 
-                    : "bg-white/5 border-white/10 group-hover:bg-white/10"
+                    ? "bg-primary border-primary rotate-180" 
+                    : "bg-bg-secondary border-border-main group-hover:bg-bg-card"
                 }`}>
                   {openIndex === index ? (
                     <X className="w-5 h-5 text-white" />
                   ) : (
-                    <Plus className="w-5 h-5 text-slate-400" />
+                    <Plus className="w-5 h-5 text-text-muted" />
                   )}
                 </div>
               </button>
@@ -100,8 +100,8 @@ export default function FAQ() {
                     transition={{ duration: 0.4, ease: "easeInOut" }}
                   >
                     <div className="px-8 pb-8 pt-0">
-                      <div className="h-px w-full bg-white/5 mb-6" />
-                      <p className="text-slate-400 text-base md:text-lg leading-relaxed font-light">
+                      <div className="h-px w-full bg-border-main mb-6" />
+                      <p className="text-text-muted text-base md:text-lg leading-relaxed font-light">
                         {faq.answer}
                       </p>
                     </div>
@@ -116,11 +116,14 @@ export default function FAQ() {
         <motion.p 
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          className="text-center mt-12 text-slate-500 text-sm font-medium"
+          className="text-center mt-12 text-text-muted text-sm font-medium"
         >
-          Have more questions? <span className="text-pink-500 cursor-pointer hover:underline">Contact our support team</span>
+          Have more questions? <span className="text-primary cursor-pointer hover:underline">Contact our support team</span>
         </motion.p>
       </div>
     </section>
   );
 }
+
+
+

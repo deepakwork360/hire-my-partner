@@ -96,14 +96,14 @@ const EditProfilePage = () => {
 
   if (isFetching) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+      <div className="min-h-screen bg-bg-base flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF0066]"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white p-4 sm:p-8 lg:p-12">
+    <div className="min-h-screen bg-bg-base text-white p-4 sm:p-8 lg:p-12">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-4 mb-8">
           <button 
@@ -178,7 +178,7 @@ const EditProfilePage = () => {
                     name="name"
                     value={formData.name || ''}
                     onChange={handleChange}
-                    className="w-full bg-[#050505] border border-zinc-800 rounded-2xl px-5 py-3.5 outline-none focus:border-[#FF0066] transition-colors"
+                    className="w-full bg-bg-base border border-zinc-800 rounded-2xl px-5 py-3.5 outline-none focus:border-[#FF0066] transition-colors"
                     placeholder="Enter your name"
                   />
                 </div>
@@ -189,7 +189,7 @@ const EditProfilePage = () => {
                     type="number"
                     value={formData.age || ''}
                     onChange={handleChange}
-                    className="w-full bg-[#050505] border border-zinc-800 rounded-2xl px-5 py-3.5 outline-none focus:border-[#FF0066] transition-colors"
+                    className="w-full bg-bg-base border border-zinc-800 rounded-2xl px-5 py-3.5 outline-none focus:border-[#FF0066] transition-colors"
                   />
                 </div>
                 <div className="space-y-2">
@@ -198,7 +198,7 @@ const EditProfilePage = () => {
                     name="gender"
                     value={formData.gender || ''}
                     onChange={handleChange}
-                    className="w-full bg-[#050505] border border-zinc-800 rounded-2xl px-5 py-3.5 outline-none focus:border-[#FF0066] transition-colors appearance-none"
+                    className="w-full bg-bg-base border border-zinc-800 rounded-2xl px-5 py-3.5 outline-none focus:border-[#FF0066] transition-colors appearance-none"
                   >
                     <option value="">Select Gender</option>
                     <option value="male">Male</option>
@@ -212,7 +212,7 @@ const EditProfilePage = () => {
                     name="location"
                     value={formData.location || ''}
                     onChange={handleChange}
-                    className="w-full bg-[#050505] border border-zinc-800 rounded-2xl px-5 py-3.5 outline-none focus:border-[#FF0066] transition-colors"
+                    className="w-full bg-bg-base border border-zinc-800 rounded-2xl px-5 py-3.5 outline-none focus:border-[#FF0066] transition-colors"
                     placeholder="City, Country"
                   />
                 </div>
@@ -225,7 +225,7 @@ const EditProfilePage = () => {
                   value={formData.bio || ''}
                   onChange={handleChange}
                   rows={4}
-                  className="w-full bg-[#050505] border border-zinc-800 rounded-2xl px-5 py-3.5 outline-none focus:border-[#FF0066] transition-colors resize-none"
+                  className="w-full bg-bg-base border border-zinc-800 rounded-2xl px-5 py-3.5 outline-none focus:border-[#FF0066] transition-colors resize-none"
                   placeholder="Share something about yourself..."
                 />
               </div>
@@ -252,3 +252,6 @@ const EditProfilePage = () => {
 };
 
 export default EditProfilePage;
+
+
+

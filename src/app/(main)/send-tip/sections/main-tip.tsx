@@ -6,9 +6,12 @@ export default function MainTip() {
       <Banner2
         title="Send a Tip"
         subtitle="Appreciate your partner's time and effort by sending a personalized tip."
-        backgroundImage="/home/tip.png"
-        bgPosition="50% 20%"
+        backgroundImage="/home/send-tip.png"
+        bgPosition="50% 50%"
       />
     </div>
   );
 }
+
+
+

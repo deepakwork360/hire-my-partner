@@ -65,15 +65,15 @@ export default function PassMngmnt() {
            initial={{ opacity: 0, y: 20 }}
            whileInView={{ opacity: 1, y: 0 }}
            viewport={{ once: true }}
-           className="bg-white/[0.03] border border-white/10 rounded-[32px] p-6 md:p-10 flex flex-col gap-10"
+           className="bg-bg-card border border-border-main rounded-[32px] p-6 md:p-10 flex flex-col gap-10 shadow-xl shadow-black/5"
         >
           {/* Section Header */}
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-3">
-               <ShieldCheck size={13} className="text-pink-500" />
-               <span className="text-pink-500 text-[10px] font-black uppercase tracking-[0.3em]">Security Settings</span>
+               <ShieldCheck size={13} className="text-primary" />
+               <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">Security Settings</span>
             </div>
-            <h2 className={`${rochester.className} text-4xl text-white tracking-wide`}>
+            <h2 className={`${rochester.className} text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main tracking-wide leading-tight`}>
               Password Management
             </h2>
           </div>
@@ -82,59 +82,59 @@ export default function PassMngmnt() {
             <div className="flex flex-col gap-6">
               {/* Current Password */}
               <div className="flex flex-col gap-3">
-                <label className="text-slate-400 text-xs font-black uppercase tracking-widest ml-1">Current Password</label>
+                <label className="text-text-muted text-xs font-black uppercase tracking-widest ml-1">Current Password</label>
                 <div className="relative">
-                  <Lock size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600" />
+                  <Lock size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-text-muted" />
                   <input 
                     type={showPass ? "text" : "password"} 
                     value={passData.current}
                     onChange={(e) => updateField("current", e.target.value)}
                     placeholder="Enter current password"
-                    className="w-full h-14 pl-14 pr-14 bg-black/40 border border-white/10 rounded-2xl text-white text-sm font-medium focus:outline-none focus:border-pink-500/50 transition-all placeholder:text-slate-700"
+                    className="w-full h-14 pl-14 pr-14 bg-bg-secondary border border-border-main rounded-2xl text-text-main text-sm font-medium focus:outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
                   />
                   <button 
                     type="button"
                     onClick={() => setShowPass(!showPass)}
-                    className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-600 hover:text-white transition-colors"
+                    className="absolute right-5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main transition-colors"
                   >
                     {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
 
-              <div className="h-px bg-white/5 my-2" />
+              <div className="h-px bg-border-main my-2" />
 
               {/* New Passwords Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* New Password */}
                 <div className="flex flex-col gap-3">
-                  <label className="text-slate-400 text-xs font-black uppercase tracking-widest ml-1">New Password</label>
+                  <label className="text-text-muted text-xs font-black uppercase tracking-widest ml-1">New Password</label>
                   <div className="relative">
-                    <Key size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600" />
+                    <Key size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-text-muted" />
                     <input 
                       type={showPass ? "text" : "password"} 
                       value={passData.new}
                       onChange={(e) => updateField("new", e.target.value)}
                       placeholder="Min 8 characters"
-                      className="w-full h-14 pl-14 pr-5 bg-black/40 border border-white/10 rounded-2xl text-white text-sm font-medium focus:outline-none focus:border-pink-500/50 transition-all placeholder:text-slate-700"
+                      className="w-full h-14 pl-14 pr-5 bg-bg-secondary border border-border-main rounded-2xl text-text-main text-sm font-medium focus:outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
                     />
                   </div>
                 </div>
 
                 {/* Confirm New Password */}
                 <div className="flex flex-col gap-3">
-                  <label className="text-slate-400 text-xs font-black uppercase tracking-widest ml-1">Confirm New Password</label>
+                  <label className="text-text-muted text-xs font-black uppercase tracking-widest ml-1">Confirm New Password</label>
                   <div className="relative">
-                    <Key size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600" />
+                    <Key size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-text-muted" />
                     <input 
                       type={showPass ? "text" : "password"} 
                       value={passData.confirm}
                       onChange={(e) => updateField("confirm", e.target.value)}
                       placeholder="Repeat new password"
-                      className={`w-full h-14 pl-14 pr-5 bg-black/40 border rounded-2xl text-white text-sm font-medium focus:outline-none transition-all placeholder:text-slate-700 ${
+                      className={`w-full h-14 pl-14 pr-5 bg-bg-secondary border rounded-2xl text-text-main text-sm font-medium focus:outline-none transition-all placeholder:text-text-muted/50 ${
                         passData.confirm && passData.new !== passData.confirm 
-                        ? "border-rose-500/50" 
-                        : "border-white/10 focus:border-pink-500/50"
+                        ? "border-primary/50" 
+                        : "border-border-main focus:border-primary/50"
                       }`}
                     />
                   </div>
@@ -149,7 +149,7 @@ export default function PassMngmnt() {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="flex items-center gap-2 text-rose-500 text-[10px] font-black uppercase tracking-[0.2em] bg-rose-500/5 p-3 rounded-xl border border-rose-500/10"
+                        className="flex items-center gap-2 text-primary text-[10px] font-black uppercase tracking-[0.2em] bg-primary/5 p-3 rounded-xl border border-primary/10"
                     >
                         <AlertCircle size={14} />
                         {error}
@@ -166,8 +166,8 @@ export default function PassMngmnt() {
                   success 
                     ? "bg-emerald-600 text-white" 
                     : isFormFilled
-                    ? "bg-gradient-to-r from-pink-600 to-rose-700 text-white shadow-lg hover:shadow-pink-500/20 active:scale-[0.98]"
-                    : "bg-white/5 border border-white/5 text-slate-800 cursor-not-allowed"
+                    ? "bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg hover:shadow-primary/20 active:scale-[0.98]"
+                    : "bg-bg-secondary border border-border-main text-text-muted cursor-not-allowed"
                 }`}
               >
                 {isSubmitting ? (
@@ -181,7 +181,7 @@ export default function PassMngmnt() {
               
               <div className="flex items-center gap-2 whitespace-nowrap">
                 <ShieldCheck size={14} className="text-emerald-500" />
-                <p className="text-slate-500 text-[10px] font-medium tracking-wide">
+                <p className="text-text-muted text-[10px] font-medium tracking-wide">
                   Your security is our top priority.
                 </p>
               </div>
@@ -192,3 +192,6 @@ export default function PassMngmnt() {
     </section>
   );
 }
+
+
+
