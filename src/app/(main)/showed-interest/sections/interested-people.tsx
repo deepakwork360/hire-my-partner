@@ -187,7 +187,7 @@ export default function InterestedPeople() {
       {/* Profile Grid */}
       <div className="relative">
          {displayedProfiles.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8">
+            <div className="flex flex-wrap justify-center gap-8">
                <AnimatePresence mode="popLayout">
                   {displayedProfiles.map((profile, index) => (
                   <motion.div

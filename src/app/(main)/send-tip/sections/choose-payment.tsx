@@ -438,7 +438,7 @@ export default function ChoosePayment({
             onClick={handleSubmit}
             disabled={!canSubmit}
             className={`
-              w-full h-20 rounded-[28px] font-black tracking-[0.35em] uppercase text-sm
+              w-full h-14 rounded-2xl font-black tracking-[0.35em] uppercase text-[10px]
               flex items-center justify-center gap-3 transition-all duration-500 relative overflow-hidden
               ${canSubmit
                 ? "bg-linear-to-r from-primary to-primary-dark text-white shadow-2xl shadow-primary/30 cursor-pointer"
@@ -450,7 +450,7 @@ export default function ChoosePayment({
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_2.5s_infinite]" />
             )}
             <span className="relative z-10 flex items-center gap-3">
-              <Zap size={18} className={canSubmit ? "fill-white" : ""} />
+              <Zap size={16} className={canSubmit ? "fill-white" : ""} />
               Send Tip
               {tipDisplay ? ` · ${tipDisplay}` : ""}
             </span>

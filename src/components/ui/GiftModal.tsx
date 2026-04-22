@@ -133,18 +133,18 @@ export default function GiftModal({
                       />
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex items-center gap-3 w-full">
                       <button 
                         onClick={onClose} 
-                        className="flex-1 h-16 rounded-2xl bg-bg-secondary text-text-main font-bold tracking-widest uppercase text-[10px] hover:bg-border-main/5 transition-all border border-border-main shadow-sm"
+                        className="flex-[1.2] h-14 rounded-2xl bg-bg-secondary text-text-main font-bold tracking-widest uppercase text-[9px] hover:bg-border-main/5 transition-all border border-border-main shadow-sm"
                       >
                         Cancel
                       </button>
                       <button 
                         onClick={handleSend} 
-                        className="flex-[2] h-16 rounded-2xl bg-gradient-to-r from-primary to-primary-dark text-white font-black tracking-[0.3em] uppercase text-[10px] shadow-xl shadow-primary/20 flex items-center justify-center gap-3 group hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        className="flex-[2] h-14 rounded-2xl bg-gradient-to-r from-primary to-primary-dark text-white font-black tracking-[0.2em] uppercase text-[9px] shadow-xl shadow-primary/20 flex items-center justify-center gap-3 group hover:scale-[1.02] active:scale-[0.98] transition-all"
                       >
-                        Confirm & Pay <CreditCard size={18} className="transition-transform group-hover:translate-x-1" />
+                        Confirm & Pay <CreditCard size={16} className="transition-transform group-hover:translate-x-1" />
                       </button>
                     </div>
                   </motion.div>

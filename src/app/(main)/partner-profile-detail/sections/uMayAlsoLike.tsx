@@ -72,8 +72,8 @@ export default function UMayAlsoLike() {
           </p>
         </div>
 
-        {/* 3-Column Profile Card Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 justify-center max-w-[1200px] mx-auto">
+        {/* Centered Profile Card Flex Layout */}
+        <div className="flex flex-wrap justify-center gap-8 md:gap-12 max-w-[1400px] mx-auto">
           {recommendedPartners.map((partner, idx) => (
             <motion.div
               key={partner.id}

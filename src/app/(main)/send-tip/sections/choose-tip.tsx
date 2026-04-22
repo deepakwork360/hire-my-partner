@@ -185,7 +185,7 @@ export default function ChooseTip({ onTipChange }: ProportionProps) {
                     whileHover={!error && customValue ? { scale: 1.05 } : {}}
                     whileTap={!error && customValue ? { scale: 0.95 } : {}}
                     disabled={!!error || !customValue}
-                    className={`h-24 px-8 rounded-3xl font-black uppercase tracking-widest text-xs transition-all flex flex-col items-center justify-center gap-2 min-w-[120px] ${
+                    className={`h-16 px-8 rounded-3xl font-black uppercase tracking-widest text-[10px] transition-all flex flex-col items-center justify-center gap-1 min-w-[110px] ${
                       isApplied
                       ? "bg-emerald-500 text-white shadow-[0_10px_30px_rgba(16,185,129,0.3)]"
                       : !error && customValue
@@ -193,7 +193,7 @@ export default function ChooseTip({ onTipChange }: ProportionProps) {
                       : "bg-bg-secondary text-text-muted cursor-not-allowed border border-border-main"
                     }`}
                   >
-                    <CheckCircle2 size={20} className={isApplied ? "scale-110" : ""} />
+                    <CheckCircle2 size={16} className={isApplied ? "scale-110" : ""} />
                     <span>{isApplied ? "Applied" : "Apply"}</span>
                   </motion.button>
                   
