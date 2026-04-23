@@ -49,14 +49,25 @@ export default function BrowsePartnersPage() {
       </AnimatePresence>
 
       {/* Reopen Button - Shows when sidebar is closed */}
-      {!isSidebarOpen && (
+      {/* Reopen Button - Positioned consistently with My Booking */}
+      {!isSidebarOpen && !isMobileFilterOpen && (
         <button
-          onClick={() => setIsSidebarOpen(true)}
-          className="hidden lg:flex fixed left-0 top-1/2 -translate-y-1/2 w-10 h-20 bg-primary/20 backdrop-blur-xl border border-primary/30 rounded-r-2xl items-center justify-center text-primary hover:bg-primary/30 transition-all z-50 group"
+          onClick={() => {
+            if (window.innerWidth < 1024) {
+              setIsMobileFilterOpen(true);
+            } else {
+              setIsSidebarOpen(true);
+            }
+          }}
+          className="fixed left-0 top-[30%] -translate-y-1/2 w-10 h-24 bg-primary/10 backdrop-blur-2xl border border-primary/20 border-l-0 rounded-r-2xl flex items-center justify-center text-primary hover:bg-primary/20 transition-all z-50 group"
           title="Open Filters"
         >
-          <ChevronRight size={24} className="group-hover:translate-x-1 transition-transform" />
-          <span className="[writing-mode:vertical-lr] rotate-180 text-[10px] font-bold uppercase tracking-widest ml-1">Filters</span>
+          <div className="flex flex-col items-center gap-2">
+            <ListFilter size={18} className="group-hover:scale-110 transition-transform" />
+            <span className="[writing-mode:vertical-lr] rotate-180 text-[9px] font-black uppercase tracking-[0.2em] text-text-muted group-hover:text-white transition-colors">
+              Filters
+            </span>
+          </div>
         </button>
       )}
 
@@ -66,20 +77,6 @@ export default function BrowsePartnersPage() {
 
         <div className="w-full max-w-[1600px] mx-auto px-4 md:px-8 py-12 flex-1">
           <div className="flex flex-col gap-8">
-            {/* Mobile Filter Toggle */}
-            <div className="lg:hidden w-full flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-border-main mb-4">
-              <div className="flex items-center gap-3">
-                <ListFilter className="w-5 h-5 text-primary" />
-                <span className="text-white font-bold">Filters</span>
-              </div>
-              <button
-                onClick={() => setIsMobileFilterOpen(true)}
-                className="px-6 py-2 rounded-xl bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20"
-              >
-                Change
-              </button>
-            </div>
-
             {/* Main Content Area */}
             <main className="w-full space-y-8">
               {/* Results Header */}

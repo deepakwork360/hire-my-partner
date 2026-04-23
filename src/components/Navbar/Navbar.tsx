@@ -125,17 +125,17 @@ export default function Navbar() {
             <Link
               key={item.label}
               href={item.href}
-              className={`relative px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 
+              className={`relative px-5 py-2 rounded-full text-sm font-medium transition-all duration-500 group
               ${
                 pathname === item.href
                   ? "bg-linear-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/25 border-none"
                   : isScrolled
                     ? "text-text-main font-bold hover:text-primary"
-                    : "text-white/90 hover:text-white"
+                    : "text-white/90 hover:text-primary"
               }`}
             >
-              {item.label}
-              <span className="absolute inset-0 rounded-full bg-white/5 opacity-0 hover:opacity-100 transition" />
+              <span className="relative z-10">{item.label}</span>
+              <span className="absolute inset-0 rounded-full bg-primary/10 opacity-0 group-hover:opacity-100 transition-all duration-500 scale-75 group-hover:scale-100" />
             </Link>
           ))}
         </div>
@@ -258,7 +258,7 @@ export default function Navbar() {
               >
                 {/* CTA Button */}
                 <Link
-                  href="/contact"
+                  href="/browse-partners"
                   onClick={() => setIsOpen(false)}
                   className="block w-full text-center py-5 bg-linear-to-r from-primary-dark to-accent text-white font-black text-xl rounded-2xl shadow-xl shadow-primary/20 active:scale-95 transition-transform"
                 >

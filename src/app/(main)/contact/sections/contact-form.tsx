@@ -184,7 +184,7 @@ export default function ContactForm() {
               <button
                 type="submit"
                 disabled={isSent}
-                className={`w-full h-16 rounded-2xl font-bold text-sm tracking-widest uppercase flex items-center justify-center gap-3 transition-all duration-500 ${
+                className={`w-full h-16 rounded-2xl font-bold text-sm cursor-pointer tracking-widest uppercase flex items-center justify-center gap-3 transition-all duration-500 ${
                   isSent
                     ? "bg-green-500/20 text-green-400 border border-green-500/30"
                     : "bg-linear-to-r from-primary-dark to-accent text-white shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1"

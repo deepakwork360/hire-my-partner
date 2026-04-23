@@ -114,14 +114,14 @@ export default function FilterBy({ activeTab, onTabChange, onClose }: FilterByPr
       <div className="p-6 lg:p-8 bg-bg-secondary border-t border-border-main grid grid-cols-2 gap-4 z-30">
         <button
           onClick={handleReset}
-          className="flex items-center justify-center gap-2 h-14 rounded-2xl bg-bg-card border border-border-main text-text-main font-bold hover:bg-bg-secondary transition-all group"
+          className="flex cursor-pointer items-center justify-center gap-2 h-14 rounded-2xl bg-bg-card border border-border-main text-text-main font-bold hover:bg-bg-secondary transition-all group"
         >
           <RefreshCcw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
           <span>Reset</span>
         </button>
         <button 
           onClick={handleApply}
-          className="h-14 rounded-2xl bg-linear-to-r from-primary to-primary-dark font-bold text-white text-sm tracking-wide shadow-lg shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all"
+          className="h-14 cursor-pointer rounded-2xl bg-linear-to-r from-primary to-primary-dark font-bold text-white text-sm tracking-wide shadow-lg shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all"
         >
           Apply Filters
         </button>

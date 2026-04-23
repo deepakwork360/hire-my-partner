@@ -55,7 +55,7 @@ export default function EarningPart() {
           <button 
             onClick={handleWithdraw}
             disabled={isWithdrawing || done}
-            className={`group relative overflow-hidden px-10 h-16 rounded-2xl font-black tracking-[0.2em] uppercase text-xs flex items-center justify-center gap-3 transition-all duration-500 ${
+            className={`group relative cursor-pointer overflow-hidden px-10 h-16 rounded-2xl font-black tracking-[0.2em] uppercase text-xs flex items-center justify-center gap-3 transition-all duration-500 ${
               done 
                 ? "bg-emerald-600 text-white" 
                 : "bg-linear-to-r from-primary-dark via-primary to-accent text-white shadow-xl shadow-primary/20 hover:shadow-primary/40 active:scale-95"

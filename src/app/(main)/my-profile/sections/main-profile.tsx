@@ -2,7 +2,7 @@
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
-import { Camera, MapPin, Star, ShieldCheck, Award, Zap, Heart, Share2, MoreHorizontal } from "lucide-react";
+import { Camera, MapPin, Star, ShieldCheck, Award, Zap, Heart, Share2, MoreHorizontal, X, Pencil } from "lucide-react";
 import Image from "next/image";
 import { useState, useRef } from "react";
 
@@ -11,6 +11,7 @@ const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "600",
 
 export default function MainProfile() {
   const [avatarUrl, setAvatarUrl] = useState("/images/img1.webp");
+  const [isCustomImage, setIsCustomImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef(null);
   
@@ -31,6 +32,16 @@ export default function MainProfile() {
       }
       const url = URL.createObjectURL(file);
       setAvatarUrl(url);
+      setIsCustomImage(true);
+    }
+  };
+
+  const handleResetImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setAvatarUrl("/images/img1.webp");
+    setIsCustomImage(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -92,7 +103,7 @@ export default function MainProfile() {
                     >
                       <div 
                         onClick={handleImageClick}
-                         className="relative w-56 h-72 md:w-64 md:h-80 rounded-[40px] overflow-hidden border-4 border-bg-card shadow-2xl shadow-black/20 cursor-pointer group/img"
+                        className="relative w-56 h-72 md:w-64 md:h-80 rounded-[40px] overflow-hidden border-4 border-bg-card shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_30px_60px_-15px_rgba(var(--primary-rgb),0.2)] cursor-pointer group/img transition-all duration-500 hover:border-primary/30"
                       >
                         <Image 
                           src={avatarUrl} 
@@ -101,12 +112,38 @@ export default function MainProfile() {
                           className="object-cover object-top rounded-[40px] transition-transform duration-700 group-hover/img:scale-110"
                           priority
                         />
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 transition-all duration-300 flex flex-col items-center justify-center backdrop-blur-md gap-4 rounded-[40px]">
-                           <div className="w-14 h-14 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
-                             <Camera size={24} className="text-white" />
-                           </div>
-                           <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white">Update</span>
-                        </div>
+                        {!isCustomImage && (
+                          <div className="absolute inset-0 bg-bg-base/60 opacity-0 group-hover/img:opacity-100 transition-all duration-300 flex flex-col items-center justify-center backdrop-blur-sm gap-4 rounded-[40px]">
+                             <div className="w-14 h-14 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
+                               <Camera size={24} className="text-white" />
+                             </div>
+                             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white">Update Photo</span>
+                          </div>
+                        )}
+
+                        {isCustomImage && (
+                          <button
+                            onClick={handleResetImage}
+                            className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer"
+                          >
+                            <X size={16} strokeWidth={3} stroke="currentColor" />
+                          </button>
+                        )}
+
+                         {/* Mobile-only Update Hint Badge - Moved to bottom-left to avoid overlap */}
+                         <motion.div 
+                           animate={{ y: [0, -5, 0] }}
+                           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                           className="lg:hidden absolute top-6 left-6 z-30 w-12 h-12 rounded-2xl bg-primary backdrop-blur-xl text-white flex items-center justify-center shadow-2xl border-2 border-white/30 overflow-hidden"
+                         >
+                           <Pencil size={18} className="relative z-10" />
+                           <motion.div
+                             initial={{ left: "-100%" }}
+                             animate={{ left: "200%" }}
+                             transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
+                             className="absolute top-0 bottom-0 w-8 bg-gradient-to-r from-transparent via-white/40 to-transparent -skew-x-20"
+                           />
+                         </motion.div>
                       </div>
                       
                       {/* Floating Badge */}

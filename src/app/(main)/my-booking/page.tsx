@@ -19,8 +19,7 @@ export default function MyBooking() {
     <div className="bg-bg-base min-h-screen relative flex">
       <SideDashboard activeItem="booking" />
       
-      {/* Desktop Sidebar - Collapsible */}
-      {/* Desktop Filter Drawer (Overlay) */}
+      {/* Filter Drawer (Overlay) - Works on Desktop & Mobile */}
       <AnimatePresence>
         {isSidebarOpen && (
           <>
@@ -30,7 +29,7 @@ export default function MyBooking() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsSidebarOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-md z-[90] hidden lg:block"
+              className="fixed inset-0 bg-black/60 backdrop-blur-md z-[90]"
             />
             {/* Drawer */}
             <motion.aside
@@ -38,7 +37,7 @@ export default function MyBooking() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -400, opacity: 0 }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="hidden lg:block fixed left-0 top-0 bottom-0 w-[400px] z-[100] bg-bg-secondary border-r border-border-main shadow-2xl"
+              className="fixed left-0 top-0 bottom-0 w-full sm:w-[400px] z-[100] bg-bg-secondary border-r border-border-main shadow-2xl"
             >
               <div className="relative h-full">
                 <FilterBy
@@ -56,7 +55,7 @@ export default function MyBooking() {
       {!isSidebarOpen && (
         <button
           onClick={() => setIsSidebarOpen(true)}
-          className="hidden lg:flex fixed left-0 top-[25%] -translate-y-1/2 w-10 h-24 bg-primary/10 backdrop-blur-2xl border border-primary/20 border-l-0 rounded-r-2xl items-center justify-center text-primary hover:bg-primary/20 transition-all z-50 group"
+          className="fixed left-0 top-[25%] -translate-y-1/2 w-10 h-24 bg-primary/10 backdrop-blur-2xl border border-primary/20 border-l-0 rounded-r-2xl flex items-center justify-center text-primary hover:bg-primary/20 transition-all z-50 group"
           title="Open Filters"
         >
           <div className="flex flex-col items-center gap-2">

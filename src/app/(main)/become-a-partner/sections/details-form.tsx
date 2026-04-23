@@ -697,17 +697,21 @@ export default function DetailsForm() {
                   </SectionTitle>
                   
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-6">
-                    {formData.gallery.map((photo, index) => {
+                    {formData.gallery.slice(0, Math.max(4, Math.min(9, formData.gallery.filter(p => p !== null).length + 1))).map((photo, index) => {
                       const isRequired = index < 3;
                       const hasError = showErrors && isRequired && !photo;
 
                       return (
-                        <div
+                        <motion.div
                           key={index}
-                          className={`relative aspect-square rounded-[24px] overflow-hidden border-2 transition-all duration-500 shadow-lg ${
+                          animate={hasError ? { 
+                            boxShadow: ["0 0 20px rgba(239,68,68,0.1)", "0 0 30px rgba(239,68,68,0.3)", "0 0 20px rgba(239,68,68,0.1)"] 
+                          } : {}}
+                          transition={{ duration: 3, repeat: Infinity }}
+                          className={`relative aspect-square rounded-[32px] overflow-hidden border-2 transition-all duration-700 group shadow-2xl ${
                             hasError 
-                              ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] bg-red-500/5 animate-pulse" 
-                              : "border-border-main bg-bg-secondary hover:border-primary/50"
+                              ? "border-red-500/50 bg-red-500/5" 
+                              : "border-white/5 bg-bg-secondary/40 backdrop-blur-xl hover:border-primary/40 hover:shadow-primary/20"
                           }`}
                         >
                           {photo ? (
@@ -715,34 +719,46 @@ export default function DetailsForm() {
                               <img
                                 src={photo}
                                 alt={`Gallery ${index + 1}`}
-                                className="w-full h-full object-cover group-hover/photo:scale-110 transition-transform duration-700"
+                                className="w-full h-full object-cover group-hover/photo:scale-110 transition-transform duration-1000"
                               />
+                              <div className="absolute inset-0 bg-black/20 group-hover/photo:bg-black/40 transition-colors duration-500" />
                               <button
                                 type="button"
                                 onClick={() => removeGalleryPhoto(index)}
-                                className="absolute top-2 right-2 w-8 h-8 bg-accent/90 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white/20 z-10 transition-all duration-300 hover:bg-accent hover:scale-110"
+                                className="absolute top-3 right-3 w-10 h-10 bg-accent/90 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shadow-lg border-2 border-white/20 z-10 transition-all duration-300 hover:bg-accent hover:scale-110 hover:-rotate-12"
                                 title="Remove photo"
                               >
-                                <X className="w-4 h-4" />
+                                <X className="w-5 h-5" />
                               </button>
                             </div>
                           ) : (
-                            <label className="w-full h-full flex flex-col items-center justify-center gap-2 cursor-pointer group/add transition-all duration-300 hover:bg-primary/5">
-                              <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-transform duration-500 group-hover/add:scale-110 ${hasError ? "bg-red-500/20" : "bg-primary/10"}`}>
-                                <Camera className={`w-5 h-5 ${hasError ? "text-red-500" : "text-primary"}`} />
+                            <label className="w-full h-full flex flex-col items-center justify-center gap-3 cursor-pointer group/add transition-all duration-500 hover:bg-primary/5">
+                              <div className={`w-14 h-14 rounded-[20px] flex items-center justify-center transition-all duration-700 group-hover/add:rotate-90 group-hover/add:scale-110 ${hasError ? "bg-red-500/20" : "bg-primary/10 border border-primary/20"}`}>
+                                <Camera className={`w-6 h-6 ${hasError ? "text-red-500" : "text-primary group-hover/add:text-accent"}`} />
                               </div>
-                              <span className={`text-[9px] font-black uppercase tracking-widest ${hasError ? "text-red-500" : "text-text-muted group-hover/add:text-primary"}`}>
-                                {isRequired ? "Required" : `Photo ${index + 1}`}
-                              </span>
+                              <div className="flex flex-col items-center gap-1">
+                                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${hasError ? "text-red-500" : "text-text-muted group-hover/add:text-primary"}`}>
+                                  {isRequired ? "Required" : `Photo ${index + 1}`}
+                                </span>
+                                {isRequired && !photo && (
+                                  <motion.div 
+                                    animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                    className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]" 
+                                  />
+                                )}
+                              </div>
                               <input
                                 type="file"
                                 accept="image/*"
                                 className="hidden"
                                 onChange={(e) => handleGalleryUpload(index, e)}
                               />
+                              {/* Hover Effect Light */}
+                              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover/add:opacity-100 transition-opacity duration-700" />
                             </label>
                           )}
-                        </div>
+                        </motion.div>
                       );
                     })}
                   </div>
@@ -859,11 +875,15 @@ export default function DetailsForm() {
                       const hasError = showErrors && isRequired && !formData.idProofs[index];
 
                       return (
-                        <div
+                        <motion.div
                           key={index}
+                          animate={hasError ? { 
+                            boxShadow: ["0 0 20px rgba(239,68,68,0.1)", "0 0 30px rgba(239,68,68,0.3)", "0 0 20px rgba(239,68,68,0.1)"] 
+                          } : {}}
+                          transition={{ duration: 3, repeat: Infinity }}
                           className={`relative w-36 h-28 border-2 border-dashed transition-all duration-500 flex items-center justify-center cursor-pointer overflow-hidden rounded-2xl group shadow-sm ${
                             hasError 
-                              ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] bg-red-500/5 animate-pulse" 
+                              ? "border-red-500 bg-red-500/5" 
                               : "border-border-main bg-bg-card hover:border-primary hover:bg-bg-secondary hover:shadow-[0_0_25px_rgba(var(--primary-rgb),0.15)]"
                           }`}
                         >
@@ -895,9 +915,18 @@ export default function DetailsForm() {
                             <>
                               <div className="flex flex-col items-center gap-2">
                                 <Plus className={`w-8 h-8 group-hover:scale-125 transition-all duration-300 ${hasError ? "text-red-500" : "text-text-muted group-hover:text-primary"}`} />
-                                <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${hasError ? "text-red-500" : "text-text-muted"}`}>
-                                  {isRequired ? "Required" : `Proof ${index + 1}`}
-                                </span>
+                                <div className="flex flex-col items-center gap-1">
+                                  <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${hasError ? "text-red-500" : "text-text-muted group-hover:text-primary"}`}>
+                                    {index === 0 ? "ID Front" : index === 1 ? "ID Back" : "Selfie"}
+                                  </span>
+                                  {isRequired && !formData.idProofs[index] && (
+                                    <motion.div 
+                                      animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
+                                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                      className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]" 
+                                    />
+                                  )}
+                                </div>
                               </div>
                               <input
                                 type="file"
@@ -907,7 +936,7 @@ export default function DetailsForm() {
                               />
                             </>
                           )}
-                        </div>
+                        </motion.div>
                       );
                     })}
                   </div>
@@ -1043,6 +1072,59 @@ export default function DetailsForm() {
                       {formData.bio}
                     </div>
                   </div>
+
+                  {/* Gallery Section in Summary */}
+                  {formData.gallery.filter(Boolean).length > 0 && (
+                    <div className="space-y-4 pt-4">
+                      <SectionTitle>Uploaded Gallery</SectionTitle>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 bg-bg-secondary/30 p-6 rounded-[32px] border border-border-main">
+                        {formData.gallery.filter(Boolean).map((photo, i) => (
+                          <motion.div 
+                            key={i}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: i * 0.1 }}
+                            className="aspect-square rounded-2xl overflow-hidden border-2 border-white/5 shadow-xl group"
+                          >
+                            <img 
+                              src={photo!} 
+                              alt={`Gallery ${i}`} 
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                            />
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Verification Proofs in Summary */}
+                  {formData.idProofs.filter(Boolean).length > 0 && (
+                    <div className="space-y-4 pt-4">
+                      <SectionTitle>Verification Proofs</SectionTitle>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 bg-bg-secondary/30 p-6 rounded-[32px] border border-border-main">
+                        {formData.idProofs.map((proof, i) => proof && (
+                          <motion.div 
+                            key={i}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: i * 0.1 }}
+                            className="aspect-[4/3] rounded-2xl overflow-hidden border-2 border-white/5 shadow-xl group relative"
+                          >
+                            <img 
+                              src={proof} 
+                              alt={`Proof ${i}`} 
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                            />
+                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <span className="text-[10px] font-black text-white uppercase tracking-widest bg-primary/80 px-3 py-1 rounded-full backdrop-blur-md">
+                                {i === 0 ? "ID Front" : i === 1 ? "ID Back" : "Selfie"}
+                              </span>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Right Column: Verification & Status */}
@@ -1103,7 +1185,7 @@ export default function DetailsForm() {
                       <p className="text-text-muted text-sm font-medium leading-relaxed">
                         Congratulations! Your application is in the system.
                         We'll send an invite to{" "}
-                        <span className="text-white font-bold">
+                        <span className="text-text-main font-bold">
                           {formData.email}
                         </span>{" "}
                         once approved.

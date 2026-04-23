@@ -40,9 +40,12 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} ${inter.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <head>
         <script
+          id="theme-strategy"
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `
               (function() {

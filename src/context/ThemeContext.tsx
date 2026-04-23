@@ -34,6 +34,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     if (savedAppearance && (savedAppearance === "light" || savedAppearance === "dark")) {
       setAppearanceState(savedAppearance);
+    } else {
+      // Check system preference if user hasn't set one
+      const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setAppearanceState(systemPrefersDark ? "dark" : "light");
     }
 
     if (preferenceFlag && savedTheme && THEMES.includes(savedTheme)) {
