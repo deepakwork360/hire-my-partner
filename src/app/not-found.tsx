@@ -31,7 +31,7 @@ export default function NotFound() {
             initial={{ opacity: 0, letterSpacing: "-0.2em" }}
             animate={{ opacity: 1, letterSpacing: "0.1em" }}
             transition={{ duration: 1.5, ease: "easeOut" }}
-            className="text-[25vw] md:text-[220px] font-black text-transparent bg-clip-text bg-gradient-to-b from-text-main/20 to-text-main/5 leading-none select-none"
+            className="text-[25vw] md:text-[220px] font-black text-transparent bg-clip-text bg-linear-to-b from-text-main/20 to-text-main/5 leading-none select-none"
           >
             404
           </motion.div>

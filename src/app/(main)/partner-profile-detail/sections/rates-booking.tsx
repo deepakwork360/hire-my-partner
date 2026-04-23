@@ -74,7 +74,7 @@ export default function RatesBooking() {
               >
                 Rates & <span className="text-primary">Options</span>
               </h2>
-              <div className="w-12 h-1 bg-gradient-to-r from-primary to-transparent rounded-full mt-2" />
+              <div className="w-12 h-1 bg-linear-to-r from-primary to-transparent rounded-full mt-2" />
             </motion.div>
 
             {/* Base Rates */}
@@ -156,7 +156,7 @@ export default function RatesBooking() {
                   Summary
                 </h3>
 
-                <div className="space-y-3 mb-8 flex-grow">
+                <div className="space-y-3 mb-8 grow">
                    <div className="flex justify-between items-center group">
                       <span className="text-text-muted text-[10px] font-bold uppercase tracking-widest">Base Investment</span>
                       <span className="text-text-main text-sm font-black">₹{hourlyRate * minHours}</span>
@@ -192,7 +192,7 @@ export default function RatesBooking() {
                      href="/checkout"
                      className="group relative w-full h-12 bg-primary rounded-xl flex items-center justify-center gap-3 text-white text-[10px] font-black uppercase tracking-[0.3em] shadow-lg hover:-translate-y-1 transition-all overflow-hidden"
                    >
-                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shine" />
+                     <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shine" />
                      <HeartHandshake size={18} />
                      <span>Secure Booking</span>
                    </Link>

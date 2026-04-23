@@ -47,7 +47,7 @@ export default function FAQ() {
             initial={{ opacity: 0, y: -20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className={`${rochester.className} text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main mb-4`}
+            className={`${rochester.className} text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main mb-4`}
           >
             Frequently Asked Questions
           </motion.h2>

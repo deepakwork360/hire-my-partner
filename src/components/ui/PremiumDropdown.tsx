@@ -49,7 +49,7 @@ export default function PremiumDropdown({
   }, []);
 
   return (
-    <div ref={containerRef} className={`relative flex flex-col gap-2 ${outfit.className} ${className} ${isOpen ? "z-[10000]" : "z-auto"}`}>
+    <div ref={containerRef} className={`relative flex flex-col gap-2 ${outfit.className} ${className} ${isOpen ? "z-10000" : "z-auto"}`}>
       {label && (
         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-2">
           {label}
@@ -93,7 +93,7 @@ export default function PremiumDropdown({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
               transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-              className="absolute z-[9999] top-full mt-3 w-full bg-bg-secondary border border-border-main rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-3xl overflow-hidden p-2"
+              className="absolute z-9999 top-full mt-3 w-full bg-bg-secondary border border-border-main rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-3xl overflow-hidden p-2"
             >
               <div className="max-h-60 overflow-y-auto custom-scrollbar">
                 {options.map((option, idx) => {

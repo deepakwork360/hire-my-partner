@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 export default function PageHeaderAccent() {
   return (
-    <div className="absolute top-0 left-0 right-0 h-[400px] overflow-hidden pointer-events-none z-[5]">
+    <div className="absolute top-0 left-0 right-0 h-[400px] overflow-hidden pointer-events-none z-5">
       {/* The "Snake" Animated Gradient */}
       <motion.div
         initial={{ y: -100, opacity: 0 }}

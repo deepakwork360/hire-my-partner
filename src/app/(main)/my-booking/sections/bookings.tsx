@@ -268,7 +268,7 @@ function BookingCard({
               <motion.button
                 whileHover={{ y: -3, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex-1 h-12 bg-gradient-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
+                className="flex-1 h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
               >
                 <Calendar className="w-4 h-4" />
                 <span>Book Again</span>
@@ -281,7 +281,7 @@ function BookingCard({
                       onClick={() => setIsPaid(true)}
                       whileHover={{ y: -3, scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="flex-[2] h-12 bg-gradient-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
+                      className="flex-2 h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Pay Now</span>
@@ -301,7 +301,7 @@ function BookingCard({
                     <motion.button
                       whileHover={{ y: -3, scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="flex-[2] h-12 bg-gradient-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
+                      className="flex-2 h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
                     >
                       <MessageCircle className="w-4 h-4" />
                       <span>Message</span>
@@ -328,7 +328,7 @@ function BookingCard({
                     onClick={() => setRequestStatus("accepted")}
                     whileHover={{ y: -3, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="flex-1 h-12 bg-gradient-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
+                    className="flex-1 h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                     <span>Accept</span>
@@ -351,7 +351,7 @@ function BookingCard({
                   <motion.button
                     whileHover={{ y: -3, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="flex-1 h-12 bg-gradient-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all"
+                    className="flex-1 h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all"
                   >
                     <MessageCircle className="w-4 h-4" />
                     <span>Message Client</span>

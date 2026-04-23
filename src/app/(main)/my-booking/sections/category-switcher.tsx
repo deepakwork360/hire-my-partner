@@ -24,7 +24,7 @@ export default function CategorySwitcher({
   return (
     <div className={`flex items-center ${className} ${outfit.className}`}>
       <div className="flex p-1.5 bg-white/5 backdrop-blur-3xl border border-border-main rounded-[24px] shadow-2xl relative overflow-hidden group">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-linear-to-r from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
         <button
           onClick={() => setActiveCategory("hired_by_me")}
@@ -37,7 +37,7 @@ export default function CategorySwitcher({
           {activeCategory === "hired_by_me" && (
             <motion.div
               layoutId={`${id}-activeCategory`}
-              className="absolute inset-0 bg-gradient-to-r from-primary-dark to-accent rounded-[18px]"
+              className="absolute inset-0 bg-linear-to-r from-primary-dark to-accent rounded-[18px]"
             />
           )}
           <span className="relative z-10">Hired by Me</span>
@@ -54,7 +54,7 @@ export default function CategorySwitcher({
           {activeCategory === "hired_me" && (
             <motion.div
               layoutId={`${id}-activeCategory`}
-              className="absolute inset-0 bg-gradient-to-r from-primary-dark to-accent rounded-[18px]"
+              className="absolute inset-0 bg-linear-to-r from-primary-dark to-accent rounded-[18px]"
             />
           )}
           <span className="relative z-10">Hired Me</span>

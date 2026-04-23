@@ -11,7 +11,7 @@ const outfit = Outfit({
 
 export default function Loader() {
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#0a0a0a] overflow-hidden">
+    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-[#0a0a0a] overflow-hidden">
       {/* Background Ambient Glows */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-pink-500/10 rounded-full blur-[120px]" />
       <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-rose-500/5 rounded-full blur-[100px]" />
@@ -81,7 +81,7 @@ export default function Loader() {
           <span className={`${outfit.className} text-white/40 text-[10px] uppercase tracking-[0.5em]`}>
             Initializing Experience
           </span>
-          <div className="w-32 h-[1px] bg-white/5 relative overflow-hidden">
+          <div className="w-32 h-px bg-white/5 relative overflow-hidden">
             <motion.div
               animate={{ x: ["-100%", "100%"] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}

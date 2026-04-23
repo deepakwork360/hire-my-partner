@@ -17,7 +17,7 @@ const outfit = Outfit({
 const SocialIcon = ({ d, href }: { d: string; href: string }) => (
   <Link
     href={href}
-    className="w-10 h-10 rounded-full bg-bg-card flex items-center justify-center hover:bg-gradient-to-br hover:from-primary hover:to-accent transition-all duration-300 group hover:-translate-y-1 shadow-lg border border-border-main"
+    className="w-10 h-10 rounded-full bg-bg-card flex items-center justify-center hover:bg-linear-to-br hover:from-primary hover:to-accent transition-all duration-300 group hover:-translate-y-1 shadow-lg border border-border-main"
   >
     <svg
       viewBox="0 0 24 24"
@@ -96,7 +96,7 @@ export default function Footer() {
                 width={100}
                 height={100}
               />
-              <h1 className={`${rochester.className} text-4xl text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary mb-2`}>
+              <h1 className={`${rochester.className} text-4xl text-transparent bg-clip-text bg-linear-to-r from-primary via-accent to-primary mb-2`}>
                 Hire Your Partner
               </h1>
               <p className={`${outfit.className} text-transparent bg-clip-text bg-linear-to-r from-primary to-accent text-lg italic font-medium`}>
@@ -126,7 +126,7 @@ export default function Footer() {
           {/* Quick Links */}
           <div>
             <h4
-              className={`${rochester.className} text-2xl text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main mb-8 border-b border-border-main pb-2 w-fit`}
+              className={`${rochester.className} text-2xl text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main mb-8 border-b border-border-main pb-2 w-fit`}
             >
               Contact Details
             </h4>
@@ -147,7 +147,7 @@ export default function Footer() {
           {/* Account */}
           <div>
             <h4
-              className={`${rochester.className} text-2xl text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main mb-8 border-b border-border-main pb-2 w-fit`}
+              className={`${rochester.className} text-2xl text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main mb-8 border-b border-border-main pb-2 w-fit`}
             >
               Quick Links
             </h4>
@@ -168,7 +168,7 @@ export default function Footer() {
           {/* Legal */}
           <div>
             <h4
-              className={`${rochester.className} text-2xl text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main mb-8 border-b border-border-main pb-2 w-fit`}
+              className={`${rochester.className} text-2xl text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main mb-8 border-b border-border-main pb-2 w-fit`}
             >
               Terms & Conditions
             </h4>

@@ -51,7 +51,7 @@ export default function Report() {
                   <Flag className="w-6 h-6 text-accent" />
                 </div>
                 <h2
-                  className={`${rochester.className} text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-accent to-text-main`}
+                  className={`${rochester.className} text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-accent to-text-main`}
                 >
                   Report Profile
                 </h2>
@@ -87,7 +87,7 @@ export default function Report() {
                       animate={{ opacity: 1, y: 0, scaleY: 1 }}
                       exit={{ opacity: 0, y: -10, scaleY: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute top-full left-0 w-full mt-2 bg-bg-base border border-border-main rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden z-[60] transform origin-top"
+                      className="absolute top-full left-0 w-full mt-2 bg-bg-base border border-border-main rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden z-60 transform origin-top"
                     >
                       {REPORT_REASONS.map((reason, idx) => (
                         <div

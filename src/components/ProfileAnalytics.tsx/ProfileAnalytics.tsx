@@ -88,7 +88,7 @@ export default function ProfileAnalytics({ data }: Props) {
             >
               {/* Decorative Accents */}
               <div className={`absolute -right-4 -top-4 w-20 h-20 ${stat.bg} rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition-opacity`} />
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-white/5 to-transparent" />
 
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-linear-to-br ${stat.color} shadow-lg shadow-primary/20`}>
                 <Icon size={24} className="text-white" />

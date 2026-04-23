@@ -40,7 +40,7 @@ export default function DeleteAccount() {
                  <AlertTriangle size={13} className="text-accent" />
                  <span className="text-accent text-[10px] font-black uppercase tracking-[0.3em]">Danger Zone</span>
               </div>
-              <h2 className={`${rochester.className} text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-accent to-text-main tracking-wide leading-tight`}>
+              <h2 className={`${rochester.className} text-4xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-accent to-text-main tracking-wide leading-tight`}>
                 Delete Account
               </h2>
               <p className="text-text-muted text-sm mt-3 max-w-lg mx-auto leading-relaxed">
@@ -78,7 +78,7 @@ export default function DeleteAccount() {
       {/* Confirmation Modal */}
       <AnimatePresence>
         {showConfirm && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+          <div className="fixed inset-0 z-100 flex items-center justify-center px-4">
             <motion.div 
                initial={{ opacity: 0 }}
                animate={{ opacity: 1 }}

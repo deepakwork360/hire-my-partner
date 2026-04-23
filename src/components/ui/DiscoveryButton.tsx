@@ -40,9 +40,9 @@ export default function DiscoveryButton({
       />
 
       {/* 2. Rotating Border Container */}
-      <div className="relative p-[1px] rounded-full overflow-hidden bg-white/10 group-hover:bg-transparent transition-colors duration-500">
+      <div className="relative p-px rounded-full overflow-hidden bg-white/10 group-hover:bg-transparent transition-colors duration-500">
         {/* Animated Conic Gradient Border */}
-        <div className="absolute inset-[-100%] bg-[conic-gradient(from_0deg,transparent_0deg,transparent_240deg,rgb(var(--primary-rgb))_270deg,rgb(var(--primary-dark-rgb))_300deg,transparent_360deg)] animate-[spin_4s_linear_infinite] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute -inset-full bg-[conic-gradient(from_0deg,transparent_0deg,transparent_240deg,rgb(var(--primary-rgb))_270deg,rgb(var(--primary-dark-rgb))_300deg,transparent_360deg)] animate-[spin_4s_linear_infinite] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
         {/* 3. Main Button Surface (Glassmorphism) */}
         <button

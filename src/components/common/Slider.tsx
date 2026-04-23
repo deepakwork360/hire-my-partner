@@ -114,7 +114,7 @@ export default function Slider<T>({
                     {/* Glowing Ring */}
                     <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl group-hover:blur-2xl transition-all duration-500 scale-150 opacity-0 group-hover:opacity-100" />
                     
-                    <div className="relative w-24 h-24 rounded-full bg-bg-secondary border border-border-main flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-primary group-hover:to-primary-dark group-hover:border-primary-dark transition-all duration-500 group-hover:scale-110 shadow-lg">
+                    <div className="relative w-24 h-24 rounded-full bg-bg-secondary border border-border-main flex items-center justify-center group-hover:bg-linear-to-br group-hover:from-primary group-hover:to-primary-dark group-hover:border-primary-dark transition-all duration-500 group-hover:scale-110 shadow-lg">
                       <Eye className="w-10 h-10 text-primary-dark group-hover:text-white transition-colors duration-500" />
                     </div>
 

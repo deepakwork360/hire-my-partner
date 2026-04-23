@@ -66,7 +66,7 @@ export default function HowItWorks() {
           className="text-center mb-10 md:mb-14"
         >
           <h2
-            className={`${rochester.className} text-center text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary animate-in fade-in slide-in-from-bottom-4 duration-700 py-4 leading-[1.2] mb-6`}
+            className={`${rochester.className} text-center text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-linear-to-r from-primary via-accent to-primary animate-in fade-in slide-in-from-bottom-4 duration-700 py-4 leading-[1.2] mb-6`}
           >
             How It Works
           </h2>

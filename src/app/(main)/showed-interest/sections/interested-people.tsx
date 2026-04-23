@@ -222,7 +222,7 @@ export default function InterestedPeople() {
             <motion.div 
                initial={{ opacity: 0 }}
                animate={{ opacity: 1 }}
-               className="py-20 flex flex-col items-center justify-center text-center gap-6 bg-white/[0.01] border border-dashed border-border-main rounded-[40px]"
+               className="py-20 flex flex-col items-center justify-center text-center gap-6 bg-white/1 border border-dashed border-border-main rounded-[40px]"
             >
                <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center text-slate-700">
                   <X size={40} />

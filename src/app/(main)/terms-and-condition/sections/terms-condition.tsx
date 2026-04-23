@@ -178,7 +178,7 @@ export default function TermsCondition() {
                 <div className="flex-1 space-y-4">
                   {term.content.map((text, i) => (
                     <div key={i} className="flex gap-4">
-                      <ChevronRight className="w-4 h-4 text-primary mt-1.5 flex-shrink-0" />
+                      <ChevronRight className="w-4 h-4 text-primary mt-1.5 shrink-0" />
                       <p className="text-text-muted text-sm md:text-base leading-relaxed tracking-wide">
                         {text}
                       </p>

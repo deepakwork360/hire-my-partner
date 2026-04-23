@@ -280,7 +280,7 @@ export default function BookDetails() {
                 whileTap={{ scale: 0.98 }}
                 className="w-full h-16 rounded-2xl bg-linear-to-r from-primary-dark to-accent text-white font-black tracking-[0.3em] uppercase text-xs shadow-[0_20px_40px_-10px_rgba(var(--primary-rgb),0.5)] flex items-center justify-center gap-3 group relative overflow-hidden"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 <span className="relative z-10 flex items-center gap-3">
                   Send Booking Request{" "}
                   <ChevronRight

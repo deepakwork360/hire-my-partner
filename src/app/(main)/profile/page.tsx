@@ -48,7 +48,7 @@ const ProfilePage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Photo Gallery */}
           <div className="space-y-4">
-            <div className="aspect-[3/4] rounded-3xl overflow-hidden bg-zinc-900 border border-zinc-800/60 relative group shadow-2xl">
+            <div className="aspect-3/4 rounded-3xl overflow-hidden bg-zinc-900 border border-zinc-800/60 relative group shadow-2xl">
               {profile.photos?.[0] ? (
                 <Image
                   src={profile.photos[0]}
@@ -75,7 +75,7 @@ const ProfilePage = () => {
                 </div>
               )}
               {/* Glass Footer Overlay */}
-              <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent backdrop-blur-sm">
+              <div className="absolute bottom-0 left-0 right-0 p-6 bg-linear-to-t from-black/80 via-black/40 to-transparent backdrop-blur-sm">
                 <div className="flex items-end justify-between">
                   <div>
                     <h2 className="text-3xl font-bold">

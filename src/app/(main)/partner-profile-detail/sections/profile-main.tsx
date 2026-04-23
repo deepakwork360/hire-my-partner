@@ -65,7 +65,7 @@ export default function ProfileMain() {
           >
             <div
               onClick={() => setIsLightboxOpen(true)}
-              className="relative w-full aspect-[4/5] max-h-[420px] md:max-h-[500px] lg:max-h-[520px] xl:max-h-[580px] rounded-[32px] overflow-hidden border border-border-main shadow-2xl shadow-black/10 group cursor-zoom-in"
+              className="relative w-full aspect-4/5 max-h-[420px] md:max-h-[500px] lg:max-h-[520px] xl:max-h-[580px] rounded-[32px] overflow-hidden border border-border-main shadow-2xl shadow-black/10 group cursor-zoom-in"
             >
               <Image
                 src={profileData.image}
@@ -76,7 +76,7 @@ export default function ProfileMain() {
               />
               
               {/* Premium Overlays */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-60" />
               
               {/* Dynamic Verification Badge */}
               {profileData.verified && (
@@ -114,12 +114,12 @@ export default function ProfileMain() {
                   {profileData.age}
                 </span>
               </h1>
-              <div className="w-20 h-1 bg-gradient-to-r from-primary to-transparent rounded-full mt-2" />
+               <div className="w-20 h-1 bg-linear-to-r from-primary to-transparent rounded-full mt-2" />
             </div>
 
             {/* Quote / Bio */}
             <div className="relative mb-6">
-               <div className="absolute -left-3 top-0 w-1 h-full bg-gradient-to-b from-primary via-primary/20 to-transparent rounded-full" />
+                <div className="absolute -left-3 top-0 w-1 h-full bg-linear-to-b from-primary via-primary/20 to-transparent rounded-full" />
                <p className="text-base md:text-lg lg:text-xl text-text-main italic font-light leading-relaxed line-clamp-3">
                 "{profileData.bio}"
                </p>
@@ -163,8 +163,8 @@ export default function ProfileMain() {
 
             {/* Action Buttons - Compact height */}
             <div className="flex items-center gap-3 w-full">
-              <Link href="" className="group relative flex-[1.8] h-14 bg-gradient-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-2 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+               <Link href="" className="group relative flex-[1.8] h-14 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-2 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all overflow-hidden">
+                <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 <Heart className="w-4 h-4 fill-white relative z-10" />
                 <span className="relative z-10">Reserve Now</span>
               </Link>
@@ -185,7 +185,7 @@ export default function ProfileMain() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsLightboxOpen(false)}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-base/95 backdrop-blur-xl p-4 md:p-20 cursor-zoom-out"
+             className="fixed inset-0 z-100 flex items-center justify-center bg-bg-base/95 backdrop-blur-xl p-4 md:p-20 cursor-zoom-out"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}

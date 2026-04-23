@@ -73,7 +73,7 @@ export default function PassMngmnt() {
                <ShieldCheck size={13} className="text-primary" />
                <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">Security Settings</span>
             </div>
-            <h2 className={`${rochester.className} text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main tracking-wide leading-tight`}>
+            <h2 className={`${rochester.className} text-4xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-wide leading-tight`}>
               Password Management
             </h2>
           </div>
@@ -166,7 +166,7 @@ export default function PassMngmnt() {
                   success 
                     ? "bg-emerald-600 text-white" 
                     : isFormFilled
-                    ? "bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg hover:shadow-primary/20 active:scale-[0.98]"
+                    ? "bg-linear-to-r from-primary to-primary-dark text-white shadow-lg hover:shadow-primary/20 active:scale-[0.98]"
                     : "bg-bg-secondary border border-border-main text-text-muted cursor-not-allowed"
                 }`}
               >

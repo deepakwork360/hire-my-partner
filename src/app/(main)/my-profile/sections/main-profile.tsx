@@ -87,7 +87,7 @@ export default function MainProfile() {
             className="w-full max-w-5xl relative group"
           >
             {/* Ambient Glow */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-primary-dark/30 rounded-[48px] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+            <div className="absolute -inset-1 bg-linear-to-r from-primary/30 to-primary-dark/30 rounded-[48px] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
             
             <div className="relative bg-bg-secondary/80 border border-border-main rounded-[48px] p-8 md:p-16 backdrop-blur-3xl shadow-2xl overflow-hidden">
                {/* Background Glow */}
@@ -141,7 +141,7 @@ export default function MainProfile() {
                              initial={{ left: "-100%" }}
                              animate={{ left: "200%" }}
                              transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
-                             className="absolute top-0 bottom-0 w-8 bg-gradient-to-r from-transparent via-white/40 to-transparent -skew-x-20"
+                             className="absolute top-0 bottom-0 w-8 bg-linear-to-r from-transparent via-white/40 to-transparent -skew-x-20"
                            />
                          </motion.div>
                       </div>
@@ -153,7 +153,7 @@ export default function MainProfile() {
                         className="absolute -bottom-6 -right-6 z-20"
                       >
                         <div className="w-20 h-20 bg-bg-base rounded-3xl p-1.5 border border-border-main shadow-2xl">
-                           <div className="w-full h-full bg-gradient-to-br from-primary to-primary-dark rounded-[18px] flex items-center justify-center">
+                           <div className="w-full h-full bg-linear-to-br from-primary to-primary-dark rounded-[18px] flex items-center justify-center">
                               <ShieldCheck size={32} className="text-white" />
                            </div>
                         </div>

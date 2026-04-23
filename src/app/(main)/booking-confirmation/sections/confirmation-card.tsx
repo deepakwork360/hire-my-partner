@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
@@ -46,12 +46,12 @@ const booking = {
   paymentMethod: "Credit / Debit Card",
 };
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.12 } },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
@@ -93,7 +93,7 @@ export default function ConfirmationCard() {
           {/* ── Title ── */}
           <motion.div variants={itemVariants} className="text-center">
             <h1
-              className={`${rochester.className} text-5xl md:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main tracking-wide mb-3`}
+              className={`${rochester.className} text-5xl md:text-6xl text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-wide mb-3`}
             >
               Request Received!
             </h1>
@@ -283,9 +283,9 @@ export default function ConfirmationCard() {
               <motion.div
                 whileHover={{ scale: 1.02, y: -1 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full h-14 rounded-2xl bg-gradient-to-r from-primary-dark to-accent text-white font-black tracking-[0.25em] uppercase text-xs flex items-center justify-center gap-2 shadow-[0_16px_40px_-10px_rgba(var(--primary-rgb),0.5)] cursor-pointer relative overflow-hidden group"
+                className="w-full h-14 rounded-2xl bg-linear-to-r from-primary-dark to-accent text-white font-black tracking-[0.25em] uppercase text-xs flex items-center justify-center gap-2 shadow-[0_16px_40px_-10px_rgba(var(--primary-rgb),0.5)] cursor-pointer relative overflow-hidden group"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 <ArrowLeft size={15} className="relative z-10" />
                 <span className="relative z-10">Back to Home</span>
               </motion.div>

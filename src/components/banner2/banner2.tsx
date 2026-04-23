@@ -38,15 +38,15 @@ export default function Banner2({
         <div className="absolute inset-0 bg-black/55" />
 
         {/* Subtle Bottom Border Line */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent z-20" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/20 to-transparent z-20" />
 
         {/* Left & right subtle vignette */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20 pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-r from-black/20 via-transparent to-black/20 pointer-events-none" />
 
         {/* Content */}
         <div className="relative z-30 text-center px-4 pb-10">
           <h1
-            className={`${rochester.className} text-5xl sm:text-6xl md:text-7xl lg:text-8xl !text-white tracking-wide drop-shadow-2xl py-4 px-4 leading-[1.2]`}
+            className={`${rochester.className} text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white! tracking-wide drop-shadow-2xl py-4 px-4 leading-[1.2]`}
             style={{ color: "white" }}
           >
             {title}

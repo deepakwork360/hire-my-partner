@@ -171,7 +171,7 @@ export default function PrivacyContent() {
           <motion.h2 
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            className={`${rochester.className} text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main mb-6`}
+            className={`${rochester.className} text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main mb-6`}
           >
             Policy <span className="text-primary">Details</span>
           </motion.h2>
@@ -213,12 +213,12 @@ export default function PrivacyContent() {
                         <div key={i} className="flex gap-4">
                           {typeof c === 'string' ? (
                             <>
-                              <ChevronRight className="w-4 h-4 text-primary mt-1.5 flex-shrink-0" />
+                              <ChevronRight className="w-4 h-4 text-primary mt-1.5 shrink-0" />
                               <p className="text-text-muted text-sm md:text-base leading-relaxed">{c}</p>
                             </>
                           ) : (
                             <>
-                              <div className="w-1 h-auto bg-linear-to-b from-primary to-primary-dark/30 rounded-full flex-shrink-0 opacity-60" />
+                              <div className="w-1 h-auto bg-linear-to-b from-primary to-primary-dark/30 rounded-full shrink-0 opacity-60" />
                               <p className="text-text-muted text-sm md:text-base leading-relaxed">
                                 <span className="text-text-main font-bold mr-2 uppercase text-[9px] tracking-widest">{c.label}:</span>
                                 {c.text}

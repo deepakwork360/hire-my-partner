@@ -164,7 +164,7 @@ export default function PartnersNearby() {
         {/* Header Section */}
         <div className="text-center mb-10 space-y-3">
           <h1
-            className={`${rochester.className} text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary animate-in fade-in slide-in-from-bottom-4 duration-700 py-4 px-4 leading-[1.2]`}
+            className={`${rochester.className} text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-linear-to-r from-primary via-accent to-primary animate-in fade-in slide-in-from-bottom-4 duration-700 py-4 px-4 leading-[1.2]`}
           >
             Partners Nearby You
           </h1>

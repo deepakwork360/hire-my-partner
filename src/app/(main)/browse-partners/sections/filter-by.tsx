@@ -111,11 +111,11 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
         <div className="relative">
           <div className="flex items-center gap-3 mb-1">
             <Filter className="w-4 h-4 text-primary" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-dark text-[10px] font-black uppercase tracking-[0.3em]">Refine Search</span>
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-primary-dark text-[10px] font-black uppercase tracking-[0.3em]">Refine Search</span>
           </div>
           <h2 className={`${rochester.className} text-5xl text-text-main tracking-wide leading-tight relative`}>
             Filters
-            <div className="absolute -bottom-2 left-0 w-12 h-1 bg-gradient-to-r from-primary to-primary-dark rounded-full" />
+            <div className="absolute -bottom-2 left-0 w-12 h-1 bg-linear-to-r from-primary to-primary-dark rounded-full" />
           </h2>
         </div>
         {onClose && (
@@ -143,7 +143,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                   onClick={() => handleChange("age", range)}
                   className={`py-3 px-3 rounded-2xl text-xs font-black uppercase tracking-widest border transition-all duration-300 hover:-translate-y-1 ${
                     filters.age === range 
-                    ? "bg-gradient-to-br from-primary to-primary-dark border-white/20 text-white shadow-[0_10px_25px_rgba(var(--primary-rgb),0.3)]" 
+                    ? "bg-linear-to-br from-primary to-primary-dark border-white/20 text-white shadow-[0_10px_25px_rgba(var(--primary-rgb),0.3)]" 
                     : "bg-bg-card border-border-main text-text-muted hover:text-text-main hover:shadow-xl hover:border-primary/30"
                   }`}
                 >
@@ -163,7 +163,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                   onClick={() => handleChange("gender", g)}
                   className={`flex-1 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 border hover:-translate-y-1 ${
                     filters.gender === g 
-                    ? "bg-gradient-to-br from-primary to-primary-dark border-white/20 text-white shadow-[0_10px_25px_rgba(var(--primary-rgb),0.3)]" 
+                    ? "bg-linear-to-br from-primary to-primary-dark border-white/20 text-white shadow-[0_10px_25px_rgba(var(--primary-rgb),0.3)]" 
                     : "bg-bg-card border-border-main text-text-muted hover:text-text-main hover:shadow-xl"
                   }`}
                 >
@@ -199,7 +199,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                     onClick={() => handleChange("language", lang)}
                     className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all duration-300 hover:-translate-y-1 ${
                       isActive 
-                      ? "bg-gradient-to-br from-primary to-primary-dark border-white/20 text-white shadow-[0_10px_25px_rgba(var(--primary-rgb),0.3)]" 
+                      ? "bg-linear-to-br from-primary to-primary-dark border-white/20 text-white shadow-[0_10px_25px_rgba(var(--primary-rgb),0.3)]" 
                       : "bg-bg-card border-border-main text-text-muted hover:text-text-main hover:shadow-xl"
                     }`}
                   >
@@ -222,7 +222,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                     onClick={() => handleChange("tags", tag)}
                     className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all duration-300 hover:-translate-y-1 flex items-center gap-1.5 ${
                       isActive 
-                      ? "bg-gradient-to-r from-primary-dark to-accent border-none text-white shadow-[0_10px_20px_rgba(var(--primary-rgb),0.3)]" 
+                      ? "bg-linear-to-r from-primary-dark to-accent border-none text-white shadow-[0_10px_20px_rgba(var(--primary-rgb),0.3)]" 
                       : "bg-bg-card border-border-main text-text-muted hover:bg-bg-secondary hover:text-text-main"
                     }`}
                   >
@@ -302,7 +302,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                     onClick={() => handleChange("availability", day)}
                     className={`h-11 rounded-2xl text-[10px] font-black uppercase tracking-tighter border transition-all duration-300 hover:-translate-y-1 ${
                       isActive 
-                      ? "bg-gradient-to-br from-primary to-primary-dark border-white/20 text-white shadow-[0_10px_20px_rgba(var(--primary-rgb),0.3)]" 
+                      ? "bg-linear-to-br from-primary to-primary-dark border-white/20 text-white shadow-[0_10px_20px_rgba(var(--primary-rgb),0.3)]" 
                       : "bg-bg-card border-border-main text-text-muted hover:text-text-main hover:shadow-lg"
                     }`}
                   >

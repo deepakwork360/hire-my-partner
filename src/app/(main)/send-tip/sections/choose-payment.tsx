@@ -105,7 +105,7 @@ export default function ChoosePayment({
       {/* ── Success Modal ── */}
       <AnimatePresence>
         {showSuccess && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -262,7 +262,7 @@ export default function ChoosePayment({
             </div>
 
             <h2
-              className={`${rochester.className} text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main tracking-wide py-4 px-4 leading-[1.2]`}
+              className={`${rochester.className} text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-wide py-4 px-4 leading-[1.2]`}
             >
               Choose Payment Method
             </h2>
@@ -447,7 +447,7 @@ export default function ChoosePayment({
             `}
           >
             {canSubmit && (
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_2.5s_infinite]" />
+              <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_2.5s_infinite]" />
             )}
             <span className="relative z-10 flex items-center gap-3">
               <Zap size={16} className={canSubmit ? "fill-white" : ""} />

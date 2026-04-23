@@ -52,7 +52,7 @@ export default function WhoCanUse() {
             initial={{ opacity: 0, y: -20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className={`${rochester.className} text-4xl md:text-5xl lg:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary font-bold text-center tracking-tight py-4 leading-[1.2]`}
+            className={`${rochester.className} text-4xl md:text-5xl lg:text-6xl text-transparent bg-clip-text bg-linear-to-r from-primary via-accent to-primary font-bold text-center tracking-tight py-4 leading-[1.2]`}
           >
             Who Can Use This?
           </motion.h2>

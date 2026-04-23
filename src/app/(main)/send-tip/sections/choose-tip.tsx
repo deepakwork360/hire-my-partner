@@ -72,7 +72,7 @@ export default function ChooseTip({ onTipChange }: ProportionProps) {
       <div className="space-y-10">
         {/* Header */}
         <div className="flex flex-col gap-3">
-          <h2 className="text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main text-3xl font-black uppercase tracking-wider">Choose Tip Amount</h2>
+          <h2 className="text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main text-3xl font-black uppercase tracking-wider">Choose Tip Amount</h2>
           <p className="text-text-muted text-sm font-medium tracking-wide">Select a preset amount or enter a custom value below</p>
         </div>
 
@@ -125,7 +125,7 @@ export default function ChooseTip({ onTipChange }: ProportionProps) {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="relative rounded-[40px] p-[1px] bg-border-main/50 overflow-hidden group shadow-2xl shadow-black/5"
+          className="relative rounded-[40px] p-px bg-border-main/50 overflow-hidden group shadow-2xl shadow-black/5"
         >
           <div className="bg-bg-card rounded-[39px] p-8 md:p-12 relative overflow-hidden border border-border-main">
             {/* Ambient Background Glows */}

@@ -61,7 +61,7 @@ export default function GiftModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 overflow-y-auto overflow-x-hidden ${outfit.className}`}>
+        <div className={`fixed inset-0 z-100 flex items-center justify-center p-4 md:p-6 overflow-y-auto overflow-x-hidden ${outfit.className}`}>
           {/* Backdrop Refinement - Less Glassy */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -142,7 +142,7 @@ export default function GiftModal({
                       </button>
                       <button 
                         onClick={handleSend} 
-                        className="flex-[2] h-14 rounded-2xl bg-gradient-to-r from-primary to-primary-dark text-white font-black tracking-[0.2em] uppercase text-[9px] shadow-xl shadow-primary/20 flex items-center justify-center gap-3 group hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        className="flex-2 h-14 rounded-2xl bg-linear-to-r from-primary to-primary-dark text-white font-black tracking-[0.2em] uppercase text-[9px] shadow-xl shadow-primary/20 flex items-center justify-center gap-3 group hover:scale-[1.02] active:scale-[0.98] transition-all"
                       >
                         Confirm & Pay <CreditCard size={16} className="transition-transform group-hover:translate-x-1" />
                       </button>
@@ -215,7 +215,7 @@ export default function GiftModal({
                         </div>
 
                         {/* Animated Connection Line */}
-                        <div className="flex-1 max-w-[100px] h-px bg-gradient-to-r from-primary/50 to-green-500/50 relative hidden sm:block">
+                        <div className="flex-1 max-w-[100px] h-px bg-linear-to-r from-primary/50 to-green-500/50 relative hidden sm:block">
                            <motion.div 
                             animate={{ x: [0, 100], opacity: [0, 1, 0] }}
                             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}

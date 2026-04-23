@@ -124,7 +124,7 @@ export default function PremiumDatePicker({
   };
 
   return (
-    <div ref={containerRef} className={`relative flex flex-col gap-2 ${outfit.className} ${className} ${isOpen ? "z-[10000]" : "z-auto"}`}>
+    <div ref={containerRef} className={`relative flex flex-col gap-2 ${outfit.className} ${className} ${isOpen ? "z-10000" : "z-auto"}`}>
       {label && (
         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted ml-2">
           {label}
@@ -180,7 +180,7 @@ export default function PremiumDatePicker({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="absolute z-[100] top-full mt-3 w-72 bg-bg-secondary border border-border-main rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-3xl p-5 overflow-hidden"
+              className="absolute z-100 top-full mt-3 w-72 bg-bg-secondary border border-border-main rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-3xl p-5 overflow-hidden"
             >
               {/* Calendar Header */}
               <div className="flex items-center justify-between mb-4 px-1">

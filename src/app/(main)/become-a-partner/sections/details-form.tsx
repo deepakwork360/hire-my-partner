@@ -102,7 +102,7 @@ const CheckboxItem = ({
       onChange={onChange}
     />
     <div
-      className={`w-6 h-6 flex-shrink-0 rounded-[6px] border-2 flex items-center justify-center transition-all duration-300 ${checked ? "bg-primary border-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" : "border-slate-500 group-hover:border-primary"}`}
+      className={`w-6 h-6 shrink-0 rounded-[6px] border-2 flex items-center justify-center transition-all duration-300 ${checked ? "bg-primary border-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" : "border-slate-500 group-hover:border-primary"}`}
     >
       {checked && (
         <motion.div
@@ -110,7 +110,7 @@ const CheckboxItem = ({
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
         >
-          <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
+          <Check className="w-3.5 h-3.5 text-white stroke-3" />
         </motion.div>
       )}
     </div>
@@ -120,7 +120,7 @@ const CheckboxItem = ({
       {label}
     </span>
     {checked && (
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/10 to-transparent z-0 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-r from-primary/0 via-primary/10 to-transparent z-0 pointer-events-none" />
     )}
   </label>
 );
@@ -369,7 +369,7 @@ export default function DetailsForm() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -30 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
-              className="relative bg-bg-card/30 backdrop-blur-[40px] border border-border-main rounded-[32px] md:rounded-[48px] p-6 md:p-14 shadow-2xl overflow-hidden"
+              className="relative bg-bg-card/30 backdrop-blur-2xl border border-border-main rounded-[32px] md:rounded-[48px] p-6 md:p-14 shadow-2xl overflow-hidden"
             >
               {/* Ambient Inner Glows */}
               <div className="absolute -top-60 -right-60 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
@@ -384,7 +384,7 @@ export default function DetailsForm() {
                     Form
                   </span>
                 </h2>
-                <div className="w-24 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto mt-6 opacity-30" />
+                <div className="w-24 h-1 bg-linear-to-r from-transparent via-primary to-transparent mx-auto mt-6 opacity-30" />
               </div>
 
               <form
@@ -397,7 +397,7 @@ export default function DetailsForm() {
                 {/* Photo Upload */}
                 <div className="flex justify-center mb-14" ref={basicInfoRef}>
                   <div className={`relative w-36 h-36 md:w-44 md:h-44 rounded-full border-[3px] border-dashed flex items-center justify-center bg-transparent shrink-0 group transition-all duration-500 ${showErrors && !formData.photo ? "border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.2)] animate-pulse" : "border-primary/50 hover:border-primary"}`}>
-                    <div className="w-[88%] h-[88%] rounded-full bg-gradient-to-b from-primary/10 to-accent/5 flex items-center justify-center overflow-hidden relative cursor-pointer hover:from-primary/20 hover:to-accent/15 transition-all shadow-[inset_0_0_30px_rgba(var(--primary-rgb),0.2)] group-hover:scale-105 duration-500">
+                    <div className="w-[88%] h-[88%] rounded-full bg-linear-to-b from-primary/10 to-accent/5 flex items-center justify-center overflow-hidden relative cursor-pointer hover:from-primary/20 hover:to-accent/15 transition-all shadow-[inset_0_0_30px_rgba(var(--primary-rgb),0.2)] group-hover:scale-105 duration-500">
                       {formData.photo ? (
                         <img
                           src={formData.photo}
@@ -481,7 +481,7 @@ export default function DetailsForm() {
                         <button
                           type="button"
                           onClick={() => setIsGenderOpen(!isGenderOpen)}
-                          className="w-16 bg-gradient-to-br from-primary-dark to-accent flex items-center justify-center text-white shrink-0 hover:from-primary hover:to-accent/80 transition-colors shadow-inner"
+                          className="w-16 bg-linear-to-br from-primary-dark to-accent flex items-center justify-center text-white shrink-0 hover:from-primary hover:to-accent/80 transition-colors shadow-inner"
                         >
                           <ChevronDown
                             className={`w-5 h-5 transition-transform duration-500 ${isGenderOpen ? "rotate-180" : ""}`}
@@ -604,7 +604,7 @@ export default function DetailsForm() {
 
 
                 {/* Divider */}
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
 
                 {/* Add-Ons */}
                 <div>
@@ -641,7 +641,7 @@ export default function DetailsForm() {
                   </InputWrapper>
                 </div>
 
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
 
                 {/* Languages Spoken */}
                 <div>
@@ -665,7 +665,7 @@ export default function DetailsForm() {
                   </button>
                 </div>
 
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
 
                 {/* Short Bio */}
                 <div ref={bioRef}>
@@ -685,7 +685,7 @@ export default function DetailsForm() {
                   </div>
                 </div>
 
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
 
                 {/* Gallery Upload */}
                 <div ref={galleryRef}>
@@ -755,7 +755,7 @@ export default function DetailsForm() {
                                 onChange={(e) => handleGalleryUpload(index, e)}
                               />
                               {/* Hover Effect Light */}
-                              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover/add:opacity-100 transition-opacity duration-700" />
+                              <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover/add:opacity-100 transition-opacity duration-700" />
                             </label>
                           )}
                         </motion.div>
@@ -764,7 +764,7 @@ export default function DetailsForm() {
                   </div>
                 </div>
 
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
 
                 {/* Availability */}
                 <div ref={scheduleRef}>
@@ -784,7 +784,7 @@ export default function DetailsForm() {
                   </div>
                 </div>
 
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
 
                 {/* Social Links */}
                 <div>
@@ -821,13 +821,13 @@ export default function DetailsForm() {
                     </InputWrapper>
                   </div>
  
-                  <div ref={termsRef} className={`bg-white/[0.02] border p-6 rounded-2xl flex items-start md:items-center gap-4 transition-all duration-500 ${showErrors && !formData.termsAgreed ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] bg-red-500/5" : "border-border-main"}`}>
+                  <div ref={termsRef} className={`bg-white/2 border p-6 rounded-2xl flex items-start md:items-center gap-4 transition-all duration-500 ${showErrors && !formData.termsAgreed ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] bg-red-500/5" : "border-border-main"}`}>
                     <label className="flex items-center gap-4 w-fit cursor-pointer group">
                       <div
                         className={`w-6 h-6 shrink-0 rounded flex items-center justify-center border-2 transition-all duration-300 ${formData.termsAgreed ? "bg-primary border-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" : showErrors && !formData.termsAgreed ? "border-red-500" : "border-border-main group-hover:border-primary"}`}
                       >
                         {formData.termsAgreed && (
-                          <Check className="w-4 h-4 text-white stroke-[3]" />
+                          <Check className="w-4 h-4 text-white stroke-3" />
                         )}
                       </div>
                       <span className={`text-sm md:text-base font-medium select-none transition-colors ${showErrors && !formData.termsAgreed ? "text-red-500" : "text-text-main group-hover:text-text-main"}`}>
@@ -856,7 +856,7 @@ export default function DetailsForm() {
 
                 </div>
 
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
 
                 {/* Government ID Proof */}
                 <div ref={docsRef}>
@@ -868,7 +868,7 @@ export default function DetailsForm() {
 
                   <div className="bg-bg-secondary border border-border-main p-6 md:p-10 rounded-3xl flex flex-col md:flex-row gap-6 justify-center md:justify-start items-center relative overflow-hidden shadow-sm">
                     {/* Subtle background gradient inside the tray */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-linear-to-r from-primary/5 to-transparent pointer-events-none" />
 
                     {[0, 1, 2].map((index) => {
                       const isRequired = index < 2;
@@ -963,9 +963,9 @@ export default function DetailsForm() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 1.1 }}
-              className="relative bg-bg-card/50 backdrop-blur-[40px] border border-border-main rounded-[48px] p-20 flex flex-col items-center justify-center text-center shadow-2xl overflow-hidden min-h-[600px]"
+              className="relative bg-bg-card/50 backdrop-blur-2xl border border-border-main rounded-[48px] p-20 flex flex-col items-center justify-center text-center shadow-2xl overflow-hidden min-h-[600px]"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+              <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-accent/5" />
 
               <div className="relative mb-12">
                 <motion.div
@@ -1008,7 +1008,7 @@ export default function DetailsForm() {
               key="summary"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              className="relative bg-bg-card/50 backdrop-blur-[40px] border border-border-main rounded-[32px] md:rounded-[48px] p-6 md:p-14 shadow-2xl overflow-hidden"
+              className="relative bg-bg-card/50 backdrop-blur-2xl border border-border-main rounded-[32px] md:rounded-[48px] p-6 md:p-14 shadow-2xl overflow-hidden"
             >
               {/* Header */}
               <div className="flex flex-col md:flex-row items-center gap-8 mb-16 relative z-10">
@@ -1108,7 +1108,7 @@ export default function DetailsForm() {
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: i * 0.1 }}
-                            className="aspect-[4/3] rounded-2xl overflow-hidden border-2 border-white/5 shadow-xl group relative"
+                            className="aspect-4/3 rounded-2xl overflow-hidden border-2 border-white/5 shadow-xl group relative"
                           >
                             <img 
                               src={proof} 
@@ -1129,7 +1129,7 @@ export default function DetailsForm() {
 
                 {/* Right Column: Verification & Status */}
                 <div className="space-y-8">
-                  <div className="bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20 p-8 rounded-[32px] relative overflow-hidden">
+                  <div className="bg-linear-to-br from-primary/10 to-accent/10 border border-primary/20 p-8 rounded-[32px] relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
                     <SectionTitle>Verification</SectionTitle>
                     <div className="space-y-4">
@@ -1179,7 +1179,7 @@ export default function DetailsForm() {
 
                   {/* Welcome/Success Message - Only shows on fresh submission */}
                   {showSuccessCard ? (
-                    <div className="bg-gradient-to-br from-green-500/10 to-emerald-600/10 border border-green-500/20 p-8 rounded-[32px] relative overflow-hidden">
+                    <div className="bg-linear-to-br from-green-500/10 to-emerald-600/10 border border-green-500/20 p-8 rounded-[32px] relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 blur-3xl rounded-full" />
                       <SectionTitle>Success!</SectionTitle>
                       <p className="text-text-muted text-sm font-medium leading-relaxed">

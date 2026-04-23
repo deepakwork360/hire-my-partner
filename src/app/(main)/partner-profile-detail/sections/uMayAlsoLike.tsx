@@ -61,7 +61,7 @@ export default function UMayAlsoLike() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className={`${rochester.className} text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main mb-4 text-center drop-shadow-md`}
+            className={`${rochester.className} text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main mb-4 text-center drop-shadow-md`}
           >
             You May Also Like
           </motion.h2>

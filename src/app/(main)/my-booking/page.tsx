@@ -29,7 +29,7 @@ export default function MyBooking() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsSidebarOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-md z-[90]"
+              className="fixed inset-0 bg-black/60 backdrop-blur-md z-90"
             />
             {/* Drawer */}
             <motion.aside
@@ -37,7 +37,7 @@ export default function MyBooking() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -400, opacity: 0 }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed left-0 top-0 bottom-0 w-full sm:w-[400px] z-[100] bg-bg-secondary border-r border-border-main shadow-2xl"
+              className="fixed left-0 top-0 bottom-0 w-full sm:w-[400px] z-100 bg-bg-secondary border-r border-border-main shadow-2xl"
             >
               <div className="relative h-full">
                 <FilterBy

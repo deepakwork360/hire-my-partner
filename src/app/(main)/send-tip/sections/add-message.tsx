@@ -43,7 +43,7 @@ export default function AddMessage({
           </div>
 
           <h2
-            className={`${rochester.className} text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main tracking-wide py-4 px-4 leading-[1.2]`}
+            className={`${rochester.className} text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-wide py-4 px-4 leading-[1.2]`}
           >
             Add a Message
           </h2>
@@ -91,7 +91,7 @@ export default function AddMessage({
               {/* Animated progress bar */}
               <div className="flex-1 mx-6 h-1 bg-bg-secondary rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-primary to-primary-dark rounded-full"
+                  className="h-full bg-linear-to-r from-primary to-primary-dark rounded-full"
                   animate={{ width: `${(message.length / MAX) * 100}%` }}
                   transition={{ duration: 0.2 }}
                 />

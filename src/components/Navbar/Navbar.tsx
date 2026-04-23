@@ -13,7 +13,7 @@ import {
   Mail,
   ArrowRight,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import PremiumButton from "../ui/PremiumButton";
 import ThemeSwitcher from "./ThemeSwitcher";
 
@@ -50,7 +50,7 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const menuVariants = {
+  const menuVariants: Variants = {
     closed: {
       opacity: 0,
       y: "-10%",
@@ -74,7 +74,7 @@ export default function Navbar() {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     closed: { 
       opacity: 0, 
       y: 30,
@@ -95,7 +95,7 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 px-4 md:px-8 ${
+        className={`fixed top-0 left-0 right-0 z-100 transition-all duration-500 px-4 md:px-8 ${
           isScrolled
             ? "bg-bg-base/80 backdrop-blur-md shadow-lg border-b border-border-main py-3"
             : "bg-transparent py-6"
@@ -211,7 +211,7 @@ export default function Navbar() {
             animate="open"
             exit="closed"
             variants={menuVariants}
-            className="fixed inset-0 bg-bg-base/95 backdrop-blur-2xl z-[90] lg:hidden overflow-hidden"
+            className="fixed inset-0 bg-bg-base/95 backdrop-blur-2xl z-90 lg:hidden overflow-hidden"
           >
             {/* Background Decorative Elements */}
             <div className="absolute top-0 right-0 w-[80%] h-[40%] bg-primary/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/3" />

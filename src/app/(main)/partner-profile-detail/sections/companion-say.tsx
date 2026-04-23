@@ -84,7 +84,7 @@ const ReviewCard = ({ review }: { review: any }) => (
       </div>
 
       <h3 className="text-2xl font-bold text-text-main mb-3">{review.name}</h3>
-      <p className="text-text-muted italic text-sm leading-relaxed mb-6 flex-grow flex items-center justify-center">
+      <p className="text-text-muted italic text-sm leading-relaxed mb-6 grow flex items-center justify-center">
         &ldquo;{review.text}&rdquo;
       </p>
       <div className="flex items-center justify-center gap-1 mb-5">
@@ -116,7 +116,7 @@ export default function CompanionSay() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className={`${rochester.className} text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main mb-4 text-center`}
+            className={`${rochester.className} text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main mb-4 text-center`}
           >
             Experiences Shared by Users
           </motion.h2>

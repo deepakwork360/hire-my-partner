@@ -56,7 +56,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
   };
 
   return (
-    <div className={`fixed inset-y-0 left-0 z-[100] ${outfit.className}`}>
+    <div className={`fixed inset-y-0 left-0 z-100 ${outfit.className}`}>
       {/* ── TOGGLE BUTTON (Floating Tab) ── */}
       <motion.button
         initial={{ x: -20, opacity: 0 }}
@@ -108,11 +108,11 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                 <div className="absolute -left-10 -top-4 w-24 h-24 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
                 <div className="flex items-center gap-2 mb-2">
                     <LayoutDashboard size={14} className="text-primary" />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-dark text-[10px] font-black uppercase tracking-[0.3em]">Quick Access</span>
+                    <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-primary-dark text-[10px] font-black uppercase tracking-[0.3em]">Quick Access</span>
                 </div>
                 <h2 className={`${rochester.className} text-5xl text-text-main tracking-wide leading-tight relative`}>
                   Your Dashboard
-                  <div className="absolute -bottom-2 left-0 w-12 h-1 bg-gradient-to-r from-primary to-primary-dark rounded-full" />
+                  <div className="absolute -bottom-2 left-0 w-12 h-1 bg-linear-to-r from-primary to-primary-dark rounded-full" />
                 </h2>
               </div>
 
@@ -129,7 +129,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                       onClick={() => handleItemClick(item.id)}
                       className={`flex items-center justify-between px-6 py-5 rounded-2xl transition-all duration-300 group border ${
                         isActive
-                          ? "bg-gradient-to-r from-primary to-primary-dark text-white shadow-[0_15px_40px_rgba(var(--primary-rgb),0.35)] border-white/20"
+                          ? "bg-linear-to-r from-primary to-primary-dark text-white shadow-[0_15px_40px_rgba(var(--primary-rgb),0.35)] border-white/20"
                           : "bg-bg-secondary text-text-muted border-border-main/60 shadow-[0_10px_25px_rgba(0,0,0,0.2)] hover:bg-bg-card hover:text-text-main hover:shadow-[0_15px_35px_rgba(0,0,0,0.3)] hover:border-primary/30"
                       }`}
                     >

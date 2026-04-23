@@ -57,7 +57,7 @@ export default function BookyInfo() {
             </div>
 
             <h1
-              className={`${rochester.className} text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main tracking-tight`}
+              className={`${rochester.className} text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-tight`}
             >
               Booking <span className="text-primary">Information</span>
             </h1>
@@ -111,7 +111,7 @@ export default function BookyInfo() {
               src="/images/girl1.webp"
               alt="Aarushi Kumari"
               fill
-              className="object-cover transition-transform duration-[2000ms] group-hover:scale-105"
+              className="object-cover transition-transform duration-1000 group-hover:scale-105"
               priority
             />
 
@@ -130,11 +130,11 @@ export default function BookyInfo() {
               <div className="flex flex-col gap-2">
                 <div className="relative">
                   <motion.h3
-                    className={`${rochester.className} text-5xl md:text-7xl !text-white mb-2 leading-none drop-shadow-[0_10px_40px_rgba(0,0,0,0.5)]`}
+                    className={`${rochester.className} text-5xl md:text-7xl text-white! mb-2 leading-none drop-shadow-[0_10px_40px_rgba(0,0,0,0.5)]`}
                   >
                     Aarushi Kumari
                   </motion.h3>
-                  <div className="w-24 h-1.5 bg-gradient-to-r from-primary via-primary/50 to-transparent rounded-full mb-4 shadow-lg shadow-primary/20" />
+                  <div className="w-24 h-1.5 bg-linear-to-r from-primary via-primary/50 to-transparent rounded-full mb-4 shadow-lg shadow-primary/20" />
                 </div>
                 <div className="flex items-center gap-3 bg-black/30 backdrop-blur-md px-4 py-1.5 rounded-full w-fit border border-white/20">
                   <span className="text-white text-[10px] font-black uppercase tracking-widest">
@@ -227,19 +227,19 @@ export default function BookyInfo() {
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
-                className="flex-1 h-14 bg-gradient-to-r from-primary to-primary-dark rounded-2xl text-white font-black text-[10px] uppercase tracking-[0.4em] shadow-[0_15px_30px_-5px_rgba(var(--primary-rgb),0.4)] hover:-translate-y-1 active:scale-95 transition-all relative overflow-hidden group flex items-center justify-center"
+                className="flex-1 h-14 bg-linear-to-r from-primary to-primary-dark rounded-2xl text-white font-black text-[10px] uppercase tracking-[0.4em] shadow-[0_15px_30px_-5px_rgba(var(--primary-rgb),0.4)] hover:-translate-y-1 active:scale-95 transition-all relative overflow-hidden group flex items-center justify-center"
               >
                 <span className="relative z-10 flex items-center justify-center gap-3">
                   Book Now <Zap className="w-3 h-3 fill-white" />
                 </span>
-                <div className="absolute inset-0 bg-white/20 -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
+                <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
               </MotionLink>
             </div>
           </div>
         </motion.div>
 
         {/* Global Decor Lines */}
-        <div className="mt-12 h-px w-[200px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        <div className="mt-12 h-px w-[200px] bg-linear-to-r from-transparent via-white/10 to-transparent" />
       </div>
     </section>
   );

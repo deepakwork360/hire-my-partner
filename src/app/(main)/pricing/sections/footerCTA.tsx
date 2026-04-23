@@ -50,7 +50,7 @@ export default function FooterCTA() {
               >
                 Still Not Sure?
               </h3>
-              <h2 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main tracking-tight leading-tight">
+              <h2 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-tight leading-tight">
                 Get in Touch
               </h2>
             </motion.div>
@@ -75,8 +75,8 @@ export default function FooterCTA() {
               transition={{ delay: 0.4 }}
               className="flex flex-col sm:flex-row items-center gap-6"
             >
-              <button className="w-full sm:w-auto px-10 py-5 rounded-2xl bg-gradient-to-br from-primary via-primary-dark to-primary text-white font-black text-sm tracking-widest uppercase flex items-center justify-center gap-3 shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all duration-300 group/btn relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+              <button className="w-full sm:w-auto px-10 py-5 rounded-2xl bg-linear-to-br from-primary via-primary-dark to-primary text-white font-black text-sm tracking-widest uppercase flex items-center justify-center gap-3 shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all duration-300 group/btn relative overflow-hidden">
+                <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 <Phone className="w-4 h-4 relative z-10" />
                 <span className="relative z-10">Schedule a Call</span>
                 <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform relative z-10" />

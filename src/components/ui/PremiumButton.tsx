@@ -41,7 +41,7 @@ export default function PremiumButton({
 
   const variants = {
     primary:
-      "bg-gradient-to-br from-primary via-primary-dark to-primary text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1",
+      "bg-linear-to-br from-primary via-primary-dark to-primary text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1",
     outline:
       "bg-bg-secondary/80 border-2 border-border-main text-text-main shadow-inner hover:bg-bg-card hover:border-primary/30",
     ghost: "bg-transparent text-text-muted hover:text-text-main hover:bg-bg-secondary",

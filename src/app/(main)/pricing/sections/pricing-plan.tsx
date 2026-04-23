@@ -107,7 +107,7 @@ export default function PricingPlan() {
           className="text-center mb-12"
         >
           <h2
-            className={`${rochester.className} text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main mb-4`}
+            className={`${rochester.className} text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main mb-4`}
           >
             Pricing Plans
           </h2>
@@ -202,7 +202,7 @@ export default function PricingPlan() {
                     >
                       {plan.icon}
                     </div>
-                    <h3 className="text-xl font-bold text-text-main uppercase tracking-widest text-sm opacity-50">
+                    <h3 className="text-sm font-bold text-text-main uppercase tracking-widest opacity-50">
                       {plan.name}
                     </h3>
                   </div>
@@ -254,7 +254,7 @@ export default function PricingPlan() {
                   <button
                     className={`w-full py-5 rounded-[24px] font-black text-sm tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 group/btn relative overflow-hidden ${
                       plan.popular
-                        ? "bg-gradient-to-br from-primary via-primary-dark to-primary text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1"
+                        ? "bg-linear-to-br from-primary via-primary-dark to-primary text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1"
                         : "bg-bg-secondary/80 text-text-main border-2 border-border-main shadow-inner hover:bg-bg-card hover:border-primary/30"
                     }`}
                   >

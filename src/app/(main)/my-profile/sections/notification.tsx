@@ -84,7 +84,7 @@ export default function Notification() {
                <Bell size={13} className="text-primary" />
                <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">Preferences</span>
             </div>
-            <h2 className={`${rochester.className} text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main tracking-wide leading-tight`}>
+            <h2 className={`${rochester.className} text-4xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-wide leading-tight`}>
               Notification Settings
             </h2>
           </div>
@@ -138,7 +138,7 @@ export default function Notification() {
                         success 
                         ? "bg-emerald-600 text-white"
                         : hasChanges 
-                        ? "bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg active:scale-95"
+                        ? "bg-linear-to-r from-primary to-primary-dark text-white shadow-lg active:scale-95"
                         : "bg-bg-secondary text-text-muted border border-border-main cursor-not-allowed"
                     }`}
                 >

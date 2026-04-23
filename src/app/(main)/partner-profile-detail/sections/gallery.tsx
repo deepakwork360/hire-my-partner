@@ -43,7 +43,7 @@ export default function Gallery() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className={`${rochester.className} text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-text-main via-primary to-text-main mb-3`}
+            className={`${rochester.className} text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main mb-3`}
           >
             Photo Portfolio
           </motion.h2>
@@ -99,7 +99,7 @@ export default function Gallery() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[2000] flex items-center justify-center bg-[#050505] cursor-default"
+            className="fixed inset-0 z-2000 flex items-center justify-center bg-[#050505] cursor-default"
           >
             {/* Backdrop Click-to-Close */}
             <div 
@@ -110,7 +110,7 @@ export default function Gallery() {
             {/* Prominent Close Button */}
             <button
               onClick={() => setSelectedImage(null)}
-              className="fixed top-6 right-6 md:top-10 md:right-10 z-[2100] w-14 h-14 rounded-full bg-white/10 hover:bg-rose-500/20 border border-white/20 hover:border-rose-500/50 flex items-center justify-center text-white transition-all duration-300 group shadow-2xl backdrop-blur-xl"
+              className="fixed top-6 right-6 md:top-10 md:right-10 z-2100 w-14 h-14 rounded-full bg-white/10 hover:bg-rose-500/20 border border-white/20 hover:border-rose-500/50 flex items-center justify-center text-white transition-all duration-300 group shadow-2xl backdrop-blur-xl"
             >
               <X className="w-8 h-8 group-hover:rotate-90 transition-transform duration-500" />
             </button>

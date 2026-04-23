@@ -66,13 +66,13 @@ export default function ProfileInterest({ data }: Props) {
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
               whileHover={{ y: -5 }}
-              className="bg-white/[0.03] border border-white/10 rounded-[32px] p-8 flex flex-col gap-6 relative overflow-hidden group hover:bg-white/[0.05] transition-all"
+              className="bg-white/3 border border-white/10 rounded-[32px] p-8 flex flex-col gap-6 relative overflow-hidden group hover:bg-white/5 transition-all"
             >
               {/* Decorative Accents */}
               <div className={`absolute -right-4 -top-4 w-24 h-24 ${stat.bg} rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition-opacity`} />
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-white/5 to-transparent" />
 
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${stat.color} shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform`}>
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-linear-to-br ${stat.color} shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform`}>
                 <Icon size={28} className="text-white" />
               </div>
 
