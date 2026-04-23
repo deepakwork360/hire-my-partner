@@ -29,7 +29,8 @@ export default function PremiumDatePicker({
   // Parse current value or use today
   const selectedDate = useMemo(() => {
     if (!value) return null;
-    const d = new Date(value);
+    const [year, month, day] = value.split("-").map(Number);
+    const d = new Date(year, month - 1, day);
     return isNaN(d.getTime()) ? null : d;
   }, [value]);
 
@@ -64,8 +65,10 @@ export default function PremiumDatePicker({
 
   const handleDateSelect = (day: number) => {
     const newDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
-    // Format as YYYY-MM-DD for consistency with input[type=date]
-    const formatted = newDate.toISOString().split("T")[0];
+    const year = newDate.getFullYear();
+    const month = String(newDate.getMonth() + 1).padStart(2, '0');
+    const d = String(newDate.getDate()).padStart(2, '0');
+    const formatted = `${year}-${month}-${d}`;
     onChange(formatted);
     setIsOpen(false);
   };
@@ -106,7 +109,7 @@ export default function PremiumDatePicker({
             ? "bg-primary text-white shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] z-10" 
             : isToday
               ? "text-primary border border-primary/30"
-              : "text-slate-400 hover:bg-white/5 hover:text-white"
+              : "text-text-muted hover:bg-bg-card hover:text-text-main"
           }`}
         >
           {day}
@@ -123,7 +126,7 @@ export default function PremiumDatePicker({
   return (
     <div ref={containerRef} className={`relative flex flex-col gap-2 ${outfit.className} ${className} ${isOpen ? "z-[10000]" : "z-auto"}`}>
       {label && (
-        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-2">
+        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted ml-2">
           {label}
         </label>
       )}
@@ -148,7 +151,7 @@ export default function PremiumDatePicker({
                 </span>
               )}
              <span className={`text-xs font-bold ${value ? "text-text-main" : "text-text-muted"}`}>
-               {value ? new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : "Choose a date"}
+               {value ? selectedDate?.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : "Choose a date"}
              </span>
           </div>
 
@@ -158,7 +161,7 @@ export default function PremiumDatePicker({
                 e.stopPropagation();
                 onChange("");
               }}
-              className="absolute right-12 p-1 hover:bg-white/10 rounded-full transition-colors z-20"
+              className="absolute right-12 p-1 hover:bg-bg-card rounded-full transition-colors z-20"
             >
               <X size={14} className="text-text-muted" />
             </div>

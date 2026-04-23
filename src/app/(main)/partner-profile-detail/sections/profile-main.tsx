@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Rochester, Outfit } from "next/font/google";
 import { MapPin, Star, ShieldCheck, Map, Clock, Heart, X, MessageSquare, Award, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -162,15 +163,15 @@ export default function ProfileMain() {
 
             {/* Action Buttons - Compact height */}
             <div className="flex items-center gap-3 w-full">
-              <button className="group relative flex-[1.8] h-14 bg-gradient-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-2 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all overflow-hidden">
+              <Link href="" className="group relative flex-[1.8] h-14 bg-gradient-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-2 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 <Heart className="w-4 h-4 fill-white relative z-10" />
                 <span className="relative z-10">Reserve Now</span>
-              </button>
-              <button className="flex-1 h-14 bg-bg-secondary/80 border-2 border-border-main rounded-2xl flex items-center justify-center gap-2 text-text-main text-[10px] font-black uppercase tracking-[0.2em] shadow-inner hover:bg-bg-card hover:border-primary/30 transition-all">
+              </Link>
+              <Link href="#" className="flex-1 h-14 bg-bg-secondary/80 border-2 border-border-main rounded-2xl flex items-center justify-center gap-2 text-text-main text-[10px] font-black uppercase tracking-[0.2em] shadow-inner hover:bg-bg-card hover:border-primary/30 transition-all">
                 <MessageSquare className="w-4 h-4" />
                 <span>Message</span>
-              </button>
+              </Link>
             </div>
           </motion.div>
         </div>

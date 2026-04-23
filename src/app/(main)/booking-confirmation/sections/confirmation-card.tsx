@@ -261,7 +261,7 @@ export default function ConfirmationCard() {
                 Have any last-minute details or questions?
               </p>
               <Link
-                href="/messages"
+                href="/booking-confirmation"
                 className="inline-flex items-center gap-2 text-primary text-sm font-black hover:text-primary/80 transition-colors group"
               >
                 <MessageCircle

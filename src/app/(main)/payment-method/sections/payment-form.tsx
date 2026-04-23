@@ -15,6 +15,7 @@ import {
   Sparkles,
   FileText,
   CircleAlert,
+  X,
 } from "lucide-react";
 
 const rochester = Rochester({ subsets: ["latin"], weight: ["400"] });
@@ -51,7 +52,7 @@ const grandTotal = baseTotal + addOnTotal + bookingCharges.serviceFee;
 export default function PaymentForm() {
   const [selectedPayment, setSelectedPayment] = useState<string>("cod");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success" | "failure">("idle");
 
   // Card-specific state
   const [cardNumber, setCardNumber] = useState("");
@@ -90,7 +91,17 @@ export default function PaymentForm() {
 
   const handleSubmit = () => {
     if (!canSubmit) return;
-    setSubmitted(true);
+    setPaymentStatus("processing");
+    
+    // Simulate payment processing
+    setTimeout(() => {
+      // Randomly fail 20% of the time for demonstration if not COD
+      if (selectedPayment !== "cod" && Math.random() < 0.2) {
+        setPaymentStatus("failure");
+      } else {
+        setPaymentStatus("success");
+      }
+    }, 2000);
   };
 
   return (
@@ -340,25 +351,38 @@ export default function PaymentForm() {
 
             {/* Confirm & Pay Button */}
             <motion.button
-              whileHover={canSubmit ? { scale: 1.02, y: -2 } : {}}
-              whileTap={canSubmit ? { scale: 0.98 } : {}}
+              whileHover={canSubmit && paymentStatus === "idle" ? { scale: 1.02, y: -2 } : {}}
+              whileTap={canSubmit && paymentStatus === "idle" ? { scale: 0.98 } : {}}
               onClick={handleSubmit}
-              disabled={!canSubmit || submitted}
+              disabled={!canSubmit || paymentStatus !== "idle"}
               className={`w-full h-16 rounded-2xl font-black tracking-[0.3em] uppercase text-xs flex items-center justify-center gap-3 relative overflow-hidden transition-all duration-500 ${
-                submitted
-                  ? "bg-emerald-600 text-white cursor-default shadow-lg shadow-emerald-500/20"
-                  : canSubmit
-                    ? "bg-gradient-to-br from-primary via-primary-dark to-primary text-white shadow-2xl shadow-primary/30 cursor-pointer hover:shadow-primary/50 hover:brightness-110"
-                    : "bg-bg-secondary/80 border-2 border-border-main text-text-muted cursor-not-allowed shadow-inner"
+                paymentStatus === "processing"
+                  ? "bg-primary/50 text-white cursor-wait"
+                  : paymentStatus === "success"
+                    ? "bg-emerald-600 text-white cursor-default"
+                    : paymentStatus === "failure"
+                      ? "bg-accent text-white cursor-default"
+                      : canSubmit
+                        ? "bg-gradient-to-br from-primary via-primary-dark to-primary text-white shadow-2xl shadow-primary/30 cursor-pointer hover:shadow-primary/50 hover:brightness-110"
+                        : "bg-bg-secondary/80 border-2 border-border-main text-text-muted cursor-not-allowed shadow-inner"
               }`}
             >
-              {canSubmit && !submitted && (
+              {canSubmit && paymentStatus === "idle" && (
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
               )}
               <span className="relative z-10 flex items-center gap-3">
-                {submitted ? (
+                {paymentStatus === "processing" ? (
                   <>
-                    <Check size={18} strokeWidth={3} /> Payment Confirmed!
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Processing...
+                  </>
+                ) : paymentStatus === "success" ? (
+                  <>
+                    <Check size={18} strokeWidth={3} /> Success!
+                  </>
+                ) : paymentStatus === "failure" ? (
+                  <>
+                    <X size={18} strokeWidth={3} /> Failed
                   </>
                 ) : (
                   <>
@@ -479,6 +503,124 @@ export default function PaymentForm() {
           </motion.div>
         </div>
       </div>
+
+      {/* Success/Failure Overlays */}
+      <AnimatePresence>
+        {paymentStatus === "success" && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[1000] flex items-center justify-center bg-bg-base/80 backdrop-blur-xl p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              className="bg-bg-card border border-border-main rounded-[40px] p-8 md:p-12 max-w-lg w-full text-center shadow-[0_0_100px_rgba(var(--primary-rgb),0.2)] relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-2 bg-emerald-500" />
+              <div className="mb-8 relative inline-block">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", damping: 12, delay: 0.2 }}
+                  className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-500/40"
+                >
+                  <Check size={48} strokeWidth={4} />
+                </motion.div>
+                <motion.div 
+                   animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+                   transition={{ duration: 2, repeat: Infinity }}
+                   className="absolute inset-0 bg-emerald-500 rounded-full -z-10"
+                />
+              </div>
+
+              <h3 className={`${rochester.className} text-4xl text-text-main mb-4`}>Booking Confirmed!</h3>
+              <p className="text-text-muted text-sm leading-relaxed mb-8">
+                Your payment of <span className="text-text-main font-bold">₹{grandTotal.toLocaleString("en-IN")}</span> has been received successfully. A confirmation email has been sent to your registered address.
+              </p>
+
+              <div className="bg-bg-secondary border border-border-main rounded-2xl p-5 mb-8 text-left flex flex-col gap-3">
+                 <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">Transaction ID</span>
+                    <span className="text-xs font-bold text-text-main">#TXN-9482710384</span>
+                 </div>
+                 <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">Payment Mode</span>
+                    <span className="text-xs font-bold text-text-main uppercase">{selectedPayment}</span>
+                 </div>
+                 <div className="flex justify-between items-center pt-2 border-t border-border-main">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">Status</span>
+                    <span className="text-emerald-500 text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 px-2 py-1 rounded-md">Completed</span>
+                 </div>
+              </div>
+
+              <button 
+                onClick={() => window.location.href = "/"}
+                className="w-full h-14 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-500/30 hover:-translate-y-1 transition-all active:scale-95"
+              >
+                Go to Home
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {paymentStatus === "failure" && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[1000] flex items-center justify-center bg-bg-base/80 backdrop-blur-xl p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              className="bg-bg-card border border-border-main rounded-[40px] p-8 md:p-12 max-w-lg w-full text-center shadow-[0_0_100px_rgba(236,72,153,0.1)] relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-2 bg-accent" />
+              <div className="mb-8 relative inline-block">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", damping: 12, delay: 0.2 }}
+                  className="w-24 h-24 bg-accent rounded-full flex items-center justify-center text-white shadow-lg shadow-accent/40"
+                >
+                  <X size={48} strokeWidth={4} />
+                </motion.div>
+              </div>
+
+              <h3 className={`${rochester.className} text-4xl text-text-main mb-4`}>Payment Failed</h3>
+              <p className="text-text-muted text-sm leading-relaxed mb-8">
+                Unfortunately, your transaction could not be completed. This might be due to incorrect details or bank server issues.
+              </p>
+
+              <div className="bg-bg-secondary border border-border-main rounded-2xl p-5 mb-8 text-left flex flex-col gap-3">
+                 <p className="text-[10px] font-black uppercase tracking-widest text-accent mb-1">Common reasons:</p>
+                 <ul className="text-xs text-text-muted flex flex-col gap-2 list-disc pl-4">
+                    <li>Insufficient funds in your account.</li>
+                    <li>Incorrect card details or CVV.</li>
+                    <li>Bank server timeout or connectivity issues.</li>
+                 </ul>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                 <button 
+                  onClick={() => setPaymentStatus("idle")}
+                  className="flex-1 h-14 bg-bg-card border-2 border-border-main text-text-main rounded-2xl font-black uppercase tracking-widest text-[11px] hover:border-accent/50 transition-all active:scale-95"
+                >
+                  Try Again
+                </button>
+                <button 
+                  onClick={() => window.location.href = "/"}
+                  className="flex-1 h-14 bg-accent text-white rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-accent/30 hover:-translate-y-1 transition-all active:scale-95"
+                >
+                  Go to Home
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

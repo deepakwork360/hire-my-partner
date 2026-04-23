@@ -18,6 +18,8 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 
+const MotionLink = motion(Link);
+
 const rochester = Rochester({
   subsets: ["latin"],
   weight: ["400"],
@@ -203,13 +205,14 @@ export default function BookyInfo() {
 
             {/* REDESIGNED Action Buttons - Simplified */}
             <div className="mt-12 flex items-center justify-between gap-6 px-2 w-full">
-              <Link href="/profile/aarushi" className="shrink-0">
+              <Link href="/partner-profile-detail" className="shrink-0">
                 <span className="text-text-muted text-[10px] font-black uppercase tracking-[0.3em] hover:text-primary transition-colors cursor-pointer border-b border-transparent hover:border-primary pb-1 whitespace-nowrap">
                   View Profile
                 </span>
               </Link>
 
-              <motion.button
+              <MotionLink
+                href="/checkout"
                 animate={{
                   boxShadow: isHovered
                     ? [
@@ -224,13 +227,13 @@ export default function BookyInfo() {
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
-                className="flex-1 h-14 bg-gradient-to-r from-primary to-primary-dark rounded-2xl text-white font-black text-[10px] uppercase tracking-[0.4em] shadow-[0_15px_30px_-5px_rgba(var(--primary-rgb),0.4)] hover:-translate-y-1 active:scale-95 transition-all relative overflow-hidden group"
+                className="flex-1 h-14 bg-gradient-to-r from-primary to-primary-dark rounded-2xl text-white font-black text-[10px] uppercase tracking-[0.4em] shadow-[0_15px_30px_-5px_rgba(var(--primary-rgb),0.4)] hover:-translate-y-1 active:scale-95 transition-all relative overflow-hidden group flex items-center justify-center"
               >
                 <span className="relative z-10 flex items-center justify-center gap-3">
                   Book Now <Zap className="w-3 h-3 fill-white" />
                 </span>
                 <div className="absolute inset-0 bg-white/20 -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
-              </motion.button>
+              </MotionLink>
             </div>
           </div>
         </motion.div>

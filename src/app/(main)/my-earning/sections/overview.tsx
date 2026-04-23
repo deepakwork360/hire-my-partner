@@ -174,8 +174,8 @@ export default function Overview() {
            <table className="w-full text-left">
               <thead className="bg-linear-to-r from-primary-dark via-primary to-accent text-white shadow-lg">
                  <tr>
-                    <th className="px-6 xl:px-8 py-5 xl:py-7 text-[11px] xl:text-[12px] font-black uppercase tracking-widest border-r border-border-main">Date</th>
-                    <th className="px-6 xl:px-8 py-5 xl:py-7 text-[11px] xl:text-[12px] font-black uppercase tracking-widest border-r border-border-main">Time</th>
+                    <th className="px-6 xl:px-8 py-5 xl:py-7 text-[11px] xl:text-[12px] font-black uppercase tracking-widest">Date</th>
+                    <th className="px-6 xl:px-8 py-5 xl:py-7 text-[11px] xl:text-[12px] font-black uppercase tracking-widest">Time</th>
                     <th className="px-6 xl:px-8 py-5 xl:py-7 text-[11px] xl:text-[12px] font-black uppercase tracking-widest text-right">Amount Earned</th>
                  </tr>
               </thead>
@@ -190,12 +190,12 @@ export default function Overview() {
                           transition={{ delay: idx * 0.05 }}
                           className="hover:bg-primary/5 transition-colors group"
                        >
-                          <td className="px-6 xl:px-8 py-5 xl:py-7 border-r border-border-main">
+                          <td className="px-6 xl:px-8 py-5 xl:py-7">
                              <div className="inline-block px-4 py-1.5 rounded-full bg-linear-to-r from-primary/10 to-accent/5 border border-primary/10 text-text-main text-xs xl:text-sm font-medium">
                                 {row.date}
                              </div>
                           </td>
-                          <td className="px-6 xl:px-8 py-5 xl:py-7 border-r border-border-main">
+                          <td className="px-6 xl:px-8 py-5 xl:py-7">
                              <div className="inline-block px-4 py-1.5 rounded-full bg-bg-card border border-border-main text-text-muted text-xs xl:text-sm font-medium italic">
                                 {row.time}
                              </div>

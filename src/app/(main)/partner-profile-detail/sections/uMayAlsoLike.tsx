@@ -92,7 +92,7 @@ export default function UMayAlsoLike() {
                 rating={partner.rating}
                 confirmation="Identity Verified"
                 buttonText="View Profile"
-                viewLink="/partner-profile-detail"
+                buttonLink="/partner-profile-detail"
               />
             </motion.div>
           ))}

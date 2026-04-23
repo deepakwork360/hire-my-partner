@@ -212,7 +212,7 @@ export default function InterestedPeople() {
                         rating={profile.rating}
                         confirmation="Interested"
                         buttonText="View Profile"
-                        viewLink="/partner-profile-detail"
+                        buttonLink="/partner-profile-detail"
                      />
                   </motion.div>
                   ))}

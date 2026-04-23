@@ -45,10 +45,10 @@ export default function RecentPaid() {
            <table className="w-full text-left min-w-[700px]">
               <thead className="bg-linear-to-r from-primary-dark via-primary to-accent text-white">
                  <tr className="uppercase font-black text-[10px] xl:text-[11px] tracking-widest">
-                    <th className="px-6 xl:px-8 py-5 xl:py-7 border-r border-border-main">User</th>
-                    <th className="px-6 xl:px-8 py-5 xl:py-7 border-r border-border-main">Date</th>
-                    <th className="px-6 xl:px-8 py-5 xl:py-7 border-r border-border-main">Time</th>
-                    <th className="px-6 xl:px-8 py-5 xl:py-7 border-r border-border-main">Event Type</th>
+                    <th className="px-6 xl:px-8 py-5 xl:py-7">User</th>
+                    <th className="px-6 xl:px-8 py-5 xl:py-7">Date</th>
+                    <th className="px-6 xl:px-8 py-5 xl:py-7">Time</th>
+                    <th className="px-6 xl:px-8 py-5 xl:py-7">Event Type</th>
                     <th className="px-6 xl:px-8 py-5 xl:py-7 text-right">Amount</th>
                  </tr>
               </thead>
@@ -62,7 +62,7 @@ export default function RecentPaid() {
                        transition={{ delay: idx * 0.05 }}
                        className="group hover:bg-primary/5 transition-all"
                     >
-                       <td className="px-6 xl:px-8 py-5 xl:py-7 border-r border-border-main">
+                       <td className="px-6 xl:px-8 py-5 xl:py-7">
                           <div className="flex items-center gap-3">
                              <div className="relative w-10 h-10 xl:w-12 xl:h-12 rounded-full overflow-hidden border border-border-main ring-2 ring-transparent group-hover:ring-primary/50 group-hover:shadow-[0_0_15px_rgba(var(--primary-rgb),0.4)] transition-all">
                                 <Image src={row.img} alt={row.user} fill className="object-cover" />
@@ -70,17 +70,17 @@ export default function RecentPaid() {
                              <span className="text-text-main text-sm xl:text-base font-bold group-hover:text-primary transition-colors uppercase tracking-tight">{row.user}</span>
                           </div>
                        </td>
-                       <td className="px-6 xl:px-8 py-5 xl:py-7 border-r border-border-main">
+                       <td className="px-6 xl:px-8 py-5 xl:py-7">
                           <div className="inline-flex px-4 py-1.5 rounded-full bg-linear-to-r from-primary/10 to-transparent border border-primary/10 text-text-main text-xs xl:text-sm font-medium">
                              {row.date}
                           </div>
                        </td>
-                       <td className="px-6 xl:px-8 py-5 xl:py-7 border-r border-border-main">
+                       <td className="px-6 xl:px-8 py-5 xl:py-7">
                           <div className="inline-flex px-4 py-1.5 rounded-full bg-bg-card border border-border-main text-text-muted text-xs xl:text-sm font-medium italic">
                              {row.time}
                           </div>
                        </td>
-                       <td className="px-6 xl:px-8 py-5 xl:py-7 border-r border-border-main">
+                       <td className="px-6 xl:px-8 py-5 xl:py-7">
                           <span className="px-4 py-2 bg-linear-to-r from-primary-dark to-accent rounded-lg text-white text-[9px] xl:text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20">
                              {row.event}
                           </span>
