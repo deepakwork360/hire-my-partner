@@ -112,14 +112,13 @@ export default function MainProfile() {
                           className="object-cover object-top rounded-[40px] transition-transform duration-700 group-hover/img:scale-110"
                           priority
                         />
-                        {!isCustomImage && (
-                          <div className="absolute inset-0 bg-bg-base/60 opacity-0 group-hover/img:opacity-100 transition-all duration-300 flex flex-col items-center justify-center backdrop-blur-sm gap-4 rounded-[40px]">
-                             <div className="w-14 h-14 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
-                               <Camera size={24} className="text-white" />
-                             </div>
-                             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white">Update Photo</span>
-                          </div>
-                        )}
+                        {/* Hover Overlay - Always shows on hover for consistent UX */}
+                        <div className="absolute inset-0 bg-[#050505]/60 opacity-0 group-hover/img:opacity-100 transition-all duration-300 flex flex-col items-center justify-center backdrop-blur-md gap-4 rounded-[40px] z-10">
+                           <div className="w-14 h-14 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
+                             <Camera size={24} className="text-white" />
+                           </div>
+                           <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white">Update Photo</span>
+                        </div>
 
                         {isCustomImage && (
                           <button

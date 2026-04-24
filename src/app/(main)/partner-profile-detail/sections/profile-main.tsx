@@ -163,7 +163,7 @@ export default function ProfileMain() {
 
             {/* Action Buttons - Compact height */}
             <div className="flex items-center gap-3 w-full">
-               <Link href="" className="group relative flex-[1.8] h-14 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-2 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all overflow-hidden">
+               <Link href="/checkout" className="group relative flex-[1.8] h-14 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-2 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all overflow-hidden">
                 <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 <Heart className="w-4 h-4 fill-white relative z-10" />
                 <span className="relative z-10">Reserve Now</span>

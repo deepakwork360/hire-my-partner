@@ -129,7 +129,7 @@ h6 {
 
 /* Neon Glass Badge */
 .profile-card-badge {
-  @apply absolute top-6 left-6 px-4 py-1.5 rounded-full text-[11px] font-black z-20 border border-border-main uppercase tracking-widest bg-bg-base/60 backdrop-blur-xl shadow-md;
+  @apply absolute top-6 left-6 px-4 py-1.5 rounded-full text-[11px] font-black z-20 border border-white/10 uppercase tracking-widest bg-[#050505]/60 backdrop-blur-xl shadow-md;
   color: rgb(var(--primary-rgb));
 }
 
@@ -160,7 +160,7 @@ h6 {
 }
 
 .profile-card-rating {
-  @apply absolute top-6 right-6 flex items-center gap-1.5 bg-bg-base/60 backdrop-blur-md text-text-main px-3 py-1 rounded-full text-[12px] font-black border border-border-main z-20 shadow-md;
+  @apply absolute top-6 right-6 flex items-center gap-1.5 bg-[#050505]/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-[12px] font-black border border-white/10 z-20 shadow-md;
 }
 
 .profile-card-rating-icon {
