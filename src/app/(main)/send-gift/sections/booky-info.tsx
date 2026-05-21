@@ -205,14 +205,14 @@ export default function BookyInfo() {
 
             {/* REDESIGNED Action Buttons - Simplified */}
             <div className="mt-12 flex items-center justify-between gap-6 px-2 w-full">
-              <Link href="/partner-profile-detail" className="shrink-0">
+              <Link href="/partners/1" className="shrink-0">
                 <span className="text-text-muted text-[10px] font-black uppercase tracking-[0.3em] hover:text-primary transition-colors cursor-pointer border-b border-transparent hover:border-primary pb-1 whitespace-nowrap">
                   View Profile
                 </span>
               </Link>
 
               <MotionLink
-                href="/checkout"
+                href="/checkout?partner=1"
                 animate={{
                   boxShadow: isHovered
                     ? [

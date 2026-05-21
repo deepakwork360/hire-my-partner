@@ -100,16 +100,30 @@ export default function ProfileCard({
           {bio}
         </p>
 
-        {confirmation && (
-          <div className="profile-card-confirmation">
-            <Navigation className="profile-card-confirmation-icon" />
-            <span>{confirmation}</span>
-          </div>
-        )}
-
-        {distance && (
-          <div className="profile-card-distance">
-            {distance}
+        {(confirmation || distance) && (
+          <div className="flex items-center justify-between mt-auto pt-2 w-full">
+            {confirmation ? (
+              <>
+                  <div className="profile-card-confirmation">
+                    <Navigation className="profile-card-confirmation-icon" />
+                  <span>{confirmation}</span>
+                </div>
+                {distance && (
+                  <div className="profile-card-distance">
+                    {distance}
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {distance && (
+                  <div className="profile-card-distance">
+                    {distance}
+                  </div>
+                )}
+                <div />
+              </>
+            )}
           </div>
         )}
       </div>

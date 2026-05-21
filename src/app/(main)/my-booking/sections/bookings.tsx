@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,14 +10,12 @@ import {
   Calendar,
   Clock,
   MessageCircle,
-  Eye,
   CheckCircle2,
   XCircle,
   Check,
-  Download,
-  StarHalf,
 } from "lucide-react";
 import { Rochester, Outfit } from "next/font/google";
+import { partners } from "@/modules/partner/data/partners";
 import CategorySwitcher from "./category-switcher";
 
 const rochester = Rochester({
@@ -31,7 +29,7 @@ const outfit = Outfit({
 });
 
 interface BookingData {
-  id: number;
+  id: number | string;
   image: string;
   name: string;
   age: number;
@@ -40,75 +38,75 @@ interface BookingData {
   date: string;
   time: string;
   price: string;
-  status: "Pending" | "Confirmed" | "Completed";
+  status: "Pending" | "Confirmed" | "Completed" | "Declined";
   bio: string;
 }
 
 const MOCK_BOOKINGS: BookingData[] = [
   {
-    id: 1,
-    image: "/images/img1.webp",
-    name: "Emily",
-    age: 22,
-    location: "Mumbai",
-    rating: "4.9",
-    date: "June 24, 2025",
+    id: partners[0].id,
+    image: partners[0].image,
+    name: partners[0].name,
+    age: partners[0].age,
+    location: partners[0].location.split(",")[0].trim(),
+    rating: partners[0].rating,
+    date: "June 24, 2026",
     time: "07:00 PM - 09:00 PM",
-    price: "₹5,000",
+    price: `₹${(partners[0].pricing.twoHours).toLocaleString("en-IN")}`,
     status: "Pending",
-    bio: "I am looking forward to our dinner session at the rooftop lounge.",
+    bio: "Looking forward to our premium dinner session. Let's make it memorable.",
   },
   {
-    id: 2,
-    image: "/images/img2.webp",
-    name: "Sophia",
-    age: 24,
-    location: "Delhi",
-    rating: "4.8",
-    date: "June 25, 2025",
+    id: partners[1].id,
+    image: partners[1].image,
+    name: partners[1].name,
+    age: partners[1].age,
+    location: partners[1].location.split(",")[0].trim(),
+    rating: partners[1].rating,
+    date: "June 25, 2026",
     time: "02:00 PM - 05:00 PM",
-    price: "₹3,500",
+    price: `₹${(partners[1].pricing.threeHours).toLocaleString("en-IN")}`,
     status: "Confirmed",
-    bio: "Exploring the historic sites together will be a wonderful experience.",
+    bio: "Exploring the local art galleries and having deep conversations.",
   },
   {
-    id: 3,
-    image: "/images/img3.webp",
-    name: "Olivia",
-    age: 21,
-    location: "Bangalore",
-    rating: "5.0",
-    date: "June 26, 2025",
+    id: partners[3].id,
+    image: partners[3].image,
+    name: partners[3].name,
+    age: partners[3].age,
+    location: partners[3].location.split(",")[0].trim(),
+    rating: partners[3].rating,
+    date: "June 26, 2026",
     time: "09:00 AM - 11:00 AM",
-    price: "₹4,200",
+    price: `₹${(partners[3].pricing.twoHours).toLocaleString("en-IN")}`,
     status: "Pending",
-    bio: "Early morning coffee and a walk in the park sounds perfect.",
+    bio: "A quick morning walk and warm coffee to discuss architecture sounds perfect.",
   },
   {
-    id: 4,
-    image: "/images/img4.webp",
-    name: "Ava",
-    age: 23,
-    location: "Hyderabad",
-    rating: "4.7",
-    date: "June 27, 2025",
+    id: partners[4].id,
+    image: partners[4].image,
+    name: partners[4].name,
+    age: partners[4].age,
+    location: partners[4].location.split(",")[0].trim(),
+    rating: partners[4].rating,
+    date: "June 27, 2026",
     time: "08:30 PM - 11:30 PM",
-    price: "₹6,000",
+    price: `₹${(partners[4].pricing.threeHours).toLocaleString("en-IN")}`,
     status: "Confirmed",
-    bio: "The movie premiere is tonight. Let's make it a night to remember.",
+    bio: "Attending the indie acoustic live session event together tonight.",
   },
   {
-    id: 5,
-    image: "/images/img5.webp",
-    name: "Isabella",
-    age: 25,
-    location: "Goa",
-    rating: "4.6",
-    date: "May 12, 2025",
+    id: partners[5].id,
+    image: partners[5].image,
+    name: partners[5].name,
+    age: partners[5].age,
+    location: partners[5].location.split(",")[0].trim(),
+    rating: partners[5].rating,
+    date: "May 12, 2026",
     time: "04:00 PM - 07:00 PM",
-    price: "₹8,000",
+    price: `₹${(partners[5].pricing.threeHours).toLocaleString("en-IN")}`,
     status: "Completed",
-    bio: "Had a great time exploring the beaches and the old town.",
+    bio: "Had a great time visiting the local museums and vintage cafes.",
   },
 ];
 
@@ -157,25 +155,32 @@ const MOCK_CLIENT_REQUESTS: BookingData[] = [
 function BookingCard({
   booking,
   category,
+  onUpdateStatus,
 }: {
   booking: BookingData;
   category: string;
+  onUpdateStatus: (id: number | string, newStatus: BookingData["status"]) => void;
 }) {
-  const [isPaid, setIsPaid] = useState(
-    booking.status === "Confirmed" || booking.status === "Completed",
-  );
+  const isPaid = booking.status === "Confirmed" || booking.status === "Completed";
   const isCompleted = booking.status === "Completed";
+  const isDeclined = booking.status === "Declined";
 
   // Logical state for "Hired Me" category
-  const [requestStatus, setRequestStatus] = useState<
-    "pending" | "accepted" | "rejected"
-  >(
+  const requestStatus =
     booking.status === "Pending"
       ? "pending"
-      : booking.status === "Confirmed" || booking.status === "Completed"
+      : (booking.status === "Confirmed" || booking.status === "Completed")
         ? "accepted"
-        : "rejected",
+        : "rejected";
+
+  const partner = partners.find(
+    (p) =>
+      p.name.toLowerCase() === booking.name.toLowerCase() ||
+      String(p.id).toLowerCase() === String(booking.id).toLowerCase()
   );
+  const href = partner
+    ? `/partners/${partner.name.toLowerCase().replace(/\s+/g, "-")}`
+    : `/partners/${booking.id}`;
 
   return (
     <motion.div
@@ -185,7 +190,7 @@ function BookingCard({
       transition={{ duration: 0.6, ease: "easeOut" }}
       className="main-profile-card group shrink-0"
     >
-      <Link href="/partner-profile-detail" className="relative block">
+      <Link href={category === "hired_by_me" ? href : "#"} className="relative block">
         {/* Photo Section */}
         <div className="profile-card-image">
           <div className="relative w-full h-full overflow-hidden rounded-[28px]">
@@ -210,19 +215,24 @@ function BookingCard({
           {/* Status Badge */}
           <div
             className={`absolute bottom-6 left-6 z-20 px-3 py-1 rounded-full border backdrop-blur-md text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 ${
-              !isPaid
-                ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
-                : booking.status === "Completed"
-                  ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
-                  : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
+              isDeclined
+                ? "bg-rose-500/10 border-rose-500/20 text-rose-500"
+                : !isPaid
+                  ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
+                  : isCompleted
+                    ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
+                    : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
             }`}
           >
-            {isPaid && <Check className="w-3 h-3" />}
-            {isPaid
-              ? isCompleted
-                ? "Completed"
-                : "Paid & Confirmed"
-              : "Payment Pending"}
+            {isDeclined && <XCircle className="w-3 h-3" />}
+            {isPaid && !isDeclined && <Check className="w-3 h-3" />}
+            {isDeclined
+              ? "Declined"
+              : isPaid
+                ? isCompleted
+                  ? "Completed"
+                  : "Paid & Confirmed"
+                : "Payment Pending"}
           </div>
 
           {/* Bottom Vignette */}
@@ -262,23 +272,31 @@ function BookingCard({
       {/* Actions Section - PREMIUM GLASS-BOX Workflow */}
       <div className="profile-card-footer mt-auto pt-6">
         <div className="flex items-center gap-3 w-full">
-          {category === "hired_by_me" ? (
+          {isDeclined ? (
+            <div className="flex items-center justify-center h-12 w-full bg-rose-500/5 border border-rose-500/20 rounded-2xl">
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-rose-500">
+                Declined
+              </span>
+            </div>
+          ) : category === "hired_by_me" ? (
             // --- HIRED BY ME ACTIONS (Existing) ---
             isCompleted ? (
-              <motion.button
-                whileHover={{ y: -3, scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="flex-1 h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
-              >
-                <Calendar className="w-4 h-4" />
-                <span>Book Again</span>
-              </motion.button>
+              <Link href={href} className="flex-1">
+                <motion.div
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40 cursor-pointer"
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span>Book Again</span>
+                </motion.div>
+              </Link>
             ) : (
               <>
                 {!isPaid ? (
                   <>
                     <motion.button
-                      onClick={() => setIsPaid(true)}
+                      onClick={() => onUpdateStatus(booking.id, "Confirmed")}
                       whileHover={{ y: -3, scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className="flex-2 h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
@@ -288,6 +306,7 @@ function BookingCard({
                     </motion.button>
  
                     <motion.button
+                      onClick={() => onUpdateStatus(booking.id, "Declined")}
                       whileHover={{ y: -2, scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className="flex-1 h-12 bg-bg-secondary/80 border-2 border-border-main rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-text-muted shadow-inner hover:bg-bg-card hover:text-rose-500 transition-all"
@@ -298,16 +317,22 @@ function BookingCard({
                   </>
                 ) : (
                   <>
-                    <motion.button
-                      whileHover={{ y: -3, scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="flex-2 h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
+                    <a
+                      href={`mailto:${booking.name.toLowerCase().replace(/[^a-z0-9]/g, "")}@email.com?subject=Coordinating Session`}
+                      className="flex-2"
                     >
-                      <MessageCircle className="w-4 h-4" />
-                      <span>Message</span>
-                    </motion.button>
+                      <motion.div
+                        whileHover={{ y: -3, scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40 cursor-pointer"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        <span>Message</span>
+                      </motion.div>
+                    </a>
  
                     <motion.button
+                      onClick={() => onUpdateStatus(booking.id, "Declined")}
                       whileHover={{ y: -2, scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className="flex-1 h-12 bg-bg-secondary/80 border-2 border-border-main rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-text-muted shadow-inner hover:bg-bg-card hover:text-rose-500 transition-all"
@@ -325,7 +350,7 @@ function BookingCard({
               {requestStatus === "pending" && (
                 <div className="flex items-center gap-3 w-full">
                   <motion.button
-                    onClick={() => setRequestStatus("accepted")}
+                    onClick={() => onUpdateStatus(booking.id, "Confirmed")}
                     whileHover={{ y: -3, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="flex-1 h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
@@ -335,7 +360,7 @@ function BookingCard({
                   </motion.button>
  
                   <motion.button
-                    onClick={() => setRequestStatus("rejected")}
+                    onClick={() => onUpdateStatus(booking.id, "Declined")}
                     whileHover={{ y: -2, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="flex-[0.6] h-12 bg-bg-secondary/80 border-2 border-border-main rounded-2xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-rose-500 shadow-inner hover:bg-bg-card transition-all"
@@ -348,14 +373,19 @@ function BookingCard({
 
               {requestStatus === "accepted" && (
                 <div className="flex items-center gap-4">
-                  <motion.button
-                    whileHover={{ y: -3, scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="flex-1 h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all"
+                  <a
+                    href={`mailto:client-${booking.name.toLowerCase().replace(/[^a-z0-9]/g, "")}@email.com?subject=Session Approved`}
+                    className="flex-1"
                   >
-                    <MessageCircle className="w-4 h-4" />
-                    <span>Message Client</span>
-                  </motion.button>
+                    <motion.div
+                      whileHover={{ y: -3, scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all cursor-pointer"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      <span>Message Client</span>
+                    </motion.div>
+                  </a>
                   <div className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[9px] font-black text-emerald-500 uppercase tracking-widest">
                     Accepted
                   </div>
@@ -389,8 +419,47 @@ export default function Bookings({
   activeCategory,
   setActiveCategory,
 }: BookingsProps) {
+  const [bookings, setBookings] = useState<BookingData[]>([]);
+  const [clientRequests, setClientRequests] = useState<BookingData[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    try {
+      const localBookings = localStorage.getItem("hire_my_partner_bookings");
+      if (localBookings) {
+        setBookings(JSON.parse(localBookings));
+      } else {
+        setBookings(MOCK_BOOKINGS);
+        localStorage.setItem("hire_my_partner_bookings", JSON.stringify(MOCK_BOOKINGS));
+      }
+
+      const localRequests = localStorage.getItem("hire_my_partner_requests");
+      if (localRequests) {
+        setClientRequests(JSON.parse(localRequests));
+      } else {
+        setClientRequests(MOCK_CLIENT_REQUESTS);
+        localStorage.setItem("hire_my_partner_requests", JSON.stringify(MOCK_CLIENT_REQUESTS));
+      }
+    } catch (error) {
+      console.error("Error reading localStorage", error);
+    }
+  }, []);
+
+  const handleUpdateBookingStatus = (id: number | string, newStatus: BookingData["status"]) => {
+    const updated = bookings.map((b) => (b.id === id ? { ...b, status: newStatus } : b));
+    setBookings(updated);
+    localStorage.setItem("hire_my_partner_bookings", JSON.stringify(updated));
+  };
+
+  const handleUpdateClientRequestStatus = (id: number | string, newStatus: BookingData["status"]) => {
+    const updated = clientRequests.map((r) => (r.id === id ? { ...r, status: newStatus } : r));
+    setClientRequests(updated);
+    localStorage.setItem("hire_my_partner_requests", JSON.stringify(updated));
+  };
+
   const currentData =
-    activeCategory === "hired_by_me" ? MOCK_BOOKINGS : MOCK_CLIENT_REQUESTS;
+    activeCategory === "hired_by_me" ? bookings : clientRequests;
 
   const filteredBookings = currentData.filter((booking) => {
     if (activeFilter === "All") return true;
@@ -402,6 +471,18 @@ export default function Bookings({
 
   // Standardized Grid Classes (3 on laptop, 4 on monitor)
   const gridClasses = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4";
+
+  if (!mounted) {
+    return (
+      <div className="flex flex-col items-center justify-center py-40">
+        <div className="relative w-16 h-16">
+          <div className="absolute inset-0 rounded-full border-4 border-primary/20 animate-pulse" />
+          <div className="absolute inset-0 rounded-full border-4 border-t-primary animate-spin" />
+        </div>
+        <p className="mt-4 text-xs font-black uppercase tracking-[0.25em] text-text-muted">Loading bookings...</p>
+      </div>
+    );
+  }
 
   return (
     <div className={`space-y-12 ${outfit.className}`}>
@@ -443,6 +524,11 @@ export default function Bookings({
               key={`${activeCategory}-${booking.id}`}
               booking={booking}
               category={activeCategory}
+              onUpdateStatus={
+                activeCategory === "hired_by_me"
+                  ? handleUpdateBookingStatus
+                  : handleUpdateClientRequestStatus
+              }
             />
           ))}
         </div>

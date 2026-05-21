@@ -4,7 +4,23 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
   images: {
-    domains: ["images.unsplash.com"],
+    domains: [
+      "images.unsplash.com",
+      "pinterest.com",
+      "in.pinterest.com",
+      "i.pinimg.com",
+      "i1-e.pinimg.com"
+    ],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.pinimg.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.pinterest.com",
+      }
+    ]
   },
 };
 

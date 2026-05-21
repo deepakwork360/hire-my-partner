@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   X, 
@@ -60,10 +60,56 @@ const OPTIONS = {
 
 export default function FilterBy({ onClose }: { onClose?: () => void }) {
   const router = useRouter();
-  const [filters, setFilters] = useState<FilterState>(initialFilters);
+  const searchParams = useSearchParams();
+
+  // Helper to parse search parameters into FilterState
+  const getSearchParamsFilters = (): FilterState => {
+    const age = searchParams.get("age") || "";
+    const gender = searchParams.get("gender") || "";
+    const location = searchParams.get("location") || searchParams.get("city") || "";
+    
+    const languageParam = searchParams.get("language");
+    const language = languageParam ? languageParam.split(",").filter(Boolean) : [];
+
+    const tagsParam = searchParams.get("tags");
+    const tags = tagsParam ? tagsParam.split(",").filter(Boolean) : [];
+
+    const priceMin = parseInt(searchParams.get("priceMin") || "500", 10);
+    const priceMax = parseInt(searchParams.get("priceMax") || "10000", 10);
+    const priceRange: [number, number] = [priceMin, priceMax];
+
+    const availabilityParam = searchParams.get("availability");
+    const availability = availabilityParam ? availabilityParam.split(",").filter(Boolean) : [];
+
+    const timing = searchParams.get("timing") || "";
+    const rating = searchParams.get("rating") || "";
+    const verified = searchParams.get("verified") === "true";
+
+    return {
+      age,
+      gender,
+      location,
+      language,
+      tags,
+      priceRange,
+      availability,
+      timing,
+      rating,
+      verified,
+    };
+  };
+
+  const searchParamsStr = searchParams.toString();
+  const [filters, setFilters] = useState<FilterState>(() => getSearchParamsFilters());
+
+  // Keep local filter state synced with URL changes (e.g. back navigation or resets)
+  useEffect(() => {
+    setFilters(getSearchParamsFilters());
+  }, [searchParamsStr]);
 
   const handleChange = (name: keyof FilterState, value: any) => {
     setFilters((prev) => {
+      // 1. Array-based values (multi-select like language, tags, availability)
       if (Array.isArray(prev[name]) && typeof value === 'string') {
         const arr = prev[name] as string[];
         return {
@@ -73,6 +119,21 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
             : [...arr, value]
         };
       }
+
+      // 2. Price range toggle off support
+      if (name === "priceRange" && Array.isArray(value)) {
+        const prevRange = prev.priceRange;
+        if (prevRange[0] === value[0] && prevRange[1] === value[1]) {
+          return { ...prev, priceRange: [500, 10000] };
+        }
+        return { ...prev, priceRange: value as [number, number] };
+      }
+
+      // 3. Single values toggle off support (like age, gender, rating, timing)
+      if (prev[name] === value) {
+        return { ...prev, [name]: "" };
+      }
+
       return { ...prev, [name]: value };
     });
   };
@@ -80,6 +141,14 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
   const handleClearAll = () => {
     setFilters(initialFilters);
     router.push("/browse-partners");
+    if (typeof window !== "undefined") {
+      setTimeout(() => {
+        const element = document.getElementById("catalog-results");
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 100);
+    }
   };
 
   const handleApply = () => {
@@ -88,8 +157,11 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
       if (value) {
         if (key === "priceRange") {
           const [min, max] = value as [number, number];
-          params.append("priceMin", min.toString());
-          params.append("priceMax", max.toString());
+          // Only append to URL if it differs from the default range [500, 10000]
+          if (min !== 500 || max !== 10000) {
+            params.append("priceMin", min.toString());
+            params.append("priceMax", max.toString());
+          }
         } else if (Array.isArray(value)) {
           if (value.length > 0) params.append(key, value.join(","));
         } else if (typeof value === "boolean") {
@@ -101,6 +173,16 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
     });
 
     router.push(`/browse-partners?${params.toString()}`, { scroll: false });
+    
+    if (typeof window !== "undefined") {
+      setTimeout(() => {
+        const element = document.getElementById("catalog-results");
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 100);
+    }
+
     if (onClose) onClose();
   };
 

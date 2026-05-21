@@ -1,14 +1,15 @@
+import { Suspense } from "react";
 import Footer from "../home-page/sections/Footer";
 import BookDetails from "./sections/book-details";
 import MainCheckout from "./sections/main-checkout";
-import Profile from "./sections/profile";
 
 export default function Checkout() {
   return (
     <div>
       <MainCheckout />
-      <BookDetails />
-      {/* <Profile /> */}
+      <Suspense fallback={<div className="py-20 text-center text-text-muted font-bold">Loading Checkout Details...</div>}>
+        <BookDetails />
+      </Suspense>
       <Footer />
     </div>
   );

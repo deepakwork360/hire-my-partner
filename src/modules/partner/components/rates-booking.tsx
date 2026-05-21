@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
 import { CheckCircle2, Circle, HeartHandshake, Zap, Clock, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { Partner } from "../types/partner.types";
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -17,15 +18,33 @@ const outfit = Outfit({
 });
 
 const ADD_ONS = [
-  { id: "photo", label: "Casual Photoshoot", price: 1500, icon: Zap },
+  { id: "photoshoot", label: "Casual Photoshoot", price: 1500, icon: Zap },
   { id: "playlist", label: "Personalized Playlist", price: 500, icon: Sparkles },
   { id: "travel", label: "Extra Travel Time", price: 2000, icon: Clock },
 ];
 
-export default function RatesBooking() {
+interface RatesBookingProps {
+  partner?: Partner;
+}
+
+export default function RatesBooking({ partner }: RatesBookingProps) {
+  // Graceful fallback to Gigi Hadid if no partner is provided
+  const activePartner = partner || {
+    id: "1",
+    name: "Gigi Hadid",
+    pricing: {
+      oneHour: 4999,
+      twoHours: 9998,
+      threeHours: 14997,
+      fourHours: 19996,
+      fiveHours: 24995,
+      eightHours: 39992,
+    }
+  } as Partner;
+
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
 
-  const hourlyRate = 4999;
+  const hourlyRate = activePartner.pricing.oneHour;
   const minHours = 2;
 
   const handleToggle = (id: string) => {
@@ -189,7 +208,7 @@ export default function RatesBooking() {
                    </div>
 
                    <Link
-                     href="/checkout"
+                     href={`/checkout?partner=${activePartner.id}${selectedAddOns.length > 0 ? `&addons=${selectedAddOns.join(",")}` : ""}`}
                      className="group relative w-full h-12 bg-primary rounded-xl flex items-center justify-center gap-3 text-white text-[10px] font-black uppercase tracking-[0.3em] shadow-lg hover:-translate-y-1 transition-all overflow-hidden"
                    >
                      <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shine" />

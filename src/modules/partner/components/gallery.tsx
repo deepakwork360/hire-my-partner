@@ -16,10 +16,14 @@ const outfit = Outfit({
   weight: ["300", "400", "500", "700"],
 });
 
-export default function Gallery() {
+interface GalleryProps {
+  images?: string[] | { id: string; image: string }[] | any[];
+}
+
+export default function Gallery({ images }: GalleryProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const rawImages = [
+  const defaultImages = [
     "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop",
@@ -31,7 +35,10 @@ export default function Gallery() {
     "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800&auto=format&fit=crop",
   ];
 
-  const galleryImages = rawImages.slice(0, 9);
+  const galleryImages = (images && images.length > 0 
+    ? images.map((img) => typeof img === "string" ? img : (img && img.image ? img.image : ""))
+    : defaultImages
+  ).filter(Boolean).slice(0, 9);
 
   return (
     <section
@@ -129,9 +136,9 @@ export default function Gallery() {
             </motion.div>
             
             {/* ESC Hint */}
-            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 text-white/30 text-[10px] font-black uppercase tracking-[0.4em] pointer-events-none">
+            {/* <div className="fixed bottom-8 left-1/2 -translate-x-1/2 text-white/30 text-[10px] font-black uppercase tracking-[0.4em] pointer-events-none">
               Click anywhere to close
-            </div>
+            </div> */}
           </motion.div>
         )}
       </AnimatePresence>

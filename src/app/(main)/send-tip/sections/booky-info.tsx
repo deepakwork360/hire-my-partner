@@ -196,7 +196,7 @@ export default function BookyInfo() {
 
             {/* View Profile Action */}
             <div className="mt-12 flex items-center justify-center w-full px-2">
-              <Link href="/partner-profile-detail" className="shrink-0">
+              <Link href="/partners/1" className="shrink-0">
                 <span className="text-text-muted text-[10px] font-black uppercase tracking-[0.3em] hover:text-primary transition-colors cursor-pointer border-b border-transparent hover:border-primary pb-1 whitespace-nowrap">
                   View Profile
                 </span>

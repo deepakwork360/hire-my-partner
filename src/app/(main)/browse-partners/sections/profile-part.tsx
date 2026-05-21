@@ -1,18 +1,20 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import ProfileCard from "@/components/ProfileCard/ProfileCard";
 import { Star, Flame, Loader2, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import DiscoveryButton from "@/components/ui/DiscoveryButton";
+import { partners } from "@/modules/partner/data/partners";
 
 interface ProfileData {
-  id: number;
+  id: number | string;
   image: string;
   hourlyRate: string;
   name: string;
   age: number;
+  gender: string;
   location: string;
   bio: string;
   tag: string;
@@ -21,57 +23,37 @@ interface ProfileData {
   viewLink: string;
 }
 
-const MOCK_TAGS = [
-  "Friendly",
-  "BookLover",
-  "Talkative",
-  "MusicFan",
-  "Traveler",
-  "NatureLover",
-];
-const MOCK_LOCATIONS = ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Goa"];
-const MOCK_IMAGES = [
-  "/images/img1.webp",
-  "/images/img2.webp",
-  "/images/img3.webp",
-  "/images/img4.webp",
-  "/images/img5.webp",
-  "/images/img6.webp",
-  "/images/img7.webp",
-  "/images/img8.webp",
-];
-
-const generateMockProfiles = (
-  startIndex: number,
-  count: number,
-): ProfileData[] => {
-  return Array.from({ length: count }, (_, i) => {
-    const id = startIndex + i;
-    return {
-      id,
-      image: MOCK_IMAGES[id % MOCK_IMAGES.length],
-      hourlyRate: `₹${Math.floor(Math.random() * 3000) + 1000}/hr`,
-      name: ["Emily", "Sophia", "Olivia", "Ava", "Isabella"][id % 5],
-      age: Math.floor(Math.random() * 12) + 18,
-      location: MOCK_LOCATIONS[id % MOCK_LOCATIONS.length],
-      bio: "I am a friendly and outgoing person who loves to meet new people and explore new places.",
-      tag: MOCK_TAGS[id % MOCK_TAGS.length],
-      rating: (Math.random() * 2 + 3).toFixed(1),
-      confirmation: "Verified",
-      viewLink: "/partner-profile-detail",
-    };
-  });
+const getDbProfiles = (): ProfileData[] => {
+  return partners.map((p) => ({
+    id: p.id,
+    image: p.image,
+    hourlyRate: `₹${p.pricing.oneHour}/hr`,
+    name: p.name,
+    age: p.age,
+    gender: p.gender,
+    location: p.location.split(",")[0].trim(),
+    bio: p.bio,
+    tag: p.id === "1" ? "Friendly" : p.id === "2" ? "MusicFan" : p.id === "3" ? "Talkative" : p.id === "4" ? "Traveler" : p.id === "5" ? "NatureLover" : "BookLover",
+    rating: p.rating,
+    confirmation: p.verified ? "Verified" : "",
+    viewLink: `/partners/${p.id}`,
+  }));
 };
 
 export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean }) {
-  const [profiles, setProfiles] = useState<ProfileData[]>([]);
+  const searchParams = useSearchParams();
   const [sortBy, setSortBy] = useState<"top-rated" | "popular">("popular");
   const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const loadingRef = useRef(false);
-  const lastGeneratedIndexRef = useRef(0);
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const searchParams = useSearchParams();
+
+  // Synchronously track search parameters to reset pagination during the render phase
+  const searchParamsStr = searchParams.toString();
+  const [prevParams, setPrevParams] = useState(searchParamsStr);
+  const [visibleCount, setVisibleCount] = useState(12);
+
+  if (searchParamsStr !== prevParams) {
+    setPrevParams(searchParamsStr);
+    setVisibleCount(12);
+  }
 
   // Standardized Grid Classes (3 on laptop, 4 on monitor)
   const gridClasses = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4";
@@ -81,12 +63,24 @@ export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean
     const locationParam = searchParams.get("location") || searchParams.get("city");
     const ratingParam = searchParams.get("rating");
     const genderParam = searchParams.get("gender");
+    const verifiedParam = searchParams.get("verified");
+    const tagsParam = searchParams.get("tags");
+    const priceMinParam = searchParams.get("priceMin");
+    const priceMaxParam = searchParams.get("priceMax");
 
     if (ageParam) {
-      if (ageParam === "18-25" && (profile.age < 18 || profile.age > 25)) return false;
-      if (ageParam === "25-30" && (profile.age < 25 || profile.age > 30)) return false;
-      if (ageParam === "30-40" && (profile.age < 30 || profile.age > 40)) return false;
-      if (ageParam === "40+" && profile.age < 40) return false;
+      const match = ageParam.match(/^(\d+)-(\d+)$/);
+      if (match) {
+        const min = parseInt(match[1], 10);
+        const max = parseInt(match[2], 10);
+        if (profile.age < min || profile.age > max) return false;
+      } else if (ageParam.endsWith("+")) {
+        const min = parseInt(ageParam.replace("+", ""), 10);
+        if (!isNaN(min) && profile.age < min) return false;
+      } else {
+        const singleAge = parseInt(ageParam, 10);
+        if (!isNaN(singleAge) && profile.age !== singleAge) return false;
+      }
     }
 
     if (locationParam && !profile.location.toLowerCase().includes(locationParam.toLowerCase())) return false;
@@ -97,71 +91,66 @@ export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean
     }
 
     if (genderParam) {
-      const isFemale = ["Emily", "Sophia", "Olivia", "Ava", "Isabella"].includes(profile.name);
-      if (genderParam.toLowerCase() === "female" && !isFemale) return false;
-      if (genderParam.toLowerCase() === "male" && isFemale) return false;
+      const targetGender = genderParam.toLowerCase();
+      const profileGender = profile.gender.toLowerCase();
+      if (targetGender !== profileGender) return false;
+    }
+
+    if (verifiedParam === "true") {
+      if (profile.confirmation !== "Verified") return false;
+    }
+
+    const hourlyRateNum = parseInt(profile.hourlyRate.replace(/[^0-9]/g, ""), 10);
+    if (priceMinParam) {
+      const priceMin = parseInt(priceMinParam, 10);
+      if (!isNaN(priceMin) && hourlyRateNum < priceMin) return false;
+    }
+    if (priceMaxParam) {
+      const priceMax = parseInt(priceMaxParam, 10);
+      if (!isNaN(priceMax) && hourlyRateNum > priceMax) return false;
+    }
+
+    if (tagsParam) {
+      const tagsList = tagsParam.split(",").map(t => t.trim().toLowerCase());
+      if (tagsList.length > 0) {
+        const profileTag = profile.tag.toLowerCase();
+        if (!tagsList.includes(profileTag)) return false;
+      }
     }
 
     return true;
   }, [searchParams]);
 
-  const loadMoreProfiles = useCallback((isInitial = false) => {
-    if (loadingRef.current) return;
-
-    loadingRef.current = true;
-    setLoading(true);
-
-    const delay = isInitial ? 0 : 800;
-    setTimeout(() => {
-      setProfiles((prev) => {
-        const targetCount = isInitial ? 12 : 6;
-        const newProfiles: ProfileData[] = [];
-        let attempts = 0;
-
-        // Keep generating until we find enough matching profiles
-        while (newProfiles.length < targetCount && attempts < 500) {
-          const batch = generateMockProfiles(lastGeneratedIndexRef.current, 1);
-          if (filterProfile(batch[0])) {
-            newProfiles.push(batch[0]);
-          }
-          lastGeneratedIndexRef.current++;
-          attempts++;
-        }
-
-        if (newProfiles.length < targetCount) {
-          setHasMore(false);
-        }
-
-        return [...prev, ...newProfiles];
-      });
-      setLoading(false);
-      loadingRef.current = false;
-    }, delay);
-  }, [filterProfile]);
-
-  // Reset profiles and handle initial load when filters change
-  useEffect(() => {
-    setProfiles([]);
-    setHasMore(true);
-    lastGeneratedIndexRef.current = 0; // Reset generation counter
-    loadMoreProfiles(true);
-
-    if (sectionRef.current) {
-      sectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [searchParams, loadMoreProfiles]);
-
-  const sortedProfiles = useMemo(() => {
-    return [...profiles].sort((a, b) => {
+  // Compute all matching profiles and sort them synchronously
+  const allMatchingProfiles = useMemo(() => {
+    const dbProfiles = getDbProfiles();
+    const filtered = dbProfiles.filter(filterProfile);
+    return filtered.sort((a, b) => {
       if (sortBy === "top-rated") {
         return parseFloat(b.rating) - parseFloat(a.rating);
       }
-      return a.id - b.id;
+      return String(a.id).localeCompare(String(b.id), undefined, { numeric: true });
     });
-  }, [profiles, sortBy]);
+  }, [filterProfile, sortBy]);
+
+  // Take the slice currently visible to the user
+  const displayedProfiles = useMemo(() => {
+    return allMatchingProfiles.slice(0, visibleCount);
+  }, [allMatchingProfiles, visibleCount]);
+
+  const hasMore = visibleCount < allMatchingProfiles.length;
+
+  const loadMoreProfiles = useCallback(() => {
+    if (loading) return;
+    setLoading(true);
+    setTimeout(() => {
+      setVisibleCount((prev) => prev + 24);
+      setLoading(false);
+    }, 800);
+  }, [loading]);
 
   return (
-    <div ref={sectionRef} className="space-y-8">
+    <div className="space-y-8">
       {/* Sorting Header */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-2 bg-bg-card rounded-2xl border border-border-main">
         <div className="flex w-full sm:w-auto p-1 bg-bg-secondary rounded-xl">
@@ -189,14 +178,14 @@ export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean
           </button>
         </div>
         <div className="text-xs text-text-muted font-medium px-4">
-          Showing {sortedProfiles.length} results
+          Showing {displayedProfiles.length} results
         </div>
       </div>
 
       {/* Grid Area */}
-      {sortedProfiles.length > 0 ? (
+      {displayedProfiles.length > 0 ? (
         <div className={`grid ${gridClasses} gap-6 justify-items-center`}>
-          {sortedProfiles.map((profile, index) => (
+          {displayedProfiles.map((profile, index) => (
             <motion.div
               key={profile.id}
               initial={{ opacity: 0, y: 20 }}
@@ -218,7 +207,7 @@ export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean
                 rating={profile.rating}
                 confirmation={profile.confirmation}
                 buttonText="Book Now"
-                buttonLink="/checkout"
+                buttonLink={`/checkout?partner=${profile.id}`}
                 viewLink={profile.viewLink}
                 showViewIcon={true}
               />
@@ -248,18 +237,18 @@ export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean
           <div className="flex flex-col items-center gap-6">
             <DiscoveryButton
               label="Load More Partners"
-              onClick={() => loadMoreProfiles(false)}
+              onClick={loadMoreProfiles}
               loading={loading}
             />
-            {!loading && profiles.length > 0 && (
+            {!loading && displayedProfiles.length > 0 && (
               <p className="text-text-muted text-xs font-medium tracking-widest uppercase">
-                Showing {profiles.length} profiles
+                Showing {displayedProfiles.length} profiles
               </p>
             )}
           </div>
         )}
 
-        {!hasMore && profiles.length > 0 && (
+        {!hasMore && displayedProfiles.length > 0 && (
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-1 rounded-full bg-white/5" />
             <p className="text-text-muted text-sm italic">

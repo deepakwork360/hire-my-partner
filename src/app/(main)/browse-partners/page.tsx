@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import MainBrowse from "./sections/main-browse";
 import FilterBy from "./sections/filter-by";
 import { ListFilter, ChevronLeft, ChevronRight } from "lucide-react";
@@ -78,7 +78,7 @@ export default function BrowsePartnersPage() {
         <div className="w-full max-w-[1600px] mx-auto px-4 md:px-8 py-12 flex-1">
           <div className="flex flex-col gap-8">
             {/* Main Content Area */}
-            <main className="w-full space-y-8">
+            <main id="catalog-results" className="w-full space-y-8 scroll-mt-24">
               {/* Results Header */}
               <div className="flex items-center justify-between border-b border-border-main pb-6">
                 <div className="space-y-1">
@@ -93,8 +93,10 @@ export default function BrowsePartnersPage() {
                 </div>
               </div>
 
-              {/* Results Grid / ProfilePart */}
-              <ProfilePart isSidebarOpen={isSidebarOpen} />
+               {/* Results Grid / ProfilePart */}
+               <Suspense fallback={<div className="py-20 text-center text-text-muted font-bold uppercase tracking-widest text-xs">Loading Catalog...</div>}>
+                 <ProfilePart isSidebarOpen={isSidebarOpen} />
+               </Suspense>
             </main>
           </div>
         </div>

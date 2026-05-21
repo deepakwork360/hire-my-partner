@@ -4,6 +4,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
+import { partners } from "@/modules/partner/data/partners";
 import {
   Calendar,
   Clock,
@@ -39,26 +41,37 @@ const dateTimeOptions = [
 const durationOptions = ["1 hour", "2 hours", "3 hours", "4 hours"];
 
 const addOnOptions = [
-  { id: "photoshoot", label: "Casual Photoshoot", price: 499 },
-  { id: "playlist", label: "Personalized Playlist", price: 299 },
-  { id: "travel", label: "Extra Travel Time", price: 199 },
+  { id: "photoshoot", label: "Casual Photoshoot", price: 1500 },
+  { id: "playlist", label: "Personalized Playlist", price: 500 },
+  { id: "travel", label: "Extra Travel Time", price: 2000 },
 ];
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function BookDetails() {
+  const searchParams = useSearchParams();
+  const partnerId = searchParams.get("partner") || "1";
+
+  // Find the selected partner from our dynamic database
+  const partner = partners.find(
+    (p) => String(p.id).toLowerCase() === partnerId.toLowerCase()
+  ) || partners[0];
+
   const [selectedDateTime, setSelectedDateTime] = useState(dateTimeOptions[0]);
   const [selectedDuration, setSelectedDuration] = useState(durationOptions[1]);
-  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>(() => {
+    const param = searchParams.get("addons");
+    return param ? param.split(",").filter(Boolean) : [];
+  });
   const [notes, setNotes] = useState(
-    '"Please arrive 10 mins early. This is for a formal event."',
+    '"Please arrive 10 mins early. This is for a formal event."'
   );
   const [showDateMenu, setShowDateMenu] = useState(false);
   const [showDurationMenu, setShowDurationMenu] = useState(false);
 
   const toggleAddOn = (id: string) => {
     setSelectedAddOns((prev) =>
-      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
     );
   };
 
@@ -68,10 +81,34 @@ export default function BookDetails() {
 
   const [dateLabel, timeRange] = selectedDateTime.split(" | ");
 
+  // ── Pricing Calculations ──
+  const getBasePrice = (duration: string, p: typeof partners[0]) => {
+    switch (duration) {
+      case "1 hour":
+        return p.pricing.oneHour;
+      case "2 hours":
+        return p.pricing.twoHours;
+      case "3 hours":
+        return p.pricing.threeHours;
+      case "4 hours":
+        return p.pricing.fourHours || (p.pricing.threeHours + p.pricing.oneHour);
+      default:
+        return p.pricing.oneHour;
+    }
+  };
+
+  const basePrice = getBasePrice(selectedDuration, partner);
+  const addOnsTotal = selectedAddOns.reduce((acc, addonId) => {
+    const addon = addOnOptions.find((a) => a.id === addonId);
+    return acc + (addon ? addon.price : 0);
+  }, 0);
+  const serviceFee = 250;
+  const totalAmount = basePrice + addOnsTotal + serviceFee;
+
   return (
     <section className={`bg-bg-base py-20 px-4 md:px-8 ${outfit.className}`}>
       <div className="max-w-5xl mx-auto">
-        {/* Full-width centered header above both cards */}
+        {/* Full-width centered header */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -91,7 +128,6 @@ export default function BookDetails() {
         <div className="flex flex-col lg:flex-row gap-10 items-start justify-center">
           {/* LEFT: FORM */}
           <div className="w-full lg:w-[56%]">
-            {/* Card wrapper */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -275,7 +311,7 @@ export default function BookDetails() {
 
               {/* ── CTA ── */}
               <MotionLink
-                href="/booking-confirmation"
+                href={`/booking-confirmation?partner=${partner.id}&date=${encodeURIComponent(selectedDateTime)}&duration=${encodeURIComponent(selectedDuration)}&addons=${encodeURIComponent(selectedAddOnLabels.join(","))}&amount=${totalAmount}`}
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 className="w-full h-16 rounded-2xl bg-linear-to-r from-primary-dark to-accent text-white font-black tracking-[0.3em] uppercase text-xs shadow-[0_20px_40px_-10px_rgba(var(--primary-rgb),0.5)] flex items-center justify-center gap-3 group relative overflow-hidden"
@@ -305,8 +341,8 @@ export default function BookDetails() {
               <div className="flex flex-col items-center text-center pt-8 pb-5 px-6 border-b border-border-main gap-4">
                 <div className="relative w-28 h-36 rounded-2xl overflow-hidden ring-2 ring-primary/30 shadow-[0_8px_30px_rgba(var(--primary-rgb),0.2)]">
                   <Image
-                    src="/images/girl1.webp"
-                    alt="Aarushi Kumari"
+                    src={partner.image}
+                    alt={partner.name}
                     fill
                     className="object-cover object-top"
                     priority
@@ -316,12 +352,12 @@ export default function BookDetails() {
                   <h3
                     className={`${rochester.className} text-3xl text-text-main tracking-wide mb-1`}
                   >
-                    Aarushi Kumari
+                    {partner.name}
                   </h3>
                   <div className="flex items-center justify-center gap-1.5">
                     <MapPin size={12} className="text-primary" />
                     <span className="text-text-muted text-xs font-medium">
-                      Andheri, Mumbai
+                      {partner.location}
                     </span>
                   </div>
                 </div>
@@ -332,16 +368,16 @@ export default function BookDetails() {
                         key={s}
                         size={13}
                         className={
-                          s <= 4
+                          s <= Math.round(parseFloat(partner.rating))
                             ? "text-amber-400 fill-amber-400"
                             : "text-amber-400/30 fill-none"
                         }
                       />
                     ))}
                   </div>
-                  <span className="text-text-main text-xs font-black">4.9</span>
+                  <span className="text-text-main text-xs font-black">{partner.rating}</span>
                   <span className="text-text-muted text-xs font-medium">
-                    (128)
+                    ({partner.reviews.length})
                   </span>
                 </div>
               </div>
@@ -349,8 +385,7 @@ export default function BookDetails() {
               {/* Bio */}
               <div className="px-6 py-4 border-b border-border-main">
                 <p className="text-text-muted text-xs leading-relaxed font-medium text-center">
-                  Charming companion with a love for fine dining, art, and
-                  meaningful conversations.
+                  {partner.bio.substring(0, 110)}...
                 </p>
               </div>
 
@@ -393,7 +428,7 @@ export default function BookDetails() {
                 </div>
 
                 {/* Add-ons */}
-                <div>
+                <div className="border-b border-border-main pb-4">
                   <div className="flex items-center gap-1.5 mb-2.5">
                     <Sparkles size={11} className="text-primary" />
                     <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">
@@ -417,6 +452,32 @@ export default function BookDetails() {
                     </p>
                   )}
                 </div>
+
+                {/* Invoice Breakdown */}
+                <div className="flex flex-col gap-2.5 pt-2">
+                  <p className="text-primary text-[9px] font-black uppercase tracking-[0.3em]">
+                    Invoice Breakdown
+                  </p>
+                  <div className="flex justify-between items-center text-xs font-semibold text-text-muted">
+                    <span>Base Rate</span>
+                    <span className="text-text-main">₹{basePrice.toLocaleString("en-IN")}</span>
+                  </div>
+                  {selectedAddOns.length > 0 && (
+                    <div className="flex justify-between items-center text-xs font-semibold text-text-muted">
+                      <span>Add-ons Total</span>
+                      <span className="text-text-main">+₹{addOnsTotal.toLocaleString("en-IN")}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center text-xs font-semibold text-text-muted">
+                    <span>Service Fee</span>
+                    <span className="text-text-main">₹{serviceFee.toLocaleString("en-IN")}</span>
+                  </div>
+                  <div className="h-px bg-border-main my-0.5" />
+                  <div className="flex justify-between items-center text-xs font-black text-text-main">
+                    <span>Total Cost</span>
+                    <span className="text-primary text-sm font-black">₹{totalAmount.toLocaleString("en-IN")}</span>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -425,6 +486,7 @@ export default function BookDetails() {
     </section>
   );
 }
+
 
 
 

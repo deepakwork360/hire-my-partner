@@ -1,9 +1,12 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion, Variants } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { partners } from "@/modules/partner/data/partners";
 import {
   Check,
   Calendar,
@@ -25,27 +28,6 @@ const outfit = Outfit({
   weight: ["300", "400", "500", "600", "700", "800"],
 });
 
-// ── Static booking data (will come from backend/props in future) ──────────────
-
-const booking = {
-  id: "BK-2025-07082",
-  companion: {
-    name: "Aarushi Kumari",
-    location: "Andheri, Mumbai",
-    rating: 4.9,
-    reviews: 128,
-    image: "/images/girl1.webp",
-    email: "aarushiuser@email.com",
-  },
-  date: "July 8, 2025",
-  timeStart: "7:00 PM",
-  timeEnd: "9:00 PM",
-  duration: "2 hours",
-  amountPayable: 1245,
-  addOns: ["Casual Photoshoot", "Personalized Playlist"],
-  paymentMethod: "Credit / Debit Card",
-};
-
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.12 } },
@@ -63,6 +45,82 @@ const itemVariants: Variants = {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function ConfirmationCard() {
+  const searchParams = useSearchParams();
+  const partnerId = searchParams.get("partner") || "1";
+  const dateParam = searchParams.get("date") || "July 8, 2025 | 7:00 PM – 9:00 PM";
+  const durationParam = searchParams.get("duration") || "2 hours";
+  const addonsParam = searchParams.get("addons") || "";
+  const amountParam = searchParams.get("amount") || "1245";
+
+  // Find partner from database
+  const partner = partners.find(
+    (p) => String(p.id).toLowerCase() === partnerId.toLowerCase()
+  ) || partners[0];
+
+  // Derive companion email
+  const companionEmail = partner.name.toLowerCase().replace(/[^a-z0-9]/g, "") + "@email.com";
+
+  // Parse date and time start/end
+  const [dateLabel, timeRange] = dateParam.split(" | ");
+  let timeStart = "7:00 PM";
+  let timeEnd = "9:00 PM";
+  if (timeRange) {
+    const parts = timeRange.split(/ [–-] /);
+    if (parts.length === 2) {
+      timeStart = parts[0];
+      timeEnd = parts[1];
+    } else {
+      const partsAlt = timeRange.split("–");
+      if (partsAlt.length === 2) {
+        timeStart = partsAlt[0].trim();
+        timeEnd = partsAlt[1].trim();
+      }
+    }
+  }
+
+  // Parse addons
+  const addonsList = addonsParam ? addonsParam.split(",").filter(Boolean) : [];
+
+  // Parse amount
+  const parsedAmount = parseInt(amountParam, 10) || 0;
+
+  // Generate dynamic Booking ID deterministically to prevent hydration mismatch
+  const hash = (partner.name.length + dateParam.length + amountParam.length) % 10000;
+  const bookingId = `BK-2026-${partner.id.padStart(2, "0")}${String(hash).padStart(4, "0")}`;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const existing = localStorage.getItem("hire_my_partner_bookings");
+      const bookingsList = existing ? JSON.parse(existing) : [];
+
+      const alreadyExists = bookingsList.some((b: any) => b.id === bookingId);
+      if (!alreadyExists) {
+        const newBooking = {
+          id: bookingId,
+          image: partner.image,
+          name: partner.name,
+          age: partner.age,
+          location: partner.location.split(",")[0].trim(),
+          rating: partner.rating,
+          date: dateLabel || "July 8, 2025",
+          time: `${timeStart} - ${timeEnd}`,
+          price: `₹${parsedAmount.toLocaleString("en-IN")}`,
+          status: "Pending",
+          bio: partner.bio.substring(0, 100) + "...",
+        };
+        
+        localStorage.setItem(
+          "hire_my_partner_bookings",
+          JSON.stringify([newBooking, ...bookingsList])
+        );
+      }
+    } catch (e) {
+      console.error("Failed to persist booking in local storage", e);
+    }
+  }, [bookingId, partner, dateLabel, timeStart, timeEnd, parsedAmount]);
+
   return (
     <section className={`bg-bg-base py-16 px-4 md:px-8 ${outfit.className}`}>
       <div className="max-w-2xl mx-auto">
@@ -111,7 +169,7 @@ export default function ConfirmationCard() {
                 Booking&nbsp;ID:&nbsp;
               </span>
               <span className="text-text-main text-xs font-black tracking-widest">
-                {booking.id}
+                {bookingId}
               </span>
             </div>
           </motion.div>
@@ -132,8 +190,8 @@ export default function ConfirmationCard() {
             <div className="flex flex-col items-center text-center px-6 pt-6 pb-5 border-b border-border-main gap-4">
               <div className="relative w-24 h-32 rounded-2xl overflow-hidden ring-2 ring-primary/30 shadow-[0_8px_24px_rgba(var(--primary-rgb),0.2)]">
                 <Image
-                  src={booking.companion.image}
-                  alt={booking.companion.name}
+                  src={partner.image}
+                  alt={partner.name}
                   fill
                   className="object-cover object-top"
                   priority
@@ -146,7 +204,7 @@ export default function ConfirmationCard() {
                 <h3
                   className={`${rochester.className} text-3xl text-text-main tracking-wide mb-1.5`}
                 >
-                  {booking.companion.name}
+                  {partner.name}
                 </h3>
                 {/* Decorative divider */}
                 <div className="flex items-center justify-center gap-2">
@@ -157,7 +215,7 @@ export default function ConfirmationCard() {
                 <div className="flex items-center justify-center gap-1.5 mt-2">
                   <MapPin size={11} className="text-primary" />
                   <span className="text-text-muted text-xs font-medium">
-                    {booking.companion.location}
+                    {partner.location}
                   </span>
                 </div>
                 {/* Rating */}
@@ -167,17 +225,17 @@ export default function ConfirmationCard() {
                       key={s}
                       size={12}
                       className={
-                        s <= 4
+                        s <= Math.round(parseFloat(partner.rating))
                           ? "text-amber-400 fill-amber-400"
                           : "text-amber-400/30"
                       }
                     />
                   ))}
                   <span className="text-text-main text-xs font-black ml-1">
-                    {booking.companion.rating}
+                    {partner.rating}
                   </span>
                   <span className="text-text-muted text-xs">
-                    ({booking.companion.reviews})
+                    ({partner.reviews.length})
                   </span>
                 </div>
               </div>
@@ -193,7 +251,7 @@ export default function ConfirmationCard() {
                   <p className="text-[9px] font-black uppercase tracking-widest text-text-muted mb-0.5">
                     Date
                   </p>
-                  <p className="text-text-main text-xs font-bold">{booking.date}</p>
+                  <p className="text-text-main text-xs font-bold">{dateLabel}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 px-5 py-4">
@@ -205,7 +263,7 @@ export default function ConfirmationCard() {
                     Time
                   </p>
                   <p className="text-text-main text-xs font-bold">
-                    {booking.timeStart} – {booking.timeEnd}
+                    {timeStart} – {timeEnd}
                   </p>
                 </div>
               </div>
@@ -218,19 +276,19 @@ export default function ConfirmationCard() {
                     Amount Payable
                   </p>
                   <p className="text-amber-400 text-xs font-black">
-                    ₹{booking.amountPayable.toLocaleString("en-IN")}
+                    ₹{parsedAmount.toLocaleString("en-IN")}
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Add-ons */}
-            {booking.addOns.length > 0 && (
+            {addonsList.length > 0 && (
               <div className="px-6 py-4 border-t border-border-main flex flex-wrap items-center gap-2">
                 <span className="text-[9px] font-black uppercase tracking-widest text-text-muted mr-1">
                   Add-ons:
                 </span>
-                {booking.addOns.map((a) => (
+                {addonsList.map((a) => (
                   <span
                     key={a}
                     className="px-2.5 py-1 bg-primary/10 border border-primary/20 rounded-full text-primary text-[10px] font-bold"
@@ -247,7 +305,7 @@ export default function ConfirmationCard() {
               <p className="text-text-muted text-xs font-medium leading-relaxed">
                 Confirmation of your request has been emailed to{" "}
                 <span className="text-text-main font-bold">
-                  {booking.companion.email}
+                  {companionEmail}
                 </span>
               </p>
             </div>
@@ -260,17 +318,17 @@ export default function ConfirmationCard() {
               <p className="text-text-muted text-xs font-medium mb-4">
                 Have any last-minute details or questions?
               </p>
-              <Link
-                href="/booking-confirmation"
+              <a
+                href={`mailto:${companionEmail}?subject=Coordinating Booking ${bookingId}`}
                 className="inline-flex items-center gap-2 text-primary text-sm font-black hover:text-primary/80 transition-colors group"
               >
                 <MessageCircle
                   size={15}
                   className="group-hover:scale-110 transition-transform"
                 />
-                Message {booking.companion.name.split(" ")[0]}
+                Message {partner.name.split(" ")[0]}
                 <span className="text-primary/50 text-xs">→</span>
-              </Link>
+              </a>
             </div>
           </motion.div>
 

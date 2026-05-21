@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Review } from "../types/partner.types";
 import Image from "next/image";
 import { Rochester, Outfit } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,7 +17,7 @@ const outfit = Outfit({
   weight: ["300", "400", "500", "700"],
 });
 
-const reviews = [
+const defaultReviews = [
   {
     id: 1,
     name: "Rohit",
@@ -99,8 +100,14 @@ const ReviewCard = ({ review }: { review: any }) => (
   </div>
 );
 
-export default function CompanionSay() {
+interface CompanionSayProps {
+  reviews?: Review[];
+}
+
+export default function CompanionSay({ reviews: passedReviews }: CompanionSayProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const reviews = passedReviews && passedReviews.length > 0 ? passedReviews : defaultReviews;
 
   // If there are more than 4 reviews, we show 3 + "View All" card.
   const hasMore = reviews.length > 4;

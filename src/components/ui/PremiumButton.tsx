@@ -2,7 +2,6 @@
 
 import React from "react";
 import Link from "next/link";
-import { useTheme } from "@/context/ThemeContext";
 
 interface PremiumButtonProps {
   label: string;
@@ -27,7 +26,7 @@ export default function PremiumButton({
   disabled = false,
   style,
 }: PremiumButtonProps) {
-  const { theme } = useTheme();
+
 
   const sizeClasses = {
     sm: "px-4 py-2 text-xs",

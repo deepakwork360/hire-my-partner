@@ -17,6 +17,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
+import { partners } from "@/modules/partner/data/partners";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -29,134 +30,58 @@ const rochester = Rochester({
 });
 
 export default function PartnersNearby() {
-  const profile = [
-    {
-      image: "/images/img8.webp",
-      hourlyRate: "₹2000/hr",
-      name: "Emily",
-      age: 25,
-      location: "New York",
-      rating: "4.5",
-      bio: "Booked for Wedding Reception ",
-      distance: "5km away",
-      buttonText: "View Profile",
-      buttonLink: "/partner-profile-detail",
-      showViewIcon: false,
-      messageLink: "",
-      mapLink: "",
-    },
-    {
-      image: "/images/img7.webp",
-      hourlyRate: "₹2000/hr",
-      name: "Emily",
-      age: 25,
-      location: "New York",
-      rating: "5",
-      bio: "Booked for Wedding Reception ",
-      distance: "2km away",
-      buttonText: "View Profile",
-      buttonLink: "/partner-profile-detail",
-      showViewIcon: false,
-      messageLink: "",
-      mapLink: "",
-    },
-    {
-      image: "/images/img6.webp",
-      hourlyRate: "₹2000/hr",
-      name: "Emily",
-      age: 25,
-      location: "New York",
-      rating: "4",
-      bio: "Booked for Wedding Reception ",
-      distance: "3km away",
-      buttonText: "View Profile",
-      buttonLink: "/partner-profile-detail",
-      showViewIcon: false,
-      messageLink: "",
-      mapLink: "",
-    },
-    {
-      image: "/images/img5.webp",
-      hourlyRate: "₹2000/hr",
-      name: "Emily",
-      age: 25,
-      location: "New York",
-      rating: "3.5",
-      bio: "Booked for Wedding Reception ",
-      distance: "0.5km away",
-      buttonText: "View Profile",
-      buttonLink: "/partner-profile-detail",
-      showViewIcon: false,
-      messageLink: "",
-      mapLink: "",
-    },
-    {
-      image: "/images/img4.webp",
-      hourlyRate: "₹2000/hr",
-      name: "Emily",
-      age: 25,
-      location: "New York",
-      rating: "4.5",
-      bio: "Booked for Wedding Reception ",
-      distance: "5km away",
-      buttonText: "View Profile",
-      buttonLink: "/partner-profile-detail",
-      showViewIcon: false,
-      messageLink: "",
-      mapLink: "",
-    },
-    {
-      image: "/images/img3.webp",
-      hourlyRate: "₹2000/hr",
-      name: "Emily",
-      age: 25,
-      location: "New York",
-      rating: "4",
-      bio: "Booked for Wedding Reception ",
-      distance: "5km away",
-      buttonText: "View Profile",
-      buttonLink: "/partner-profile-detail",
-      showViewIcon: false,
-      messageLink: "",
-      mapLink: "",
-    },
-    {
-      image: "/images/img2.webp",
-      hourlyRate: "₹2000/hr",
-      name: "Emily",
-      age: 25,
-      location: "New York",
-      rating: "4.5",
-      bio: "Booked for Wedding Reception ",
-      distance: "5km away",
-      buttonText: "View Profile",
-      buttonLink: "/partner-profile-detail",
-      showViewIcon: false,
-      messageLink: "",
-      mapLink: "",
-    },
-    {
-      image: "/images/img1.webp",
-      hourlyRate: "₹2000/hr",
-      name: "Emily",
-      age: 25,
-      location: "New York",
-      rating: "4.5",
-      bio: "Booked for Wedding Reception ",
-      distance: "5km away",
-      buttonText: "View Profile",
-      buttonLink: "/partner-profile-detail",
-      showViewIcon: false,
-      messageLink: "",
-      mapLink: "",
-    },
-  ];
-
   const [age, setAge] = useState("");
   const [eventType, setEventType] = useState("");
   const [rating, setRating] = useState("");
   const [distance, setDistance] = useState("");
-  const [values, setValues] = useState<number[]>([10, 60]);
+  const [values, setValues] = useState<number[]>([0, 100]);
+
+  // Dynamic filter logic for real partners
+  const filteredProfiles = partners.filter((partner) => {
+    // 1. Age Range filter (supports ranges like "20-30" or single ages like "25")
+    if (age.trim()) {
+      const match = age.match(/^(\d+)-(\d+)$/);
+      if (match) {
+        const min = parseInt(match[1], 10);
+        const max = parseInt(match[2], 10);
+        if (partner.age < min || partner.age > max) return false;
+      } else {
+        const singleAge = parseInt(age, 10);
+        if (!isNaN(singleAge) && partner.age !== singleAge) return false;
+      }
+    }
+
+    // 2. Rating filter (minimum rating selection)
+    if (rating) {
+      if (parseFloat(partner.rating) < parseFloat(rating)) return false;
+    }
+
+    // 3. Distance filter range
+    const distMatch = partner.distance.match(/^([\d.]+)/);
+    if (distMatch) {
+      const distVal = parseFloat(distMatch[1]);
+      if (distVal < values[0] || distVal > values[1]) return false;
+    }
+
+    return true;
+  });
+
+  const profile = filteredProfiles.map((partner) => ({
+    image: partner.image,
+    hourlyRate: `₹${partner.pricing.oneHour}/hr`,
+    name: partner.name,
+    age: partner.age,
+    location: partner.location.split(",")[0].trim(),
+    rating: partner.rating,
+    bio: partner.bio.substring(0, 45) + "...",
+    distance: partner.distance,
+    buttonText: "View Profile",
+    buttonLink: `/partners/${partner.id}`,
+    showViewIcon: false,
+    messageLink: `/checkout?partner=${partner.id}`,
+    mapLink: "#",
+  }));
+
 
   return (
     <section className="py-10 md:py-16 px-4 bg-bg-secondary overflow-visible border-b border-border-main">
@@ -180,24 +105,23 @@ export default function PartnersNearby() {
         <div className="relative z-50 mb-8 p-6 md:p-8 rounded-[32px] bg-white/5 backdrop-blur-xl border border-border-main shadow-xl shadow-primary/5 max-w-6xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
             {/* Age Filter */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-text-muted uppercase tracking-widest flex items-center gap-2 ml-1">
-                <User size={12} className="text-primary" /> Age Range
-              </label>
-              <div className="relative group">
-                <input
-                  type="text"
-                  placeholder="e.g. 20-30"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  className="w-full h-12 pl-4 pr-10 rounded-2xl bg-white/5 border border-border-main text-white placeholder-slate-500 focus:border-primary-dark focus:ring-4 focus:ring-primary/20 outline-hidden transition-all text-sm font-medium"
-                />
-                <ChevronDown
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:rotate-180 transition-transform"
-                  size={16}
-                />
-              </div>
-            </div>
+            <PremiumDropdown
+              label="Age Range"
+              icon={User}
+              value={age}
+              onChange={setAge}
+              options={[
+                { value: "", label: "Any Age", icon: User },
+                { value: "18-20", label: "18 - 20 Yrs", icon: User },
+                { value: "20-22", label: "20 - 22 Yrs", icon: User },
+                { value: "22-24", label: "22 - 24 Yrs", icon: User },
+                { value: "24-26", label: "24 - 26 Yrs", icon: User },
+                { value: "26-28", label: "26 - 28 Yrs", icon: User },
+                { value: "28-30", label: "28 - 30 Yrs", icon: User },
+                { value: "30-40", label: "30+ Yrs", icon: User },
+              ]}
+              className="flex-1"
+            />
 
             {/* Event Type Filter */}
             <div className="space-y-2">
@@ -210,7 +134,7 @@ export default function PartnersNearby() {
                   placeholder="Select Event"
                   value={eventType}
                   onChange={(e) => setEventType(e.target.value)}
-                  className="w-full h-12 pl-4 pr-10 rounded-2xl bg-white/5 border border-border-main text-white placeholder-slate-500 focus:border-primary-dark focus:ring-4 focus:ring-primary/20 outline-hidden transition-all text-sm font-medium"
+                  className="w-full h-12 pl-4 pr-10 rounded-2xl bg-white/5 border border-border-main text-text-main placeholder-slate-500 focus:border-primary-dark focus:ring-4 focus:ring-primary/20 outline-hidden transition-all text-sm font-medium"
                 />
                 <Search
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted"

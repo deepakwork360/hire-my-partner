@@ -295,7 +295,7 @@ export default function RecentProfile() {
                     rating={profile.rating}
                     confirmation="Verified"
                     buttonText="View Profile"
-                    buttonLink="/partner-profile-detail"
+                    buttonLink={`/partners/${profile.id}`}
                     showViewIcon={false}
                   />
                 </motion.div>

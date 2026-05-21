@@ -7,6 +7,8 @@ import { MapPin, Star, ShieldCheck, Map, Clock, Heart, X, MessageSquare, Award, 
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
+import { Partner } from "../types/partner.types";
+
 const rochester = Rochester({
   subsets: ["latin"],
   weight: ["400"],
@@ -17,31 +19,30 @@ const outfit = Outfit({
   weight: ["300", "400", "500", "700"],
 });
 
-interface ProfileData {
-  name: string;
-  age: number;
-  bio: string;
-  location: string;
-  rating: string;
-  verified: boolean;
-  distance: string;
-  image: string;
-  reviews: number;
+interface ProfileMainProps {
+  partner?: Partner;
 }
 
-export default function ProfileMain() {
+export default function ProfileMain({ partner }: ProfileMainProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const profileData: ProfileData = {
+  
+  const defaultProfile = {
     name: "Aisha Sharma",
     age: 28,
     bio: "A passionate software engineer with a love for travel and adventure. I enjoy hiking, photography, and trying new cuisines. Your perfect plus-one for any occasion, ready to make unforgettable memories.",
     location: "New Delhi, India",
     rating: "4.9",
-    reviews: 128,
+    reviews: 128 as any,
     verified: true,
     distance: "5 km away",
     image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop",
   };
+
+  const profileData = partner || defaultProfile;
+  const reviewsCount = typeof profileData.reviews === "number" 
+    ? profileData.reviews 
+    : (Array.isArray(profileData.reviews) ? profileData.reviews.length : 0);
+
 
   return (
     <section
@@ -145,7 +146,7 @@ export default function ProfileMain() {
                   <p className="text-text-muted text-[7px] font-black uppercase tracking-widest">Score</p>
                   <div className="flex items-baseline gap-2">
                     <span className="text-text-main text-xs font-bold">{profileData.rating}</span>
-                    <span className="text-text-muted text-[8px] font-bold uppercase">{profileData.reviews} Reviews</span>
+                    <span className="text-text-muted text-[8px] font-bold uppercase">{reviewsCount} Reviews</span>
                   </div>
                 </div>
               </div>
@@ -163,7 +164,7 @@ export default function ProfileMain() {
 
             {/* Action Buttons - Compact height */}
             <div className="flex items-center gap-3 w-full">
-               <Link href="/checkout" className="group relative flex-[1.8] h-14 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-2 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all overflow-hidden">
+               <Link href={`/checkout?partner=${partner?.id || "1"}`} className="group relative flex-[1.8] h-14 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-2 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all overflow-hidden">
                 <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 <Heart className="w-4 h-4 fill-white relative z-10" />
                 <span className="relative z-10">Reserve Now</span>

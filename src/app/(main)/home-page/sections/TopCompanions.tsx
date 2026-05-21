@@ -5,6 +5,8 @@ import Slider from "@/components/common/Slider";
 import ProfileCard from "@/components/ProfileCard/ProfileCard";
 import Link from "next/link";
 
+import { partners } from "@/modules/partner/data/partners";
+
 const outfit = Outfit({
   subsets: ["latin"],
   weight: ["300", "400", "500", "700"],
@@ -22,104 +24,21 @@ const rochester = Rochester({
 });
 
 export default function TopCompanions() {
-  const profile = [
-    {
-      image: "/images/img1.webp",
-      hourlyRate: "₹2000/hr",
-      name: "Emily",
-      age: 25,
-      location: "New York",
-      bio: "I am a friendly and outgoing person who loves to meet new people.",
-      buttonText: "Book Now",
-      buttonLink: "/checkout",
-      viewLink: "/partner-profile-detail",
-      showViewIcon: true,
-    },
-    {
-      image: "/images/img2.webp",
-      hourlyRate: "₹2000/hr",
-      name: "Emily",
-      age: 25,
-      location: "New York",
-      bio: "I am a friendly and outgoing person who loves to meet new people.",
-      buttonText: "Book Now",
-      buttonLink: "/checkout",
-      viewLink: "/partner-profile-detail",
-      showViewIcon: true,
-    },
-    {
-      image: "/images/img3.webp",
-      hourlyRate: "₹2000/hr",
-      name: "Emily",
-      age: 25,
-      location: "New York",
-      bio: "I am a friendly and outgoing person who loves to meet new people.",
-      buttonText: "Book Now",
-      buttonLink: "/checkout",
-      viewLink: "/partner-profile-detail",
-      showViewIcon: true,
-    },
-    {
-      image: "/images/img4.webp",
-      hourlyRate: "₹2000/hr",
-      name: "Emily",
-      age: 25,
-      location: "New York",
-      bio: "I am a friendly and outgoing person who loves to meet new people.",
-      buttonText: "Book Now",
-      buttonLink: "/checkout",
-      viewLink: "/partner-profile-detail",
-      showViewIcon: true,
-    },
-    {
-      image: "/images/img5.webp",
-      hourlyRate: "₹2000/hr",
-      name: "Emily",
-      age: 25,
-      location: "New York",
-      bio: "I am a friendly and outgoing person who loves to meet new people.",
-      buttonText: "Book Now",
-      buttonLink: "/checkout",
-      viewLink: "/partner-profile-detail",
-      showViewIcon: true,
-    },
-    {
-      image: "/images/img6.webp",
-      hourlyRate: "₹2000/hr",
-      name: "Emily",
-      age: 25,
-      location: "New York",
-      bio: "I am a friendly and outgoing person who loves to meet new people.",
-      buttonText: "Book Now",
-      buttonLink: "/checkout",
-      viewLink: "/partner-profile-detail",
-      showViewIcon: true,
-    },
-    {
-      image: "/images/img7.webp",
-      hourlyRate: "₹2000/hr",
-      name: "Emily",
-      age: 25,
-      location: "New York",
-      bio: "I am a friendly and outgoing person who loves to meet new people.",
-      buttonText: "Book Now",
-      buttonLink: "/checkout",
-      viewLink: "/partner-profile-detail",
-      showViewIcon: true,
-    },
-    {
-      image: "/images/img8.webp",
-      hourlyRate: "₹2000/hr",
-      name: "Emily",
-      age: 25,
-      location: "New York",
-      bio: "I am a friendly and outgoing person who loves to meet new people.",
-      buttonText: "Book Now",
-      buttonLink: "/checkout",
-      viewLink: "/partner-profile-detail",
-      showViewIcon: true,
-    },
-  ];
+  const profile = partners.map((partner) => ({
+    image: partner.image,
+    hourlyRate: `₹${partner.pricing.oneHour}/hr`,
+    name: partner.name,
+    age: partner.age,
+    location: partner.location.split(",")[0].trim(),
+    bio: partner.bio,
+    rating: partner.rating,
+    distance: partner.distance,
+    confirmation: partner.verified ? "Identity Verified" : undefined,
+    buttonText: "Book Now",
+    buttonLink: `/checkout?partner=${partner.id}`,
+    viewLink: `/partners/${partner.id}`,
+    showViewIcon: true,
+  }));
 
   return (
     <section className="py-10 md:py-16 pt-16 md:pt-24 lg:pt-32 px-4 bg-bg-secondary overflow-hidden border-b border-border-main">

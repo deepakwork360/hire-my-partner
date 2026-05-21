@@ -14,43 +14,21 @@ const outfit = Outfit({
   weight: ["300", "400", "500", "700"],
 });
 
-const recommendedPartners = [
-  {
-    id: 1,
-    name: "Aanya",
-    age: 26,
-    location: "Mumbai, Maharashtra",
-    rate: "₹2,499 / hr",
-    bio: "Passionate about art, coffee, and deep conversations. Let's explore the city together.",
-    image:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&h=800&fit=crop",
-    rating: "4.9",
-  },
-  {
-    id: 2,
-    name: "Rohan",
-    age: 29,
-    location: "Delhi, NCR",
-    rate: "₹3,000 / hr",
-    bio: "Fitness enthusiast and food lover. I know the best hidden spots for a perfect date.",
-    image:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop",
-    rating: "4.8",
-  },
-  {
-    id: 3,
-    name: "Kavya",
-    age: 24,
-    location: "Bangalore, Karnataka",
-    rate: "₹2,000 / hr",
-    bio: "Techie by day, musician by night. Always up for live gigs and fun weekend adventures.",
-    image:
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=800&fit=crop",
-    rating: "5.0",
-  },
-];
+import { partners } from "@/modules/partner/data/partners";
 
-export default function UMayAlsoLike() {
+interface UMayAlsoLikeProps {
+  excludeId?: string;
+}
+
+export default function UMayAlsoLike({ excludeId }: UMayAlsoLikeProps) {
+  // Filter out the profile currently being viewed (case-insensitive ID check)
+  const filteredPartners = partners.filter(
+    (p) => String(p.id).toLowerCase() !== String(excludeId || "").toLowerCase()
+  );
+
+  // Take up to 3 companions to showcase as recommendations
+  const displayPartners = filteredPartners.slice(0, 3);
+
   return (
     <section
       className={`py-16 md:py-24 px-4 bg-bg-secondary border-b border-border-main ${outfit.className}`}
@@ -74,7 +52,7 @@ export default function UMayAlsoLike() {
 
         {/* Centered Profile Card Flex Layout */}
         <div className="flex flex-wrap justify-center gap-8 md:gap-12 max-w-[1400px] mx-auto">
-          {recommendedPartners.map((partner, idx) => (
+          {displayPartners.map((partner, idx) => (
             <motion.div
               key={partner.id}
               initial={{ opacity: 0, y: 30 }}
@@ -84,7 +62,7 @@ export default function UMayAlsoLike() {
             >
               <ProfileCard
                 image={partner.image}
-                hourlyRate={partner.rate}
+                hourlyRate={`₹${partner.pricing.oneHour} / hr`}
                 name={partner.name}
                 age={partner.age}
                 location={partner.location}
@@ -92,7 +70,7 @@ export default function UMayAlsoLike() {
                 rating={partner.rating}
                 confirmation="Identity Verified"
                 buttonText="View Profile"
-                buttonLink="/partner-profile-detail"
+                buttonLink={`/partners/${partner.id}`}
               />
             </motion.div>
           ))}
