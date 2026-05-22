@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Rochester, Outfit, Bitcount_Ink } from "next/font/google";
+import { Rochester, Outfit, Playfair_Display } from "next/font/google";
 import { motion } from "framer-motion";
 
 const rochester = Rochester({
@@ -14,9 +14,10 @@ const outfit = Outfit({
   weight: ["300", "400", "500", "700"],
 });
 
-const bitcount_ink = Bitcount_Ink({
+const playfair = Playfair_Display({
   subsets: ["latin"],
-  weight: ["400"],
+  weight: ["400", "700"],
+  style: ["italic", "normal"],
 });
 
 export default function HowItWorks() {

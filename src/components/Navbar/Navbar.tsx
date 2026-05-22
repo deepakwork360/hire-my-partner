@@ -16,6 +16,15 @@ import {
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import PremiumButton from "../ui/PremiumButton";
 import ThemeSwitcher from "./ThemeSwitcher";
+import { useTheme } from "@/context/ThemeContext";
+
+const logoMapping: Record<string, string> = {
+  rose: "/auth/rose.png",
+  gold: "/auth/gold.png",
+  emerald: "/auth/emerald.png",
+  violet: "/auth/violet.png",
+  cyan: "/auth/cyan.png",
+};
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -29,6 +38,9 @@ export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { activeTheme } = useTheme();
+
+  const logoSrc = logoMapping[activeTheme] || "/images/Logo.webp";
 
   // Body scroll lock
   useEffect(() => {
@@ -104,7 +116,7 @@ export default function Navbar() {
         {/* LEFT LOGO */}
         <Link href="/" className="flex items-center gap-2 cursor-pointer z-10">
           <Image
-            src="/images/Logo.webp"
+            src={logoSrc}
             alt="logo"
             width={100}
             height={55}

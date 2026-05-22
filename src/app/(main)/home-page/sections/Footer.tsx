@@ -3,6 +3,15 @@
 import Link from "next/link";
 import { Rochester, Outfit } from "next/font/google";
 import Image from "next/image";
+import { useTheme } from "@/context/ThemeContext";
+
+const logoMapping: Record<string, string> = {
+  rose: "/auth/rose.png",
+  gold: "/auth/gold.png",
+  emerald: "/auth/emerald.png",
+  violet: "/auth/violet.png",
+  cyan: "/auth/cyan.png",
+};
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -29,6 +38,9 @@ const SocialIcon = ({ d, href }: { d: string; href: string }) => (
 );
 
 export default function Footer() {
+  const { activeTheme } = useTheme();
+  const logoSrc = logoMapping[activeTheme] || "/auth/rose.png";
+
   const ContactDetails = [
     {
       label: "Address",
@@ -91,7 +103,7 @@ export default function Footer() {
           <div className="flex flex-col gap-8">
             <div>
               <Image
-                src="/images/Logo.webp"
+                src={logoSrc}
                 alt="logo"
                 width={100}
                 height={100}

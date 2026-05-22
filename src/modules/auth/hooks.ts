@@ -53,7 +53,7 @@ export const useLogin = () => {
       const response = await authApi.login(data);
       setAuth(response);
       toast.success('Login successful! Welcome back.');
-      router.push('/dashboard'); // or whichever protected route
+      router.push('/'); // Redirect to home page
     } catch (error) {
       toast.error(getErrorMsg(error));
     } finally {
@@ -76,7 +76,11 @@ export const useVerifyOtp = () => {
       if (response && response.token) {
         setAuth(response);
         toast.success('Verification successful!');
-        router.push('/profile/setup'); // or dashboard
+        if (data.type === 'login') {
+          router.push('/'); // Redirect to home page on login verification
+        } else {
+          router.push('/profile/setup'); // Redirect to profile setup on registration verification
+        }
       } else {
         toast.info('OTP Verified successfully.');
         // some flows don't log you in directly, e.g. reset password

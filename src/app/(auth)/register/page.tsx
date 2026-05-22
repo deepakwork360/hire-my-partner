@@ -6,6 +6,15 @@ import { useRegister } from "@/modules/auth/hooks";
 import { registerSchema } from "@/modules/auth/validation";
 import { toast } from "@/components/ui/toastStore";
 import Image from "next/image";
+import { useTheme } from "@/context/ThemeContext";
+
+const logoMapping: Record<string, string> = {
+  rose: "/auth/rose.png",
+  gold: "/auth/gold.png",
+  emerald: "/auth/emerald.png",
+  violet: "/auth/violet.png",
+  cyan: "/auth/cyan.png",
+};
 
 function MailIcon({ className }: { className?: string }) {
   return (
@@ -178,6 +187,8 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
   });
+  const { activeTheme } = useTheme();
+  const logoSrc = logoMapping[activeTheme] || "/auth/rose.png";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -212,25 +223,24 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4 sm:p-8 font-sans">
-      <div className="w-full max-w-7xl flex flex-col lg:flex-row bg-[#0E0E10] rounded-4xl overflow-hidden shadow-2xl border border-zinc-800/60 font-sans">
+    <div className="min-h-screen bg-bg-base flex items-center justify-center p-4 sm:p-8 font-sans w-full">
+      <div className="w-full max-w-7xl flex flex-col lg:flex-row bg-bg-secondary rounded-4xl overflow-hidden shadow-2xl border border-border-main font-sans">
         {/* Left Side: Image & Branding */}
-        <div className="hidden lg:flex flex-col relative w-1/2 p-10 min-h-[500px] bg-zinc-900 border-r border-zinc-800/60 overflow-hidden">
+        <div className="hidden lg:flex flex-col relative w-1/2 p-10 min-h-[500px] bg-bg-card border-r border-border-main overflow-hidden">
           <div
-            className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-60 mix-blend-screen"
+            className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
             style={{
               backgroundImage: 'url("auth/register.jpg")',
-              filter: "saturate(1.2)",
             }}
           />
-          <div className="absolute inset-0 z-0 bg-linear-to-t from-[#0E0E10] via-transparent to-transparent opacity-90" />
+
 
           {/* Logo at Top Left */}
           <Link 
             href="/" 
             className="relative z-10 flex items-center gap-3 w-fit hover:opacity-80 transition-opacity"
           >
-            <Image src="/auth/logo.webp" alt="Logo" width={60} height={60} />
+            <Image src={logoSrc} alt="Logo" width={60} height={60} />
             <span className="text-white text-xl font-bold tracking-tight">
               Meet Me
             </span>
@@ -242,9 +252,9 @@ export default function RegisterPage() {
               <div className="w-4 h-1 bg-white/20 rounded-full"></div>
               <div className="w-4 h-1 bg-white/20 rounded-full"></div>
             </div>
-            <h1 className="text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
+            <p className="text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
               Book a Date Today
-            </h1>
+            </p>
             <p className="text-zinc-400 text-lg max-w-md">
               Find partners or earn as one
             </p>
@@ -252,27 +262,27 @@ export default function RegisterPage() {
         </div>
 
         {/* Right Side: Form */}
-        <div className="flex flex-col w-full lg:w-1/2 p-8 sm:p-12 lg:p-14 relative">
+        <div className="flex flex-col w-full lg:w-1/2 p-8 sm:p-12 lg:p-14 relative justify-center">
           {/* Mobile Logo Only */}
           <div className="lg:hidden flex justify-center mb-8">
             <Link href="/" className="flex flex-col items-center gap-2">
-              <Image src="/auth/logo.webp" alt="Logo" width={50} height={50} />
-              <span className="text-white text-lg font-bold">Meet Me</span>
+              <Image src={logoSrc} alt="Logo" width={50} height={50} />
+              <span className="text-text-main text-lg font-bold">Meet Me</span>
             </Link>
           </div>
 
           {/* Top Toggle */}
           <div className="flex justify-center mb-10">
-            <div className="bg-[#1A1A1E] p-1.5 rounded-full inline-flex">
+            <div className="bg-bg-base p-1.5 rounded-full inline-flex border border-border-main/50">
               <Link
                 href="/register"
-                className="bg-linear-to-r from-[#CF0000] to-[#FF0066] text-white px-8 py-2.5 rounded-full text-sm font-medium transition-all shadow-[0_4px_14px_rgba(255,0,102,0.3)]"
+                className="bg-linear-to-r from-primary to-accent text-white px-8 py-2.5 rounded-full text-sm font-medium transition-all shadow-md shadow-primary/20"
               >
                 Sign Up
               </Link>
               <Link
                 href="/login"
-                className="text-zinc-400 hover:text-white px-8 py-2.5 rounded-full text-sm font-medium transition-colors"
+                className="text-text-muted hover:text-text-main px-8 py-2.5 rounded-full text-sm font-medium transition-colors"
               >
                 Log In
               </Link>
@@ -280,7 +290,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Header */}
-          <h2 className="text-3xl font-semibold text-white text-center mb-10 tracking-tight">
+          <h2 className="text-3xl font-semibold text-text-main text-center mb-10 tracking-tight">
             Create An Account
           </h2>
 
@@ -297,7 +307,7 @@ export default function RegisterPage() {
                   placeholder="First Name"
                   value={formData.firstName}
                   onChange={handleChange}
-                  className="w-full bg-[#1A1A1E] text-white text-sm rounded-xl px-5 py-3.5 outline-none border border-transparent focus:border-[#FF0066]/50 focus:bg-[#1f1f24] transition-all placeholder:text-zinc-600"
+                  className="w-full bg-bg-base text-text-main text-sm rounded-xl px-5 py-3.5 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all placeholder:text-text-muted/45"
                   required
                 />
               </div>
@@ -308,7 +318,7 @@ export default function RegisterPage() {
                   placeholder="Last Name"
                   value={formData.lastName}
                   onChange={handleChange}
-                  className="w-full bg-[#1A1A1E] text-white text-sm rounded-xl px-5 py-3.5 outline-none border border-transparent focus:border-[#FF0066]/50 focus:bg-[#1f1f24] transition-all placeholder:text-zinc-600"
+                  className="w-full bg-bg-base text-text-main text-sm rounded-xl px-5 py-3.5 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all placeholder:text-text-muted/45"
                   required
                 />
               </div>
@@ -316,7 +326,7 @@ export default function RegisterPage() {
 
             {/* Email/Phone Field */}
             <div className="relative flex items-center">
-              <div className="absolute left-4 text-zinc-500">
+              <div className="absolute left-4 text-text-muted">
                 <MailIcon className="w-5 h-5" />
               </div>
               <input
@@ -325,14 +335,14 @@ export default function RegisterPage() {
                 placeholder="Enter Email or Phone"
                 value={formData.emailOrPhone}
                 onChange={handleChange}
-                className="w-full bg-[#1A1A1E] text-white text-sm rounded-xl pl-12 pr-5 py-3.5 outline-none border border-transparent focus:border-[#FF0066]/50 focus:bg-[#1f1f24] transition-all placeholder:text-zinc-600"
+                className="w-full bg-bg-base text-text-main text-sm rounded-xl pl-12 pr-5 py-3.5 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all placeholder:text-text-muted/45"
                 required
               />
             </div>
 
             {/* Password Field */}
             <div className="relative flex items-center">
-              <div className="absolute left-4 text-zinc-500">
+              <div className="absolute left-4 text-text-muted">
                 <LockIcon className="w-5 h-5" />
               </div>
               <input
@@ -341,13 +351,13 @@ export default function RegisterPage() {
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full bg-[#1A1A1E] text-white text-sm rounded-xl pl-12 pr-12 py-3.5 outline-none border border-transparent focus:border-[#FF0066]/50 focus:bg-[#1f1f24] transition-all placeholder:text-zinc-600"
+                className="w-full bg-bg-base text-text-main text-sm rounded-xl pl-12 pr-12 py-3.5 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all placeholder:text-text-muted/45"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 text-zinc-500 hover:text-zinc-300 transition-colors"
+                className="absolute right-4 text-text-muted hover:text-text-main transition-colors"
                 aria-label="Toggle password visibility"
               >
                 {showPassword ? (
@@ -360,7 +370,7 @@ export default function RegisterPage() {
 
             {/* Confirm Password Field */}
             <div className="relative flex items-center">
-              <div className="absolute left-4 text-zinc-500">
+              <div className="absolute left-4 text-text-muted">
                 <LockIcon className="w-5 h-5" />
               </div>
               <input
@@ -369,7 +379,7 @@ export default function RegisterPage() {
                 placeholder="Confirm Password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="w-full bg-[#1A1A1E] text-white text-sm rounded-xl pl-12 pr-12 py-3.5 outline-none border border-transparent focus:border-[#FF0066]/50 focus:bg-[#1f1f24] transition-all placeholder:text-zinc-600"
+                className="w-full bg-bg-base text-text-main text-sm rounded-xl pl-12 pr-12 py-3.5 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all placeholder:text-text-muted/45"
                 required
               />
             </div>
@@ -379,7 +389,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-linear-to-r from-[#CF0000] to-[#FF0066] hover:opacity-90 text-white font-semibold rounded-xl py-3.5 transition-all shadow-[0_4px_20px_rgba(255,0,102,0.4)] hover:shadow-[0_4px_25px_rgba(255,0,102,0.6)] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-linear-to-r from-primary to-accent hover:opacity-90 text-white font-semibold rounded-xl py-3.5 transition-all shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? "Creating Account..." : "Create an Account"}
               </button>
@@ -387,41 +397,41 @@ export default function RegisterPage() {
 
             {/* Divider */}
             <div className="flex items-center justify-center space-x-4 my-8 pb-2 pt-4">
-              <div className="h-px bg-zinc-800 w-full"></div>
-              <span className="text-zinc-500 text-xs font-medium uppercase tracking-wider">
+              <div className="h-px bg-border-main w-full"></div>
+              <span className="text-text-muted text-xs font-medium uppercase tracking-wider">
                 Or
               </span>
-              <div className="h-px bg-zinc-800 w-full"></div>
+              <div className="h-px bg-border-main w-full"></div>
             </div>
 
             {/* Social Logins */}
             <div className="grid grid-cols-3 gap-4">
               <button
                 type="button"
-                className="flex items-center justify-center bg-[#1A1A1E] hover:bg-[#25252A] rounded-full py-3 transition-colors border border-transparent hover:border-zinc-800"
+                className="flex items-center justify-center bg-bg-base hover:bg-bg-card rounded-full py-3 transition-colors border border-border-main/50 hover:border-border-main"
               >
                 <GoogleIcon className="w-5 h-5" />
               </button>
               <button
                 type="button"
-                className="flex items-center justify-center bg-[#1A1A1E] hover:bg-[#25252A] rounded-full py-3 transition-colors border border-transparent hover:border-zinc-800"
+                className="flex items-center justify-center bg-bg-base hover:bg-bg-card rounded-full py-3 transition-colors border border-border-main/50 hover:border-border-main"
               >
                 <FacebookIcon className="w-5 h-5" />
               </button>
               <button
                 type="button"
-                className="flex items-center justify-center bg-[#1A1A1E] hover:bg-[#25252A] rounded-full py-3 transition-colors border border-transparent hover:border-zinc-800 text-white"
+                className="flex items-center justify-center bg-bg-base hover:bg-bg-card rounded-full py-3 transition-colors border border-border-main/50 hover:border-border-main text-text-main"
               >
                 <AppleIcon className="w-5 h-5" />
               </button>
             </div>
 
             {/* Footer Link */}
-            <div className="mt-8 text-center text-zinc-500 text-sm">
+            <div className="mt-8 text-center text-text-muted text-sm">
               Already have an account?{" "}
               <Link
                 href="/login"
-                className="text-white hover:text-pink-500 font-medium transition-colors underline underline-offset-4"
+                className="text-text-main hover:text-primary font-medium transition-colors underline underline-offset-4"
               >
                 Login here
               </Link>

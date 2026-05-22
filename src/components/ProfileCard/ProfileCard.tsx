@@ -60,6 +60,7 @@ export default function ProfileCard({
           sizes="(max-w-768px) 100vw, 328px"
           className="object-cover"
           priority
+          referrerPolicy="no-referrer"
         />
         
         {/* Subtle Bottom Overlay for better text transition */}

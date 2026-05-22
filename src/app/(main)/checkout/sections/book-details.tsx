@@ -346,6 +346,7 @@ export default function BookDetails() {
                     fill
                     className="object-cover object-top"
                     priority
+                    referrerPolicy="no-referrer"
                   />
                 </div>
                 <div>

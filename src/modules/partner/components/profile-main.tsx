@@ -73,6 +73,7 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
                 alt={profileData.name}
                 fill
                 priority
+                referrerPolicy="no-referrer"
                 className="object-cover object-top transition-transform duration-1000 ease-in-out group-hover:scale-110"
               />
               
@@ -205,6 +206,7 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
                 <img
                   src={profileData.image}
                   alt="Gallery preview"
+                  referrerPolicy="no-referrer"
                   className="max-w-full max-h-[85vh] object-contain"
                 />
               </div>

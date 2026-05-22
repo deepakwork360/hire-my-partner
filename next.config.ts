@@ -1,16 +1,13 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
   images: {
-    domains: [
-      "images.unsplash.com",
-      "pinterest.com",
-      "in.pinterest.com",
-      "i.pinimg.com",
-      "i1-e.pinimg.com"
-    ],
     remotePatterns: [
       {
         protocol: "https",
@@ -18,9 +15,21 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "i1-e.pinimg.com",
+      },
+      {
+        protocol: "https",
+        hostname: "i.pinimg.com",
+      },
+      {
+        protocol: "https",
         hostname: "*.pinterest.com",
-      }
-    ]
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
   },
 };
 

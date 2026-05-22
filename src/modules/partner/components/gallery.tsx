@@ -86,6 +86,7 @@ export default function Gallery({ images }: GalleryProps) {
                   src={src}
                   alt={`Portfolio Photo ${idx + 1}`}
                   fill
+                  referrerPolicy="no-referrer"
                   className="object-cover transition-all duration-700 ease-out group-hover:scale-[1.03] group-hover:brightness-110"
                   sizes={
                     isFeatured
@@ -131,6 +132,7 @@ export default function Gallery({ images }: GalleryProps) {
               <img
                 src={selectedImage}
                 alt="Portfolio Full Preview"
+                referrerPolicy="no-referrer"
                 className="max-w-full max-h-full object-contain shadow-[0_50px_100px_rgba(0,0,0,0.8)] rounded-lg pointer-events-auto"
               />
             </motion.div>

@@ -43,6 +43,8 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* Prevent Pinterest CDN from blocking images via Referer header check */}
+        <meta name="referrer" content="no-referrer" />
         <script
           id="theme-strategy"
           suppressHydrationWarning

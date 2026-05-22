@@ -3,9 +3,19 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useLogin } from "@/modules/auth/hooks";
+import { authApi } from "@/modules/auth/api";
 import { loginSchema } from "@/modules/auth/validation";
 import { toast } from "@/components/ui/toastStore";
 import Image from "next/image";
+import { useTheme } from "@/context/ThemeContext";
+
+const logoMapping: Record<string, string> = {
+  rose: "/auth/rose.png",
+  gold: "/auth/gold.png",
+  emerald: "/auth/emerald.png",
+  violet: "/auth/violet.png",
+  cyan: "/auth/cyan.png",
+};
 
 function MailIcon({ className }: { className?: string }) {
   return (
@@ -177,6 +187,34 @@ export default function LoginPage() {
     password: "",
     otp: "",
   });
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+
+  const { activeTheme } = useTheme();
+  const logoSrc = logoMapping[activeTheme] || "/auth/rose.png";
+
+  const handleSendOtp = async () => {
+    if (!formData.emailOrPhone) {
+      toast.error("Please enter your email or phone number first");
+      return;
+    }
+    
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailOrPhone);
+    const isPhone = /^\+?[\d\s-]{10,15}$/.test(formData.emailOrPhone);
+    if (!isEmail && !isPhone) {
+      toast.error("Please enter a valid email address or phone number");
+      return;
+    }
+
+    setIsSendingOtp(true);
+    try {
+      await authApi.sendLoginOtp({ emailOrPhone: formData.emailOrPhone });
+      toast.success("OTP sent successfully!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send OTP");
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -195,25 +233,24 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4 sm:p-8 font-sans">
-      <div className="w-full max-w-7xl flex flex-col lg:flex-row bg-[#0E0E10] rounded-4xl overflow-hidden shadow-2xl border border-zinc-800/60 font-sans">
+    <div className="min-h-screen bg-bg-base flex items-center justify-center p-4 sm:p-8 font-sans w-full">
+      <div className="w-full max-w-7xl flex flex-col lg:flex-row bg-bg-secondary rounded-4xl overflow-hidden shadow-2xl border border-border-main font-sans">
         {/* Left Side: Image & Branding */}
-        <div className="hidden lg:flex flex-col relative w-1/2 p-10 min-h-[500px] bg-zinc-900 border-r border-zinc-800/60 overflow-hidden">
+        <div className="hidden lg:flex flex-col relative w-1/2 p-10 min-h-[500px] bg-bg-card border-r border-border-main overflow-hidden">
           <div
-            className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-60 mix-blend-screen"
+            className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
             style={{
               backgroundImage: 'url("auth/login.jpg")',
-              filter: "saturate(1.2)",
             }}
           />
-          <div className="absolute inset-0 z-0 bg-linear-to-t from-[#0E0E10] via-transparent to-transparent opacity-90" />
+
 
           {/* Logo at Top Left */}
           <Link 
             href="/" 
             className="relative z-10 flex items-center gap-3 w-fit hover:opacity-80 transition-opacity"
           >
-            <Image src="/auth/logo.webp" alt="Logo" width={60} height={60} />
+            <Image src={logoSrc} alt="Logo" width={60} height={60} />
             <span className="text-white text-xl font-bold tracking-tight">
               Meet Me
             </span>
@@ -225,9 +262,9 @@ export default function LoginPage() {
               <div className="w-4 h-1 bg-white/20 rounded-full"></div>
               <div className="w-4 h-1 bg-white/20 rounded-full"></div>
             </div>
-            <h1 className="text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
+            <p className="text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
               Welcome Back
-            </h1>
+            </p>
             <p className="text-zinc-400 text-lg max-w-md">
               Login to continue your journey and find your partner.
             </p>
@@ -235,27 +272,27 @@ export default function LoginPage() {
         </div>
 
         {/* Right Side: Form */}
-        <div className="flex flex-col w-full lg:w-1/2 p-8 sm:p-12 lg:p-14 relative">
+        <div className="flex flex-col w-full lg:w-1/2 p-8 sm:p-12 lg:p-14 relative justify-center">
           {/* Mobile Logo Only */}
           <div className="lg:hidden flex justify-center mb-8">
             <Link href="/" className="flex flex-col items-center gap-2">
-              <Image src="/auth/logo.webp" alt="Logo" width={50} height={50} />
-              <span className="text-white text-lg font-bold">Meet Me</span>
+              <Image src={logoSrc} alt="Logo" width={50} height={50} />
+              <span className="text-text-main text-lg font-bold">Meet Me</span>
             </Link>
           </div>
 
           {/* Top Toggle */}
           <div className="flex justify-center mb-10">
-            <div className="bg-[#1A1A1E] p-1.5 rounded-full inline-flex">
+            <div className="bg-bg-base p-1.5 rounded-full inline-flex border border-border-main/50">
               <Link
                 href="/register"
-                className="text-zinc-400 hover:text-white px-8 py-2.5 rounded-full text-sm font-medium transition-colors"
+                className="text-text-muted hover:text-text-main px-8 py-2.5 rounded-full text-sm font-medium transition-colors"
               >
                 Sign Up
               </Link>
               <Link
                 href="/login"
-                className="bg-linear-to-r from-[#CF0000] to-[#FF0066] text-white px-8 py-2.5 rounded-full text-sm font-medium transition-all shadow-[0_4px_14px_rgba(255,0,102,0.3)]"
+                className="bg-linear-to-r from-primary to-accent text-white px-8 py-2.5 rounded-full text-sm font-medium transition-all shadow-md shadow-primary/20"
               >
                 Log In
               </Link>
@@ -263,7 +300,7 @@ export default function LoginPage() {
           </div>
 
           {/* Header */}
-          <h2 className="text-3xl font-semibold text-white text-center mb-10 tracking-tight">
+          <h2 className="text-3xl font-semibold text-text-main text-center mb-10 tracking-tight">
             Account Login
           </h2>
 
@@ -271,13 +308,13 @@ export default function LoginPage() {
             <div className="flex gap-4">
               <button
                 onClick={() => setLoginMode("password")}
-                className={`text-sm ${loginMode === "password" ? "text-[#FF0066] font-semibold" : "text-zinc-500"}`}
+                className={`text-sm transition-colors ${loginMode === "password" ? "text-primary font-semibold" : "text-text-muted hover:text-text-main"}`}
               >
                 Password Login
               </button>
               <button
                 onClick={() => setLoginMode("otp")}
-                className={`text-sm ${loginMode === "otp" ? "text-[#FF0066] font-semibold" : "text-zinc-500"}`}
+                className={`text-sm transition-colors ${loginMode === "otp" ? "text-primary font-semibold" : "text-text-muted hover:text-text-main"}`}
               >
                 OTP Login
               </button>
@@ -290,7 +327,7 @@ export default function LoginPage() {
           >
             {/* Email/Phone Field */}
             <div className="relative flex items-center">
-              <div className="absolute left-4 text-zinc-500">
+              <div className="absolute left-4 text-text-muted">
                 <MailIcon className="w-5 h-5" />
               </div>
               <input
@@ -299,14 +336,14 @@ export default function LoginPage() {
                 placeholder="Enter Email or Phone"
                 value={formData.emailOrPhone}
                 onChange={handleChange}
-                className="w-full bg-[#1A1A1E] text-white text-sm rounded-xl pl-12 pr-5 py-3.5 outline-none border border-transparent focus:border-[#FF0066]/50 focus:bg-[#1f1f24] transition-all placeholder:text-zinc-600"
+                className="w-full bg-bg-base text-text-main text-sm rounded-xl pl-12 pr-5 py-3.5 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all placeholder:text-text-muted/45"
                 required
               />
             </div>
 
             {loginMode === "password" ? (
               <div className="relative flex items-center">
-                <div className="absolute left-4 text-zinc-500">
+                <div className="absolute left-4 text-text-muted">
                   <LockIcon className="w-5 h-5" />
                 </div>
                 <input
@@ -315,13 +352,13 @@ export default function LoginPage() {
                   placeholder="Password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full bg-[#1A1A1E] text-white text-sm rounded-xl pl-12 pr-12 py-3.5 outline-none border border-transparent focus:border-[#FF0066]/50 focus:bg-[#1f1f24] transition-all placeholder:text-zinc-600"
+                  className="w-full bg-bg-base text-text-main text-sm rounded-xl pl-12 pr-12 py-3.5 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all placeholder:text-text-muted/45"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 text-zinc-500 hover:text-zinc-300 transition-colors"
+                  className="absolute right-4 text-text-muted hover:text-text-main transition-colors"
                 >
                   {showPassword ? (
                     <EyeIcon className="w-5 h-5" />
@@ -331,26 +368,36 @@ export default function LoginPage() {
                 </button>
               </div>
             ) : (
-              <div className="relative flex items-center">
-                <div className="absolute left-4 text-zinc-500">
-                  <LockIcon className="w-5 h-5" />
+              <div className="flex gap-2.5">
+                <div className="relative flex-1 flex items-center">
+                  <div className="absolute left-4 text-text-muted">
+                    <LockIcon className="w-5 h-5" />
+                  </div>
+                  <input
+                    type="text"
+                    name="otp"
+                    placeholder="Enter 6-digit OTP"
+                    value={formData.otp}
+                    onChange={handleChange}
+                    className="w-full bg-bg-base text-text-main text-sm rounded-xl pl-12 pr-5 py-3.5 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all placeholder:text-text-muted/45"
+                    required
+                  />
                 </div>
-                <input
-                  type="text"
-                  name="otp"
-                  placeholder="Enter 6-digit OTP"
-                  value={formData.otp}
-                  onChange={handleChange}
-                  className="w-full bg-[#1A1A1E] text-white text-sm rounded-xl pl-12 pr-5 py-3.5 outline-none border border-transparent focus:border-[#FF0066]/50 focus:bg-[#1f1f24] transition-all placeholder:text-zinc-600"
-                  required
-                />
+                <button
+                  type="button"
+                  onClick={handleSendOtp}
+                  disabled={isSendingOtp || !formData.emailOrPhone}
+                  className="shrink-0 bg-linear-to-r from-primary to-accent hover:opacity-90 disabled:opacity-50 text-white font-semibold text-xs rounded-xl px-5 py-3.5 transition-all shadow-md shadow-primary/10 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  {isSendingOtp ? "Sending..." : "Send OTP"}
+                </button>
               </div>
             )}
 
             <div className="flex justify-end pr-1">
               <Link
                 href="/forgot-password"
-                className="text-xs text-zinc-500 hover:text-[#FF0066]"
+                className="text-xs text-text-muted hover:text-primary transition-colors"
               >
                 Forgot Password?
               </Link>
@@ -361,7 +408,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-linear-to-r from-[#CF0000] to-[#FF0066] hover:opacity-90 text-white font-semibold rounded-xl py-3.5 transition-all shadow-[0_4px_20px_rgba(255,0,102,0.4)] hover:shadow-[0_4px_25px_rgba(255,0,102,0.6)] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-linear-to-r from-primary to-accent hover:opacity-90 text-white font-semibold rounded-xl py-3.5 transition-all shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? "Logging in..." : "Login Now"}
               </button>
@@ -369,41 +416,41 @@ export default function LoginPage() {
 
             {/* Divider */}
             <div className="flex items-center justify-center space-x-4 my-8 pb-2 pt-4">
-              <div className="h-px bg-zinc-800 w-full"></div>
-              <span className="text-zinc-500 text-xs font-medium uppercase tracking-wider">
+              <div className="h-px bg-border-main w-full"></div>
+              <span className="text-text-muted text-xs font-medium uppercase tracking-wider">
                 Or
               </span>
-              <div className="h-px bg-zinc-800 w-full"></div>
+              <div className="h-px bg-border-main w-full"></div>
             </div>
 
             {/* Social Logins */}
             <div className="grid grid-cols-3 gap-4">
               <button
                 type="button"
-                className="flex items-center justify-center bg-[#1A1A1E] hover:bg-[#25252A] rounded-full py-3 transition-colors border border-transparent hover:border-zinc-800"
+                className="flex items-center justify-center bg-bg-base hover:bg-bg-card rounded-full py-3 transition-colors border border-border-main/50 hover:border-border-main"
               >
                 <GoogleIcon className="w-5 h-5" />
               </button>
               <button
                 type="button"
-                className="flex items-center justify-center bg-[#1A1A1E] hover:bg-[#25252A] rounded-full py-3 transition-colors border border-transparent hover:border-zinc-800"
+                className="flex items-center justify-center bg-bg-base hover:bg-bg-card rounded-full py-3 transition-colors border border-border-main/50 hover:border-border-main"
               >
                 <FacebookIcon className="w-5 h-5" />
               </button>
               <button
                 type="button"
-                className="flex items-center justify-center bg-[#1A1A1E] hover:bg-[#25252A] rounded-full py-3 transition-colors border border-transparent hover:border-zinc-800 text-white"
+                className="flex items-center justify-center bg-bg-base hover:bg-bg-card rounded-full py-3 transition-colors border border-border-main/50 hover:border-border-main text-text-main"
               >
                 <AppleIcon className="w-5 h-5" />
               </button>
             </div>
 
             {/* Footer Link */}
-            <div className="mt-8 text-center text-zinc-500 text-sm">
+            <div className="mt-8 text-center text-text-muted text-sm">
               Don&apos;t have an account?{" "}
               <Link
                 href="/register"
-                className="text-white hover:text-pink-500 font-medium transition-colors underline underline-offset-4"
+                className="text-text-main hover:text-primary font-medium transition-colors underline underline-offset-4"
               >
                 Sign up here
               </Link>
