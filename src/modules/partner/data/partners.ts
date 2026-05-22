@@ -215,8 +215,8 @@ export const partners: Partner[] = [
       eightHours: 16000
     },
     gallery: [
-      { id: "5-1", image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&auto=format&fit=crop" },
-      { id: "5-2", image: "https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?w=800&auto=format&fit=crop" }
+      { id: "5-1", image: "https://i1-e.pinimg.com/736x/f2/de/1e/f2de1e4104124affe10b6f1b61cf2a2d.jpg" },
+      { id: "5-2", image: "https://i.pinimg.com/736x/dc/16/79/dc1679f62cdc93722020cd2a98d84770.jpg" },
     ],
     reviews: [
       {
@@ -249,8 +249,8 @@ export const partners: Partner[] = [
       eightHours: 19992
     },
     gallery: [
-      { id: "6-1", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&auto=format&fit=crop" },
-      { id: "6-2", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800&auto=format&fit=crop" }
+      { id: "6-1", image: "https://i1-e.pinimg.com/736x/ea/12/f2/ea12f2e905c023f1909352d55048c802.jpg" },
+      { id: "6-2", image: "https://i1-e.pinimg.com/1200x/98/bb/d6/98bbd6234c669cf17a219d8d99e6df91.jpg" }
     ],
     reviews: [
       {
