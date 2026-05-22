@@ -80,7 +80,7 @@ export default function FooterCTA() {
               className="relative w-40 md:w-56 h-auto aspect-3/4 rounded-[32px] overflow-hidden shadow-2xl z-10"
             >
               <Image
-                src="/images/img4.webp"
+                src="https://i1-e.pinimg.com/1200x/db/22/01/db2201be147fd0f483c5dcf5ac1a3a17.jpg"
                 alt="kavya"
                 fill
                 className="object-cover"
@@ -96,7 +96,7 @@ export default function FooterCTA() {
               className="relative w-48 md:w-64 h-auto aspect-video rounded-[32px] overflow-hidden self-end mb-8 shadow-2xl"
             >
               <Image
-                src="/images/kavya.png"
+                src="https://i1-e.pinimg.com/736x/60/61/ca/6061caefb9e0a0db61a71522caeea6d8.jpg"
                 alt="Connection"
                 fill
                 className="object-cover"

@@ -20,26 +20,26 @@ export default function WhoCanUse() {
       title: "Events & Functions",
       description:
         "Need a plus-one for a wedding, party, or social event? We've got you covered.",
-      image: "/assets/use-this-one.webp",
+      image: "https://i1-e.pinimg.com/1200x/92/a0/5c/92a05c73f357722750cec16df179df3b.jpg",
     },
     {
       title: "Movie or Dinner Dates",
       description:
         "Don't go alone — hire someone for a casual movie night or dinner outing.",
-      image: "/assets/use-this-two.png",
+      image: "https://i1-e.pinimg.com/1200x/ff/3c/c9/ff3cc94217cb5964e8e1b652b688a746.jpg",
       featured: true,
     },
     {
       title: "Travel Companions",
       description:
         "Explore new places with a friendly, verified partner by your side.",
-      image: "/assets/use-this-three.png",
+      image: "https://i1-e.pinimg.com/736x/0d/94/8b/0d948bba7c1c76d10f030b8bd03bc5e7.jpg",
     },
     {
       title: "Relationship Roleplay",
       description:
         "Experience romantic companionship without long-term commitments - for fun or comfort.",
-      image: "/assets/use-this-four.png",
+      image: "https://i1-e.pinimg.com/736x/e5/3a/c7/e53ac78ac37d23c851fbc621ea86548e.jpg",
     },
   ];
 
