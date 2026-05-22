@@ -480,3 +480,45 @@ h6 {
     @apply justify-center;
   }
 }
+
+/* Zero-Flash Theme-Aware Logo Classes */
+.theme-logo-rose {
+  display: block !important;
+}
+.theme-logo-gold,
+.theme-logo-cyan,
+.theme-logo-violet,
+.theme-logo-emerald {
+  display: none !important;
+}
+
+html[data-theme='rose'] .theme-logo-rose { display: block !important; }
+html[data-theme='rose'] .theme-logo-gold { display: none !important; }
+html[data-theme='rose'] .theme-logo-cyan { display: none !important; }
+html[data-theme='rose'] .theme-logo-violet { display: none !important; }
+html[data-theme='rose'] .theme-logo-emerald { display: none !important; }
+
+html[data-theme='gold'] .theme-logo-rose { display: none !important; }
+html[data-theme='gold'] .theme-logo-gold { display: block !important; }
+html[data-theme='gold'] .theme-logo-cyan { display: none !important; }
+html[data-theme='gold'] .theme-logo-violet { display: none !important; }
+html[data-theme='gold'] .theme-logo-emerald { display: none !important; }
+
+html[data-theme='cyan'] .theme-logo-rose { display: none !important; }
+html[data-theme='cyan'] .theme-logo-gold { display: none !important; }
+html[data-theme='cyan'] .theme-logo-cyan { display: block !important; }
+html[data-theme='cyan'] .theme-logo-violet { display: none !important; }
+html[data-theme='cyan'] .theme-logo-emerald { display: none !important; }
+
+html[data-theme='violet'] .theme-logo-rose { display: none !important; }
+html[data-theme='violet'] .theme-logo-gold { display: none !important; }
+html[data-theme='violet'] .theme-logo-cyan { display: none !important; }
+html[data-theme='violet'] .theme-logo-violet { display: block !important; }
+html[data-theme='violet'] .theme-logo-emerald { display: none !important; }
+
+html[data-theme='emerald'] .theme-logo-rose { display: none !important; }
+html[data-theme='emerald'] .theme-logo-gold { display: none !important; }
+html[data-theme='emerald'] .theme-logo-cyan { display: none !important; }
+html[data-theme='emerald'] .theme-logo-violet { display: none !important; }
+html[data-theme='emerald'] .theme-logo-emerald { display: block !important; }
+
