@@ -19,11 +19,11 @@ import ThemeSwitcher from "./ThemeSwitcher";
 import { useTheme } from "@/context/ThemeContext";
 
 const logoMapping: Record<string, string> = {
-  rose: "/auth/rose.png",
-  gold: "/auth/gold.png",
-  emerald: "/auth/emerald.png",
-  violet: "/auth/violet.png",
-  cyan: "/auth/cyan.png",
+  rose: "/auth/rose1.png",
+  gold: "/auth/gold1.png",
+  emerald: "/auth/emerald1.png",
+  violet: "/auth/violet1.png",
+  cyan: "/auth/cyan1.png",
 };
 
 const navItems = [
