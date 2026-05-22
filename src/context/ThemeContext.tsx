@@ -32,7 +32,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const preferenceFlag = localStorage.getItem("theme_preference_set") === "true";
     const lastRotationTime = localStorage.getItem("theme_last_rotation_time");
     const now = Date.now();
-    const tenMinutes = 5 * 60 * 1000;
+    const tenMinutes = 4 * 60 * 1000;
 
     if (savedAppearance && (savedAppearance === "light" || savedAppearance === "dark")) {
       setAppearanceState(savedAppearance);
