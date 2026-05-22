@@ -42,7 +42,7 @@ const plans = [
     ],
     buttonText: "Get Started",
     popular: false,
-    color: "slate",
+    color: "amber",
   },
   {
     name: "Pro",

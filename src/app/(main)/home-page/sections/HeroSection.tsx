@@ -4,6 +4,7 @@ import Banner from "@/components/Banner/Banner";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { Outfit } from "next/font/google";
+import ThemeLogo from "@/components/ui/ThemeLogo";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -76,15 +77,12 @@ export default function HeroSection() {
               className="absolute inset-0 bg-primary/20 rounded-full blur-3xl"
             />
             
-            <div className="relative w-full h-full flex items-center justify-center">
-              <Image
-                src="/images/Logo.webp"
-                alt="Logo"
-                width={200}
-                height={200}
-                className="w-[85%] h-auto object-contain drop-shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]"
-              />
-            </div>
+            <ThemeLogo
+              width={200}
+              height={200}
+              className="w-[85%] h-auto flex items-center justify-center pointer-events-none"
+              imgClassName="w-full h-auto object-contain drop-shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]"
+            />
           </div>
 
           {/* Orbital Orbs */}

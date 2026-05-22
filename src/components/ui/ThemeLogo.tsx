@@ -5,6 +5,7 @@ interface ThemeLogoProps {
   width?: number;
   height?: number;
   className?: string;
+  imgClassName?: string;
   priority?: boolean;
 }
 
@@ -12,6 +13,7 @@ export default function ThemeLogo({
   width = 100,
   height = 55,
   className = "",
+  imgClassName = "w-auto h-full object-contain",
   priority = false,
 }: ThemeLogoProps) {
   return (
@@ -22,7 +24,7 @@ export default function ThemeLogo({
         alt="Logo"
         width={width}
         height={height}
-        className="w-auto h-full object-contain theme-logo-rose"
+        className={`${imgClassName} theme-logo-rose`}
         priority={priority}
       />
       {/* Gold Theme Logo */}
@@ -31,7 +33,7 @@ export default function ThemeLogo({
         alt="Logo"
         width={width}
         height={height}
-        className="w-auto h-full object-contain theme-logo-gold"
+        className={`${imgClassName} theme-logo-gold`}
         priority={priority}
       />
       {/* Cyan Theme Logo */}
@@ -40,7 +42,7 @@ export default function ThemeLogo({
         alt="Logo"
         width={width}
         height={height}
-        className="w-auto h-full object-contain theme-logo-cyan"
+        className={`${imgClassName} theme-logo-cyan`}
         priority={priority}
       />
       {/* Violet Theme Logo */}
@@ -49,7 +51,7 @@ export default function ThemeLogo({
         alt="Logo"
         width={width}
         height={height}
-        className="w-auto h-full object-contain theme-logo-violet"
+        className={`${imgClassName} theme-logo-violet`}
         priority={priority}
       />
       {/* Emerald Theme Logo */}
@@ -58,7 +60,7 @@ export default function ThemeLogo({
         alt="Logo"
         width={width}
         height={height}
-        className="w-auto h-full object-contain theme-logo-emerald"
+        className={`${imgClassName} theme-logo-emerald`}
         priority={priority}
       />
     </div>

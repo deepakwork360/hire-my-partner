@@ -22,7 +22,7 @@ import ThemeLogo from "@/components/ui/ThemeLogo";
 
 const navItems = [
   { label: "Home", href: "/" },
-  { label: "How it works", href: "/#how-it-works" },
+  { label: "How it Works", href: "/#how-it-works" },
   { label: "Pricing", href: "/pricing" },
   { label: "Become a Partner", href: "/become-a-partner" },
   { label: "Safety and Trust", href: "/#safety-and-trust" },
