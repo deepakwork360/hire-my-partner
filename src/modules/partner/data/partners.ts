@@ -205,7 +205,7 @@ export const partners: Partner[] = [
     rating: "5.0",
     verified: true,
     distance: "1.2 km away",
-    image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&auto=format&fit=crop",
+    image: "https://i1-e.pinimg.com/1200x/47/46/b6/4746b67a1b7aebd27ac17c22e4b2e1f0.jpg",
     pricing: {
       oneHour: 2000,
       twoHours: 4000,
@@ -239,7 +239,7 @@ export const partners: Partner[] = [
     rating: "4.9",
     verified: true,
     distance: "4.0 km away",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&auto=format&fit=crop",
+    image: "https://i1-e.pinimg.com/736x/b7/0f/69/b70f69277537792afd51412fe493303b.jpg",
     pricing: {
       oneHour: 2499,
       twoHours: 4998,
