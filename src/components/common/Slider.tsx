@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, Eye } from "lucide-react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 type SliderProps<T> = {
@@ -21,6 +21,19 @@ export default function Slider<T>({
   const [currentPerView, setCurrentPerView] = useState(perView);
   const [isMounted, setIsMounted] = useState(false);
   const [showArrows, setShowArrows] = useState(false);
+  const [isDraggingState, setIsDraggingState] = useState(false);
+
+  const trackRef = useRef<HTMLDivElement>(null);
+  const containerWidth = useRef(0);
+
+  // Interaction tracking state using refs to keep sliding 60fps buttery smooth
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const currentX = useRef(0);
+  const hasDragged = useRef(false);
+  const isSwipeDirectionDetermined = useRef(false);
+  const isHorizontalSwipe = useRef(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -65,6 +78,191 @@ export default function Slider<T>({
     }
   };
 
+  // Helper to translate the track directly in pixels during drag for optimal performance
+  const updateDragTransform = (deltaX: number) => {
+    if (!trackRef.current || containerWidth.current === 0) return;
+    const baseOffset = -index * (containerWidth.current / currentPerView);
+
+    // Apply smooth rubber band resistance past boundaries
+    let finalDeltaX = deltaX;
+    if (index === 0 && deltaX > 0) {
+      finalDeltaX = deltaX * 0.3;
+    } else if (index >= maxIndex && deltaX < 0) {
+      finalDeltaX = deltaX * 0.3;
+    }
+
+    const translatePx = baseOffset + finalDeltaX;
+    trackRef.current.style.transform = `translateX(${translatePx}px)`;
+  };
+
+  // --- MOUSE DRAG EVENT HANDLERS ---
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Only support dragging with primary/left click
+    if (e.button !== 0) return;
+
+    isDragging.current = true;
+    startX.current = e.clientX;
+    currentX.current = e.clientX;
+    hasDragged.current = false;
+
+    if (trackRef.current) {
+      containerWidth.current = trackRef.current.offsetWidth;
+    }
+    setIsDraggingState(true);
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging.current) return;
+
+    // Safety net: if left mouse button is released outside window/view, abort drag gracefully
+    if (e.buttons === 0 || (e.buttons & 1) === 0) {
+      handleMouseUp(e);
+      return;
+    }
+
+    const deltaX = e.clientX - startX.current;
+    currentX.current = e.clientX;
+
+    if (Math.abs(deltaX) > 8) {
+      hasDragged.current = true;
+    }
+
+    updateDragTransform(deltaX);
+  };
+
+  const handleMouseUp = (e: MouseEvent) => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+
+    window.removeEventListener("mousemove", handleMouseMove);
+    window.removeEventListener("mouseup", handleMouseUp);
+
+    setIsDraggingState(false);
+
+    const deltaX = e.clientX - startX.current;
+
+    if (hasDragged.current && containerWidth.current > 0) {
+      const cardWidth = containerWidth.current / currentPerView;
+      const deltaIndex = deltaX / cardWidth;
+      const roundedDiff = Math.round(deltaIndex);
+      const threshold = cardWidth * 0.2;
+
+      let newIndex = index;
+      if (Math.abs(roundedDiff) >= 1) {
+        newIndex = index - roundedDiff;
+      } else {
+        if (deltaX < -threshold) {
+          newIndex = index + 1;
+        } else if (deltaX > threshold) {
+          newIndex = index - 1;
+        }
+      }
+
+      newIndex = Math.max(0, Math.min(newIndex, maxIndex));
+
+      if (newIndex === index) {
+        if (trackRef.current) {
+          trackRef.current.style.transform = `translateX(-${index * (100 / currentPerView)}%)`;
+        }
+      } else {
+        setIndex(newIndex);
+      }
+    }
+  };
+
+  // --- MOBILE TOUCH SWIPE EVENT HANDLERS ---
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    isDragging.current = true;
+    startX.current = e.touches[0].clientX;
+    startY.current = e.touches[0].clientY;
+    currentX.current = e.touches[0].clientX;
+    hasDragged.current = false;
+    isSwipeDirectionDetermined.current = false;
+    isHorizontalSwipe.current = false;
+
+    if (trackRef.current) {
+      containerWidth.current = trackRef.current.offsetWidth;
+    }
+    setIsDraggingState(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isDragging.current) return;
+
+    const deltaX = e.touches[0].clientX - startX.current;
+    const deltaY = e.touches[0].clientY - startY.current;
+    currentX.current = e.touches[0].clientX;
+
+    // Determine lock direction on first slight movement to prevent hijacking native vertical page scroll
+    if (!isSwipeDirectionDetermined.current) {
+      if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8) {
+        isSwipeDirectionDetermined.current = true;
+        isHorizontalSwipe.current = Math.abs(deltaX) > Math.abs(deltaY);
+      }
+    }
+
+    if (isHorizontalSwipe.current) {
+      // Prevent browser pull-to-refresh or page bounces horizontally
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+      hasDragged.current = true;
+      updateDragTransform(deltaX);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+
+    setIsDraggingState(false);
+
+    const deltaX = currentX.current - startX.current;
+
+    if (hasDragged.current && isHorizontalSwipe.current && containerWidth.current > 0) {
+      const cardWidth = containerWidth.current / currentPerView;
+      const deltaIndex = deltaX / cardWidth;
+      const roundedDiff = Math.round(deltaIndex);
+      const threshold = cardWidth * 0.2;
+
+      let newIndex = index;
+      if (Math.abs(roundedDiff) >= 1) {
+        newIndex = index - roundedDiff;
+      } else {
+        if (deltaX < -threshold) {
+          newIndex = index + 1;
+        } else if (deltaX > threshold) {
+          newIndex = index - 1;
+        }
+      }
+
+      newIndex = Math.max(0, Math.min(newIndex, maxIndex));
+
+      if (newIndex === index) {
+        if (trackRef.current) {
+          trackRef.current.style.transform = `translateX(-${index * (100 / currentPerView)}%)`;
+        }
+      } else {
+        setIndex(newIndex);
+      }
+    }
+  };
+
+  // --- PREVENT ACCIDENTAL CARD CLICKS DURING SWIPE ---
+  const handleCaptureClick = (e: React.MouseEvent) => {
+    if (hasDragged.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      // Clear flag after event loop finishes to allow subsequent clean clicks
+      setTimeout(() => {
+        hasDragged.current = false;
+      }, 0);
+    }
+  };
+
   if (!isMounted) return <div className="h-40 w-full" />; // Prevent hydration flash
 
   return (
@@ -72,21 +270,34 @@ export default function Slider<T>({
       className="relative w-full overflow-visible"
       onMouseEnter={() => setShowArrows(true)}
       onMouseLeave={() => setShowArrows(false)}
-      onTouchStart={() => setShowArrows(true)}
+      onTouchStart={() => {
+        setShowArrows(true);
+      }}
     >
       {/* Viewport that clips the overflowing items */}
-      <div className="overflow-hidden w-full relative py-4 px-1">
+      <div 
+        className="overflow-hidden w-full relative py-4 px-1 touch-pan-y select-none cursor-grab active:cursor-grabbing"
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onClickCapture={handleCaptureClick}
+        onDragStart={(e) => e.preventDefault()}
+      >
         {/* Dynamic Track */}
         <div
-          className="flex transition-transform duration-500 ease-out"
+          ref={trackRef}
+          className="flex"
           style={{
             transform: `translateX(-${index * (100 / currentPerView)}%)`,
+            transition: isDraggingState ? "none" : "transform 500ms cubic-bezier(0.16, 1, 0.3, 1)",
+            willChange: "transform",
           }}
         >
           {items.map((item, i) => (
             <div
               key={i}
-              className="shrink-0 flex justify-center px-2 md:px-4"
+              className="shrink-0 flex justify-center px-2 md:px-4 select-none pointer-events-auto"
               style={{ width: `${100 / currentPerView}%` }}
             >
               {renderItem(item, i)}
@@ -96,7 +307,7 @@ export default function Slider<T>({
           {/* View All Card - PREMIUM REBUILT UI */}
           {viewAllLink && (
             <div
-              className="shrink-0 flex justify-center px-2 md:px-4"
+              className="shrink-0 flex justify-center px-2 md:px-4 select-none pointer-events-auto"
               style={{ width: `${100 / currentPerView}%` }}
             >
               <Link

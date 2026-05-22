@@ -32,7 +32,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const preferenceFlag = localStorage.getItem("theme_preference_set") === "true";
     const lastRotationTime = localStorage.getItem("theme_last_rotation_time");
     const now = Date.now();
-    const tenMinutes = 10 * 60 * 1000;
+    const tenMinutes = 5 * 60 * 1000;
 
     if (savedAppearance && (savedAppearance === "light" || savedAppearance === "dark")) {
       setAppearanceState(savedAppearance);
@@ -67,7 +67,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const currentTheme = lastActive || "rose";
         const otherThemes = THEMES.filter((t) => t !== currentTheme);
         const randomTheme = otherThemes[Math.floor(Math.random() * otherThemes.length)];
-        
+
         setActiveTheme(randomTheme);
         localStorage.setItem("theme_last_active", randomTheme);
         localStorage.setItem("theme_last_rotation_time", now.toString());
@@ -90,7 +90,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       const lastRotationTime = localStorage.getItem("theme_last_rotation_time");
       const lastActive = localStorage.getItem("theme_last_active") as Theme;
       const now = Date.now();
-      const tenMinutes = 10 * 60 * 1000;
+      const tenMinutes = 5 * 60 * 1000;
 
       let timeElapsed = 0;
       if (lastRotationTime) {
@@ -122,8 +122,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const lastRotationTime = localStorage.getItem("theme_last_rotation_time");
     const now = Date.now();
-    const tenMinutes = 10 * 60 * 1000;
-    
+    const tenMinutes = 5 * 60 * 1000;
+
     let initialDelay = tenMinutes;
     if (lastRotationTime) {
       const timeElapsed = now - Number(lastRotationTime);
@@ -177,11 +177,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setIsPreferenceSet(false);
     localStorage.removeItem("theme_choice");
     localStorage.removeItem("theme_preference_set");
-    
+
     // Pick a new one immediately for feedback, update last active and rotation timestamp
     const otherThemes = THEMES.filter((t) => t !== activeTheme);
     const randomTheme = otherThemes[Math.floor(Math.random() * otherThemes.length)];
-    
+
     setActiveTheme(randomTheme);
     localStorage.setItem("theme_last_active", randomTheme);
     localStorage.setItem("theme_last_rotation_time", Date.now().toString());

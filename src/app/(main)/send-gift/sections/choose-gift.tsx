@@ -22,7 +22,7 @@ export default function ChooseGift({
 
   const gifts = [
     {
-      image: "/images/flower.webp",
+      image: "https://i.pinimg.com/736x/9e/4c/3e/9e4c3e1a86011ee313113c7b033de3dd.jpg",
       title: "Royal Crimson Roses",
       description:
         "A breathtaking bouquet of 24 fresh crimson roses, elegantly wrapped to express your deepest admiration.",
@@ -30,7 +30,7 @@ export default function ChooseGift({
       numericPrice: 1499,
     },
     {
-      image: "/images/choclate.webp",
+      image: "https://i1-e.pinimg.com/1200x/db/fe/33/dbfe33964a218cf5164bf90a41c36afa.jpg",
       title: "Handcrafted Truffles",
       description:
         "An artisan selection of dark and milk chocolate truffles made with premium Belgian cocoa.",
@@ -38,7 +38,7 @@ export default function ChooseGift({
       numericPrice: 999,
     },
     {
-      image: "/images/dry-fruit.webp",
+      image: "https://i1-e.pinimg.com/1200x/95/a7/fc/95a7fc582625d9c6449fd3c04781a89a.jpg",
       title: "Exotic Nut Collection",
       description:
         "A premium assortment of slow-roasted almonds, cashews, and pistachios in a luxury gift box.",
@@ -46,7 +46,7 @@ export default function ChooseGift({
       numericPrice: 1249,
     },
     {
-      image: "/images/gift.webp",
+      image: "https://i1-e.pinimg.com/1200x/5d/b2/88/5db288b89e31d1b429bffb7a7e083cc4.jpg",
       title: "Luxury Watch",
       description:
         "A timeless classic with a high-end movement and sapphire crystal glass.",
@@ -54,7 +54,7 @@ export default function ChooseGift({
       numericPrice: 12999,
     },
     {
-      image: "/images/coffee.webp",
+      image: "https://i.pinimg.com/736x/88/af/ea/88afeabe9cd689e58bfe1b46e671ecc3.jpg",
       title: "Gourmet Coffee Kit",
       description:
         "Includes premium single-origin beans and a specialty dripper for the coffee enthusiast.",
