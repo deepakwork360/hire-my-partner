@@ -61,7 +61,7 @@ export default function WhoCanUse() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className={`${outfit.className} text-text-muted max-w-2xl mx-auto text-lg md:text-xl lg:text-2xl leading-relaxed`}
+            className={`${outfit.className} text-lg md:text-2xl text-text-muted max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200`}
           >
             Whether you're looking for company or creating memories,
             HireYourPartner is for you.

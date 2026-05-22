@@ -63,8 +63,8 @@ export default function SafetyTrust() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className={`${outfit.className} text-text-muted max-w-2xl mx-auto text-lg md:text-xl lg:text-2xl leading-relaxed font-light`}
-          >
+           className={`${outfit.className} text-lg md:text-2xl text-text-muted max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200`}
+          >   
             Your safety and peace of mind are our top priorities. That’s why
             we’ve built a secure, transparent, and respectful platform from the
             ground up.

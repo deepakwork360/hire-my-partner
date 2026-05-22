@@ -94,7 +94,7 @@ export default function PartnersNearby() {
             Partners Nearby You
           </h1>
           <p
-            className={`${outfit.className} text-lg md:text-2xl text-text-muted max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200`}
+          className={`${outfit.className} text-lg md:text-2xl text-text-muted max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200`}
           >
             Looking for the perfect plus-one? Explore charming companions
             nearby, available for events, dinners, or casual meetups.
