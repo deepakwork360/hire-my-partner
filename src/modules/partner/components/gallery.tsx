@@ -87,7 +87,7 @@ export default function Gallery({ images }: GalleryProps) {
                   alt={`Portfolio Photo ${idx + 1}`}
                   fill
                   referrerPolicy="no-referrer"
-                  className="object-cover transition-all duration-700 ease-out group-hover:scale-[1.03] group-hover:brightness-110"
+                  className="object-cover object-top transition-all duration-700 ease-out group-hover:scale-[1.03] group-hover:brightness-110"
                   sizes={
                     isFeatured
                       ? "(max-width: 768px) 100vw, 50vw"
