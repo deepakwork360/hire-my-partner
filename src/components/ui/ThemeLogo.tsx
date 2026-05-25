@@ -7,61 +7,68 @@ interface ThemeLogoProps {
   className?: string;
   imgClassName?: string;
   priority?: boolean;
+  style?: React.CSSProperties;
 }
 
 export default function ThemeLogo({
-  width = 100,
-  height = 55,
+  width = 567,
+  height = 481,
   className = "",
   imgClassName = "w-auto h-full object-contain",
   priority = false,
+  style = { width: "auto", height: "100%" },
 }: ThemeLogoProps) {
   return (
     <div className={`relative flex items-center shrink-0 ${className}`}>
       {/* Rose Theme Logo */}
       <Image
-        src="/auth/rose1.png"
+        src="/auth/rosego1.png"
         alt="Logo"
         width={width}
         height={height}
         className={`${imgClassName} theme-logo-rose`}
         priority={priority}
+        style={style}
       />
       {/* Gold Theme Logo */}
       <Image
-        src="/auth/gold1.png"
+        src="/auth/goldgo.png"
         alt="Logo"
         width={width}
         height={height}
         className={`${imgClassName} theme-logo-gold`}
         priority={priority}
+        style={style}
       />
       {/* Cyan Theme Logo */}
       <Image
-        src="/auth/cyan1.png"
+        src="/auth/cyango.png"
         alt="Logo"
         width={width}
         height={height}
         className={`${imgClassName} theme-logo-cyan`}
         priority={priority}
+        style={style}
       />
       {/* Violet Theme Logo */}
       <Image
-        src="/auth/violet1.png"
+        src="/auth/violetgo.png"
         alt="Logo"
         width={width}
         height={height}
         className={`${imgClassName} theme-logo-violet`}
         priority={priority}
+        style={style}
       />
       {/* Emerald Theme Logo */}
       <Image
-        src="/auth/emerald1.png"
+        src="/auth/emeraldgo.png"
         alt="Logo"
         width={width}
         height={height}
         className={`${imgClassName} theme-logo-emerald`}
         priority={priority}
+        style={style}
       />
     </div>
   );

@@ -40,11 +40,11 @@ import Image from "next/image";
 import { useTheme } from "@/context/ThemeContext";
 
 const logoMapping: Record<string, string> = {
-  rose: "/auth/rose1.png",
-  gold: "/auth/gold1.png",
-  emerald: "/auth/emerald1.png",
-  violet: "/auth/violet1.png",
-  cyan: "/auth/cyan1.png",
+  rose: "/auth/rosego1.png",
+  gold: "/auth/goldgo.png",
+  emerald: "/auth/emeraldgo.png",
+  violet: "/auth/violetgo.png",
+  cyan: "/auth/cyango.png",
 };
 
 export default function ForgotPasswordPage() {
@@ -79,7 +79,14 @@ export default function ForgotPasswordPage() {
             href="/"
             className="relative z-10 flex items-center gap-3 w-fit hover:opacity-80 transition-opacity"
           >
-            <Image src={logoSrc} alt="Logo" width={65} height={65} />
+            <Image
+              src={logoSrc}
+              alt="Logo"
+              width={77}
+              height={65}
+              className="w-auto h-[65px] object-contain drop-shadow-[0_2px_10px_rgba(var(--primary-rgb),0.15)]"
+              style={{ width: "auto", height: "65px" }}
+            />
             <span className="text-white text-xl font-bold tracking-tight">
               Meet Me
             </span>
@@ -105,7 +112,14 @@ export default function ForgotPasswordPage() {
           {/* Mobile Logo Only */}
           <div className="lg:hidden flex justify-center mb-8">
             <Link href="/" className="flex flex-col items-center gap-2">
-              <Image src={logoSrc} alt="Logo" width={50} height={50} />
+              <Image
+                src={logoSrc}
+                alt="Logo"
+                width={59}
+                height={50}
+                className="w-auto h-[50px] object-contain drop-shadow-[0_2px_10px_rgba(var(--primary-rgb),0.15)]"
+                style={{ width: "auto", height: "50px" }}
+              />
               <span className="text-text-main text-lg font-bold">Meet Me</span>
             </Link>
           </div>

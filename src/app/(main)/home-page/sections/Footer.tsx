@@ -6,11 +6,11 @@ import Image from "next/image";
 import { useTheme } from "@/context/ThemeContext";
 
 const logoMapping: Record<string, string> = {
-  rose: "/auth/rose1.png",
-  gold: "/auth/gold1.png",
-  emerald: "/auth/emerald1.png",
-  violet: "/auth/violet1.png",
-  cyan: "/auth/cyan1.png",
+  rose: "/auth/rosego1.png",
+  gold: "/auth/goldgo.png",
+  emerald: "/auth/emeraldgo.png",
+  violet: "/auth/violetgo.png",
+  cyan: "/auth/cyango.png",
 };
 
 const rochester = Rochester({
@@ -105,8 +105,10 @@ export default function Footer() {
               <Image
                 src={logoSrc}
                 alt="logo"
-                width={100}
+                width={118}
                 height={100}
+                className="w-auto h-[90px] object-contain drop-shadow-[0_2px_15px_rgba(var(--primary-rgb),0.1)] mb-4 hover:scale-105 transition-transform duration-300"
+                style={{ width: "auto", height: "90px" }}
               />
               <h1 className={`${rochester.className} text-4xl text-transparent bg-clip-text bg-linear-to-r from-primary via-accent to-primary mb-2`}>
                 Hire Your Partner

@@ -106,11 +106,15 @@ export default function Navbar() {
         } flex items-center justify-between`}
       >
         {/* LEFT LOGO */}
-        <Link href="/" className="flex items-center gap-2 cursor-pointer z-10">
+        <Link href="/" className="flex items-center gap-2 cursor-pointer z-10 group">
           <ThemeLogo
-            width={100}
-            height={55}
-            className="h-[45px] md:h-[55px]"
+            width={120}
+            height={100}
+            className={`transition-all duration-500 ${
+              isScrolled 
+                ? "h-[45px] md:h-[54px]" 
+                : "h-[60px] md:h-[76px]"
+            } drop-shadow-[0_2px_10px_rgba(var(--primary-rgb),0.15)] group-hover:drop-shadow-[0_5px_22px_rgba(var(--primary-rgb),0.4)] group-hover:scale-105`}
             priority
           />
         </Link>
