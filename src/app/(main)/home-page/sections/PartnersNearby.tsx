@@ -68,21 +68,25 @@ export default function PartnersNearby() {
     return true;
   });
 
-  const profile = filteredProfiles.map((partner) => ({
-    image: partner.image,
-    hourlyRate: `₹${partner.pricing.oneHour}/hr`,
-    name: partner.name,
-    age: partner.age,
-    location: partner.location.split(",")[0].trim(),
-    rating: partner.rating,
-    bio: partner.bio.substring(0, 45) + "...",
-    distance: partner.distance,
-    buttonText: "View Profile",
-    buttonLink: `/partners/${partner.id}`,
-    showViewIcon: false,
-    messageLink: `/checkout?partner=${partner.id}`,
-    mapLink: "#",
-  }));
+  const profile = filteredProfiles.map((partner) => {
+    const oneHourRate = partner.pricing?.oneHour || 499;
+    const bioText = partner.bio || "";
+    return {
+      image: partner.image,
+      hourlyRate: `₹${oneHourRate}/hr`,
+      name: partner.name,
+      age: partner.age,
+      location: (partner.location || "Mumbai, India").split(",")[0].trim(),
+      rating: partner.rating,
+      bio: bioText.substring(0, 45) + (bioText.length > 45 ? "..." : ""),
+      distance: partner.distance,
+      buttonText: "View Profile",
+      buttonLink: `/partners/${partner.id}`,
+      showViewIcon: false,
+      messageLink: `/checkout?partner=${partner.id}`,
+      mapLink: "#",
+    };
+  });
 
 
   return (

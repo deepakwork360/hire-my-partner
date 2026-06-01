@@ -107,8 +107,7 @@ export default function Footer() {
                 alt="logo"
                 width={118}
                 height={100}
-                className="w-auto h-[90px] object-contain drop-shadow-[0_2px_15px_rgba(var(--primary-rgb),0.1)] mb-4 hover:scale-105 transition-transform duration-300"
-                style={{ width: "auto", height: "90px" }}
+                className="w-auto h-[90px] lg:h-[145px] object-contain drop-shadow-[0_2px_15px_rgba(var(--primary-rgb),0.1)] mb-4 hover:scale-105 transition-transform duration-300"
               />
               <h1 className={`${rochester.className} text-4xl text-transparent bg-clip-text bg-linear-to-r from-primary via-accent to-primary mb-2`}>
                 Hire Your Partner

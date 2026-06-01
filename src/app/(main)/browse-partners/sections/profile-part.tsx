@@ -34,20 +34,23 @@ export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean
 
   // Convert fetched partners to ProfileData dynamically inside the component
   const dbProfiles = useMemo((): ProfileData[] => {
-    return fetchedPartners.map((p) => ({
-      id: p.id,
-      image: p.image,
-      hourlyRate: `₹${p.pricing.oneHour}/hr`,
-      name: p.name,
-      age: p.age,
-      gender: p.gender,
-      location: p.location.split(",")[0].trim(),
-      bio: p.bio,
-      tag: p.id === "1" ? "Friendly" : p.id === "2" ? "MusicFan" : p.id === "3" ? "Talkative" : p.id === "4" ? "Traveler" : p.id === "5" ? "NatureLover" : "BookLover",
-      rating: p.rating,
-      confirmation: p.verified ? "Verified" : "",
-      viewLink: `/partners/${p.id}`,
-    }));
+    return fetchedPartners.map((p) => {
+      const oneHourRate = p.pricing?.oneHour || 499;
+      return {
+        id: p.id,
+        image: p.image || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256",
+        hourlyRate: `₹${oneHourRate}/hr`,
+        name: p.name || "Anonymous",
+        age: p.age || 22,
+        gender: p.gender || "Select Gender",
+        location: (p.location || "Mumbai, India").split(",")[0].trim(),
+        bio: p.bio || "",
+        tag: p.id === "1" ? "Friendly" : p.id === "2" ? "MusicFan" : p.id === "3" ? "Talkative" : p.id === "4" ? "Traveler" : p.id === "5" ? "NatureLover" : "BookLover",
+        rating: p.rating || "4.9",
+        confirmation: p.verified ? "Verified" : "",
+        viewLink: `/partners/${p.id}`,
+      };
+    });
   }, [fetchedPartners]);
 
   // Synchronously track search parameters to reset pagination during the render phase

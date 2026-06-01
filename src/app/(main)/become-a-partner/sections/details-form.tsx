@@ -161,6 +161,15 @@ export default function DetailsForm() {
   const [submissionStatus, setSubmissionStatus] = useState<
     "pending" | "success" | "failed"
   >("pending");
+  
+  // Custom Verification Life-cycle States
+  const [verificationStatus, setVerificationStatus] = useState<
+    "DRAFT" | "PENDING" | "VERIFIED" | "REJECTED" | "NEEDS_REVISION"
+  >("DRAFT");
+  const [verificationNotes, setVerificationNotes] = useState<string>("");
+  const [revisionText, setRevisionText] = useState<string>("");
+  const [showRevisionForm, setShowRevisionForm] = useState<boolean>(false);
+
   const [isHydrated, setIsHydrated] = useState(false);
   const [applicationId, setApplicationId] = useState("");
   const [showSuccessCard, setShowSuccessCard] = useState(false);
@@ -184,18 +193,21 @@ export default function DetailsForm() {
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        // Merge text data, but keep images as null from initial state
+        // Merge saved data including the browser object URLs
         setFormData((prev) => ({
           ...prev,
           ...parsed.formData,
-          photo: prev.photo, // Don't override with null if already set in memory
-          idProofs: prev.idProofs,
         }));
         setSubmissionStatus(parsed.submissionStatus || "pending");
-        // If they already submitted successfully, show summary
-        if (parsed.submissionStatus === "success") {
+        setVerificationStatus(parsed.verificationStatus || "DRAFT");
+        setVerificationNotes(parsed.verificationNotes || "");
+        
+        // If they already submitted successfully or are pending review/verified, show summary
+        if (parsed.submissionStatus === "success" || parsed.verificationStatus === "PENDING" || parsed.verificationStatus === "VERIFIED" || parsed.verificationStatus === "REJECTED") {
           setView("summary");
-          setShowSuccessCard(false); // Don't show the initial "Success!" toast-like box on refresh, just summary
+          setShowSuccessCard(false);
+        } else if (parsed.verificationStatus === "NEEDS_REVISION") {
+          setView("form");
         }
       } catch (e) {
         console.error("Failed to parse saved application data", e);
@@ -204,22 +216,21 @@ export default function DetailsForm() {
     setIsHydrated(true);
   }, []);
 
-  // Persistence: Save on Change (Exclude large binary strings)
+  // Persistence: Save on Change (Include lightweight Browser Object URLs)
   useEffect(() => {
     if (isHydrated) {
-      // Create a clean copy of formData without images to save storage quota
-      const { photo, idProofs, gallery, ...textContent } = formData;
-
       localStorage.setItem(
         "partnerApplication",
         JSON.stringify({
-          formData: textContent,
+          formData: formData,
           submissionStatus,
           view,
+          verificationStatus,
+          verificationNotes,
         }),
       );
     }
-  }, [formData, submissionStatus, view, isHydrated]);
+  }, [formData, submissionStatus, view, verificationStatus, verificationNotes, isHydrated]);
 
   // Auto-Scroll on View Change
   useEffect(() => {
@@ -299,10 +310,117 @@ export default function DetailsForm() {
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
     setSubmissionStatus("success");
+    setVerificationStatus("PENDING");
+    setVerificationNotes("");
     setShowSuccessCard(true);
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     setView("summary");
+  };
+
+  const handleApprove = () => {
+    setVerificationStatus("VERIFIED");
+    setVerificationNotes("");
+    toast.success("Application Approved successfully!");
+
+    // Map formData to Partner interface with unique collision-free ID
+    const nameSlug = formData.fullName.toLowerCase().replace(/\s+/g, "-");
+    const uniqueSuffix = applicationId ? applicationId.replace("APP-", "") : Math.floor(100000 + Math.random() * 900000);
+    const uniqueId = `${nameSlug}-${uniqueSuffix}`;
+    const newPartner = {
+      id: uniqueId,
+      name: formData.fullName,
+      age: parseInt(formData.age) || 22,
+      gender: formData.gender,
+      location: formData.city || "Mumbai, India",
+      rating: "4.9",
+      verified: true,
+      distance: "0.8 km",
+      image: formData.photo || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256",
+      bio: formData.bio || "",
+      reviews: [],
+      gallery: formData.gallery.filter(Boolean).map((img, idx) => ({
+        id: String(idx + 1),
+        image: img as string,
+      })),
+      pricing: {
+        oneHour: parseFloat(formData.hourlyRate) || 499,
+        twoHours: (parseFloat(formData.hourlyRate) || 499) * 1.8,
+        threeHours: (parseFloat(formData.hourlyRate) || 499) * 2.5,
+        fourHours: (parseFloat(formData.hourlyRate) || 499) * 3.2,
+        fiveHours: (parseFloat(formData.hourlyRate) || 499) * 4.0,
+        eightHours: (parseFloat(formData.hourlyRate) || 499) * 6.0,
+      },
+    };
+
+    try {
+      const saved = localStorage.getItem("approved_partners");
+      const list = saved ? JSON.parse(saved) : [];
+      // Prevent duplicate IDs
+      const filtered = list.filter((p: any) => p.id !== newPartner.id);
+      localStorage.setItem("approved_partners", JSON.stringify([newPartner, ...filtered]));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleRequestRevision = (notes: string) => {
+    if (!notes.trim()) {
+      toast.error("Please enter revision details");
+      return;
+    }
+    setVerificationStatus("NEEDS_REVISION");
+    setVerificationNotes(notes);
+    setView("form");
+    setShowRevisionForm(false);
+    setRevisionText("");
+    toast.info("Revision feedback submitted. Form re-opened.");
+  };
+
+  const handleDecline = () => {
+    setVerificationStatus("REJECTED");
+    setVerificationNotes("Your application does not meet our community standards.");
+    toast.error("Application Declined.");
+  };
+
+  const handleReset = () => {
+    setVerificationStatus("DRAFT");
+    setVerificationNotes("");
+    setSubmissionStatus("pending");
+    setView("form");
+    setFormData({
+      photo: null,
+      fullName: "",
+      gender: "Select Gender",
+      age: "",
+      city: "",
+      mobile: "",
+      email: "",
+      addons: [],
+      otherAddon: "",
+      languages: [],
+      bio: "",
+      hourlyRate: "",
+      availability: [],
+      instagram: "",
+      linkedin: "",
+      termsAgreed: false,
+      idProofs: [null, null, null],
+      gallery: Array(9).fill(null),
+    });
+    localStorage.removeItem("partnerApplication");
+    // Also remove from approved_partners
+    try {
+      const saved = localStorage.getItem("approved_partners");
+      if (saved) {
+        const list = JSON.parse(saved);
+        const filtered = list.filter((p: any) => p.name !== formData.fullName);
+        localStorage.setItem("approved_partners", JSON.stringify(filtered));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    toast.info("Application cleared.");
   };
 
   if (!isHydrated) return null;
@@ -321,28 +439,22 @@ export default function DetailsForm() {
   ) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const newProofs = [...formData.idProofs];
-        newProofs[index] = reader.result as string;
-        setFormData({ ...formData, idProofs: newProofs });
-      };
-      reader.readAsDataURL(file);
+      const blobUrl = URL.createObjectURL(file);
+      const newProofs = [...formData.idProofs];
+      newProofs[index] = blobUrl;
+      setFormData({ ...formData, idProofs: newProofs });
     }
   };
 
   const handleGalleryUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => {
-          const newGallery = [...prev.gallery];
-          newGallery[index] = reader.result as string;
-          return { ...prev, gallery: newGallery };
-        });
-      };
-      reader.readAsDataURL(file);
+      const blobUrl = URL.createObjectURL(file);
+      setFormData((prev) => {
+        const newGallery = [...prev.gallery];
+        newGallery[index] = blobUrl;
+        return { ...prev, gallery: newGallery };
+      });
     }
   };
 
@@ -387,6 +499,26 @@ export default function DetailsForm() {
                 <div className="w-24 h-1 bg-linear-to-r from-transparent via-primary to-transparent mx-auto mt-6 opacity-30" />
               </div>
 
+              {/* Revision Required Alert Banner */}
+              {verificationStatus === "NEEDS_REVISION" && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-14 p-6 md:p-8 bg-red-500/10 border border-red-500/30 rounded-3xl flex flex-col md:flex-row items-start gap-4 relative overflow-hidden shadow-lg z-10"
+                >
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-red-500" />
+                  <AlertCircle className="w-7 h-7 text-red-500 shrink-0 mt-0.5" />
+                  <div className="space-y-1.5 flex-1">
+                    <h4 className="text-red-500 text-[11px] font-black uppercase tracking-widest leading-none">
+                      Revision Required from Admin
+                    </h4>
+                    <p className="text-text-main text-sm font-semibold leading-relaxed">
+                      {verificationNotes || "Please review and correct the marked fields below before resubmitting."}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
               <form
                 className="space-y-16 relative z-10"
                 onSubmit={(e) => {
@@ -415,13 +547,11 @@ export default function DetailsForm() {
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) {
-                              const reader = new FileReader();
-                              reader.onloadend = () =>
-                                setFormData({
-                                  ...formData,
-                                  photo: reader.result as string,
-                                });
-                              reader.readAsDataURL(file);
+                              const blobUrl = URL.createObjectURL(file);
+                              setFormData({
+                                ...formData,
+                                photo: blobUrl,
+                              });
                             }
                           }}
                         />
@@ -669,7 +799,7 @@ export default function DetailsForm() {
 
                 {/* Short Bio */}
                 <div ref={bioRef}>
-                  <SectionTitle>Professional Profile</SectionTitle>
+                  <SectionTitle>Short Bio</SectionTitle>
                   <div className="space-y-6">
                     <InputWrapper>
                       <textarea
@@ -1024,8 +1154,22 @@ export default function DetailsForm() {
                     <h2 className="text-4xl font-bold text-text-main tracking-tight">
                       {formData.fullName}
                     </h2>
-                    <div className="px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full text-[10px] font-black uppercase text-green-500 tracking-widest">
-                      Submitted
+                    <div className={`px-3 py-1 border rounded-full text-[10px] font-black uppercase tracking-widest ${
+                      verificationStatus === "VERIFIED" 
+                        ? "bg-green-500/10 border-green-500/20 text-green-500" 
+                        : verificationStatus === "REJECTED"
+                          ? "bg-red-500/10 border-red-500/20 text-red-500"
+                          : verificationStatus === "NEEDS_REVISION"
+                            ? "bg-amber-500/10 border-amber-500/20 text-amber-500 animate-pulse"
+                            : "bg-blue-500/10 border-blue-500/20 text-blue-500 animate-pulse"
+                    }`}>
+                      {verificationStatus === "VERIFIED" 
+                        ? "Verified Live" 
+                        : verificationStatus === "REJECTED"
+                          ? "Declined"
+                          : verificationStatus === "NEEDS_REVISION"
+                            ? "Revision Requested"
+                            : "Pending Review"}
                     </div>
                   </div>
                   <p
@@ -1039,12 +1183,64 @@ export default function DetailsForm() {
                 </div>
                 <div className="md:ml-auto">
                   <DiscoveryButton
-                    label="Edit Information"
+                    label={verificationStatus === "VERIFIED" ? "Edit Active Profile" : "Edit Information"}
                     onClick={() => setView("form")}
                     className="scale-90 md:scale-100"
                   />
                 </div>
               </div>
+
+              {/* Revision Alert block inside summary */}
+              {verificationStatus === "NEEDS_REVISION" && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mb-12 p-6 bg-amber-500/10 border border-amber-500/30 rounded-3xl flex items-start gap-4 relative overflow-hidden shadow-lg z-10"
+                >
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500" />
+                  <AlertCircle className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <h4 className="text-amber-500 text-[10px] font-black uppercase tracking-widest leading-none">
+                      Revision Required
+                    </h4>
+                    <p className="text-text-main text-sm font-semibold leading-relaxed">
+                      {verificationNotes || "The administrator has requested changes to your profile details."}
+                    </p>
+                    <button 
+                      onClick={() => setView("form")}
+                      className="mt-2 text-xs font-bold text-amber-500 hover:underline flex items-center gap-1 group cursor-pointer"
+                    >
+                      Make Corrections <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Rejected Alert block inside summary */}
+              {verificationStatus === "REJECTED" && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mb-12 p-6 bg-red-500/10 border border-red-500/30 rounded-3xl flex items-start gap-4 relative overflow-hidden shadow-lg z-10"
+                >
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-red-500" />
+                  <AlertCircle className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <h4 className="text-red-500 text-[10px] font-black uppercase tracking-widest leading-none">
+                      Application Declined
+                    </h4>
+                    <p className="text-text-main text-sm font-semibold leading-relaxed">
+                      {verificationNotes || "We regret to inform you that your companion application has been declined."}
+                    </p>
+                    <button 
+                      onClick={handleReset}
+                      className="mt-2 text-xs font-bold text-red-500 hover:underline flex items-center gap-1 group cursor-pointer"
+                    >
+                      Reset Form & Re-apply <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
                 {/* Left Column: Essential Info */}
@@ -1067,7 +1263,7 @@ export default function DetailsForm() {
                   </div>
 
                   <div className="space-y-4">
-                    <SectionTitle>Professional Profile</SectionTitle>
+                    <SectionTitle>Short Bio</SectionTitle>
                     <div className="bg-bg-secondary border border-border-main p-8 rounded-3xl text-text-main leading-relaxed font-medium">
                       {formData.bio}
                     </div>
@@ -1129,32 +1325,25 @@ export default function DetailsForm() {
 
                 {/* Right Column: Verification & Status */}
                 <div className="space-y-8">
+                  {/* Verification Info Panel */}
                   <div className="bg-linear-to-br from-primary/10 to-accent/10 border border-primary/20 p-8 rounded-[32px] relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
                     <SectionTitle>Verification</SectionTitle>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-text-muted font-medium">
-                          Terms Accepted
-                        </span>
+                        <span className="text-text-muted font-medium">Terms Accepted</span>
                         <CheckCircle2 size={16} className="text-green-500" />
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-text-muted font-medium">
-                          ID Front Uploaded
-                        </span>
+                        <span className="text-text-muted font-medium">ID Front Uploaded</span>
                         <CheckCircle2 size={16} className="text-green-500" />
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-text-muted font-medium">
-                          ID Back Uploaded
-                        </span>
+                        <span className="text-text-muted font-medium">ID Back Uploaded</span>
                         <CheckCircle2 size={16} className="text-green-500" />
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-text-muted font-medium">
-                          Selfie Verified
-                        </span>
+                        <span className="text-text-muted font-medium">Selfie Verified</span>
                         <CheckCircle2
                           size={16}
                           className={`${formData.idProofs[2] ? "text-green-500" : "text-text-muted"}`}
@@ -1164,43 +1353,151 @@ export default function DetailsForm() {
 
                     <div className="mt-10 p-4 bg-bg-card rounded-2xl border border-border-main">
                       <div className="flex items-center gap-3 text-text-main mb-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                        <div className={`w-2 h-2 rounded-full ${verificationStatus === "VERIFIED" ? "bg-green-500" : "bg-blue-500 animate-pulse"}`} />
                         <span className="text-[10px] font-black uppercase tracking-widest italic">
                           Review Status
                         </span>
                       </div>
                       <p className="text-[11px] text-text-muted font-medium leading-relaxed">
-                        Your records are now in our secure queue. An
-                        administrator will verify your ID proofs manually within
-                        24-48 hours.
+                        {verificationStatus === "VERIFIED"
+                          ? "Congratulations! Your profile has been approved by the administrators and is now searchable."
+                          : verificationStatus === "REJECTED"
+                            ? "Your profile application has been declined. Please adjust details and re-apply."
+                            : verificationStatus === "NEEDS_REVISION"
+                              ? "Revisions are currently requested. Please check the feedback banner above to resubmit."
+                              : "Your records are currently in our secure queue. An administrator will verify your ID proofs manually within 24-48 hours."}
                       </p>
                     </div>
                   </div>
 
-                  {/* Welcome/Success Message - Only shows on fresh submission */}
-                  {showSuccessCard ? (
+                  {/* Active Welcome Portal Card */}
+                  {verificationStatus === "VERIFIED" ? (
+                    <motion.div 
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="bg-linear-to-br from-green-500/10 to-emerald-600/10 border border-green-500/30 p-8 rounded-[32px] relative overflow-hidden"
+                    >
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 blur-3xl rounded-full" />
+                      <SectionTitle>You are Live!</SectionTitle>
+                      <p className="text-text-muted text-sm font-medium leading-relaxed mb-6">
+                        Welcome to our elite companion community! Your profile has been fully verified and is now live on our search explorer.
+                      </p>
+                      <button 
+                        onClick={() => window.location.href = "/browse-partners"}
+                        className="w-full text-center py-4 bg-green-500 text-white rounded-2xl font-bold border border-green-600/40 hover:bg-green-600 transition-all cursor-pointer shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:scale-[1.02] duration-300"
+                      >
+                        View Browse Listings
+                      </button>
+                    </motion.div>
+                  ) : showSuccessCard ? (
                     <div className="bg-linear-to-br from-green-500/10 to-emerald-600/10 border border-green-500/20 p-8 rounded-[32px] relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 blur-3xl rounded-full" />
                       <SectionTitle>Success!</SectionTitle>
                       <p className="text-text-muted text-sm font-medium leading-relaxed">
-                        Congratulations! Your application is in the system.
-                        We'll send an invite to{" "}
-                        <span className="text-text-main font-bold">
-                          {formData.email}
-                        </span>{" "}
-                        once approved.
+                        Congratulations! Your application is in the system. We'll send an invite to{" "}
+                        <span className="text-text-main font-bold">{formData.email}</span> once approved.
                       </p>
                     </div>
                   ) : (
                     <div className="bg-bg-card border border-border-main p-8 rounded-[32px]">
                       <SectionTitle>Application Active</SectionTitle>
                       <p className="text-text-muted text-sm font-medium leading-relaxed">
-                        Your application is currently being reviewed. You can
-                        update your information at any time, which will refresh
-                        your place in the queue.
+                        Your application is currently being reviewed. You can update your information at any time, which will refresh your place in the queue.
                       </p>
                     </div>
                   )}
+
+                  {/* 🛠️ Admin Simulation Control Center */}
+                  <div className="bg-bg-card border-2 border-primary/30 p-8 rounded-[32px] relative overflow-hidden shadow-2xl">
+                    <div className="absolute top-0 right-0 px-3 py-1 bg-primary/20 border-b border-l border-primary/30 rounded-bl-2xl text-[8px] font-black uppercase text-primary tracking-widest animate-pulse">
+                      Admin Simulator
+                    </div>
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)] animate-pulse" />
+                      <h4 className="text-text-main text-md font-extrabold uppercase tracking-wider">
+                        Review Control Center
+                      </h4>
+                    </div>
+
+                    <p className="text-xs text-text-muted font-medium mb-6 leading-relaxed">
+                      Use this simulated dashboard panel to toggle administrative review actions and experience different candidate lifecycles.
+                    </p>
+
+                    {showRevisionForm ? (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="space-y-4 mb-6"
+                      >
+                        <textarea
+                          placeholder="Type revision instructions (e.g., Please upload a clearer selfie image with your ID)..."
+                          value={revisionText}
+                          onChange={(e) => setRevisionText(e.target.value)}
+                          className="w-full bg-bg-secondary border border-border-main rounded-xl p-3 text-xs text-text-main outline-none focus:border-amber-500 min-h-[90px] font-medium"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleRequestRevision(revisionText)}
+                            className="flex-1 bg-amber-500 hover:bg-amber-600 text-bg-base font-bold text-xs py-2 px-3 rounded-lg transition-colors cursor-pointer"
+                          >
+                            Submit Request
+                          </button>
+                          <button
+                            onClick={() => setShowRevisionForm(false)}
+                            className="bg-bg-secondary hover:bg-bg-card text-text-main border border-border-main font-bold text-xs py-2 px-3 rounded-lg transition-colors cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </motion.div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-3">
+                        <button
+                          onClick={handleApprove}
+                          disabled={verificationStatus === "VERIFIED"}
+                          className={`w-full font-bold text-xs py-3 px-4 rounded-xl border transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
+                            verificationStatus === "VERIFIED"
+                              ? "bg-green-500/10 border-green-500/20 text-green-500/50 cursor-not-allowed animate-none"
+                              : "bg-green-500 border-green-600 text-white hover:bg-green-600 shadow-[0_0_20px_rgba(34,197,94,0.2)] hover:scale-[1.02]"
+                          }`}
+                        >
+                          <CheckCircle2 size={14} /> Approve & Make Live
+                        </button>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            onClick={() => setShowRevisionForm(true)}
+                            disabled={verificationStatus === "VERIFIED"}
+                            className={`font-bold text-xs py-3 px-4 rounded-xl border transition-all duration-300 cursor-pointer ${
+                              verificationStatus === "VERIFIED"
+                                ? "bg-amber-500/10 border-amber-500/20 text-amber-500/50 cursor-not-allowed"
+                                : "bg-amber-500/10 border-amber-500/30 text-amber-500 hover:bg-amber-500/20 hover:scale-[1.02]"
+                            }`}
+                          >
+                            Request Revisions
+                          </button>
+                          <button
+                            onClick={handleDecline}
+                            disabled={verificationStatus === "REJECTED"}
+                            className={`font-bold text-xs py-3 px-4 rounded-xl border transition-all duration-300 cursor-pointer ${
+                              verificationStatus === "REJECTED"
+                                ? "bg-red-500/10 border-red-500/20 text-red-500/50 cursor-not-allowed"
+                                : "bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white hover:scale-[1.02]"
+                            }`}
+                          >
+                            Decline Profile
+                          </button>
+                        </div>
+
+                        <button
+                          onClick={handleReset}
+                          className="w-full bg-bg-secondary hover:bg-bg-card border border-border-main hover:border-red-500/30 text-text-muted hover:text-red-500 font-bold text-xs py-2 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer mt-2"
+                        >
+                          <X size={12} /> Clear & Start Over
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>
