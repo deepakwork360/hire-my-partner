@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
+  Edit3,
 } from "lucide-react";
 import PremiumButton from "@/components/ui/PremiumButton";
 import DiscoveryButton from "@/components/ui/DiscoveryButton";
@@ -1182,11 +1183,29 @@ export default function DetailsForm() {
                   </p>
                 </div>
                 <div className="md:ml-auto">
-                  <DiscoveryButton
-                    label={verificationStatus === "VERIFIED" ? "Edit Active Profile" : "Edit Information"}
+                  <button
                     onClick={() => setView("form")}
-                    className="scale-90 md:scale-100"
-                  />
+                    className="relative group overflow-hidden px-7 py-3.5 rounded-2xl bg-bg-secondary/40 backdrop-blur-xl border border-border-main hover:border-primary/50 text-text-main hover:text-white font-bold text-sm transition-all duration-500 shadow-md hover:shadow-primary/20 flex items-center gap-3 cursor-pointer active:scale-95 scale-90 md:scale-100"
+                  >
+                    {/* Background Neon Flow */}
+                    <div className="absolute inset-0 bg-linear-to-r from-primary-dark/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                    
+                    {/* Glowing Border Sweep */}
+                    <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-primary via-accent to-primary opacity-0 group-hover:opacity-100 blur-sm group-hover:animate-pulse transition-all duration-700 pointer-events-none -z-10" />
+
+                    {/* Button Label & Icon */}
+                    <div className="p-1.5 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 scale-95 group-hover:scale-100 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </div>
+                    
+                    <span className="tracking-widest uppercase text-[10px] font-black leading-none">
+                      {verificationStatus === "VERIFIED" ? "Edit Active Profile" : "Edit Information"}
+                    </span>
+
+                    {/* Dynamic Ambient Edge Sparkles */}
+                    <div className="absolute top-0 right-0 w-1 h-1 bg-primary rounded-full blur-[1px] opacity-0 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500" />
+                    <div className="absolute bottom-0 left-0 w-1 h-1 bg-accent rounded-full blur-[1px] opacity-0 group-hover:opacity-100 group-hover:scale-150 transition-all duration-500" />
+                  </button>
                 </div>
               </div>
 
