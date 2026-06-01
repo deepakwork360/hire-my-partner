@@ -14,23 +14,38 @@ const outfit = Outfit({
   weight: ["300", "400", "500", "700"],
 });
 
-import { partners } from "@/modules/partner/data/partners";
+import { usePartners } from "@/modules/partner/hooks/usePartners";
 
 interface UMayAlsoLikeProps {
   excludeId?: string;
 }
 
 export default function UMayAlsoLike({ excludeId }: UMayAlsoLikeProps) {
+  const { partners: fetchedPartners, loading } = usePartners();
+
   // Filter out the profile currently being viewed (case-insensitive ID check)
-  const filteredPartners = partners.filter(
+  const filteredPartners = fetchedPartners.filter(
     (p) => String(p.id).toLowerCase() !== String(excludeId || "").toLowerCase()
   );
 
   // Take up to 3 companions to showcase as recommendations
   const displayPartners = filteredPartners.slice(0, 3);
 
+  if (loading) {
+    return (
+      <section
+        className={`py-16 md:py-24 px-4 bg-bg-secondary border-b border-border-main ${outfit.className}`}
+      >
+        <div className="max-w-[1600px] w-full mx-auto flex flex-col items-center justify-center py-20 space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          <p className="text-text-muted text-sm font-medium">Finding perfect recommendations...</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section
+    <section  
       className={`py-16 md:py-24 px-4 bg-bg-secondary border-b border-border-main ${outfit.className}`}
     >
       <div className="max-w-[1600px] w-full mx-auto">

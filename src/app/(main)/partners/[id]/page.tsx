@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { partners } from "@/modules/partner/data/partners";
+import { PartnerService } from "@/modules/partner/services/partner.service";
 import ProfileMain from "@/modules/partner/components/profile-main";
 import Gallery from "@/modules/partner/components/gallery";
 import CompanionSay from "@/modules/partner/components/companion-say";
@@ -15,28 +15,28 @@ interface PageProps {
 
 export async function generateStaticParams() {
   const paramsList: { id: string }[] = [];
-  partners.forEach((partner) => {
-    paramsList.push({ id: String(partner.id) });
-    // Also support slugs like aisha-sharma
-    const nameSlug = partner.name.toLowerCase().replace(/\s+/g, "-");
-    paramsList.push({ id: nameSlug });
-  });
+  try {
+    const fetchedPartners = await PartnerService.getPartners();
+    fetchedPartners.forEach((partner) => {
+      paramsList.push({ id: String(partner.id) });
+      // Also support slugs like aisha-sharma
+      const nameSlug = partner.name.toLowerCase().replace(/\s+/g, "-");
+      paramsList.push({ id: nameSlug });
+    });
+  } catch (error) {
+    console.error("Error in generateStaticParams:", error);
+  }
   return paramsList;
 }
 
 export default async function PartnerDetailPage({ params }: PageProps) {
   const { id } = await params;
 
-  // Find partner by raw ID or name-slug (case-insensitive)
-  const decodedId = decodeURIComponent(id).toLowerCase();
-  const partner = partners.find((p) => {
-    const rawIdMatch = String(p.id).toLowerCase() === decodedId;
-    const nameSlug = p.name.toLowerCase().replace(/\s+/g, "-");
-    const slugMatch = nameSlug === decodedId;
-    return rawIdMatch || slugMatch;
-  });
-
-  if (!partner) {
+  let partner;
+  try {
+    partner = await PartnerService.getPartnerById(id);
+  } catch (error) {
+    console.error(`Error loading partner detail for ID: ${id}`, error);
     notFound();
   }
 

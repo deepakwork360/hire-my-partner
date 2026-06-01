@@ -17,7 +17,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
-import { partners } from "@/modules/partner/data/partners";
+import { usePartners } from "@/modules/partner/hooks/usePartners";
+import ProfileCardSkeleton from "@/components/ProfileCard/ProfileCardSkeleton";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -30,6 +31,7 @@ const rochester = Rochester({
 });
 
 export default function PartnersNearby() {
+  const { partners: fetchedPartners, loading } = usePartners();
   const [age, setAge] = useState("");
   const [eventType, setEventType] = useState("");
   const [rating, setRating] = useState("");
@@ -37,7 +39,7 @@ export default function PartnersNearby() {
   const [values, setValues] = useState<number[]>([0, 100]);
 
   // Dynamic filter logic for real partners
-  const filteredProfiles = partners.filter((partner) => {
+  const filteredProfiles = fetchedPartners.filter((partner) => {
     // 1. Age Range filter (supports ranges like "20-30" or single ages like "25")
     if (age.trim()) {
       const match = age.match(/^(\d+)-(\d+)$/);
@@ -243,11 +245,20 @@ export default function PartnersNearby() {
         {/* Results Slider */}
         <div className="relative -mx-4 md:mx-0 py-8">
           <div className="px-4 md:px-12 overflow-visible">
-            <Slider
-              items={profile}
-              renderItem={(item) => <ProfileCard {...item} />}
-              viewAllLink="/browse-partners"
-            />
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 justify-items-center py-4">
+                <div className="block"><ProfileCardSkeleton /></div>
+                <div className="hidden sm:block"><ProfileCardSkeleton /></div>
+                <div className="hidden lg:block"><ProfileCardSkeleton /></div>
+                <div className="hidden 2xl:block"><ProfileCardSkeleton /></div>
+              </div>
+            ) : (
+              <Slider
+                items={profile}
+                renderItem={(item, idx) => <ProfileCard key={idx} {...item} />}
+                viewAllLink="/browse-partners"
+              />
+            )}
           </div>
         </div>
       </div>

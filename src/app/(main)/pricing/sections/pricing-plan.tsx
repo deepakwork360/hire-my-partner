@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
 import {
@@ -12,6 +12,7 @@ import {
   ArrowRight,
   Star,
 } from "lucide-react";
+import PricingCardSkeleton from "@/components/PricingCard/PricingCardSkeleton";
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -90,6 +91,19 @@ export default function PricingPlan() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
     "monthly",
   );
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleToggle = (cycle: "monthly" | "yearly") => {
+    if (cycle === billingCycle) return;
+    setBillingCycle(cycle);
+    setLoading(true);
+    const timer = setTimeout(() => setLoading(false), 500);
+  };
 
   return (
     <section
@@ -123,7 +137,7 @@ export default function PricingPlan() {
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               />
             <button
-              onClick={() => setBillingCycle("monthly")}
+              onClick={() => handleToggle("monthly")}
               className={`relative z-10 px-8 py-3 rounded-xl text-sm font-bold transition-colors duration-300 ${
                 billingCycle === "monthly"
                   ? "text-white"
@@ -133,7 +147,7 @@ export default function PricingPlan() {
               Monthly
             </button>
             <button
-              onClick={() => setBillingCycle("yearly")}
+              onClick={() => handleToggle("yearly")}
               className={`relative z-10 px-8 py-3 rounded-xl text-sm font-bold transition-colors duration-300 flex items-center gap-2 ${
                 billingCycle === "yearly"
                   ? "text-white"
@@ -150,7 +164,13 @@ export default function PricingPlan() {
 
         {/* Pricing Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch pt-8">
-          {plans.map((plan, idx) => (
+          {loading ? (
+            <>
+              <PricingCardSkeleton />
+              <PricingCardSkeleton popular={true} />
+              <PricingCardSkeleton />
+            </>
+          ) : plans.map((plan, idx) => (
             <motion.div
               key={plan.name}
               initial={{ opacity: 0, y: 30 }}

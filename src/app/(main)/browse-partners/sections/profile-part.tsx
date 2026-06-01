@@ -3,10 +3,11 @@
 import { useState, useRef, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import ProfileCard from "@/components/ProfileCard/ProfileCard";
+import ProfileCardSkeleton from "@/components/ProfileCard/ProfileCardSkeleton";
 import { Star, Flame, Loader2, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import DiscoveryButton from "@/components/ui/DiscoveryButton";
-import { partners } from "@/modules/partner/data/partners";
+import { usePartners } from "@/modules/partner/hooks/usePartners";
 
 interface ProfileData {
   id: number | string;
@@ -23,27 +24,31 @@ interface ProfileData {
   viewLink: string;
 }
 
-const getDbProfiles = (): ProfileData[] => {
-  return partners.map((p) => ({
-    id: p.id,
-    image: p.image,
-    hourlyRate: `₹${p.pricing.oneHour}/hr`,
-    name: p.name,
-    age: p.age,
-    gender: p.gender,
-    location: p.location.split(",")[0].trim(),
-    bio: p.bio,
-    tag: p.id === "1" ? "Friendly" : p.id === "2" ? "MusicFan" : p.id === "3" ? "Talkative" : p.id === "4" ? "Traveler" : p.id === "5" ? "NatureLover" : "BookLover",
-    rating: p.rating,
-    confirmation: p.verified ? "Verified" : "",
-    viewLink: `/partners/${p.id}`,
-  }));
-};
-
 export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean }) {
   const searchParams = useSearchParams();
   const [sortBy, setSortBy] = useState<"top-rated" | "popular">("popular");
   const [loading, setLoading] = useState(false);
+
+  // Fetch partners asynchronously using our custom hook
+  const { partners: fetchedPartners, loading: apiLoading, error: apiError } = usePartners();
+
+  // Convert fetched partners to ProfileData dynamically inside the component
+  const dbProfiles = useMemo((): ProfileData[] => {
+    return fetchedPartners.map((p) => ({
+      id: p.id,
+      image: p.image,
+      hourlyRate: `₹${p.pricing.oneHour}/hr`,
+      name: p.name,
+      age: p.age,
+      gender: p.gender,
+      location: p.location.split(",")[0].trim(),
+      bio: p.bio,
+      tag: p.id === "1" ? "Friendly" : p.id === "2" ? "MusicFan" : p.id === "3" ? "Talkative" : p.id === "4" ? "Traveler" : p.id === "5" ? "NatureLover" : "BookLover",
+      rating: p.rating,
+      confirmation: p.verified ? "Verified" : "",
+      viewLink: `/partners/${p.id}`,
+    }));
+  }, [fetchedPartners]);
 
   // Synchronously track search parameters to reset pagination during the render phase
   const searchParamsStr = searchParams.toString();
@@ -123,7 +128,6 @@ export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean
 
   // Compute all matching profiles and sort them synchronously
   const allMatchingProfiles = useMemo(() => {
-    const dbProfiles = getDbProfiles();
     const filtered = dbProfiles.filter(filterProfile);
     return filtered.sort((a, b) => {
       if (sortBy === "top-rated") {
@@ -131,7 +135,7 @@ export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean
       }
       return String(a.id).localeCompare(String(b.id), undefined, { numeric: true });
     });
-  }, [filterProfile, sortBy]);
+  }, [dbProfiles, filterProfile, sortBy]);
 
   // Take the slice currently visible to the user
   const displayedProfiles = useMemo(() => {
@@ -183,7 +187,17 @@ export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean
       </div>
 
       {/* Grid Area */}
-      {displayedProfiles.length > 0 ? (
+      {apiLoading ? (
+        <div className={`grid ${gridClasses} gap-6 justify-items-center py-4`}>
+          {Array.from({ length: 8 }).map((_, idx) => (
+            <ProfileCardSkeleton key={idx} />
+          ))}
+        </div>
+      ) : apiError ? (
+        <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-4 bg-bg-card rounded-[40px] border border-dashed border-red-500/20">
+          <p className="text-red-400 text-sm">Failed to load profiles: {apiError.message}</p>
+        </div>
+      ) : displayedProfiles.length > 0 ? (
         <div className={`grid ${gridClasses} gap-6 justify-items-center`}>
           {displayedProfiles.map((profile, index) => (
             <motion.div

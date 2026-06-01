@@ -3,9 +3,8 @@
 import { Outfit, Playfair_Display, Rochester } from "next/font/google";
 import Slider from "@/components/common/Slider";
 import ProfileCard from "@/components/ProfileCard/ProfileCard";
-import Link from "next/link";
-
-import { partners } from "@/modules/partner/data/partners";
+import ProfileCardSkeleton from "@/components/ProfileCard/ProfileCardSkeleton";
+import { usePartners } from "@/modules/partner/hooks/usePartners";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -24,7 +23,9 @@ const rochester = Rochester({
 });
 
 export default function TopCompanions() {
-  const profile = partners.map((partner) => ({
+  const { partners: fetchedPartners, loading } = usePartners();
+
+  const profile = fetchedPartners.map((partner) => ({
     image: partner.image,
     hourlyRate: `₹${partner.pricing.oneHour}/hr`,
     name: partner.name,
@@ -50,11 +51,20 @@ export default function TopCompanions() {
         </h2>
         <div className="relative -mx-4 md:mx-0">
           <div className="px-4 md:px-12 overflow-visible">
-            <Slider
-              items={profile}
-              renderItem={(item) => <ProfileCard {...item} />}
-              viewAllLink="/browse-partners"
-            />
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 justify-items-center py-4">
+                <div className="block"><ProfileCardSkeleton /></div>
+                <div className="hidden sm:block"><ProfileCardSkeleton /></div>
+                <div className="hidden lg:block"><ProfileCardSkeleton /></div>
+                <div className="hidden 2xl:block"><ProfileCardSkeleton /></div>
+              </div>
+            ) : (
+              <Slider
+                items={profile}
+                renderItem={(item, idx) => <ProfileCard key={idx} {...item} />}
+                viewAllLink="/browse-partners"
+              />
+            )}
           </div>
         </div>
       </div>

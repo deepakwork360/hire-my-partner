@@ -950,7 +950,7 @@ export default function DetailsForm() {
                     size="xl"
                     variant="primary"
                     icon={<ArrowRight className="w-6 h-6" />}
-                    className="w-full"
+                    className="w-full cursor-pointer"
                   />
                 </div>
               </form>
