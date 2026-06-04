@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { User, AuthResponse } from './types';
 
 interface AuthState {
@@ -10,21 +11,28 @@ interface AuthState {
   clearAuth: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  accessToken: null,
-  isAuthenticated: false,
-  setAuth: (response) => set({ 
-    user: response.user, 
-    accessToken: response.token, 
-    isAuthenticated: true 
-  }),
-  setAccessToken: (token) => set({ 
-    accessToken: token 
-  }),
-  clearAuth: () => set({ 
-    user: null, 
-    accessToken: null, 
-    isAuthenticated: false 
-  }),
-}));
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      accessToken: null,
+      isAuthenticated: false,
+      setAuth: (response) => set({ 
+        user: response.user, 
+        accessToken: response.token, 
+        isAuthenticated: true 
+      }),
+      setAccessToken: (token) => set({ 
+        accessToken: token 
+      }),
+      clearAuth: () => set({ 
+        user: null, 
+        accessToken: null, 
+        isAuthenticated: false 
+      }),
+    }),
+    {
+      name: 'meetme_auth_session', // unique storage key in localStorage
+    }
+  )
+);

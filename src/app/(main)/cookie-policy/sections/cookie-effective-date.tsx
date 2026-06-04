@@ -50,7 +50,7 @@ export default function CookieEffectiveDate() {
             {/* Content Area */}
             <div className="max-w-3xl space-y-8">
               <p className="text-text-muted text-lg md:text-xl font-light leading-relaxed text-center">
-                This Cookie Policy explains how Meet Me uses cookies and similar
+                This Cookie Policy explains how Go Partner uses cookies and similar
                 technologies to recognize you when you visit our platform. It
                 explains what these technologies are and why we use them.
               </p>

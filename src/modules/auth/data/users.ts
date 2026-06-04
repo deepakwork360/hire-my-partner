@@ -16,7 +16,7 @@ const DEFAULT_USERS: MockUser[] = [
     name: "Gigi Hadid",
     email: "gigi@example.com",
     password: "password123",
-    avatar: "https://i1-e.pinimg.com/736x/8f/1d/57/8f1d57309aaeca11bb53cb12fc84f28a.jpg",
+    avatar: "https://i.pinimg.com/736x/c0/ba/42/c0ba427bac83d08188867c3b42133c98.jpg",
     isProfileComplete: true,
   },
   {
@@ -25,7 +25,7 @@ const DEFAULT_USERS: MockUser[] = [
     email: "deepak@example.com",
     phone: "9999999999",
     password: "password123",
-    avatar: "https://i.pravatar.cc/150?img=33",
+    avatar: "https://i.pinimg.com/736x/ce/21/07/ce21071acfd1e9deb34850f70285a5f0.jpg",
     isProfileComplete: true,
   },
   {
@@ -33,7 +33,7 @@ const DEFAULT_USERS: MockUser[] = [
     name: "John Doe",
     email: "john@example.com",
     password: "password123",
-    avatar: "https://i.pravatar.cc/150?img=12",
+    avatar: "https://i.pinimg.com/1200x/ca/75/d5/ca75d50ec6781545c80105566d8eb051.jpg",
     isProfileComplete: false,
   }
 ];

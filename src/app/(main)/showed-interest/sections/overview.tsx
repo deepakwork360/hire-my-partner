@@ -1,6 +1,6 @@
 "use client";
 
-import ProfileInterest from "@/components/Profile Interest Analytics/profile-interest";
+import ProfileInterest from "@/components/ProfileInterestAnalytics/ProfileInterest";
 import { motion } from "framer-motion";
 import { Heart, Sparkles } from "lucide-react";
 import { Outfit } from "next/font/google";

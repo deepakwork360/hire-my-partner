@@ -12,12 +12,14 @@ import {
   Send,
   Mail,
   ArrowRight,
+  User,
 } from "lucide-react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import PremiumButton from "../ui/PremiumButton";
 import ThemeSwitcher from "./ThemeSwitcher";
 import { useTheme } from "@/context/ThemeContext";
 import ThemeLogo from "@/components/ui/ThemeLogo";
+import { useAuthStore } from "@/modules/auth/store";
 
 
 const navItems = [
@@ -33,6 +35,12 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { activeTheme } = useTheme();
+  const { isAuthenticated, user, clearAuth } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Body scroll lock
   useEffect(() => {
@@ -79,13 +87,13 @@ export default function Navbar() {
   };
 
   const itemVariants: Variants = {
-    closed: { 
-      opacity: 0, 
+    closed: {
+      opacity: 0,
       y: 30,
       filter: "blur(10px)"
     },
-    open: { 
-      opacity: 1, 
+    open: {
+      opacity: 1,
       y: 0,
       filter: "blur(0px)",
       transition: {
@@ -99,22 +107,20 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-100 transition-all duration-500 px-4 md:px-8 ${
-          isScrolled
-            ? "bg-bg-base/80 backdrop-blur-md shadow-lg border-b border-border-main py-3"
-            : "bg-transparent py-6"
-        } flex items-center justify-between`}
+        className={`fixed top-0 left-0 right-0 z-100 transition-all duration-500 px-4 md:px-8 flex items-center justify-between ${isScrolled
+            ? "bg-bg-base/80 backdrop-blur-md shadow-lg h-[70px] md:h-[80px]"
+            : "bg-transparent h-[90px] md:h-[110px]"
+          }`}
       >
         {/* LEFT LOGO */}
-        <Link href="/" className="flex items-center gap-2 cursor-pointer z-10 group">
+        <Link href="/" className="flex md:m-10 items-center gap-2 cursor-pointer z-10 group">
           <ThemeLogo
-            width={120}
-            height={100}
-            className={`transition-all duration-500 ${
-              isScrolled 
-                ? "h-[45px] md:h-[54px]" 
-                : "h-[60px] md:h-[76px]"
-            } drop-shadow-[0_2px_10px_rgba(var(--primary-rgb),0.15)] group-hover:drop-shadow-[0_5px_22px_rgba(var(--primary-rgb),0.4)] group-hover:scale-105`}
+            width={150}
+            height={125}
+            className={`transition-all duration-500 ${isScrolled
+                ? "h-[50px] md:h-[82px]"
+                : "h-[70px] md:h-[130px] mt-4"
+              } drop-shadow-[0_2px_10px_rgba(var(--primary-rgb),0.15)] group-hover:drop-shadow-[0_5px_22px_rgba(var(--primary-rgb),0.4)] group-hover:scale-105`}
             priority
           />
         </Link>
@@ -122,24 +128,22 @@ export default function Navbar() {
 
         {/* CENTER NAV - DESKTOP */}
         <div
-          className={`hidden lg:flex items-center backdrop-blur-md border rounded-full px-2 py-1 shadow-sm transition-all duration-500 ${
-            isScrolled
+          className={`hidden lg:flex items-center backdrop-blur-md border rounded-full px-2 py-1 shadow-sm transition-all duration-500 ${isScrolled
               ? "bg-bg-card border-border-main"
               : "bg-bg-card border-border-main"
-          }`}
+            }`}
         >
           {navItems.map((item) => (
             <Link
               key={item.label}
               href={item.href}
               className={`relative px-5 py-2 rounded-full text-sm font-medium transition-all duration-500 group
-              ${
-                pathname === item.href
+              ${pathname === item.href
                   ? "bg-linear-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/25 border-none"
                   : isScrolled
                     ? "text-text-main font-bold hover:text-primary"
                     : "text-white/90 hover:text-primary"
-              }`}
+                }`}
             >
               <span className="relative z-10">{item.label}</span>
               <span className="absolute inset-0 rounded-full bg-primary/10 opacity-0 group-hover:opacity-100 transition-all duration-500 scale-75 group-hover:scale-100" />
@@ -170,30 +174,43 @@ export default function Navbar() {
           {/* Theme Switcher */}
           <ThemeSwitcher isScrolled={isScrolled} />
 
-          {/* Profile */}
-          <Link
-            href="/profile"
-            className={`hidden lg:block w-10 h-10 rounded-full overflow-hidden border cursor-pointer hover:scale-105 transition shadow-sm ${
-              isScrolled ? "border-white/20" : "border-white/20"
-            }`}
-          >
-            <Image
-              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330"
-              alt="profile"
-              width={40}
-              height={40}
-              className="object-cover w-full h-full"
-            />
-          </Link>
+          {/* Profile / Login */}
+          {mounted && isAuthenticated ? (
+            <Link
+              href="/profile"
+              className={`hidden lg:block w-10 h-10 rounded-full overflow-hidden border cursor-pointer hover:scale-105 transition shadow-sm ${isScrolled ? "border-white/20" : "border-white/20"
+                }`}
+            >
+              <Image
+                src={user?.avatar || "https://images.unsplash.com/photo-1494790108377-be9c29b29330"}
+                alt="profile"
+                width={40}
+                height={40}
+                className="object-cover w-full h-full"
+              />
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-black/40 hover:bg-black/60 border border-primary/50 hover:border-primary cursor-pointer hover:scale-105 transition shadow-sm hover:shadow-[0_0_15px_rgba(var(--primary-rgb),0.55)] relative group duration-300"
+              title="Login"
+            >
+              {/* Active breathing dot badge on top corner */}
+              <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+              </span>
+              <User size={18} className="text-white group-hover:text-primary transition-colors duration-300" />
+            </Link>
+          )}
 
           {/* Hamburger Menu - Mobile only */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className={`lg:hidden w-10 h-10 flex items-center justify-center rounded-full border transition-all active:scale-95 z-50 ${
-              isScrolled
+            className={`lg:hidden w-10 h-10 flex items-center justify-center rounded-full border transition-all active:scale-95 z-50 ${isScrolled
                 ? "bg-bg-secondary border-border-main text-text-main"
                 : "bg-black/20 backdrop-blur-md border-white/20 text-white"
-            }`}
+              }`}
           >
             <AnimatePresence mode="wait">
               <motion.div
@@ -238,24 +255,63 @@ export default function Navbar() {
                       <Link
                         href={item.href}
                         onClick={() => setIsOpen(false)}
-                        className={`group relative flex items-center justify-between text-4xl md:text-5xl font-black tracking-tighter transition-all duration-300 ${
-                          isActive
+                        className={`group relative flex items-center justify-between text-4xl md:text-5xl font-black tracking-tighter transition-all duration-300 ${isActive
                             ? "text-primary"
                             : "text-text-main hover:text-primary/80"
-                        }`}
+                          }`}
                       >
                         <span>{item.label}</span>
                         <ArrowRight
-                          className={`w-8 h-8 transition-all duration-300 ${
-                            isActive
+                          className={`w-8 h-8 transition-all duration-300 ${isActive
                               ? "opacity-100 translate-x-0"
                               : "opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0"
-                          }`}
+                            }`}
                         />
                       </Link>
                     </motion.div>
                   );
                 })}
+              </div>
+
+              {/* Dynamic Auth Link for Mobile Drawer */}
+              <div className="flex flex-col gap-6 mt-6 border-t border-white/5 pt-6">
+                <motion.div variants={itemVariants} whileTap={{ scale: 0.95 }}>
+                  {mounted && isAuthenticated ? (
+                    <div className="flex flex-col gap-6">
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsOpen(false)}
+                        className={`group relative flex items-center justify-between text-4xl md:text-5xl font-black tracking-tighter transition-all duration-300 ${
+                          pathname === "/profile" ? "text-primary" : "text-text-main hover:text-primary/80"
+                        }`}
+                      >
+                        <span>My Profile</span>
+                        <ArrowRight className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-4 group-hover:translate-x-0" />
+                      </Link>
+                      <button
+                        onClick={() => {
+                          clearAuth();
+                          setIsOpen(false);
+                        }}
+                        className="group relative flex items-center justify-between text-4xl md:text-5xl font-black tracking-tighter text-red-500 hover:text-red-400 transition-all duration-300 text-left cursor-pointer"
+                      >
+                        <span>Logout</span>
+                        <ArrowRight className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-4 group-hover:translate-x-0" />
+                      </button>
+                    </div>
+                  ) : (
+                    <Link
+                      href="/login"
+                      onClick={() => setIsOpen(false)}
+                      className={`group relative flex items-center justify-between text-4xl md:text-5xl font-black tracking-tighter transition-all duration-300 ${
+                        pathname === "/login" ? "text-primary" : "text-text-main hover:text-primary/80"
+                      }`}
+                    >
+                      <span>Login / Sign Up</span>
+                      <ArrowRight className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-4 group-hover:translate-x-0" />
+                    </Link>
+                  )}
+                </motion.div>
               </div>
 
               {/* Bottom Section */}

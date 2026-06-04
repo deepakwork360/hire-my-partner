@@ -45,7 +45,7 @@ export default function UMayAlsoLike({ excludeId }: UMayAlsoLikeProps) {
   }
 
   return (
-    <section  
+    <section
       className={`py-16 md:py-24 px-4 bg-bg-secondary border-b border-border-main ${outfit.className}`}
     >
       <div className="max-w-[1600px] w-full mx-auto">

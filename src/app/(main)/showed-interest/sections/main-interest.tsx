@@ -1,4 +1,4 @@
-import Banner2 from "@/components/banner2/banner2";
+import Banner2 from "@/components/Banner2/Banner2";
 
 export default function MainInterest() {
   return (
