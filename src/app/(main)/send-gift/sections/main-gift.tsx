@@ -1,4 +1,4 @@
-import Banner2 from "@/components/Banner2/Banner2";
+import Banner2 from "@/components/banner2/banner2";
 import { Rochester } from "next/font/google";
 
 const rochester = Rochester({
