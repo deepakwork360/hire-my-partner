@@ -1,24 +1,8 @@
-import { api } from '@/lib/axios';
-import { Profile, UpdateProfilePayload } from './types';
+import { profileMockApi } from './api.mock';
+import { profileRealApi } from './api.real';
 
-export const profileApi = {
-  getMyProfile: async (): Promise<Profile> => {
-    const { data } = await api.get('/profile/me');
-    return data;
-  },
-  updateProfile: async (data: UpdateProfilePayload): Promise<Profile> => {
-    const { data: responseData } = await api.patch('/profile/update', data);
-    return responseData;
-  },
-  uploadPhoto: async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append('photo', file);
-    const { data } = await api.post('/profile/photos/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return data.photoUrl; // Assuming backend returns { photoUrl: '...' }
-  },
-  deletePhoto: async (photoId: string): Promise<void> => {
-    await api.delete(`/profile/photos/${photoId}`);
-  },
-};
+const IS_MOCK = process.env.NEXT_PUBLIC_API_MODE !== 'api';
+
+// This acts as a switchable bridge. The frontend code is 100% oblivious to whether
+// the source is the mock memory database or the real backend servers.
+export const profileApi = IS_MOCK ? profileMockApi : profileRealApi;

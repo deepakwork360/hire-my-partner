@@ -1,68 +1,57 @@
-import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { profileApi } from "./api";
 import { Profile, UpdateProfilePayload } from "./types";
 import { toast } from "@/components/ui/toastStore";
 
+// React Query hooks keep page queries extremely light, automated, and performant.
 export const useMyProfile = () => {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error } = useQuery<Profile, Error>({
+    queryKey: ["myProfile"],
+    queryFn: () => profileApi.getMyProfile(),
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const data = await profileApi.getMyProfile();
-        setProfile(data);
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch profile");
-        toast.error("Failed to fetch profile");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, []);
-
-  return { profile, isLoading, error, setProfile };
+  return {
+    profile: data || null,
+    isLoading,
+    error: error ? error.message : null,
+  };
 };
 
 export const useUpdateProfile = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
 
-  const updateProfile = async (data: UpdateProfilePayload) => {
-    setIsLoading(true);
-    try {
-      const updatedProfile = await profileApi.updateProfile(data);
+  const mutation = useMutation<Profile, Error, UpdateProfilePayload>({
+    mutationFn: (data) => profileApi.updateProfile(data),
+    onSuccess: (updatedProfile) => {
+      // Optimistically update the query cache to reflect changes immediately
+      queryClient.setQueryData(["myProfile"], updatedProfile);
       toast.success("Profile updated successfully");
-      return updatedProfile;
-    } catch (err: any) {
+    },
+    onError: (err) => {
       toast.error(err.message || "Update failed");
-      throw err;
-    } finally {
-      setIsLoading(false);
     }
-  };
+  });
 
-  return { updateProfile, isLoading };
+  return {
+    updateProfile: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+  };
 };
 
 export const useUploadPhoto = () => {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const uploadPhoto = async (file: File) => {
-    setIsLoading(true);
-    try {
-      const photoUrl = await profileApi.uploadPhoto(file);
+  const mutation = useMutation<string, Error, File>({
+    mutationFn: (file) => profileApi.uploadPhoto(file),
+    onSuccess: () => {
       toast.success("Photo uploaded successfully");
-      return photoUrl;
-    } catch (err: any) {
+    },
+    onError: (err) => {
       toast.error(err.message || "Upload failed");
-      throw err;
-    } finally {
-      setIsLoading(false);
     }
-  };
+  });
 
-  return { uploadPhoto, isLoading };
+  return {
+    uploadPhoto: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+  };
 };

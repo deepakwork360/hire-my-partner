@@ -83,7 +83,7 @@ export default function ContactSuccess({
 
               {/* Subtitle */}
               <p className="text-text-muted text-base font-medium leading-relaxed mb-10">
-                Thank you for reaching out to Meet Me. Your request has been logged, and our team will get back to you within 24 hours.
+                Thank you for reaching out to Go Partner. Your request has been logged, and our team will get back to you within 24 hours.
               </p>
 
               {/* Action Button */}

@@ -104,7 +104,7 @@ function VerifyOtpForm() {
               className="w-auto h-[65px] object-contain drop-shadow-[0_2px_10px_rgba(var(--primary-rgb),0.15)]"
               style={{ width: "auto", height: "65px" }}
             />
-            <span className="text-white text-xl font-bold tracking-tight">Meet Me</span>
+            <span className="text-white text-xl font-bold tracking-tight">Go Partner</span>
           </Link>
 
           <div className="relative z-10 mt-auto pb-8">
@@ -135,7 +135,7 @@ function VerifyOtpForm() {
                 className="w-auto h-[50px] object-contain drop-shadow-[0_2px_10px_rgba(var(--primary-rgb),0.15)]"
                 style={{ width: "auto", height: "50px" }}
               />
-              <span className="text-text-main text-lg font-bold">Meet Me</span>
+              <span className="text-text-main text-lg font-bold">Go Partner</span>
             </Link>
           </div>
 

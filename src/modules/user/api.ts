@@ -1,13 +1,7 @@
-import { api } from '@/lib/axios';
-import { User } from './types';
+import { userMockApi } from './api.mock';
+import { userRealApi } from './api.real';
 
-export const userApi = {
-  getCurrentUser: async (): Promise<User> => {
-    const { data } = await api.get('/user/me');
-    return data;
-  },
-  getUserById: async (userId: string): Promise<User> => {
-    const { data } = await api.get(`/user/${userId}`);
-    return data;
-  },
-};
+const IS_MOCK = process.env.NEXT_PUBLIC_API_MODE !== 'api';
+
+// Switchable user API bridge. Swaps dynamically between mock and real modes.
+export const userApi = IS_MOCK ? userMockApi : userRealApi;

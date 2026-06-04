@@ -30,7 +30,7 @@ export default function PrivacyEffectiveDate() {
                 <div className="w-8 h-px bg-linear-to-r from-transparent to-primary" />
                 <Info className="w-5 h-5 text-primary" />
                 <h2 className="text-3xl md:text-4xl font-bold text-text-main tracking-tight">
-                  Welcome to Meet Me
+                  Welcome to Go Partner
                 </h2>
                 <div className="w-8 h-px bg-linear-to-l from-transparent to-primary" />
               </div>

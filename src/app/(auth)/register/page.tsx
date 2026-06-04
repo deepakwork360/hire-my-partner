@@ -249,7 +249,7 @@ export default function RegisterPage() {
               style={{ width: "auto", height: "60px" }}
             />
             <span className="text-white text-xl font-bold tracking-tight">
-              Meet Me
+              Go Partner
             </span>
           </Link>
 
@@ -281,7 +281,7 @@ export default function RegisterPage() {
                 className="w-auto h-[50px] object-contain drop-shadow-[0_2px_10px_rgba(var(--primary-rgb),0.15)]"
                 style={{ width: "auto", height: "50px" }}
               />
-              <span className="text-text-main text-lg font-bold">Meet Me</span>
+              <span className="text-text-main text-lg font-bold">Go Partner</span>
             </Link>
           </div>
 

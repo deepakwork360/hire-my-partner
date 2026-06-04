@@ -25,9 +25,10 @@ const inter = Inter({
 import React from "react";
 import { ToastProvider } from "@/components/ui/ToastProvider";
 import { ThemeProvider } from "@/context/ThemeContext";
+import Providers from "./providers";
 
 export const metadata: Metadata = {
-  title: "Hire My Partner - Find Your Perfect Companion",
+  title: "Go Partner - Find Your Perfect Companion",
   description: "Connect with partners for any occasion. Premium companions, verified profiles.",
 };
 
@@ -75,10 +76,12 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col ">
-        <ThemeProvider>
-          <ToastProvider />
-          {children}
-        </ThemeProvider>
+        <Providers>
+          <ThemeProvider>
+            <ToastProvider />
+            {children}
+          </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

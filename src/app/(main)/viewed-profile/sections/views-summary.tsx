@@ -1,4 +1,4 @@
-import ProfileAnalytics from "@/components/ProfileAnalytics.tsx/ProfileAnalytics";
+import ProfileAnalytics from "@/components/ProfileAnalytics/ProfileAnalytics";
 
 const data = {
   totalViews: 12345,
