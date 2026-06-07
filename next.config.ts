@@ -4,6 +4,7 @@ import path from "path";
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
+  allowedDevOrigins: ["10.183.151.23", "localhost", "127.0.0.1"],
   turbopack: {
     root: path.resolve(__dirname),
   },
