@@ -31,6 +31,12 @@ export const PartnerService = {
       }
     }
 
+    const IS_MOCK = process.env.NEXT_PUBLIC_API_MODE !== 'api';
+    if (IS_MOCK) {
+      await delay(800);
+      return [...localApproved, ...mockPartners];
+    }
+
     try {
       const response = await api.get("/partners");
       const data = response.data;
@@ -83,6 +89,22 @@ export const PartnerService = {
       } catch (e) {
         console.error("Failed to query local approved partners", e);
       }
+    }
+
+    const IS_MOCK = process.env.NEXT_PUBLIC_API_MODE !== 'api';
+    if (IS_MOCK) {
+      await delay(600);
+      const partner = mockPartners.find((p) => {
+        const rawIdMatch = String(p.id).toLowerCase() === decodedId;
+        const nameSlug = p.name.toLowerCase().replace(/\s+/g, "-");
+        const slugMatch = nameSlug === decodedId;
+        return rawIdMatch || slugMatch;
+      });
+
+      if (!partner) {
+        throw new Error("Partner not found");
+      }
+      return partner;
     }
 
     try {

@@ -19,6 +19,12 @@ const authRoutes = [
 
 // Next.js 16: renamed from `middleware` to `proxy`
 export function proxy(request: NextRequest) {
+  // If running in mock mode, bypass server-side cookie checks since no real cookies are set
+  const IS_MOCK = process.env.NEXT_PUBLIC_API_MODE !== 'api';
+  if (IS_MOCK) {
+    return NextResponse.next();
+  }
+
   // Checking for common httpOnly cookie names injected by backends holding refresh tokens
   const hasToken =
     request.cookies.has("refreshToken") ||
