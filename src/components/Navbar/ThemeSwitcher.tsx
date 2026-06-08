@@ -28,7 +28,7 @@ export default function ThemeSwitcher({ isScrolled = false }: { isScrolled?: boo
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-10 h-10 flex items-center justify-center rounded-full border transition-all active:scale-95 group ${
+        className={`w-10 cursor-pointer h-10 flex items-center justify-center rounded-full border transition-all active:scale-95 group ${
           isScrolled 
             ? "bg-bg-secondary border-border-main text-text-main hover:bg-bg-card" 
             : "bg-black/20 backdrop-blur-md border-white/20 text-white hover:bg-black/40"
