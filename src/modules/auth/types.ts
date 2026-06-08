@@ -23,12 +23,26 @@ export interface RegisterPayload {
   email?: string;
   phone?: string;
   password?: string;
+  phone_country_code?: string;
+  phone_no?: string;
+}
+
+export interface SendOtpPayload {
+  type: 'register' | 'login' | 'reset-password' | 'forget';
+  send_via: 'phone' | 'email';
+  phone_no?: string;
+  phone_country_code?: string;
+  email?: string;
 }
 
 export interface VerifyOtpPayload {
   emailOrPhone: string;
   otp: string;
-  type: 'register' | 'login' | 'reset-password';
+  type: 'register' | 'login' | 'reset-password' | 'forget';
+  send_via?: 'phone' | 'email';
+  phone_no?: string;
+  phone_country_code?: string;
+  email?: string;
 }
 
 export interface ForgotPasswordPayload {

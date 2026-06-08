@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { authApi } from './api';
 import { useAuthStore } from './store';
 import { toast } from '@/components/ui/toastStore';
-import { LoginPayload, RegisterPayload, VerifyOtpPayload, ForgotPasswordPayload, ResetPasswordPayload } from './types';
+import { LoginPayload, RegisterPayload, VerifyOtpPayload, ForgotPasswordPayload, ResetPasswordPayload, SendOtpPayload } from './types';
 import axios from 'axios';
 
 // Helper to extract message from axios error
@@ -21,10 +21,20 @@ export const useRegister = () => {
   const handleRegister = async (data: RegisterPayload) => {
     setIsLoading(true);
     try {
-      await authApi.register(data);
-      toast.success('Registration initiated. Please check your email/phone for OTP.');
-      // Pass the email/phone to the next step via query param
-      router.push(`/verify-otp?emailOrPhone=${encodeURIComponent(data.email || data.phone || '')}&type=register`);
+      const response = await authApi.register(data);
+      toast.success(response.message || 'Registered successfully. Please verify your OTP.');
+
+      // Pass all details to the verify-otp page
+      const queryParams = new URLSearchParams({
+        type: 'register',
+        send_via: 'phone',
+        phone_no: data.phone_no || '',
+        phone_country_code: data.phone_country_code || '',
+        email: data.email || '',
+        emailOrPhone: data.phone_no || data.email || ''
+      }).toString();
+
+      router.push(`/verify-otp?${queryParams}`);
     } catch (error) {
       toast.error(getErrorMsg(error));
     } finally {
@@ -33,6 +43,26 @@ export const useRegister = () => {
   };
 
   return { handleRegister, isLoading };
+};
+
+export const useSendOtp = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSendOtp = async (data: SendOtpPayload) => {
+    setIsLoading(true);
+    try {
+      const response = await authApi.sendOtp(data);
+      toast.success(response.message || 'OTP sent successfully');
+      return response;
+    } catch (error) {
+      toast.error(getErrorMsg(error));
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { handleSendOtp, isLoading };
 };
 
 export const useLogin = () => {
@@ -73,7 +103,11 @@ export const useVerifyOtp = () => {
     setIsLoading(true);
     try {
       const response = await authApi.verifyOtp(data);
-      if (response && response.token) {
+      if (data.type === 'register') {
+        toast.success('Verification successful! Please log in.');
+        const username = data.phone_no || data.email || data.emailOrPhone;
+        router.push(`/login?emailOrPhone=${encodeURIComponent(username)}`);
+      } else if (response && response.token) {
         setAuth(response);
         toast.success('Verification successful!');
         if (data.type === 'login') {
@@ -84,7 +118,7 @@ export const useVerifyOtp = () => {
       } else {
         toast.info('OTP Verified successfully.');
         // some flows don't log you in directly, e.g. reset password
-        if (data.type === 'reset-password') {
+        if (data.type === 'reset-password' || data.type === 'forget') {
           router.push(`/reset-password?emailOrPhone=${encodeURIComponent(data.emailOrPhone)}&otp=${data.otp}`);
         }
       }
@@ -106,8 +140,8 @@ export const useForgotPassword = () => {
     setIsLoading(true);
     try {
       await authApi.forgotPassword(data);
-      toast.success('OTP sent to your email/phone');
-      router.push(`/verify-otp?emailOrPhone=${encodeURIComponent(data.emailOrPhone)}&type=reset-password`);
+      toast.success('OTP sent successfully!');
+      router.push(`/verify-otp?emailOrPhone=${encodeURIComponent(data.emailOrPhone)}&type=forget`);
     } catch (error) {
       toast.error(getErrorMsg(error));
     } finally {

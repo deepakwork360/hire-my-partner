@@ -17,19 +17,34 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       isAuthenticated: false,
-      setAuth: (response) => set({ 
-        user: response.user, 
-        accessToken: response.token, 
-        isAuthenticated: true 
-      }),
-      setAccessToken: (token) => set({ 
-        accessToken: token 
-      }),
-      clearAuth: () => set({ 
-        user: null, 
-        accessToken: null, 
-        isAuthenticated: false 
-      }),
+      setAuth: (response) => {
+        if (typeof window !== 'undefined') {
+          document.cookie = `token=${response.token}; path=/; max-age=604800; SameSite=Lax`;
+        }
+        set({ 
+          user: response.user, 
+          accessToken: response.token, 
+          isAuthenticated: true 
+        });
+      },
+      setAccessToken: (token) => {
+        if (typeof window !== 'undefined') {
+          document.cookie = `token=${token}; path=/; max-age=604800; SameSite=Lax`;
+        }
+        set({ 
+          accessToken: token 
+        });
+      },
+      clearAuth: () => {
+        if (typeof window !== 'undefined') {
+          document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+        }
+        set({ 
+          user: null, 
+          accessToken: null, 
+          isAuthenticated: false 
+        });
+      },
     }),
     {
       name: 'meetme_auth_session', // unique storage key in localStorage

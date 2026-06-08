@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+.no-transitions * {
+  transition: none !important;
+}
+
 :root {
   /* Semantic Variables - Dark (Default) */
   --bg-base: 5, 5, 5;

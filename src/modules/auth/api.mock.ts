@@ -1,4 +1,4 @@
-import { LoginPayload, RegisterPayload, VerifyOtpPayload, ForgotPasswordPayload, ResetPasswordPayload, AuthResponse } from './types';
+import { LoginPayload, RegisterPayload, VerifyOtpPayload, ForgotPasswordPayload, ResetPasswordPayload, AuthResponse, SendOtpPayload } from './types';
 import { mockDb } from './data/users';
 import { toast } from '@/components/ui/toastStore';
 
@@ -15,7 +15,7 @@ export const authMockApi = {
     }
 
     if (data.otp) {
-      const isOtpValid = mockDb.verifyOtp(data.emailOrPhone, data.otp);
+      const isOtpValid = mockDb.verifyOtp(data.emailOrPhone, data.otp) || (user.phone && mockDb.verifyOtp(user.phone, data.otp));
       if (!isOtpValid) {
         throw new Error("Invalid OTP code");
       }
@@ -48,9 +48,12 @@ export const authMockApi = {
       throw new Error("No account found with this email or phone number. Please sign up first.");
     }
 
-    // Generate mock OTP
-    const mockOtp = "123456";
+    // Generate mock OTP (using "751405" to match the screenshot)
+    const mockOtp = "751405";
     mockDb.storeOtp(data.emailOrPhone, mockOtp);
+    if (user.phone) {
+      mockDb.storeOtp(user.phone, mockOtp);
+    }
 
     // Notify the tester
     if (typeof window !== 'undefined') {
@@ -64,55 +67,115 @@ export const authMockApi = {
     };
   },
   
-  register: async (data: RegisterPayload): Promise<{ success: boolean; message: string }> => {
+  register: async (data: RegisterPayload): Promise<{ success: boolean; message: string; data?: any }> => {
     await delay(800);
     
-    const emailOrPhone = data.email || data.phone || "";
-    const existing = mockDb.findUser(emailOrPhone);
+    const email = data.email || "";
+    const phone = data.phone_no || "";
+    
+    // Check if user already exists
+    const users = mockDb.getUsers();
+    const existing = users.find(u => 
+      (email && u.email && u.email.toLowerCase() === email.toLowerCase()) || 
+      (phone && u.phone && u.phone === phone)
+    );
     if (existing) {
       throw new Error("An account already exists with this email or phone number");
     }
 
-    // Add user as pending (or direct register)
-    mockDb.addUser(data.name, emailOrPhone, data.password);
+    // Add user as pending
+    mockDb.addUser(data.name, email, data.password, phone);
     
-    // Generate a mock OTP
-    const mockOtp = "123456";
-    mockDb.storeOtp(emailOrPhone, mockOtp);
+    const phoneOtp = "376169";
+    const emailOtp = "511846";
+    mockDb.storeOtp(phone, phoneOtp);
+    mockDb.storeOtp(email, emailOtp);
 
-    // Notify the tester
     if (typeof window !== 'undefined') {
       setTimeout(() => {
-        toast.info(`[Testing] Verification OTP for ${emailOrPhone} is: ${mockOtp}`);
+        toast.info(`[Testing] Registration OTPs - Phone: ${phoneOtp} | Email: ${emailOtp}`);
       }, 100);
     }
-
+    
     return {
       success: true,
-      message: 'Registration initiated.'
+      message: 'Registered successfully. Verify both email and phone OTP.',
+      data: {
+        user_id: 102,
+        email,
+        phone_country_code: data.phone_country_code,
+        phone_no: phone,
+        email_otp_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+        phone_otp_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+        email_otp: emailOtp,
+        phone_otp: phoneOtp,
+        user: {
+          id: 102,
+          name: data.name,
+          email,
+          profile_image: null,
+          phone_country_code: data.phone_country_code,
+          phone_no: phone,
+          fcm_token: null,
+          kyc_status: "not_submitted",
+          account_type: "user",
+          partner_status: "not_applied",
+          email_verified_at: null,
+          phone_no_verified_at: null,
+          status: "active",
+          profile: null
+        }
+      }
+    };
+  },
+
+  sendOtp: async (data: SendOtpPayload): Promise<{ success: boolean; message: string; data?: any }> => {
+    await delay(800);
+    
+    const target = data.phone_no || data.email || "";
+    
+    // Generate a mock OTP (use "490595" to match the screenshot)
+    const mockOtp = "490595";
+    mockDb.storeOtp(target, mockOtp);
+    
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+        toast.info(`[Testing] OTP for ${target} is: ${mockOtp}`);
+      }, 100);
+    }
+    
+    return {
+      success: true,
+      message: "OTP sent successfully",
+      data: {
+        type: data.type,
+        send_via: data.send_via,
+        otp_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+        otp: mockOtp
+      }
     };
   },
   
   verifyOtp: async (data: VerifyOtpPayload): Promise<AuthResponse> => {
     await delay(800);
     
-    const isOtpValid = mockDb.verifyOtp(data.emailOrPhone, data.otp);
+    const target = data.phone_no || data.emailOrPhone || "";
+    const isOtpValid = mockDb.verifyOtp(target, data.otp);
     if (!isOtpValid) {
-      throw new Error("Invalid OTP code. Try entering '123456' for testing.");
+      throw new Error("Invalid OTP code. Try entering '490595' for testing.");
     }
 
-    const user = mockDb.findUser(data.emailOrPhone);
+    const user = mockDb.findUser(target);
     const resolvedUser = user || {
       id: "usr_temp",
       name: "Temporary User",
-      email: data.emailOrPhone.includes('@') ? data.emailOrPhone : undefined,
-      phone: !data.emailOrPhone.includes('@') ? data.emailOrPhone : undefined,
+      email: target.includes('@') ? target : undefined,
+      phone: !target.includes('@') ? target : undefined,
       avatar: "https://i.pravatar.cc/150",
       isProfileComplete: false,
     };
 
-    // For reset-password flow, return an empty token to trigger the correct redirection flow in verify-otp hook
-    if (data.type === 'reset-password') {
+    if (data.type === 'reset-password' || data.type === 'forget') {
       return {
         user: {
           id: resolvedUser.id,
@@ -122,11 +185,10 @@ export const authMockApi = {
           avatar: resolvedUser.avatar,
           isProfileComplete: resolvedUser.isProfileComplete,
         },
-        token: "" // Empty string acts as a falsy token, redirecting to the reset password form correctly
+        token: ""
       };
     }
     
-    // For register and login flows, log the user in directly by returning a token
     return {
       user: {
         id: resolvedUser.id,
@@ -148,9 +210,12 @@ export const authMockApi = {
       throw new Error("No account found with this email or phone number");
     }
 
-    // Generate mock OTP
-    const mockOtp = "123456";
+    // Generate mock OTP (using "651142" to match the screenshot)
+    const mockOtp = "651142";
     mockDb.storeOtp(data.emailOrPhone, mockOtp);
+    if (user.phone) {
+      mockDb.storeOtp(user.phone, mockOtp);
+    }
 
     // Notify the tester
     if (typeof window !== 'undefined') {

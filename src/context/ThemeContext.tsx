@@ -19,9 +19,25 @@ const THEMES: Theme[] = ["rose", "gold", "cyan", "violet", "emerald"];
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+const getInitialAppearance = (): Appearance => {
+  if (typeof window !== "undefined") {
+    const attr = document.documentElement.getAttribute("data-appearance") as Appearance;
+    if (attr === "light" || attr === "dark") return attr;
+  }
+  return "dark";
+};
+
+const getInitialTheme = (): Theme => {
+  if (typeof window !== "undefined") {
+    const attr = document.documentElement.getAttribute("data-theme") as Theme;
+    if (attr && THEMES.includes(attr)) return attr;
+  }
+  return "rose";
+};
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [activeTheme, setActiveTheme] = useState<Theme>("rose");
-  const [appearance, setAppearanceState] = useState<Appearance>("dark");
+  const [activeTheme, setActiveTheme] = useState<Theme>(getInitialTheme);
+  const [appearance, setAppearanceState] = useState<Appearance>(getInitialAppearance);
   const [isPreferenceSet, setIsPreferenceSet] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -32,7 +48,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const preferenceFlag = localStorage.getItem("theme_preference_set") === "true";
     const lastRotationTime = localStorage.getItem("theme_last_rotation_time");
     const now = Date.now();
-    const tenMinutes = 4 * 60 * 1000;
+    const rotationInterval = 1.5 * 60 * 1000; // 1.5 minutes
 
     if (savedAppearance && (savedAppearance === "light" || savedAppearance === "dark")) {
       setAppearanceState(savedAppearance);
@@ -57,7 +73,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         shouldRotate = true;
       } else {
         const timeElapsed = now - Number(lastRotationTime);
-        if (timeElapsed >= tenMinutes) {
+        if (timeElapsed >= rotationInterval) {
           shouldRotate = true;
         }
       }
@@ -80,24 +96,24 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  // Set up 10-minute rotation interval timer
+  // Set up 1.5-minute rotation interval timer
   useEffect(() => {
     if (!mounted || isPreferenceSet) return;
 
     let timerId: NodeJS.Timeout;
+    const rotationInterval = 1.5 * 60 * 1000; // 1.5 minutes
 
     const checkAndRotate = () => {
       const lastRotationTime = localStorage.getItem("theme_last_rotation_time");
       const lastActive = localStorage.getItem("theme_last_active") as Theme;
       const now = Date.now();
-      const tenMinutes = 5 * 60 * 1000;
 
       let timeElapsed = 0;
       if (lastRotationTime) {
         timeElapsed = now - Number(lastRotationTime);
       }
 
-      if (!lastRotationTime || timeElapsed >= tenMinutes) {
+      if (!lastRotationTime || timeElapsed >= rotationInterval) {
         // Pick another theme
         const currentTheme = lastActive || activeTheme;
         const otherThemes = THEMES.filter((t) => t !== currentTheme);
@@ -107,9 +123,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("theme_last_active", randomTheme);
         localStorage.setItem("theme_last_rotation_time", now.toString());
 
-        scheduleTimer(tenMinutes);
+        scheduleTimer(rotationInterval);
       } else {
-        scheduleTimer(tenMinutes - timeElapsed);
+        scheduleTimer(rotationInterval - timeElapsed);
       }
     };
 
@@ -122,13 +138,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const lastRotationTime = localStorage.getItem("theme_last_rotation_time");
     const now = Date.now();
-    const tenMinutes = 5 * 60 * 1000;
 
-    let initialDelay = tenMinutes;
+    let initialDelay = rotationInterval;
     if (lastRotationTime) {
       const timeElapsed = now - Number(lastRotationTime);
-      if (timeElapsed < tenMinutes) {
-        initialDelay = tenMinutes - timeElapsed;
+      if (timeElapsed < rotationInterval) {
+        initialDelay = rotationInterval - timeElapsed;
       } else {
         initialDelay = 0;
       }
@@ -152,6 +167,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (mounted) {
       document.documentElement.setAttribute("data-theme", activeTheme);
       document.documentElement.setAttribute("data-appearance", appearance);
+      
+      const timer = setTimeout(() => {
+        document.documentElement.classList.remove("no-transitions");
+      }, 50);
+      return () => clearTimeout(timer);
     }
   }, [activeTheme, appearance, mounted]);
 

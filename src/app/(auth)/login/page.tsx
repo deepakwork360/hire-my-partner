@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useLogin } from "@/modules/auth/hooks";
 import { authApi } from "@/modules/auth/api";
 import { loginSchema } from "@/modules/auth/validation";
@@ -179,6 +180,15 @@ function FoxLogo() {
 }
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-bg-base flex items-center justify-center"><div className="text-text-main">Loading...</div></div>}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
+  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [loginMode, setLoginMode] = useState<"password" | "otp">("password");
   const { handleLogin, isLoading } = useLogin();
@@ -191,6 +201,16 @@ export default function LoginPage() {
 
   const { activeTheme } = useTheme();
   const logoSrc = logoMapping[activeTheme] || "/auth/rose.png";
+
+  useEffect(() => {
+    const emailOrPhoneParam = searchParams.get("emailOrPhone");
+    if (emailOrPhoneParam) {
+      setFormData(prev => ({
+        ...prev,
+        emailOrPhone: emailOrPhoneParam
+      }));
+    }
+  }, [searchParams]);
 
   const handleSendOtp = async () => {
     if (!formData.emailOrPhone) {
@@ -240,7 +260,7 @@ export default function LoginPage() {
           <div
             className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
             style={{
-              backgroundImage: 'url("auth/login.jpg")',
+              backgroundImage: 'url("/auth/login.jpg")',
             }}
           />
 

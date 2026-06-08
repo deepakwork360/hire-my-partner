@@ -17,8 +17,10 @@ export const otpSchema = z.string().length(6, 'OTP must be exactly 6 digits').re
 
 export const registerSchema = z.object({
   name: z.string().min(2, 'Name is required'),
-  emailOrPhone: phoneOrEmailSchema,
+  email: z.string().email('Must be a valid email'),
   password: passwordSchema,
+  phone_country_code: z.string().min(1, 'Country code is required'),
+  phone_no: z.string().min(10, 'Phone number must be at least 10 digits').max(15, 'Phone number must not exceed 15 digits').regex(/^\d+$/, 'Phone number must contain only numbers')
 });
 
 export const loginSchema = z.object({

@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useVerifyOtp } from "@/modules/auth/hooks";
-import { verifyOtpSchema } from "@/modules/auth/validation";
+import { useVerifyOtp, useSendOtp } from "@/modules/auth/hooks";
 import { toast } from "@/components/ui/toastStore";
 import Image from "next/image";
 import Link from "next/link";
@@ -30,19 +29,25 @@ function VerifyOtpForm() {
   const router = useRouter();
   const emailOrPhone = searchParams.get("emailOrPhone") || "";
   const type = (searchParams.get("type") as any) || "register";
+  const sendVia = (searchParams.get("send_via") as any) || "phone";
+  const phoneNo = searchParams.get("phone_no") || "";
+  const phoneCountryCode = searchParams.get("phone_country_code") || "";
+  const email = searchParams.get("email") || "";
+  
   const { activeTheme } = useTheme();
   const logoSrc = logoMapping[activeTheme] || "/auth/rose.png";
     
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const { handleVerify, isLoading } = useVerifyOtp();
+  const { handleSendOtp, isLoading: isSendingOtp } = useSendOtp();
 
   useEffect(() => {
-    if (!emailOrPhone) {
+    if (!emailOrPhone && !phoneNo && !email) {
       toast.error("Invalid session. Redirecting to register.");
       router.push("/register");
     }
-  }, [emailOrPhone, router]);
+  }, [emailOrPhone, phoneNo, email, router]);
 
   const handleChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
@@ -72,11 +77,33 @@ function VerifyOtpForm() {
     }
 
     await handleVerify({
-      emailOrPhone,
+      emailOrPhone: emailOrPhone || phoneNo || email,
       otp: otpString,
       type,
+      send_via: sendVia,
+      phone_no: phoneNo,
+      phone_country_code: phoneCountryCode,
+      email: email,
     });
   };
+
+  const handleResend = async () => {
+    try {
+      await handleSendOtp({
+        type,
+        send_via: sendVia,
+        phone_no: phoneNo,
+        phone_country_code: phoneCountryCode,
+        email: email,
+      });
+    } catch (err) {
+      // Error toast is handled by useSendOtp hook
+    }
+  };
+
+  const displayTarget = sendVia === 'phone' && phoneNo 
+    ? `${phoneCountryCode} ${phoneNo}`
+    : email || emailOrPhone;
 
   return (
     <div className="min-h-screen bg-bg-base flex items-center justify-center p-4 sm:p-8 font-sans w-full">
@@ -91,7 +118,6 @@ function VerifyOtpForm() {
             }}
           />
 
-          
           <Link
             href="/"
             className="relative z-10 flex items-center gap-3 w-fit hover:opacity-80 transition-opacity"
@@ -113,12 +139,6 @@ function VerifyOtpForm() {
               <div className="w-12 h-1 bg-white rounded-full"></div>
               <div className="w-4 h-1 bg-white/20 rounded-full"></div>
             </div>
-            {/* <h1 className="text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
-              One Last Step
-            </h1>
-            <p className="text-zinc-400 text-lg max-w-md">
-              Verify your identity to secure your account.
-            </p> */}
           </div>
         </div>
 
@@ -144,7 +164,7 @@ function VerifyOtpForm() {
               Verify Account
             </h2>
             <p className="text-text-muted text-sm max-w-sm">
-              Code sent to <span className="text-text-main font-medium">{emailOrPhone}</span>
+              Code sent to <span className="text-text-main font-medium">{displayTarget}</span>
             </p>
           </div>
 
@@ -178,8 +198,13 @@ function VerifyOtpForm() {
             <div className="text-center pt-2">
               <p className="text-text-muted text-sm">
                 Didn't receive the code?{" "}
-                <button type="button" className="text-primary hover:text-accent hover:underline font-medium ml-1 transition-colors">
-                  Resend
+                <button 
+                  type="button" 
+                  disabled={isSendingOtp}
+                  onClick={handleResend}
+                  className="text-primary hover:text-accent hover:underline font-medium ml-1 transition-colors disabled:opacity-50"
+                >
+                  {isSendingOtp ? "Resending..." : "Resend"}
                 </button>
               </p>
             </div>

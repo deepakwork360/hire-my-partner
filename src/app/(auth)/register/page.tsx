@@ -36,6 +36,25 @@ function MailIcon({ className }: { className?: string }) {
   );
 }
 
+function PhoneIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  );
+}
+
 function LockIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -181,9 +200,11 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const { handleRegister, isLoading } = useRegister();
   const [formData, setFormData] = useState({
-    firstName: "Ethan",
-    lastName: "Walker",
-    emailOrPhone: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneCountryCode: "+91",
+    phoneNo: "",
     password: "",
     confirmPassword: "",
   });
@@ -200,8 +221,10 @@ export default function RegisterPage() {
 
     const validation = registerSchema.safeParse({
       name: `${formData.firstName} ${formData.lastName}`,
-      emailOrPhone: formData.emailOrPhone,
+      email: formData.email,
       password: formData.password,
+      phone_country_code: formData.phoneCountryCode,
+      phone_no: formData.phoneNo,
     });
 
     if (!validation.success) {
@@ -211,10 +234,10 @@ export default function RegisterPage() {
 
     await handleRegister({
       name: `${formData.firstName} ${formData.lastName}`,
-      ...(formData.emailOrPhone.includes("@")
-        ? { email: formData.emailOrPhone }
-        : { phone: formData.emailOrPhone }),
+      email: formData.email,
       password: formData.password,
+      phone_country_code: formData.phoneCountryCode,
+      phone_no: formData.phoneNo,
     });
   };
 
@@ -230,7 +253,7 @@ export default function RegisterPage() {
           <div
             className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
             style={{
-              backgroundImage: 'url("auth/register.jpg")',
+              backgroundImage: 'url("/auth/register.jpg")',
             }}
           />
 
@@ -338,20 +361,49 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Email/Phone Field */}
+            {/* Email Field */}
             <div className="relative flex items-center">
               <div className="absolute left-4 text-text-muted">
                 <MailIcon className="w-5 h-5" />
               </div>
               <input
-                type="text"
-                name="emailOrPhone"
-                placeholder="Enter Email or Phone"
-                value={formData.emailOrPhone}
+                type="email"
+                name="email"
+                placeholder="Enter Email Address"
+                value={formData.email}
                 onChange={handleChange}
                 className="w-full bg-bg-base text-text-main text-sm rounded-xl pl-12 pr-5 py-3.5 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all placeholder:text-text-muted/45"
                 required
               />
+            </div>
+
+            {/* Phone Number Field */}
+            <div className="flex gap-2">
+              <div className="w-1/4 relative flex items-center">
+                <input
+                  type="text"
+                  name="phoneCountryCode"
+                  placeholder="+91"
+                  value={formData.phoneCountryCode}
+                  onChange={handleChange}
+                  className="w-full bg-bg-base text-text-main text-sm rounded-xl px-3 py-3.5 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all placeholder:text-text-muted/45 text-center font-medium"
+                  required
+                />
+              </div>
+              <div className="w-3/4 relative flex items-center">
+                <div className="absolute left-4 text-text-muted">
+                  <PhoneIcon className="w-5 h-5" />
+                </div>
+                <input
+                  type="tel"
+                  name="phoneNo"
+                  placeholder="Enter Phone Number"
+                  value={formData.phoneNo}
+                  onChange={handleChange}
+                  className="w-full bg-bg-base text-text-main text-sm rounded-xl pl-12 pr-5 py-3.5 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all placeholder:text-text-muted/45"
+                  required
+                />
+              </div>
             </div>
 
             {/* Password Field */}
