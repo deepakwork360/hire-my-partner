@@ -3,6 +3,8 @@
 import { Rochester, Outfit } from "next/font/google";
 import { motion } from "framer-motion";
 import ProfileCard from "@/components/ProfileCard/ProfileCard";
+import Slider from "@/components/common/Slider";
+import { usePartners } from "@/modules/partner/hooks/usePartners";
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -13,8 +15,6 @@ const outfit = Outfit({
   subsets: ["latin"],
   weight: ["300", "400", "500", "700"],
 });
-
-import { usePartners } from "@/modules/partner/hooks/usePartners";
 
 interface UMayAlsoLikeProps {
   excludeId?: string;
@@ -28,8 +28,21 @@ export default function UMayAlsoLike({ excludeId }: UMayAlsoLikeProps) {
     (p) => String(p.id).toLowerCase() !== String(excludeId || "").toLowerCase()
   );
 
-  // Take up to 3 companions to showcase as recommendations
-  const displayPartners = filteredPartners.slice(0, 3);
+  // Take up to 6 companions to showcase as recommendations for a richer slider experience
+  const displayPartners = filteredPartners.slice(0, 6);
+
+  const profileItems = displayPartners.map((partner) => ({
+    image: partner.image,
+    hourlyRate: `₹${partner.pricing.oneHour}/hr`,
+    name: partner.name,
+    age: partner.age,
+    location: partner.location.split(",")[0].trim(),
+    bio: partner.bio,
+    rating: partner.rating,
+    confirmation: "Identity Verified",
+    buttonText: "View Profile",
+    buttonLink: `/partners/${partner.id}`,
+  }));
 
   if (loading) {
     return (
@@ -65,35 +78,17 @@ export default function UMayAlsoLike({ excludeId }: UMayAlsoLikeProps) {
           </p>
         </div>
 
-        {/* Centered Profile Card Flex Layout */}
-        <div className="flex flex-wrap justify-center gap-8 md:gap-12 max-w-[1400px] mx-auto">
-          {displayPartners.map((partner, idx) => (
-            <motion.div
-              key={partner.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: idx * 0.1 }}
-            >
-              <ProfileCard
-                image={partner.image}
-                hourlyRate={`₹${partner.pricing.oneHour} / hr`}
-                name={partner.name}
-                age={partner.age}
-                location={partner.location}
-                bio={partner.bio}
-                rating={partner.rating}
-                confirmation="Identity Verified"
-                buttonText="View Profile"
-                buttonLink={`/partners/${partner.id}`}
-              />
-            </motion.div>
-          ))}
+        {/* Reused Swiper Slider Container */}
+        <div className="relative -mx-4 md:mx-0">
+          <div className="px-4 md:px-12 overflow-visible">
+            <Slider
+              items={profileItems}
+              renderItem={(item, idx) => <ProfileCard key={idx} {...item} />}
+              perView={3}
+            />
+          </div>
         </div>
       </div>
     </section>
   );
 }
-
-
-

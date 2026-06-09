@@ -106,7 +106,8 @@ h6 {
 .main-profile-card {
   @apply relative flex flex-col bg-bg-base overflow-hidden transition-all duration-500 ease-in-out border border-border-main;
   border-radius: 36px;
-  width: 328px;
+  width: 100%;
+  max-width: 328px;
   height: 510px;
   box-shadow: 0 15px 40px -20px rgba(0, 0, 0, 0.15), 0 0 20px rgba(var(--primary-rgb), 0.05);
 }

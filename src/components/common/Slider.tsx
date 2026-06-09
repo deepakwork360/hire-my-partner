@@ -359,28 +359,46 @@ export default function Slider<T>({
 
       {/* Controls - Premium Glowing Style */}
       <div
-        className={`absolute top-1/2 -translate-y-1/2 left-2 md:-left-6 z-30 transition-all duration-500 ${showArrows ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
+        className={`hidden md:flex absolute top-1/2 -translate-y-1/2 -left-6 z-30 transition-all duration-500 ${showArrows ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
       >
         <button
           onClick={prev}
-          className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center bg-bg-card/80 backdrop-blur-md text-text-main rounded-full shadow-lg border border-border-main transition-all duration-300 hover:scale-110 hover:border-primary/40 hover:shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] active:scale-95 disabled:opacity-0"
+          className="w-14 cursor-pointer h-14 flex items-center justify-center bg-bg-card/80 backdrop-blur-md text-text-main rounded-full shadow-lg border border-border-main transition-all duration-300 hover:scale-110 hover:border-primary/40 hover:shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] active:scale-95 disabled:opacity-0"
           disabled={index === 0}
         >
-          <ArrowLeft className="w-5 h-5 md:w-6 md:h-6" />
+          <ArrowLeft className="w-6 h-6" />
         </button>
       </div>
 
       <div
-        className={`absolute top-1/2 -translate-y-1/2 right-2 md:-right-6 z-30 transition-all duration-500 ${showArrows ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"}`}
+        className={`hidden md:flex absolute top-1/2 -translate-y-1/2 -right-6 z-30 transition-all duration-500 ${showArrows ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"}`}
       >
         <button
           onClick={next}
-          className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center bg-bg-card/80 backdrop-blur-md text-text-main rounded-full shadow-lg border border-border-main transition-all duration-300 hover:scale-110 hover:border-primary/40 hover:shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] active:scale-95 disabled:opacity-0"
+          className="w-14 cursor-pointer h-14 flex items-center justify-center bg-bg-card/80 backdrop-blur-md text-text-main rounded-full shadow-lg border border-border-main transition-all duration-300 hover:scale-110 hover:border-primary/40 hover:shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] active:scale-95 disabled:opacity-0"
           disabled={index >= maxIndex}
         >
-          <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
+          <ArrowRight className="w-6 h-6" />
         </button>
       </div>
+
+      {/* Pagination dots for mobile/touch screens */}
+      {maxIndex > 0 && (
+        <div className="flex md:hidden justify-center items-center gap-2 mt-4">
+          {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setIndex(i)}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                index === i 
+                  ? "w-6 bg-primary" 
+                  : "w-1.5 bg-text-muted/30"
+              }`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
