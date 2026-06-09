@@ -62,7 +62,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         onClick={() => setIsOpen(true)}
-        className={`fixed left-0 top-1/2 -translate-y-1/2 group flex items-center gap-3 pl-3 pr-4 py-6 bg-bg-base border border-primary/20 border-l-0 rounded-r-2xl shadow-[15px_0_40px_rgba(var(--primary-rgb),0.15)] transition-all hover:pl-5 hover:bg-bg-secondary ${
+        className={`fixed left-0 cursor-pointer top-1/2 -translate-y-1/2 group flex items-center gap-3 pl-3 pr-4 py-6 bg-bg-base border border-primary/20 border-l-0 rounded-r-2xl shadow-[15px_0_40px_rgba(var(--primary-rgb),0.15)] transition-all hover:pl-5 hover:bg-bg-secondary ${
             isOpen ? "opacity-0 pointer-events-none" : "opacity-100"
         }`}
       >
@@ -98,7 +98,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
               {/* Close Button */}
               <button 
                 onClick={() => setIsOpen(false)}
-                className="absolute right-6 top-8 w-10 h-10 rounded-full bg-bg-card border border-border-main flex items-center justify-center text-text-muted hover:text-text-main hover:bg-bg-card/80 transition-all"
+                className="absolute cursor-pointer right-6 top-8 w-10 h-10 rounded-full bg-bg-card border border-border-main flex items-center justify-center text-text-muted hover:text-text-main hover:bg-bg-card/80 transition-all"
               >
                 <X size={20} />
               </button>

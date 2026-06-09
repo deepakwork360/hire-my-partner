@@ -104,7 +104,7 @@ export default function AddMessage({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
                   onClick={() => onChange("")}
-                  className="text-xs font-black uppercase tracking-widest text-text-muted hover:text-primary transition-colors"
+                  className="text-xs cursor-pointer font-black uppercase tracking-widest text-text-muted hover:text-primary transition-colors"
                 >
                   Clear
                 </motion.button>

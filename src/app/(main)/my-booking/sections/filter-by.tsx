@@ -48,7 +48,7 @@ export default function FilterBy({ activeTab, onTabChange, onClose }: FilterByPr
         {onClose && (
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-bg-card rounded-full text-text-muted hover:text-text-main transition-colors"
+            className="cursor-pointer p-2 hover:bg-bg-card rounded-full text-text-muted hover:text-text-main transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -67,7 +67,7 @@ export default function FilterBy({ activeTab, onTabChange, onClose }: FilterByPr
               <button
                 key={tab}
                 onClick={() => setLocalTab(tab)}
-                className={`relative px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 flex items-center justify-between group ${
+                className={`relative cursor-pointer px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 flex items-center justify-between group ${
                   localTab === tab
                     ? "text-text-main bg-primary/10 shadow-sm"
                     : "text-text-muted hover:text-text-main hover:bg-bg-secondary"

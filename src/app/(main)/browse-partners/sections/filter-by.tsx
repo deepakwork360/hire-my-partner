@@ -201,7 +201,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
           </h2>
         </div>
         {onClose && (
-          <button onClick={onClose} className="absolute top-8 right-8 w-10 h-10 flex items-center justify-center bg-bg-card border border-border-main rounded-full text-text-muted hover:text-text-main transition-all active:scale-95">
+          <button onClick={onClose} className="absolute cursor-pointer top-8 right-8 w-10 h-10 flex items-center justify-center bg-bg-card border border-border-main rounded-full text-text-muted hover:text-text-main transition-all active:scale-95">
             <X className="w-5 h-5" />
           </button>
         )}
@@ -223,7 +223,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                 <button
                   key={range}
                   onClick={() => handleChange("age", range)}
-                  className={`py-3 px-3 rounded-2xl text-xs font-black uppercase tracking-widest border transition-all duration-300 hover:-translate-y-1 ${
+                  className={`py-3 cursor-pointer px-3 rounded-2xl text-xs font-black uppercase tracking-widest border transition-all duration-300 hover:-translate-y-1 ${
                     filters.age === range 
                     ? "bg-linear-to-br from-primary to-primary-dark border-white/20 text-white shadow-[0_10px_25px_rgba(var(--primary-rgb),0.3)]" 
                     : "bg-bg-card border-border-main text-text-muted hover:text-text-main hover:shadow-xl hover:border-primary/30"
@@ -243,7 +243,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                 <button
                   key={g}
                   onClick={() => handleChange("gender", g)}
-                  className={`flex-1 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 border hover:-translate-y-1 ${
+                  className={`flex-1 cursor-pointer py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 border hover:-translate-y-1 ${
                     filters.gender === g 
                     ? "bg-linear-to-br from-primary to-primary-dark border-white/20 text-white shadow-[0_10px_25px_rgba(var(--primary-rgb),0.3)]" 
                     : "bg-bg-card border-border-main text-text-muted hover:text-text-main hover:shadow-xl"
@@ -279,7 +279,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                   <button
                     key={lang}
                     onClick={() => handleChange("language", lang)}
-                    className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all duration-300 hover:-translate-y-1 ${
+                    className={`px-6 cursor-pointer py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all duration-300 hover:-translate-y-1 ${
                       isActive 
                       ? "bg-linear-to-br from-primary to-primary-dark border-white/20 text-white shadow-[0_10px_25px_rgba(var(--primary-rgb),0.3)]" 
                       : "bg-bg-card border-border-main text-text-muted hover:text-text-main hover:shadow-xl"
@@ -302,7 +302,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                   <button
                     key={tag}
                     onClick={() => handleChange("tags", tag)}
-                    className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all duration-300 hover:-translate-y-1 flex items-center gap-1.5 ${
+                    className={`cursor-pointer px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all duration-300 hover:-translate-y-1 flex items-center gap-1.5 ${
                       isActive 
                       ? "bg-linear-to-r from-primary-dark to-accent border-none text-white shadow-[0_10px_20px_rgba(var(--primary-rgb),0.3)]" 
                       : "bg-bg-card border-border-main text-text-muted hover:bg-bg-secondary hover:text-text-main"
@@ -334,7 +334,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                   <button
                     key={tier.label}
                     onClick={() => handleChange("priceRange", tier.range)}
-                    className={`flex flex-col items-start p-4 rounded-3xl border transition-all text-left group hover:-translate-y-1 ${
+                    className={`cursor-pointer flex flex-col items-start p-4 rounded-3xl border transition-all text-left group hover:-translate-y-1 ${
                       isActive 
                       ? "bg-primary/10 border-primary shadow-[0_10px_25px_rgba(var(--primary-rgb),0.15)]" 
                       : "bg-bg-card border-border-main hover:border-primary/30 hover:shadow-xl"
@@ -362,7 +362,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
             </div>
             <button 
               onClick={() => handleChange("verified", !filters.verified)}
-              className={`w-12 h-6 rounded-full relative transition-all duration-300 shadow-inner ${
+              className={`cursor-pointer w-12 h-6 rounded-full relative transition-all duration-300 shadow-inner ${
                 filters.verified ? "bg-primary shadow-primary/30" : "bg-slate-600 dark:bg-slate-800 shadow-black/5"
               }`}
             >
@@ -382,7 +382,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                   <button
                     key={day}
                     onClick={() => handleChange("availability", day)}
-                    className={`h-11 rounded-2xl text-[10px] font-black uppercase tracking-tighter border transition-all duration-300 hover:-translate-y-1 ${
+                    className={`h-11 cursor-pointer rounded-2xl text-[10px] font-black uppercase tracking-tighter border transition-all duration-300 hover:-translate-y-1 ${
                       isActive 
                       ? "bg-linear-to-br from-primary to-primary-dark border-white/20 text-white shadow-[0_10px_20px_rgba(var(--primary-rgb),0.3)]" 
                       : "bg-bg-card border-border-main text-text-muted hover:text-text-main hover:shadow-lg"
@@ -405,7 +405,7 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
                 <button
                   key={rate}
                   onClick={() => handleChange("rating", rate)}
-                  className={`flex items-center justify-center gap-1 h-11 rounded-2xl text-[10px] font-black border transition-all duration-300 hover:-translate-y-1 ${
+                  className={`cursor-pointer flex items-center justify-center gap-1 h-11 rounded-2xl text-[10px] font-black border transition-all duration-300 hover:-translate-y-1 ${
                     filters.rating === rate 
                     ? "bg-amber-500/20 border-amber-500 text-amber-600 dark:text-amber-500 shadow-[0_10px_20px_rgba(245,158,11,0.2)]" 
                     : "bg-bg-card border-border-main text-text-muted hover:border-amber-500/50 hover:shadow-lg"
@@ -436,14 +436,14 @@ export default function FilterBy({ onClose }: { onClose?: () => void }) {
       <div className="shrink-0 p-6 bg-bg-base border-t border-border-main grid grid-cols-2 gap-4 z-30 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
         <button
           onClick={handleClearAll}
-          className="flex items-center justify-center gap-2 h-14 rounded-2xl bg-bg-card border border-border-main text-text-main font-bold hover:bg-bg-secondary transition-all"
+          className="cursor-pointer flex items-center justify-center gap-2 h-14 rounded-2xl bg-bg-card border border-border-main text-text-main font-bold hover:bg-bg-secondary transition-all"
         >
           <RefreshCcw className="w-4 h-4" />
           <span>Reset</span>
         </button>
         <button
           onClick={handleApply}
-          className="h-14 rounded-2xl bg-linear-to-r from-primary-dark to-accent text-white font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all"
+          className="h-14 cursor-pointer rounded-2xl bg-linear-to-r from-primary-dark to-accent text-white font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all"
         >
           Apply
         </button>

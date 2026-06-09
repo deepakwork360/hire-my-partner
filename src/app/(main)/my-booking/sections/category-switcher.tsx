@@ -28,7 +28,7 @@ export default function CategorySwitcher({
 
         <button
           onClick={() => setActiveCategory("hired_by_me")}
-          className={`relative px-6 py-2.5 rounded-[18px] text-xs font-black uppercase tracking-[0.2em] transition-all duration-500 ${
+          className={`relative cursor-pointer px-6 py-2.5 rounded-[18px] text-xs font-black uppercase tracking-[0.2em] transition-all duration-500 ${
             activeCategory === "hired_by_me"
               ? "text-white shadow-[0_10px_30px_rgba(var(--primary-rgb),0.3)]"
               : "text-text-muted hover:text-text-main"
@@ -45,7 +45,7 @@ export default function CategorySwitcher({
 
         <button
           onClick={() => setActiveCategory("hired_me")}
-          className={`relative px-6 py-2.5 rounded-[18px] text-xs font-black uppercase tracking-[0.2em] transition-all duration-500 ${
+          className={`relative cursor-pointer px-6 py-2.5 rounded-[18px] text-xs font-black uppercase tracking-[0.2em] transition-all duration-500 ${
             activeCategory === "hired_me"
               ? "text-white shadow-[0_10px_30px_rgba(var(--primary-rgb),0.3)]"
               : "text-text-muted hover:text-text-main"

@@ -74,7 +74,7 @@ export default function PremiumButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`${baseClasses} ${sizeClasses[size]} ${variants[variant]} ${className}`}
+      className={`${baseClasses} ${sizeClasses[size]} ${variants[variant]} ${className} cursor-pointer`}
       style={style}
     >
       {glowEffect}

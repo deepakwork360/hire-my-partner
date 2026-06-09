@@ -530,7 +530,25 @@ export default function DetailsForm() {
                 {/* Photo Upload */}
                 <div className="flex justify-center mb-14" ref={basicInfoRef}>
                   <div className={`relative w-36 h-36 md:w-44 md:h-44 rounded-full border-[3px] border-dashed flex items-center justify-center bg-transparent shrink-0 group transition-all duration-500 ${showErrors && !formData.photo ? "border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.2)] animate-pulse" : "border-primary/50 hover:border-primary"}`}>
-                    <div className="w-[88%] h-[88%] rounded-full bg-linear-to-b from-primary/10 to-accent/5 flex items-center justify-center overflow-hidden relative cursor-pointer hover:from-primary/20 hover:to-accent/15 transition-all shadow-[inset_0_0_30px_rgba(var(--primary-rgb),0.2)] group-hover:scale-105 duration-500">
+                    {!formData.photo && (
+                      <input
+                        type="file"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const blobUrl = URL.createObjectURL(file);
+                            setFormData({
+                              ...formData,
+                              photo: blobUrl,
+                            });
+                          }
+                        }}
+                      />
+                    )}
+
+                    <div className="w-[88%] h-[88%] rounded-full bg-linear-to-b from-primary/10 to-accent/5 flex items-center justify-center overflow-hidden relative hover:from-primary/20 hover:to-accent/15 transition-all shadow-[inset_0_0_30px_rgba(var(--primary-rgb),0.2)] group-hover:scale-105 duration-500">
                       {formData.photo ? (
                         <img
                           src={formData.photo}
@@ -540,28 +558,11 @@ export default function DetailsForm() {
                       ) : (
                         <Camera className="w-10 h-10 text-primary/80 group-hover:text-primary group-hover:scale-110 transition-all duration-500" />
                       )}
-                      {!formData.photo && (
-                        <input
-                          type="file"
-                          className="absolute inset-0 opacity-0 cursor-pointer"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const blobUrl = URL.createObjectURL(file);
-                              setFormData({
-                                ...formData,
-                                photo: blobUrl,
-                              });
-                            }
-                          }}
-                        />
-                      )}
                     </div>
 
                     {/* Plus Badge */}
                     {!formData.photo && (
-                      <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-linear-to-r from-primary-dark to-accent rounded-full flex items-center justify-center text-white shadow-[0_0_20px_rgba(var(--primary-rgb),0.5)] border-4 border-[#0c0c0c] z-10 transform group-hover:scale-110 transition-transform duration-500">
+                      <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-linear-to-r from-primary-dark to-accent rounded-full flex items-center justify-center text-white shadow-[0_0_20px_rgba(var(--primary-rgb),0.5)] border-4 border-[#0c0c0c] z-10 transform group-hover:scale-110 transition-transform duration-500 pointer-events-none">
                         <Plus className="w-4 h-4" />
                       </div>
                     )}
@@ -573,7 +574,7 @@ export default function DetailsForm() {
                         onClick={() =>
                           setFormData({ ...formData, photo: null })
                         }
-                        className="absolute top-0 right-0 w-10 h-10 bg-accent rounded-full flex items-center justify-center text-white shadow-[0_0_20px_rgba(var(--primary-rgb),0.5)] border-4 border-[#0c0c0c] z-20 hover:scale-110 transition-all duration-300"
+                        className="absolute cursor-pointer top-0 right-0 w-10 h-10 bg-accent rounded-full flex items-center justify-center text-white shadow-[0_0_20px_rgba(var(--primary-rgb),0.5)] border-4 border-[#0c0c0c] z-20 hover:scale-110 transition-all duration-300"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -601,7 +602,7 @@ export default function DetailsForm() {
                         <button
                           type="button"
                           onClick={() => setIsGenderOpen(!isGenderOpen)}
-                          className="flex-1 p-4 md:p-5 text-left text-text-main focus:outline-none min-h-[60px] flex items-center font-medium tracking-wide"
+                          className="cursor-pointer flex-1 p-4 md:p-5 text-left text-text-main focus:outline-none min-h-[60px] flex items-center font-medium tracking-wide"
                         >
                           {formData.gender === "Select Gender" ? (
                             <span className="text-text-muted">Gender</span>
@@ -612,7 +613,7 @@ export default function DetailsForm() {
                         <button
                           type="button"
                           onClick={() => setIsGenderOpen(!isGenderOpen)}
-                          className="w-16 bg-linear-to-br from-primary-dark to-accent flex items-center justify-center text-white shrink-0 hover:from-primary hover:to-accent/80 transition-colors shadow-inner"
+                          className="cursor-pointer w-16 bg-linear-to-br from-primary-dark to-accent flex items-center justify-center text-white shrink-0 hover:from-primary hover:to-accent/80 transition-colors shadow-inner"
                         >
                           <ChevronDown
                             className={`w-5 h-5 transition-transform duration-500 ${isGenderOpen ? "rotate-180" : ""}`}
@@ -625,7 +626,7 @@ export default function DetailsForm() {
                             initial={{ opacity: 0, y: 10, scale: 0.98 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 10, scale: 0.98 }}
-                            className="absolute z-50 top-full mt-3 left-0 w-full bg-bg-base border border-border-main rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden backdrop-blur-xl"
+                            className="absolute  z-50 top-full mt-3 left-0 w-full bg-bg-base border border-border-main rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden backdrop-blur-xl"
                           >
                             {genders.map((g) => (
                               <button
@@ -635,7 +636,7 @@ export default function DetailsForm() {
                                   setFormData({ ...formData, gender: g });
                                   setIsGenderOpen(false);
                                 }}
-                                className="w-full p-4 md:p-5 text-left text-text-main hover:bg-primary/20 hover:text-text-main transition-colors font-medium border-b border-border-main last:border-0 hover:pl-6 duration-300"
+                                className="w-full cursor-pointer p-4 md:p-5 text-left text-text-main hover:bg-primary/20 hover:text-text-main transition-colors font-medium border-b border-border-main last:border-0 hover:pl-6 duration-300"
                               >
                                 {g}
                               </button>
@@ -661,14 +662,14 @@ export default function DetailsForm() {
                         <button
                           type="button"
                           onClick={() => handleAgeChange(true)}
-                          className="flex-1 bg-primary/10 hover:bg-primary/30 text-primary flex items-center justify-center transition-colors border-b border-border-main"
+                          className="flex-1 cursor-pointer bg-primary/10 hover:bg-primary/30 text-primary flex items-center justify-center transition-colors border-b border-border-main"
                         >
                           <Plus className="w-4 h-4" />
                         </button>
                         <button
                           type="button"
                           onClick={() => handleAgeChange(false)}
-                          className="flex-1 bg-primary/10 hover:bg-primary/30 text-primary flex items-center justify-center transition-colors"
+                          className="flex-1 cursor-pointer bg-primary/10 hover:bg-primary/30 text-primary flex items-center justify-center transition-colors"
                         >
                           <Minus className="w-4 h-4" />
                         </button>
@@ -789,7 +790,7 @@ export default function DetailsForm() {
                   </div>
                   <button
                     type="button"
-                    className="w-full bg-bg-secondary border border-border-main border-dashed rounded-2xl p-5 text-text-muted hover:text-primary hover:border-primary hover:bg-primary/10 transition-all duration-300 flex items-center justify-center gap-2 font-medium group"
+                    className="w-full cursor-pointer bg-bg-secondary border border-border-main border-dashed rounded-2xl p-5 text-text-muted hover:text-primary hover:border-primary hover:bg-primary/10 transition-all duration-300 flex items-center justify-center gap-2 font-medium group"
                   >
                     <Plus className="w-5 h-5 text-primary group-hover:scale-125 transition-transform duration-300" />{" "}
                     Add Another Language

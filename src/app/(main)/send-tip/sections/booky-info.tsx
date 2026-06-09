@@ -69,7 +69,7 @@ export default function BookyInfo() {
             <motion.button
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.98 }}
-              className="group relative flex items-center gap-4 px-10 py-4 rounded-full font-black tracking-[0.2em] uppercase text-[10px] transition-all duration-500"
+              className="group cursor-pointer relative flex items-center gap-4 px-10 py-4 rounded-full font-black tracking-[0.2em] uppercase text-[10px] transition-all duration-500"
             >
               {/* Dynamic Background Architecture */}
               <div className="absolute inset-0 bg-bg-card border-2 border-primary/30 group-hover:border-primary shadow-2xl shadow-primary/10 rounded-full transition-all duration-500" />

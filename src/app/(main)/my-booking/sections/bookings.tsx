@@ -299,7 +299,7 @@ function BookingCard({
                       onClick={() => onUpdateStatus(booking.id, "Confirmed")}
                       whileHover={{ y: -3, scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="flex-2 h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
+                      className="flex-2 cursor-pointer h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Pay Now</span>
@@ -309,7 +309,7 @@ function BookingCard({
                       onClick={() => onUpdateStatus(booking.id, "Declined")}
                       whileHover={{ y: -2, scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="flex-1 h-12 bg-bg-secondary/80 border-2 border-border-main rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-text-muted shadow-inner hover:bg-bg-card hover:text-rose-500 transition-all"
+                      className="flex-1 cursor-pointer h-12 bg-bg-secondary/80 border-2 border-border-main rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-text-muted shadow-inner hover:bg-bg-card hover:text-rose-500 transition-all"
                     >
                       <XCircle className="w-3.5 h-3.5" />
                       <span>Cancel</span>
@@ -335,7 +335,7 @@ function BookingCard({
                       onClick={() => onUpdateStatus(booking.id, "Declined")}
                       whileHover={{ y: -2, scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="flex-1 h-12 bg-bg-secondary/80 border-2 border-border-main rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-text-muted shadow-inner hover:bg-bg-card hover:text-rose-500 transition-all"
+                      className="flex-1 h-12 cursor-pointer bg-bg-secondary/80 border-2 border-border-main rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-text-muted shadow-inner hover:bg-bg-card hover:text-rose-500 transition-all"
                     >
                       <XCircle className="w-3.5 h-3.5" />
                       <span>Cancel</span>
@@ -353,7 +353,7 @@ function BookingCard({
                     onClick={() => onUpdateStatus(booking.id, "Confirmed")}
                     whileHover={{ y: -3, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="flex-1 h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
+                    className="flex-1 cursor-pointer h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                     <span>Accept</span>
@@ -363,7 +363,7 @@ function BookingCard({
                     onClick={() => onUpdateStatus(booking.id, "Declined")}
                     whileHover={{ y: -2, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="flex-[0.6] h-12 bg-bg-secondary/80 border-2 border-border-main rounded-2xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-rose-500 shadow-inner hover:bg-bg-card transition-all"
+                    className="flex-[0.6] cursor-pointer h-12 bg-bg-secondary/80 border-2 border-border-main rounded-2xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-rose-500 shadow-inner hover:bg-bg-card transition-all"
                   >
                     <XCircle className="w-3.5 h-3.5" />
                     <span>Reject</span>

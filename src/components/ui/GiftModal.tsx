@@ -92,7 +92,7 @@ export default function GiftModal({
                     <div className="absolute top-8 right-8 z-10">
                       <button
                         onClick={onClose}
-                        className="w-12 h-12 rounded-full bg-bg-secondary flex items-center justify-center text-text-main hover:bg-bg-card transition-colors border border-border-main shadow-lg"
+                        className="w-12 h-12 cursor-pointer rounded-full bg-bg-secondary flex items-center justify-center text-text-main hover:bg-bg-card transition-colors border border-border-main shadow-lg"
                       >
                         <X size={20} />
                       </button>
@@ -136,13 +136,13 @@ export default function GiftModal({
                     <div className="flex items-center gap-3 w-full">
                       <button 
                         onClick={onClose} 
-                        className="flex-[1.2] h-14 rounded-2xl bg-bg-secondary text-text-main font-bold tracking-widest uppercase text-[9px] hover:bg-border-main/5 transition-all border border-border-main shadow-sm"
+                        className="flex-[1.2] cursor-pointer h-14 rounded-2xl bg-bg-secondary text-text-main font-bold tracking-widest uppercase text-[9px] hover:bg-border-main/5 transition-all border border-border-main shadow-sm"
                       >
                         Cancel
                       </button>
                       <button 
                         onClick={handleSend} 
-                        className="flex-2 h-14 rounded-2xl bg-linear-to-r from-primary to-primary-dark text-white font-black tracking-[0.2em] uppercase text-[9px] shadow-xl shadow-primary/20 flex items-center justify-center gap-3 group hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        className="flex-2 cursor-pointer h-14 rounded-2xl bg-linear-to-r from-primary to-primary-dark text-white font-black tracking-[0.2em] uppercase text-[9px] shadow-xl shadow-primary/20 flex items-center justify-center gap-3 group hover:scale-[1.02] active:scale-[0.98] transition-all"
                       >
                         Confirm & Pay <CreditCard size={16} className="transition-transform group-hover:translate-x-1" />
                       </button>
@@ -238,7 +238,7 @@ export default function GiftModal({
 
                     <button
                       onClick={onClose}
-                      className="w-full h-16 rounded-2xl bg-text-main text-bg-base font-black tracking-[0.4em] uppercase text-xs hover:opacity-90 transition-all shadow-xl active:scale-95"
+                      className="w-full h-16 cursor-pointer rounded-2xl bg-text-main text-bg-base font-black tracking-[0.4em] uppercase text-xs hover:opacity-90 transition-all shadow-xl active:scale-95"
                     >
                       Brilliant
                     </button>

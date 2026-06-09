@@ -11,29 +11,31 @@ const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "600",
 
 export default function ViewedProfile() {
   return (
-    <div className={`bg-bg-base min-h-screen ${outfit.className}`}>
+    <div className={`bg-bg-base min-h-screen relative flex ${outfit.className}`}>
       {/* ── REUSABLE TOGGLE DASHBOARD ── */}
       <SideDashboard activeItem="profile" />
 
-      {/* 1. TOP BANNER */}
-      <MainViewed />
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* 1. TOP BANNER */}
+        <MainViewed />
 
-      {/* 2. MAIN CONTENT AREA (Monitor Optimized Dashboard Layout) */}
-      <div className="max-w-[1600px] mx-auto px-4 md:px-8 xl:px-12 py-12 md:py-20 flex flex-col gap-12 xl:gap-20">
-        
-        {/* ANALYTICS SECTION */}
-        <section id="analytics">
-          <ViewsSummary />
-        </section>
+        {/* 2. MAIN CONTENT AREA (Monitor Optimized Dashboard Layout) */}
+        <div className="w-full max-w-[1600px] mx-auto px-6 py-12 md:py-16 flex-1 flex flex-col gap-12 xl:gap-20">
+          
+          {/* ANALYTICS SECTION */}
+          <section id="analytics">
+            <ViewsSummary />
+          </section>
 
-        {/* RECENT VISITORS SECTION */}
-        <section id="recent-visitors">
-          <RecentProfile />
-        </section>
+          {/* RECENT VISITORS SECTION */}
+          <section id="recent-visitors">
+            <RecentProfile />
+          </section>
 
+        </div>
+
+        <Footer />
       </div>
-
-      <Footer />
     </div>
   );
 }

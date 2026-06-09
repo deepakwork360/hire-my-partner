@@ -61,7 +61,7 @@ export default function PremiumDropdown({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-full h-14 pl-5 pr-12 rounded-2xl text-left transition-all duration-300 flex items-center gap-3 group/btn border border-border-main bg-bg-secondary shadow-sm ${
+          className={`w-full cursor-pointer h-14 pl-5 pr-12 rounded-2xl text-left transition-all duration-300 flex items-center gap-3 group/btn border border-border-main bg-bg-secondary shadow-sm ${
             isOpen ? "border-primary/50 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)]" : "hover:border-primary/30"
           }`}
         >
@@ -111,7 +111,7 @@ export default function PremiumDropdown({
                         onChange(option.value);
                         setIsOpen(false);
                       }}
-                      className={`w-full h-11 px-4 rounded-xl flex items-center gap-3 transition-all duration-200 group/opt ${
+                      className={`w-full cursor-pointer h-11 px-4 rounded-xl flex items-center gap-3 transition-all duration-200 group/opt ${
                         isSelected 
                         ? "bg-primary text-white" 
                         : "text-text-muted hover:bg-bg-card hover:text-text-main"

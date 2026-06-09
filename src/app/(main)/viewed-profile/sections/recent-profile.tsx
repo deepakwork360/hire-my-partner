@@ -256,7 +256,7 @@ export default function RecentProfile() {
         <div className="xl:col-span-1">
           <button
             onClick={resetFilters}
-            className="w-full h-14 bg-bg-secondary border border-border-main rounded-2xl flex items-center justify-center gap-3 text-text-muted hover:text-text-main hover:bg-bg-card transition-all group font-black uppercase tracking-widest text-[10px] shadow-sm"
+            className="w-full h-14 cursor-pointer bg-bg-secondary border border-border-main rounded-2xl flex items-center justify-center gap-3 text-text-muted hover:text-text-main hover:bg-bg-card transition-all group font-black uppercase tracking-widest text-[10px] shadow-sm"
           >
             <RefreshCw
               size={14}
@@ -270,7 +270,7 @@ export default function RecentProfile() {
       {/* Profile Grid */}
       <div className="relative">
         {displayedProfiles.length > 0 ? (
-          <div className="flex flex-wrap justify-center gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8 justify-items-center">
             <AnimatePresence mode="popLayout">
               {displayedProfiles.map((profile, index) => (
                 <motion.div
@@ -283,6 +283,7 @@ export default function RecentProfile() {
                     delay: (index % 3) * 0.1,
                     ease: [0.21, 1.11, 0.81, 0.99],
                   }}
+                  className="w-full flex justify-center"
                 >
                   <ProfileCard
                     image={profile.image}
@@ -322,7 +323,7 @@ export default function RecentProfile() {
             </div>
             <button
               onClick={resetFilters}
-              className="text-primary text-[10px] font-black uppercase tracking-widest underline underline-offset-8 hover:text-text-main transition-colors"
+              className="text-primary cursor-pointer text-[10px] font-black uppercase tracking-widest underline underline-offset-8 hover:text-text-main transition-colors"
             >
               Reset All Filters
             </button>

@@ -160,7 +160,7 @@ export default function InterestedPeople() {
            <div className="lg:col-span-1">
               <button 
                  onClick={resetFilters}
-                 className="w-full h-14 bg-bg-secondary border border-border-main rounded-2xl flex items-center justify-center gap-3 text-text-muted hover:text-text-main hover:bg-bg-card transition-all group font-black uppercase tracking-widest text-[10px] shadow-sm"
+                 className="w-full h-14 bg-bg-secondary cursor-pointer border border-border-main rounded-2xl flex items-center justify-center gap-3 text-text-muted hover:text-text-main hover:bg-bg-card transition-all group font-black uppercase tracking-widest text-[10px] shadow-sm"
               >
                  <RefreshCw size={14} className="group-hover:rotate-180 transition-transform duration-500" />
                  Reset
@@ -172,7 +172,7 @@ export default function InterestedPeople() {
         <div className="flex items-center gap-4 px-2">
           <button 
             onClick={() => setRepeatedOnly(!repeatedOnly)}
-            className={`px-6 h-10 rounded-full border transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${
+            className={`px-6 h-10 cursor-pointer rounded-full border transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${
               repeatedOnly 
                 ? "bg-primary/20 border-primary text-primary shadow-lg shadow-primary/10" 
                 : "bg-bg-secondary border-border-main text-text-muted hover:border-primary/30 hover:text-text-main shadow-sm"
@@ -187,7 +187,7 @@ export default function InterestedPeople() {
       {/* Profile Grid */}
       <div className="relative">
          {displayedProfiles.length > 0 ? (
-            <div className="flex flex-wrap justify-center gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8 justify-items-center">
                <AnimatePresence mode="popLayout">
                   {displayedProfiles.map((profile, index) => (
                   <motion.div
@@ -200,6 +200,7 @@ export default function InterestedPeople() {
                         delay: (index % 4) * 0.1,
                         ease: [0.21, 1.11, 0.81, 0.99]
                      }}
+                     className="w-full flex justify-center"
                   >
                      <ProfileCard
                         image={profile.image}

@@ -90,7 +90,7 @@ export default function ChooseTip({ onTipChange }: ProportionProps) {
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
                 onClick={() => handleSelect(option.amount, option.label)}
-                className={`relative p-8 rounded-[32px] border transition-all flex flex-col items-center gap-4 text-center group ${
+                className={`relative cursor-pointer p-8 rounded-[32px] border transition-all flex flex-col items-center gap-4 text-center group ${
                   isSelected 
                   ? "bg-primary/10 border-primary shadow-2xl shadow-primary/10" 
                   : "bg-bg-card border-border-main hover:bg-bg-secondary hover:border-primary/30"
@@ -185,7 +185,7 @@ export default function ChooseTip({ onTipChange }: ProportionProps) {
                     whileHover={!error && customValue ? { scale: 1.05 } : {}}
                     whileTap={!error && customValue ? { scale: 0.95 } : {}}
                     disabled={!!error || !customValue}
-                    className={`h-16 px-8 rounded-3xl font-black uppercase tracking-widest text-[10px] transition-all flex flex-col items-center justify-center gap-1 min-w-[110px] ${
+                    className={`h-16 cursor-pointer px-8 rounded-3xl font-black uppercase tracking-widest text-[10px] transition-all flex flex-col items-center justify-center gap-1 min-w-[110px] ${
                       isApplied
                       ? "bg-emerald-500 text-white shadow-[0_10px_30px_rgba(16,185,129,0.3)]"
                       : !error && customValue

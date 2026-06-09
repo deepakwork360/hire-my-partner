@@ -150,7 +150,7 @@ export default function PaymentForm() {
                     <button
                       key={opt.id}
                       onClick={() => setSelectedPayment(opt.id)}
-                      className={`h-14 px-4 border rounded-2xl flex items-center gap-3 text-left transition-all group ${
+                      className={`h-14 cursor-pointer px-4 border rounded-2xl flex items-center gap-3 text-left transition-all group ${
                         isSelected
                           ? "bg-primary/10 border-primary/40 ring-1 ring-primary/30"
                           : "bg-bg-secondary border-border-main hover:border-primary/20"
@@ -327,7 +327,7 @@ export default function PaymentForm() {
               </div>
               <button
                 onClick={() => setAgreedToTerms((p) => !p)}
-                className="flex items-start gap-3 group w-full text-left"
+                className="flex cursor-pointer items-start gap-3 group w-full text-left"
               >
                 <div
                   className={`mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-all ${
@@ -557,7 +557,7 @@ export default function PaymentForm() {
 
               <button 
                 onClick={() => window.location.href = "/"}
-                className="w-full h-14 bg-linear-to-r from-emerald-600 to-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-500/30 hover:-translate-y-1 transition-all active:scale-95"
+                className="w-full cursor-pointer h-14 bg-linear-to-r from-emerald-600 to-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-500/30 hover:-translate-y-1 transition-all active:scale-95"
               >
                 Go to Home
               </button>

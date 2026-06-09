@@ -163,7 +163,7 @@ export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean
         <div className="flex w-full sm:w-auto p-1 bg-bg-secondary rounded-xl">
           <button
             onClick={() => setSortBy("popular")}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
+            className={`flex-1 cursor-pointer sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
               sortBy === "popular"
                 ? "bg-primary text-white shadow-lg shadow-primary/20"
                 : "text-text-muted hover:text-text-main"
@@ -174,7 +174,7 @@ export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean
           </button>
           <button
             onClick={() => setSortBy("top-rated")}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
+            className={`flex-1 cursor-pointer sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
               sortBy === "top-rated"
                 ? "bg-primary text-white shadow-lg shadow-primary/20"
                 : "text-text-muted hover:text-text-main"

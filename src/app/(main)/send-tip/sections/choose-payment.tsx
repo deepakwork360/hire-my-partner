@@ -129,7 +129,7 @@ export default function ChoosePayment({
               {/* Close button */}
                <button
                 onClick={handleCloseSuccess}
-                className="absolute top-7 right-7 z-10 w-10 h-10 rounded-full bg-bg-secondary border border-border-main flex items-center justify-center text-text-main hover:bg-bg-card transition-colors shadow-lg"
+                className="absolute cursor-pointer top-7 right-7 z-10 w-10 h-10 rounded-full bg-bg-secondary border border-border-main flex items-center justify-center text-text-main hover:bg-bg-card transition-colors shadow-lg"
               >
                 <X size={18} />
               </button>
@@ -226,7 +226,7 @@ export default function ChoosePayment({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={handleCloseSuccess}
-                  className="w-full h-16 rounded-2xl bg-text-main text-bg-base font-black tracking-[0.35em] uppercase text-xs flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-xl"
+                  className="w-full cursor-pointer h-16 rounded-2xl bg-text-main text-bg-base font-black tracking-[0.35em] uppercase text-xs flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-xl"
                 >
                   <Sparkles size={16} /> Brilliant
                 </motion.button>

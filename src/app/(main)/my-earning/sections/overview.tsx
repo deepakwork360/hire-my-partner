@@ -125,7 +125,7 @@ export default function Overview() {
              className={`w-full lg:w-auto h-14 px-10 text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all flex items-center justify-center gap-3 shrink-0 ${
                (!startDate && !endDate) 
                ? "bg-bg-secondary border border-border-main text-text-muted cursor-not-allowed" 
-               : "bg-linear-to-r from-primary-dark to-accent text-white shadow-xl shadow-primary/20 active:scale-95 hover:shadow-primary/40"
+               : "bg-linear-to-r cursor-pointer from-primary-dark to-accent text-white shadow-xl shadow-primary/20 active:scale-95 hover:shadow-primary/40"
              }`}
            >
              <Filter size={14} />
@@ -213,7 +213,7 @@ export default function Overview() {
              <div className="py-20 text-center flex flex-col items-center gap-3">
                 <Filter size={32} className="text-text-muted" />
                 <p className="text-text-muted text-xs font-bold uppercase tracking-widest">No earnings found for this range</p>
-                <button onClick={resetFilters} className="text-primary text-[10px] font-black uppercase underline underline-offset-4 decoration-primary/30">Reset Filters</button>
+                <button onClick={resetFilters} className="cursor-pointer text-primary text-[10px] font-black uppercase underline underline-offset-4 decoration-primary/30">Reset Filters</button>
              </div>
            )}
         </div>
