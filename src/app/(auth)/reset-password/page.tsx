@@ -122,9 +122,9 @@ function ResetPasswordForm() {
               <div className="w-12 h-1 bg-white rounded-full"></div>
               <div className="w-4 h-1 bg-white/20 rounded-full"></div>
             </div>
-            <h1 className="text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
+            <p className="text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
               Security First
-            </h1>
+            </p>
             <p className="text-zinc-400 text-lg max-w-md">
               Create a strong password to keep your account safe.
             </p>
@@ -174,7 +174,7 @@ function ResetPasswordForm() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 text-text-muted hover:text-text-main transition-colors"
+                className="absolute cursor-pointer right-4 text-text-muted hover:text-text-main transition-colors"
               >
                 {showPassword ? <EyeIcon className="w-5 h-5" /> : <EyeOffIcon className="w-5 h-5" />}
               </button>
@@ -199,7 +199,7 @@ function ResetPasswordForm() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-linear-to-r from-primary to-accent hover:opacity-90 text-white font-semibold rounded-xl py-4 transition-all shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full cursor-pointer bg-linear-to-r from-primary to-accent hover:opacity-90 text-white font-semibold rounded-xl py-4 transition-all shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? "Resetting..." : "Save Password"}
               </button>

@@ -189,7 +189,7 @@ function VerifyOtpForm() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-linear-to-r from-primary to-accent hover:opacity-90 text-white font-semibold rounded-xl py-4 transition-all shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full cursor-pointer bg-linear-to-r from-primary to-accent hover:opacity-90 text-white font-semibold rounded-xl py-4 transition-all shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? "Verifying..." : "Confirm Code"}
               </button>
@@ -202,7 +202,7 @@ function VerifyOtpForm() {
                   type="button" 
                   disabled={isSendingOtp}
                   onClick={handleResend}
-                  className="text-primary hover:text-accent hover:underline font-medium ml-1 transition-colors disabled:opacity-50"
+                  className="text-primary cursor-pointer hover:text-accent hover:underline font-medium ml-1 transition-colors disabled:opacity-50"
                 >
                   {isSendingOtp ? "Resending..." : "Resend"}
                 </button>

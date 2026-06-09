@@ -342,13 +342,13 @@ function LoginForm() {
             <div className="flex gap-4">
               <button
                 onClick={() => setLoginMode("password")}
-                className={`text-sm transition-colors ${loginMode === "password" ? "text-primary font-semibold" : "text-text-muted hover:text-text-main"}`}
+                className={`text-sm cursor-pointer transition-colors ${loginMode === "password" ? "text-primary font-semibold" : "text-text-muted hover:text-text-main"}`}
               >
                 Password Login
               </button>
               <button
                 onClick={() => setLoginMode("otp")}
-                className={`text-sm transition-colors ${loginMode === "otp" ? "text-primary font-semibold" : "text-text-muted hover:text-text-main"}`}
+                className={`text-sm cursor-pointer transition-colors ${loginMode === "otp" ? "text-primary font-semibold" : "text-text-muted hover:text-text-main"}`}
               >
                 OTP Login
               </button>
@@ -392,7 +392,7 @@ function LoginForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 text-text-muted hover:text-text-main transition-colors"
+                  className="absolute cursor-pointer right-4 text-text-muted hover:text-text-main transition-colors"
                 >
                   {showPassword ? (
                     <EyeIcon className="w-5 h-5" />
@@ -442,7 +442,7 @@ function LoginForm() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-linear-to-r from-primary to-accent hover:opacity-90 text-white font-semibold rounded-xl py-3.5 transition-all shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full cursor-pointer bg-linear-to-r from-primary to-accent hover:opacity-90 text-white font-semibold rounded-xl py-3.5 transition-all shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? "Logging in..." : "Login Now"}
               </button>
@@ -461,19 +461,19 @@ function LoginForm() {
             <div className="grid grid-cols-3 gap-4">
               <button
                 type="button"
-                className="flex items-center justify-center bg-bg-base hover:bg-bg-card rounded-full py-3 transition-colors border border-border-main/50 hover:border-border-main"
+                className="cursor-pointer flex items-center justify-center bg-bg-base hover:bg-bg-card rounded-full py-3 transition-colors border border-border-main/50 hover:border-border-main"
               >
                 <GoogleIcon className="w-5 h-5" />
               </button>
               <button
                 type="button"
-                className="flex items-center justify-center bg-bg-base hover:bg-bg-card rounded-full py-3 transition-colors border border-border-main/50 hover:border-border-main"
+                className="cursor-pointer flex items-center justify-center bg-bg-base hover:bg-bg-card rounded-full py-3 transition-colors border border-border-main/50 hover:border-border-main"
               >
                 <FacebookIcon className="w-5 h-5" />
               </button>
               <button
                 type="button"
-                className="flex items-center justify-center bg-bg-base hover:bg-bg-card rounded-full py-3 transition-colors border border-border-main/50 hover:border-border-main text-text-main"
+                className="cursor-pointer flex items-center justify-center bg-bg-base hover:bg-bg-card rounded-full py-3 transition-colors border border-border-main/50 hover:border-border-main text-text-main"
               >
                 <AppleIcon className="w-5 h-5" />
               </button>
