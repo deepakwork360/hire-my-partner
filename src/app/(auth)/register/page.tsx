@@ -6,15 +6,8 @@ import { useRegister } from "@/modules/auth/hooks";
 import { registerSchema } from "@/modules/auth/validation";
 import { toast } from "@/components/ui/toastStore";
 import Image from "next/image";
+import ThemeLogo from "@/components/ui/ThemeLogo";
 import { useTheme } from "@/context/ThemeContext";
-
-const logoMapping: Record<string, string> = {
-  rose: "/auth/rosego1.png",
-  gold: "/auth/goldgo.png",
-  emerald: "/auth/emeraldgo.png",
-  violet: "/auth/violetgo.png",
-  cyan: "/auth/cyango.png",
-};
 
 function MailIcon({ className }: { className?: string }) {
   return (
@@ -209,7 +202,6 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
   const { activeTheme } = useTheme();
-  const logoSrc = logoMapping[activeTheme] || "/auth/rose.png";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -263,12 +255,11 @@ export default function RegisterPage() {
             href="/" 
             className="relative z-10 flex items-center gap-3 w-fit hover:opacity-80 transition-opacity"
           >
-            <Image
-              src={logoSrc}
-              alt="Logo"
+            <ThemeLogo
               width={71}
               height={60}
-              className="w-auto h-[60px] object-contain drop-shadow-[0_2px_10px_rgba(var(--primary-rgb),0.15)]"
+              imgClassName="object-contain"
+              className="w-auto h-[60px] drop-shadow-[0_2px_10px_rgba(var(--primary-rgb),0.15)]"
               style={{ width: "auto", height: "60px" }}
             />
             <span className="text-white text-xl font-bold tracking-tight">
@@ -296,12 +287,11 @@ export default function RegisterPage() {
           {/* Mobile Logo Only */}
           <div className="lg:hidden flex justify-center mb-8">
             <Link href="/" className="flex flex-col items-center gap-2">
-              <Image
-                src={logoSrc}
-                alt="Logo"
+              <ThemeLogo
                 width={59}
                 height={50}
-                className="w-auto h-[50px] object-contain drop-shadow-[0_2px_10px_rgba(var(--primary-rgb),0.15)]"
+                imgClassName="object-contain"
+                className="w-auto h-[50px] drop-shadow-[0_2px_10px_rgba(var(--primary-rgb),0.15)]"
                 style={{ width: "auto", height: "50px" }}
               />
               <span className="text-text-main text-lg font-bold">Go Partner</span>

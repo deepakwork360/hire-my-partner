@@ -7,15 +7,8 @@ import { passwordSchema } from "@/modules/auth/validation";
 import { toast } from "@/components/ui/toastStore";
 import Link from "next/link";
 import Image from "next/image";
+import ThemeLogo from "@/components/ui/ThemeLogo";
 import { useTheme } from "@/context/ThemeContext";
-
-const logoMapping: Record<string, string> = {
-  rose: "/auth/rosego1.png",
-  gold: "/auth/goldgo.png",
-  emerald: "/auth/emeraldgo.png",
-  violet: "/auth/violetgo.png",
-  cyan: "/auth/cyango.png",
-};
 
 function LockIcon({ className }: { className?: string }) {
   return (
@@ -57,7 +50,6 @@ function ResetPasswordForm() {
   const [showPassword, setShowPassword] = useState(false);
   const { handleReset, isLoading } = useResetPassword();
   const { activeTheme } = useTheme();
-  const logoSrc = logoMapping[activeTheme] || "/auth/rose.png";
 
   useEffect(() => {
     if (!emailOrPhone || !otp) {
@@ -105,12 +97,11 @@ function ResetPasswordForm() {
             href="/"
             className="relative z-10 flex items-center gap-3 w-fit hover:opacity-80 transition-opacity"
           >
-            <Image
-              src={logoSrc}
-              alt="Logo"
+            <ThemeLogo
               width={77}
               height={65}
-              className="w-auto h-[65px] object-contain drop-shadow-[0_2px_10px_rgba(var(--primary-rgb),0.15)]"
+              imgClassName="object-contain"
+              className="w-auto h-[65px] drop-shadow-[0_2px_10px_rgba(var(--primary-rgb),0.15)]"
               style={{ width: "auto", height: "65px" }}
             />
             <span className="text-white text-xl font-bold tracking-tight">Go Partner</span>
@@ -136,12 +127,11 @@ function ResetPasswordForm() {
           {/* Mobile Logo Only */}
           <div className="lg:hidden flex justify-center mb-8">
             <Link href="/" className="flex flex-col items-center gap-2">
-              <Image
-                src={logoSrc}
-                alt="Logo"
+              <ThemeLogo
                 width={59}
                 height={50}
-                className="w-auto h-[50px] object-contain drop-shadow-[0_2px_10px_rgba(var(--primary-rgb),0.15)]"
+                imgClassName="object-contain"
+                className="w-auto h-[50px] drop-shadow-[0_2px_10px_rgba(var(--primary-rgb),0.15)]"
                 style={{ width: "auto", height: "50px" }}
               />
               <span className="text-text-main text-lg font-bold">Go Partner</span>

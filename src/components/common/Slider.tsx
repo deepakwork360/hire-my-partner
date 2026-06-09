@@ -263,7 +263,9 @@ export default function Slider<T>({
     }
   };
 
-  if (!isMounted) return <div className="h-40 w-full" />; // Prevent hydration flash
+  if (!isMounted) {
+    return <div className="w-full min-h-[550px] opacity-0" aria-hidden="true" />;
+  }
 
   return (
     <div

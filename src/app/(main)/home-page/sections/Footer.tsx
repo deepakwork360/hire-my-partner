@@ -3,15 +3,8 @@
 import Link from "next/link";
 import { Rochester, Outfit } from "next/font/google";
 import Image from "next/image";
+import ThemeLogo from "@/components/ui/ThemeLogo";
 import { useTheme } from "@/context/ThemeContext";
-
-const logoMapping: Record<string, string> = {
-  rose: "/auth/rosego1.png",
-  gold: "/auth/goldgo.png",
-  emerald: "/auth/emeraldgo.png",
-  violet: "/auth/violetgo.png",
-  cyan: "/auth/cyango.png",
-};
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -39,7 +32,6 @@ const SocialIcon = ({ d, href }: { d: string; href: string }) => (
 
 export default function Footer() {
   const { activeTheme } = useTheme();
-  const logoSrc = logoMapping[activeTheme] || "/auth/rose.png";
 
   const ContactDetails = [
     {
@@ -103,12 +95,11 @@ export default function Footer() {
           <div className="flex flex-col gap-8">
             <div>
               <Link href="/">
-                <Image
-                  src={logoSrc}
-                  alt="logo"
+                <ThemeLogo
                   width={118}
                   height={100}
-                  className="w-auto h-[90px] lg:h-[145px] object-contain drop-shadow-[0_2px_15px_rgba(var(--primary-rgb),0.1)] mb-4 hover:scale-105 transition-transform duration-300 cursor-pointer"
+                  imgClassName="object-contain"
+                  className="w-auto h-[90px] lg:h-[145px] drop-shadow-[0_2px_15px_rgba(var(--primary-rgb),0.1)] mb-4 hover:scale-105 transition-transform duration-300 cursor-pointer"
                 />
               </Link>
               <h1 className={`${rochester.className} text-4xl text-transparent bg-clip-text bg-linear-to-r from-primary via-accent to-primary mb-2`}>
