@@ -101,7 +101,7 @@ export default function FreqAsked() {
             >
               <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="w-full px-8 py-8 flex items-center justify-between gap-6 text-left group"
+                className="w-full cursor-pointer px-8 py-8 flex items-center justify-between gap-6 text-left group"
               >
                 <span
                   className={`text-xl md:text-2xl font-bold transition-colors duration-300 ${

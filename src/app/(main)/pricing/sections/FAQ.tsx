@@ -71,7 +71,7 @@ export default function FAQ() {
             >
               <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="w-full px-8 py-6 flex items-center justify-between text-left group"
+                className="w-full cursor-pointer px-8 py-6 flex items-center justify-between text-left group"
               >
                 <span className={`text-lg md:text-xl font-bold transition-colors duration-300 ${
                   openIndex === index ? "text-primary" : "text-text-main"

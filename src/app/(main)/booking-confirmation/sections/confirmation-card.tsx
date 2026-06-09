@@ -365,7 +365,7 @@ export default function ConfirmationCard() {
             variants={itemVariants}
             className="flex items-center gap-6"
           >
-            <button className="flex items-center gap-2 text-text-muted hover:text-text-muted transition-colors text-xs font-bold uppercase tracking-wider group">
+            <button className="flex cursor-pointer items-center gap-2 text-text-muted hover:text-text-muted transition-colors text-xs font-bold uppercase tracking-wider group">
               <Download
                 size={13}
                 className="group-hover:scale-110 transition-transform"
@@ -373,7 +373,7 @@ export default function ConfirmationCard() {
               Download Receipt
             </button>
             <div className="w-px h-4 bg-border-main" />
-            <button className="flex items-center gap-2 text-text-muted hover:text-text-muted transition-colors text-xs font-bold uppercase tracking-wider group">
+            <button className="flex cursor-pointer items-center gap-2 text-text-muted hover:text-text-muted transition-colors text-xs font-bold uppercase tracking-wider group">
               <Share2
                 size={13}
                 className="group-hover:scale-110 transition-transform"

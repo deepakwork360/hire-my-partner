@@ -138,7 +138,7 @@ export default function PricingPlan() {
               />
             <button
               onClick={() => handleToggle("monthly")}
-              className={`relative z-10 px-8 py-3 rounded-xl text-sm font-bold transition-colors duration-300 ${
+              className={`relative cursor-pointer z-10 px-8 py-3 rounded-xl text-sm font-bold transition-colors duration-300 ${
                 billingCycle === "monthly"
                   ? "text-white"
                   : "text-text-muted hover:text-text-main"
@@ -148,7 +148,7 @@ export default function PricingPlan() {
             </button>
             <button
               onClick={() => handleToggle("yearly")}
-              className={`relative z-10 px-8 py-3 rounded-xl text-sm font-bold transition-colors duration-300 flex items-center gap-2 ${
+              className={`relative cursor-pointer z-10 px-8 py-3 rounded-xl text-sm font-bold transition-colors duration-300 flex items-center gap-2 ${
                 billingCycle === "yearly"
                   ? "text-white"
                   : "text-text-muted hover:text-text-main"
@@ -272,7 +272,7 @@ export default function PricingPlan() {
                 {/* CTA Buttons */}
                 <div className="space-y-3">
                   <button
-                    className={`w-full py-5 rounded-[24px] font-black text-sm tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 group/btn relative overflow-hidden ${
+                    className={`w-full cursor-pointer py-5 rounded-[24px] font-black text-sm tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 group/btn relative overflow-hidden ${
                       plan.popular
                         ? "bg-linear-to-br from-primary via-primary-dark to-primary text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1"
                         : "bg-bg-secondary/80 text-text-main border-2 border-border-main shadow-inner hover:bg-bg-card hover:border-primary/30"

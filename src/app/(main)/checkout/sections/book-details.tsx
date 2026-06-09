@@ -151,7 +151,7 @@ export default function BookDetails() {
                       setShowDateMenu((p) => !p);
                       setShowDurationMenu(false);
                     }}
-                    className="w-full h-14 px-5 bg-bg-secondary/50 border border-border-main rounded-2xl text-text-main text-sm font-medium flex items-center justify-between hover:border-primary/30 transition-all group"
+                    className="w-full cursor-pointer h-14 px-5 bg-bg-secondary/50 border border-border-main rounded-2xl text-text-main text-sm font-medium flex items-center justify-between hover:border-primary/30 transition-all group"
                   >
                     <span className="flex items-center gap-3">
                       <Clock size={15} className="text-primary shrink-0" />
@@ -174,7 +174,7 @@ export default function BookDetails() {
                             setSelectedDateTime(opt);
                             setShowDateMenu(false);
                           }}
-                          className={`w-full px-5 py-3.5 text-left text-sm font-medium flex items-center justify-between hover:bg-primary/5 transition-colors ${
+                          className={`w-full cursor-pointer px-5 py-3.5 text-left text-sm font-medium flex items-center justify-between hover:bg-primary/5 transition-colors ${
                             selectedDateTime === opt
                               ? "text-primary"
                               : "text-text-main"
@@ -197,7 +197,7 @@ export default function BookDetails() {
                       setShowDurationMenu((p) => !p);
                       setShowDateMenu(false);
                     }}
-                    className="w-full h-14 px-5 bg-bg-secondary/50 border border-border-main rounded-2xl text-text-main text-sm font-medium flex items-center justify-between hover:border-primary/30 transition-all"
+                    className="w-full cursor-pointer h-14 px-5 bg-bg-secondary/50 border border-border-main rounded-2xl text-text-main text-sm font-medium flex items-center justify-between hover:border-primary/30 transition-all"
                   >
                     <span className="flex items-center gap-3">
                       <Clock size={15} className="text-primary shrink-0" />
@@ -220,7 +220,7 @@ export default function BookDetails() {
                             setSelectedDuration(opt);
                             setShowDurationMenu(false);
                           }}
-                          className={`w-full px-5 py-3.5 text-left text-sm font-medium flex items-center justify-between hover:bg-primary/5 transition-colors ${
+                          className={`w-full cursor-pointer px-5 py-3.5 text-left text-sm font-medium flex items-center justify-between hover:bg-primary/5 transition-colors ${
                             selectedDuration === opt
                               ? "text-primary"
                               : "text-text-main"
@@ -252,7 +252,7 @@ export default function BookDetails() {
                       <button
                         key={addon.id}
                         onClick={() => toggleAddOn(addon.id)}
-                        className={`w-full h-14 px-5 border rounded-2xl flex items-center gap-4 text-left transition-all group ${
+                        className={`w-full h-14 px-5 cursor-pointer border rounded-2xl flex items-center gap-4 text-left transition-all group ${
                           isChecked
                             ? "bg-primary/10 border-primary/40"
                             : "bg-bg-secondary border-border-main hover:border-primary/30"

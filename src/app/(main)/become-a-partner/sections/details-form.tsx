@@ -856,7 +856,7 @@ export default function DetailsForm() {
                               <button
                                 type="button"
                                 onClick={() => removeGalleryPhoto(index)}
-                                className="absolute top-3 right-3 w-10 h-10 bg-accent/90 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shadow-lg border-2 border-white/20 z-10 transition-all duration-300 hover:bg-accent hover:scale-110 hover:-rotate-12"
+                                className="absolute cursor-pointer top-3 right-3 w-10 h-10 bg-accent/90 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shadow-lg border-2 border-white/20 z-10 transition-all duration-300 hover:bg-accent hover:scale-110 hover:-rotate-12"
                                 title="Remove photo"
                               >
                                 <X className="w-5 h-5" />
@@ -1037,7 +1037,7 @@ export default function DetailsForm() {
                                     idProofs: newProofs,
                                   });
                                 }}
-                                className="absolute top-2 right-2 w-8 h-8 bg-accent/90 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white/20 z-20 transition-all duration-300 hover:bg-accent hover:scale-110"
+                                className="absolute cursor-pointer top-2 right-2 w-8 h-8 bg-accent/90 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white/20 z-20 transition-all duration-300 hover:bg-accent hover:scale-110"
                               >
                                 <X className="w-4 h-4" />
                               </button>

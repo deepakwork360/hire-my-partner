@@ -60,6 +60,7 @@ export default function DiscoveryButton({
             hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]
             active:scale-[0.98]
             disabled:opacity-70 disabled:cursor-not-allowed
+            cursor-pointer
           `}
         >
           {/* Inner Gloss */}

@@ -75,7 +75,7 @@ export default function ThemeSwitcher({ isScrolled = false }: { isScrolled?: boo
                       toggleAppearance();
                       setIsOpen(false);
                     }}
-                    className="w-10 h-10 rounded-xl bg-bg-secondary border border-border-main flex items-center justify-center text-text-main hover:bg-bg-card transition-all active:scale-90 relative group/toggle"
+                    className="w-10 h-10 cursor-pointer rounded-xl bg-bg-secondary border border-border-main flex items-center justify-center text-text-main hover:bg-bg-card transition-all active:scale-90 relative group/toggle"
                     title={appearance === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
                   >
                     <AnimatePresence mode="wait">
@@ -113,7 +113,7 @@ export default function ThemeSwitcher({ isScrolled = false }: { isScrolled?: boo
                       setTheme(t.id);
                       setIsOpen(false);
                     }}
-                    className={`flex items-center justify-between p-2.5 rounded-2xl transition-all group ${
+                    className={`flex cursor-pointer items-center justify-between p-2.5 rounded-2xl transition-all group ${
                       activeTheme === t.id && isPreferenceSet
                         ? "bg-primary/10 border border-primary/20 shadow-lg"
                         : "hover:bg-bg-secondary border border-transparent"
@@ -140,7 +140,7 @@ export default function ThemeSwitcher({ isScrolled = false }: { isScrolled?: boo
                     resetToRotation();
                     setIsOpen(false);
                   }}
-                  className={`flex items-center justify-between p-3 rounded-2xl transition-all relative overflow-hidden group ${
+                  className={`flex cursor-pointer items-center justify-between p-3 rounded-2xl transition-all relative overflow-hidden group ${
                     isAutoRotate
                       ? "bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]"
                       : "bg-bg-secondary border border-border-main hover:bg-bg-card"
