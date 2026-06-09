@@ -4,16 +4,13 @@ import React from "react";
 import Link from "next/link";
 import { useMyProfile } from "@/modules/profile/hooks";
 import Image from "next/image";
+import Loader from "@/components/loader/Loader";
 
 const ProfilePage = () => {
   const { profile, isLoading } = useMyProfile();
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-bg-base flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF0066]"></div>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (!profile) {

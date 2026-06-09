@@ -7,6 +7,7 @@ import { Profile } from '@/modules/profile/types';
 import { profileSchema } from '@/modules/profile/validation';
 import { toast } from '@/components/ui/toastStore';
 import Image from 'next/image';
+import Loader from "@/components/loader/Loader";
 
 const EditProfilePage = () => {
   const router = useRouter();
@@ -95,11 +96,7 @@ const EditProfilePage = () => {
   };
 
   if (isFetching) {
-    return (
-      <div className="min-h-screen bg-bg-base flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF0066]"></div>
-      </div>
-    );
+    return <Loader />;
   }
 
   return (

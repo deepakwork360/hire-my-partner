@@ -42,57 +42,54 @@ export default function HeroSection() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2 }}
-          className="relative w-36 h-36 md:w-44 md:h-44 lg:w-52 lg:h-52"
+          className="relative w-[180px] h-[180px] md:w-[220px] md:h-[220px] flex items-center justify-center"
         >
           {/* Outer Rotating Ring */}
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-0"
+          <div
+            className="absolute inset-0 w-full h-full animate-spin"
+            style={{ animationDuration: "8s", animationTimingFunction: "linear" }}
           >
-            <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
-              <defs>
-                <path
-                  id="centeredCirclePath"
-                  d="M 50, 50 m -45, 0 a 45,45 0 1,1 90,0 a 45,45 0 1,1 -90,0"
-                />
-              </defs>
-              <text className={`${outfit.className} uppercase font-bold tracking-[0.2em] text-[5.5px] fill-primary/30`}>
-                <textPath href="#centeredCirclePath" startOffset="0%">
-                  Connections • Conversations • Relationships • Companion •
+            <svg viewBox="0 0 200 200" className="w-full h-full fill-primary/80 font-bold uppercase tracking-[0.3em] text-[12px]">
+              <path
+                id="centeredCirclePath"
+                d="M 100, 100 m -75, 0 a 75,75 0 1,1 150,0 a 75,75 0 1,1 -150,0"
+                fill="none"
+              />
+              <text>
+                <textPath href="#centeredCirclePath" spacing="auto" className={outfit.className}>
+                  GO PARTNER • GO PARTNER •  
                 </textPath>
               </text>
             </svg>
-          </motion.div>
-
-          {/* Inner Logo & Glow */}
-          <div className="absolute inset-[15%] rounded-full bg-bg-card backdrop-blur-3xl border border-border-main flex items-center justify-center p-5 group shadow-[0_0_80px_rgba(var(--primary-rgb),0.15)]">
-            {/* Pulsing Aura */}
-            <motion.div
-              animate={{
-                scale: [1, 1.1, 1],
-                opacity: [0.2, 0.4, 0.2],
-              }}
-              transition={{ duration: 4, repeat: Infinity }}
-              className="absolute inset-0 bg-primary/20 rounded-full blur-3xl"
-            />
-            
-            <ThemeLogo
-              width={200}
-              height={200}
-              className="w-[85%] h-auto flex items-center justify-center pointer-events-none"
-              imgClassName="w-full h-auto object-contain drop-shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]"
-            />
           </div>
 
-          {/* Orbital Orbs */}
+          {/* Central Logo Container */}
           <motion.div
-            animate={{ rotate: -360 }}
-            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-0"
+            animate={{ 
+              scale: [0.95, 1.05, 0.95],
+              boxShadow: [
+                "0 0 20px rgba(var(--primary-rgb), 0.2)",
+                "0 0 40px rgba(var(--primary-rgb), 0.4)",
+                "0 0 20px rgba(var(--primary-rgb), 0.2)"
+              ]
+            }}
+            transition={{ 
+              scale: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+              boxShadow: { duration: 3, repeat: Infinity, ease: "easeInOut" }
+            }}
+            className="relative w-28 h-28 md:w-36 md:h-36 bg-bg-secondary/40 backdrop-blur-2xl rounded-full border border-border-main p-5 flex items-center justify-center overflow-hidden"
           >
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-primary rounded-full blur-sm" />
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-accent rounded-full blur-xs" />
+            <div className="relative w-full h-full flex items-center justify-center">
+              <ThemeLogo
+                width={80}
+                height={68}
+                imgClassName="object-contain p-2 w-auto h-full"
+                priority
+                style={{ width: "auto", height: "100%" }}
+              />
+            </div>
+            {/* Subtle Inner Glow - Theme Aware */}
+            <div className="absolute inset-0 rounded-full bg-linear-to-tr from-primary/5 to-transparent pointer-events-none" />
           </motion.div>
         </motion.div>
       </div>

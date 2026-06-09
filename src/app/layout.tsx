@@ -57,9 +57,11 @@ export default function RootLayout({
                   var savedAppearance = localStorage.getItem('appearance_choice');
                   var preferenceSet = localStorage.getItem('theme_preference_set') === 'true';
                   
-                  if (savedAppearance) {
-                    document.documentElement.setAttribute('data-appearance', savedAppearance);
+                  if (!savedAppearance) {
+                    var systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    savedAppearance = systemPrefersDark ? 'dark' : 'light';
                   }
+                  document.documentElement.setAttribute('data-appearance', savedAppearance);
 
                   if (preferenceSet && savedTheme) {
                     document.documentElement.setAttribute('data-theme', savedTheme);
