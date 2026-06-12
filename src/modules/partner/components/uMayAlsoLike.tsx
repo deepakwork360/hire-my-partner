@@ -84,7 +84,7 @@ export default function UMayAlsoLike({ excludeId }: UMayAlsoLikeProps) {
             <Slider
               items={profileItems}
               renderItem={(item, idx) => <ProfileCard key={idx} {...item} />}
-              perView={3}
+              perView={4}
             />
           </div>
         </div>
