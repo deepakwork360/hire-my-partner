@@ -57,7 +57,15 @@ export default function BookDetails() {
     (p) => String(p.id).toLowerCase() === partnerId.toLowerCase()
   ) || partners[0];
 
-  const [selectedDateTime, setSelectedDateTime] = useState(dateTimeOptions[0]);
+  const initialDate = searchParams.get("date");
+  const initialTime = searchParams.get("time");
+  const initialDateTime = initialDate && initialTime ? `${initialDate} | ${initialTime}` : dateTimeOptions[0];
+
+  const dynamicDateTimeOptions = initialDate && initialTime && !dateTimeOptions.includes(initialDateTime) 
+    ? [initialDateTime, ...dateTimeOptions] 
+    : dateTimeOptions;
+
+  const [selectedDateTime, setSelectedDateTime] = useState(initialDateTime);
   const [selectedDuration, setSelectedDuration] = useState(durationOptions[1]);
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>(() => {
     const param = searchParams.get("addons");
@@ -167,7 +175,7 @@ export default function BookDetails() {
                   </button>
                   {showDateMenu && (
                     <div className="absolute top-full mt-2 left-0 right-0 z-20 bg-bg-base/95 backdrop-blur-2xl border border-border-main rounded-2xl overflow-hidden shadow-2xl">
-                      {dateTimeOptions.map((opt) => (
+                      {dynamicDateTimeOptions.map((opt) => (
                         <button
                           key={opt}
                           onClick={() => {
@@ -238,7 +246,7 @@ export default function BookDetails() {
               </div>
 
               {/* ── Add-ons ── */}
-              <div>
+              {/* <div>
                 <div className="flex items-center gap-2 mb-5">
                   <Sparkles size={15} className="text-primary" />
                   <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">
@@ -287,7 +295,7 @@ export default function BookDetails() {
                     );
                   })}
                 </div>
-              </div>
+              </div> */}
 
               {/* ── Notes ── */}
               <div>
@@ -429,7 +437,7 @@ export default function BookDetails() {
                 </div>
 
                 {/* Add-ons */}
-                <div className="border-b border-border-main pb-4">
+                {/* <div className="border-b border-border-main pb-4">
                   <div className="flex items-center gap-1.5 mb-2.5">
                     <Sparkles size={11} className="text-primary" />
                     <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">
@@ -452,7 +460,7 @@ export default function BookDetails() {
                       No add-ons selected
                     </p>
                   )}
-                </div>
+                </div> */}
 
                 {/* Invoice Breakdown */}
                 <div className="flex flex-col gap-2.5 pt-2">

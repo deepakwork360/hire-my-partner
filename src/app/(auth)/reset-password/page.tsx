@@ -160,6 +160,7 @@ function ResetPasswordForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-bg-base text-text-main text-sm rounded-xl pl-12 pr-12 py-4 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all placeholder:text-text-muted/45"
                 required
+                autoFocus
               />
               <button
                 type="button"

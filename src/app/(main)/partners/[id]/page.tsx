@@ -5,8 +5,8 @@ import { notFound } from "next/navigation";
 import { usePartner } from "@/modules/partner/hooks/usePartner";
 import ProfileMain from "@/modules/partner/components/profile-main";
 import Gallery from "@/modules/partner/components/gallery";
+import Availability from "@/modules/partner/components/availability";
 import CompanionSay from "@/modules/partner/components/companion-say";
-import RatesBooking from "@/modules/partner/components/rates-booking";
 import Report from "@/modules/partner/components/report";
 import UMayAlsoLike from "@/modules/partner/components/uMayAlsoLike";
 import PageHeaderAccent from "@/components/ui/PageHeaderAccent";
@@ -30,11 +30,11 @@ export default function PartnerDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="flex flex-col gap-10 relative overflow-hidden">
+    <div className="flex flex-col gap-0 relative overflow-hidden">
       <PageHeaderAccent />
       <ProfileMain partner={partner} />
-      <Gallery images={partner.gallery} />
-      <RatesBooking partner={partner} />
+      <Gallery images={partner.gallery} partner={partner} />
+      <Availability partner={partner} />
       <Report />
       <CompanionSay reviews={partner.reviews} />
       <UMayAlsoLike excludeId={partner.id} />

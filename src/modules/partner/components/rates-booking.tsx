@@ -76,11 +76,6 @@ export default function RatesBooking({ partner }: RatesBookingProps) {
           
           {/* Left Column: Configuration Dashboard */}
           <div className="flex-[1.4] flex flex-col bg-bg-card backdrop-blur-3xl border border-border-main rounded-[32px] p-5 md:p-8 shadow-2xl shadow-black/5 relative overflow-hidden">
-             {/* Subtitle */}
-             <div className="flex items-center gap-2 mb-2">
-                <ShieldCheck size={10} className="text-primary" />
-                <span className="text-primary text-[8px] font-black uppercase tracking-[0.3em]">Reservation Logic</span>
-             </div>
 
             <motion.div
               initial={{ opacity: 0, y: 15 }}
@@ -91,7 +86,7 @@ export default function RatesBooking({ partner }: RatesBookingProps) {
               <h2
                 className={`${rochester.className} text-4xl md:text-5xl text-text-main mb-0.5 leading-none`}
               >
-                Rates & <span className="text-primary">Options</span>
+                Rates & <span className="text-primary">Booking</span>
               </h2>
               <div className="w-12 h-1 bg-linear-to-r from-primary to-transparent rounded-full mt-2" />
             </motion.div>
@@ -119,7 +114,7 @@ export default function RatesBooking({ partner }: RatesBookingProps) {
             </div>
 
             {/* Add-ons */}
-            <div className="space-y-3">
+            {/* <div className="space-y-3">
               <h3 className="text-text-main text-[8px] font-black uppercase tracking-[0.3em] flex items-center gap-2 ml-1">
                 <Sparkles size={12} className="text-primary" />
                 Experience Add-ons
@@ -165,15 +160,15 @@ export default function RatesBooking({ partner }: RatesBookingProps) {
                   );
                 })}
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Right Column: Checkout Summary */}
           <div className="flex-1 lg:max-w-[340px] flex flex-col bg-bg-card backdrop-blur-3xl border border-border-main rounded-[32px] p-5 md:p-7 shadow-2xl shadow-black/5 relative overflow-hidden">
              <div className="relative flex flex-col h-full">
-                <h3 className="text-text-main text-[8px] font-black uppercase tracking-[0.4em] mb-6 pb-3 border-b border-border-main">
+                {/* <h3 className="text-text-main text-[8px] font-black uppercase tracking-[0.4em] mb-6 pb-3 border-b border-border-main">
                   Summary
-                </h3>
+                </h3> */}
 
                 <div className="space-y-3 mb-8 grow">
                    <div className="flex justify-between items-center group">

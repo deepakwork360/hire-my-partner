@@ -40,18 +40,18 @@ export default function Report() {
         >
           {/* Subtle Red Warning Glow (isolated so it can be overflow-hidden without breaking dropdown) */}
           <div className="absolute inset-0 rounded-[40px] overflow-hidden pointer-events-none">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 blur-[100px] rounded-full" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 blur-[100px] rounded-full" />
           </div>
 
           <div className="flex flex-col md:flex-row gap-10 md:gap-16 items-start md:items-center">
             {/* Left: Content */}
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center">
-                  <Flag className="w-6 h-6 text-accent" />
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#f43f5e] to-[#e11d48] flex items-center justify-center text-white shadow-md shadow-[#f43f5e]/20">
+                  <Flag className="w-5 h-5" />
                 </div>
                 <h2
-                  className={`${rochester.className} text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-accent to-text-main`}
+                  className={`${rochester.className} text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-rose-500 to-text-main`}
                 >
                   Report Profile
                 </h2>
@@ -68,7 +68,7 @@ export default function Report() {
               <div className="relative">
                 <button
                   onClick={() => setIsOpen(!isOpen)}
-                  className="w-full bg-bg-secondary border border-border-main hover:border-accent/30 text-left px-6 py-4 rounded-2xl text-text-main font-medium flex items-center justify-between transition-colors"
+                  className="w-full cursor-pointer bg-bg-secondary border border-border-main hover:border-accent/30 text-left px-6 py-4 rounded-2xl text-text-main font-medium flex items-center justify-between transition-colors"
                 >
                   <span
                     className={selectedReason ? "text-text-main font-bold" : "text-text-muted"}
@@ -100,7 +100,7 @@ export default function Report() {
                         >
                           {reason}
                           {selectedReason === reason && (
-                            <CheckCircle2 className="w-4 h-4 text-accent" />
+                            <CheckCircle2 className="w-4 h-4 text-rose-500" />
                           )}
                         </div>
                       ))}
@@ -114,7 +114,7 @@ export default function Report() {
                 disabled={!selectedReason}
                 className={`w-full py-4 rounded-2xl font-bold text-lg tracking-wide flex items-center justify-center gap-2 transition-all duration-300 ${
                   selectedReason
-                    ? "bg-accent/80 hover:bg-accent border border-accent/50 hover:border-accent/80 text-white shadow-lg shadow-accent/20 active:scale-95 cursor-pointer"
+                    ? "bg-gradient-to-r from-[#f43f5e] to-[#e11d48] hover:from-[#e11d48] hover:to-[#be123c] text-white border border-[#f43f5e]/20 hover:border-[#f43f5e]/40 shadow-lg shadow-rose-500/20 active:scale-95 cursor-pointer"
                     : "bg-bg-secondary border border-border-main text-text-muted cursor-not-allowed"
                 }`}
               >

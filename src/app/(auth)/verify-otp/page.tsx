@@ -170,6 +170,7 @@ function VerifyOtpForm() {
                   value={digit}
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
+                  autoFocus={index === 0}
                   className="w-10 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-bold bg-bg-base text-text-main rounded-xl border border-border-main focus:border-primary/50 focus:bg-bg-card outline-none transition-all"
                 />
               ))}

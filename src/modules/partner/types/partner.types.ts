@@ -9,6 +9,7 @@ export interface Partner {
     verified: boolean;
     distance: string;
     image: string;
+    banner?: string;
     reviews: Review[];
     gallery: Gallery[];
     pricing: Pricing;

@@ -16,11 +16,14 @@ const outfit = Outfit({
   weight: ["300", "400", "500", "700"],
 });
 
+import { Partner } from "../types/partner.types";
+
 interface GalleryProps {
   images?: string[] | { id: string; image: string }[] | any[];
+  partner?: Partner;
 }
 
-export default function Gallery({ images }: GalleryProps) {
+export default function Gallery({ images, partner }: GalleryProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const defaultImages = [
@@ -40,63 +43,119 @@ export default function Gallery({ images }: GalleryProps) {
     : defaultImages
   ).filter(Boolean).slice(0, 9);
 
+  // Split bio by newlines and handle fallbacks
+  const bio = partner?.bio || "I love deep conversations, spontaneous laughs, and making every moment feel special. Whether you need someone for a formal event or just a relaxing dinner, I'm here to help you feel comfortable and confident.\n\nI'm easy to talk to, a great listener, and I genuinely enjoy getting to know new people.\n\nLet's make the time we share together meaningful, respectful, and memorable.";
+  const paragraphs = bio.split("\n").filter(Boolean);
+
+  const tags = ["#Friendly", "#Empathetic", "#NonJudgmental"];
+  const interests = "Travel, Music, Coffee dates, Bollywood, Nature walks";
+  const languages = "English, Hindi";
+
   return (
     <section
-      className={`py-16 md:py-20 px-4 bg-bg-secondary border-b border-border-main ${outfit.className}`}
+      className={`py-10 md:py-12 px-4 bg-bg-secondary border-b border-border-main ${outfit.className}`}
     >
-      <div className="max-w-[1000px] w-full mx-auto">
-        <div className="flex flex-col items-center mb-10">
-          <motion.h2
+      <div className="max-w-[1250px] w-full mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+          
+          {/* Left Card: About Me */}
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className={`${rochester.className} text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main mb-3`}
+            transition={{ duration: 0.6 }}
+            className="relative bg-bg-card backdrop-blur-3xl border border-border-main rounded-[32px] p-6 md:p-10 flex flex-col justify-between shadow-xl overflow-hidden"
           >
-            Photo Portfolio
-          </motion.h2>
-          <div className="w-16 h-1 rounded-full bg-linear-to-r from-primary to-primary-dark shadow-lg shadow-primary/20"></div>
-        </div>
+            {/* Elegant Background Watermark Quote */}
+            <div className="absolute top-4 right-8 text-primary/5 select-none pointer-events-none">
+              <span className="font-serif text-[180px] leading-none">“</span>
+            </div>
 
-        {/* Premium Editorial Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 auto-rows-[150px] md:auto-rows-[180px]">
-          {galleryImages.map((src, idx) => {
-            // Make the first image a large featured block (2x2)
-            const isFeatured = idx === 0;
-            const spanClasses = isFeatured
-              ? "col-span-2 row-span-2"
-              : "col-span-1 row-span-1";
+            <div className="relative z-10 flex flex-col h-full grow">
+              <h3 className={`${rochester.className} text-4xl md:text-5xl text-text-main mb-4`}>
+                About Me
+              </h3>
+              
+              {/* Vertically centered bio container to handle short bios beautifully */}
+              <div className="flex-1 flex flex-col justify-center py-8 min-h-[160px] md:min-h-[200px]">
+                <div className="space-y-4 text-text-muted text-[15px] md:text-base leading-relaxed font-medium">
+                  {paragraphs.map((p, index) => (
+                    <p key={index}>{p}</p>
+                  ))}
+                </div>
+              </div>
+            </div>
 
-            return (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.5, delay: idx * 0.05 }}
-                onClick={() => setSelectedImage(src)}
-                className={`relative group overflow-hidden bg-bg-card border border-border-main cursor-pointer shadow-lg shadow-black/5 rounded-2xl md:rounded-3xl ${spanClasses}`}
-              >
-                {/* Premium Hover Vignette Inner Rim */}
-                <div className="absolute inset-0 z-10 shadow-[inset_0_0_0_1px_rgba(var(--border-main),var(--border-opacity))] group-hover:shadow-[inset_0_0_0_2px_rgba(var(--primary-rgb),0.4)] transition-shadow duration-500 rounded-2xl md:rounded-3xl" />
+            {/* Bottom Metadata Block */}
+            <div className="relative z-10 bg-bg-base/40 border border-border-main/50 rounded-2xl p-5 flex items-stretch gap-4 mt-auto">
+              {/* Vertical accent colored bar */}
+              <div className="w-1.5 rounded-full bg-rose-500 shrink-0" />
+              
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 w-full text-xs md:text-sm font-medium">
+                <div className="md:col-span-8 space-y-2.5">
+                  <div>
+                    <span className="font-bold text-rose-500 block md:inline md:mr-2">Tags:</span>
+                    <span className="text-text-muted">{tags.join(" ")}</span>
+                  </div>
+                  <div>
+                    <span className="font-bold text-rose-500 block md:inline md:mr-2">Interests:</span>
+                    <span className="text-text-muted">{interests}</span>
+                  </div>
+                </div>
+                <div className="md:col-span-4 md:border-l md:border-border-main/40 md:pl-6 flex flex-col justify-center">
+                  <div>
+                    <span className="font-bold text-text-main block mb-0.5">Languages:</span>
+                    <span className="text-text-muted">{languages}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
 
-                {/* Gradient Bottom Fade */}
-                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
+          {/* Right Card: Gallery */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="bg-bg-card backdrop-blur-3xl border border-border-main rounded-[32px] p-6 md:p-10 flex flex-col justify-between shadow-xl"
+          >
+            <div>
+              <h3 className={`${rochester.className} text-4xl md:text-5xl text-center text-text-main mb-6`}>
+                Gallery
+              </h3>
+              
+              <div className="grid grid-cols-3 gap-3 md:gap-4">
+                {galleryImages.map((src, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.4, delay: idx * 0.05 }}
+                    onClick={() => setSelectedImage(src)}
+                    className="relative aspect-square group overflow-hidden bg-bg-base border border-border-main cursor-pointer shadow-md rounded-2xl md:rounded-3xl"
+                  >
+                    {/* Premium Hover Vignette Inner Rim */}
+                    <div className="absolute inset-0 z-10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)] group-hover:shadow-[inset_0_0_0_2px_rgba(var(--primary-rgb),0.4)] transition-shadow duration-500 rounded-2xl md:rounded-3xl" />
+                    
+                    {/* Gradient Bottom Fade */}
+                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
 
-                <Image
-                  src={src}
-                  alt={`Portfolio Photo ${idx + 1}`}
-                  fill
-                  referrerPolicy="no-referrer"
-                  className="object-cover object-top transition-all duration-700 ease-out group-hover:scale-[1.03] group-hover:brightness-110"
-                  sizes={
-                    isFeatured
-                      ? "(max-width: 768px) 100vw, 50vw"
-                      : "(max-width: 768px) 50vw, 25vw"
-                  }
-                />
-              </motion.div>
-            );
-          })}
+                    <Image
+                      src={src}
+                      alt={`Portfolio Photo ${idx + 1}`}
+                      fill
+                      referrerPolicy="no-referrer"
+                      className="object-cover object-top transition-all duration-700 ease-out group-hover:scale-105"
+                      sizes="(max-width: 768px) 33vw, 15vw"
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+
         </div>
       </div>
 

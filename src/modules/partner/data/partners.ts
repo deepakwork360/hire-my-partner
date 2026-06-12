@@ -12,6 +12,7 @@ export const partners: Partner[] = [
     verified: true,
     distance: "5 km away",
     image: "https://i1-e.pinimg.com/736x/8f/1d/57/8f1d57309aaeca11bb53cb12fc84f28a.jpg",
+    banner: "https://i.pinimg.com/1200x/1b/16/c0/1b16c0130d49516facca3fefd9f0cd7e.jpg",
     pricing: {
       oneHour: 4999,
       twoHours: 9998,
@@ -27,7 +28,7 @@ export const partners: Partner[] = [
       { id: "1-4", image: "https://i1-e.pinimg.com/736x/6a/1f/c5/6a1fc5b5c9c46b588b3b93ebe129d015.jpg" },
       { id: "1-5", image: "https://i1-e.pinimg.com/736x/6e/20/8d/6e208d6e06a5b3546f2e0fd0f6d8d805.jpg" },
       { id: "1-6", image: "https://i1-e.pinimg.com/1200x/fb/e1/55/fbe155619f3f62c9e393f8d7c3d86558.jpg" },
-      { id: "1-7", image: "https://i1-e.pinimg.com/236x/dd/73/c8/dd73c80af2f314caa14651941f81978e.jpg" },
+      { id: "1-7", image: "https://i236.pinimg.com/236x/dd/73/c8/dd73c80af2f314caa14651941f81978e.jpg" },
       { id: "1-8", image: "https://i1-e.pinimg.com/736x/ac/a9/eb/aca9eb556f4c236152b991437be1fdb2.jpg" },
       { id: "1-9", image: "https://i1-e.pinimg.com/1200x/37/ab/8c/37ab8c924253fe388e84f305841c24b4.jpg" }
     ],
@@ -85,6 +86,7 @@ export const partners: Partner[] = [
     verified: true,
     distance: "74 km away",
     image: "https://i1-e.pinimg.com/1200x/38/18/f2/3818f2353363df39e531f55b3dbd06f5.jpg",
+    banner: "https://i.pinimg.com/1200x/4f/54/d9/4f54d987818ece78da133ab91e69fe25.jpg",
     pricing: {
       oneHour: 3499,
       twoHours: 6998,
@@ -129,6 +131,7 @@ export const partners: Partner[] = [
     verified: true,
     distance: "7.1 km away",
     image: "https://i.pinimg.com/736x/31/77/f3/3177f3f1ae56801951d04631028304f4.jpg",
+    banner: "https://i.pinimg.com/736x/7c/84/29/7c8429ad181d4b5db45056b865b10a49.jpg",
     pricing: {
       oneHour: 5999,
       twoHours: 11998,
@@ -165,6 +168,7 @@ export const partners: Partner[] = [
     verified: true,
     distance: "3.5 km away",
     image: "https://i1-e.pinimg.com/736x/50/f7/69/50f769d66e9b50225b344c21202f52a3.jpg",
+    banner: "https://i.pinimg.com/736x/10/7b/17/107b17df748cb8235e5fd2b59c263a77.jpg",
     pricing: {
       oneHour: 3000,
       twoHours: 6000,
@@ -206,6 +210,7 @@ export const partners: Partner[] = [
     verified: true,
     distance: "1.2 km away",
     image: "https://i1-e.pinimg.com/1200x/47/46/b6/4746b67a1b7aebd27ac17c22e4b2e1f0.jpg",
+    banner: "https://i.pinimg.com/1200x/72/6c/3c/726c3c319e02215651111ba99a7649e1.jpg",
     pricing: {
       oneHour: 2000,
       twoHours: 4000,
@@ -240,6 +245,7 @@ export const partners: Partner[] = [
     verified: true,
     distance: "4.0 km away",
     image: "https://i1-e.pinimg.com/736x/b7/0f/69/b70f69277537792afd51412fe493303b.jpg",
+    banner: "https://i.pinimg.com/1200x/31/ac/56/31ac56c2dbf1c401e4c0cc11852db759.jpg",
     pricing: {
       oneHour: 2499,
       twoHours: 4998,
@@ -274,6 +280,7 @@ export const partners: Partner[] = [
     verified: true,
     distance: "Immediate availability",
     image: "https://i.pinimg.com/736x/0a/f3/28/0af328b807839bda2110abe51a181124.jpg",
+    banner: "https://i.pinimg.com/1200x/b3/b1/9c/b3b19cf85b25399d0abc1e6f12b8b287.jpg",
     pricing: {
       oneHour: 25000,
       twoHours: 50000,
@@ -286,7 +293,7 @@ export const partners: Partner[] = [
       { id: "k-1", image: "https://i.pinimg.com/736x/a7/1d/1d/a71d1d6e64c971001bed055b55f3d2d8.jpg" },
       { id: "k-2", image: "https://i1-e.pinimg.com/736x/e8/9e/71/e89e711994807f7cb90a57b11badfc55.jpg" },
       { id: "k-3", image: "https://i1-e.pinimg.com/1200x/94/5c/31/945c31e3eef21dca15292325b11b5dbf.jpg" },
-      { id: "k-4", image: "https://i1-e.pinimg.com/736x/b0/05/20/b0052092fb7e32a79156fba029f19008.jpg" }
+      { id: "k-4", image: "https://i.pinimg.com/736x/b0/05/20/b0052092fb7e32a79156fba029f19008.jpg" }
     ],
     reviews: [
       {
@@ -318,6 +325,7 @@ export const partners: Partner[] = [
     verified: true,
     distance: "Immediate availability",
     image: "https://i1-e.pinimg.com/1200x/97/e0/d9/97e0d90967df6209889c5a9c41fceffd.jpg",
+    banner: "https://i.pinimg.com/1200x/69/de/5a/69de5af2ba2b046a16898743ff9e4981.jpg",
     pricing: {
       oneHour: 30000,
       twoHours: 60000,
@@ -362,6 +370,7 @@ export const partners: Partner[] = [
     verified: true,
     distance: "1.2 km away",
     image: "https://i.pinimg.com/736x/49/a2/6e/49a26efe677d9860527d0a4e720b7aa4.jpg",
+    banner: "https://i.pinimg.com/1200x/88/3f/dd/883fddb61db2166a9d650018f66ada44.jpg",
     pricing: {
       oneHour: 2000,
       twoHours: 4000,
@@ -395,7 +404,8 @@ export const partners: Partner[] = [
     rating: "5.0",
     verified: true,
     distance: "1.2 km away",
-    image: "https://i1-e.pinimg.com/736x/9e/0b/0d/9e0b0ddc1525a2cdebd7ae419b372ea0.jpg",
+    image: "https://i.pinimg.com/736x/9e/0b/0d/9e0b0ddc1525a2cdebd7ae419b372ea0.jpg",
+    banner: "https://i.pinimg.com/736x/27/11/fe/2711fe3e36707e7c8fa50310368cf14d.jpg",
     pricing: {
       oneHour: 2000,
       twoHours: 4000,
@@ -430,6 +440,7 @@ export const partners: Partner[] = [
     verified: true,
     distance: "1.2 km away",
     image: "https://i1-e.pinimg.com/736x/45/cc/52/45cc5257d35ee772d2775ad24ae8d371.jpg",
+    banner: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=1200&auto=format&fit=crop",
     pricing: {
       oneHour: 2000,
       twoHours: 4000,
@@ -464,6 +475,7 @@ export const partners: Partner[] = [
     verified: true,
     distance: "1.2 km away",
     image: "https://i1-e.pinimg.com/1200x/10/af/88/10af88e3d664ea493209912fb3d90be7.jpg",
+    banner: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1200&auto=format&fit=crop",
     pricing: {
       oneHour: 2000,
       twoHours: 4000,

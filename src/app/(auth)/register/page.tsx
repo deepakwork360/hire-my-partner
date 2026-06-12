@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { ChevronDown } from "lucide-react";
 import { useRegister } from "@/modules/auth/hooks";
+import { motion, AnimatePresence } from "framer-motion";
 import { registerSchema } from "@/modules/auth/validation";
 import { toast } from "@/components/ui/toastStore";
 import Image from "next/image";
@@ -189,6 +191,22 @@ function FoxLogo() {
   );
 }
 
+const countries = [
+  { code: "+91", iso: "in", name: "India" },
+  { code: "+1", iso: "us", name: "United States" },
+  { code: "+44", iso: "gb", name: "United Kingdom" },
+  { code: "+61", iso: "au", name: "Australia" },
+  { code: "+971", iso: "ae", name: "United Arab Emirates" },
+  { code: "+65", iso: "sg", name: "Singapore" },
+  { code: "+49", iso: "de", name: "Germany" },
+  { code: "+33", iso: "fr", name: "France" },
+  { code: "+966", iso: "sa", name: "Saudi Arabia" },
+  { code: "+974", iso: "qa", name: "Qatar" },
+  { code: "+977", iso: "np", name: "Nepal" },
+  { code: "+880", iso: "bd", name: "Bangladesh" },
+  { code: "+94", iso: "lk", name: "Sri Lanka" },
+];
+
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const { handleRegister, isLoading } = useRegister();
@@ -202,6 +220,25 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
   const { activeTheme } = useTheme();
+
+  // Country dropdown states
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+  const countryDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        countryDropdownRef.current &&
+        !countryDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsCountryDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -336,6 +373,7 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   className="w-full bg-bg-base text-text-main text-sm rounded-xl px-5 py-3.5 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all placeholder:text-text-muted/45"
                   required
+                  autoFocus
                 />
               </div>
               <div className="relative">
@@ -369,18 +407,54 @@ export default function RegisterPage() {
 
             {/* Phone Number Field */}
             <div className="flex gap-2">
-              <div className="w-1/4 relative flex items-center">
-                <input
-                  type="text"
-                  name="phoneCountryCode"
-                  placeholder="+91"
-                  value={formData.phoneCountryCode}
-                  onChange={handleChange}
-                  className="w-full bg-bg-base text-text-main text-sm rounded-xl px-3 py-3.5 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all placeholder:text-text-muted/45 text-center font-medium"
-                  required
-                />
+              <div className="w-[30%] relative" ref={countryDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
+                  className="w-full flex items-center justify-between bg-bg-base text-text-main text-sm rounded-xl px-3 py-3.5 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all font-medium cursor-pointer"
+                >
+                  <span className="flex items-center gap-2">
+                    <img
+                      src={`https://flagcdn.com/w40/${(countries.find(c => c.code === formData.phoneCountryCode)?.iso || "in")}.png`}
+                      alt="Flag"
+                      className="w-5 h-3.5 object-cover rounded-[2px] shrink-0"
+                    />
+                    <span>{formData.phoneCountryCode}</span>
+                  </span>
+                  <ChevronDown className={`w-3.5 h-3.5 text-text-muted transition-transform duration-300 ${isCountryDropdownOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                <AnimatePresence>
+                  {isCountryDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                      className="absolute z-50 left-0 top-full mt-2 w-56 max-h-60 overflow-y-auto bg-bg-base border border-border-main rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.3)] backdrop-blur-xl custom-scrollbar flex flex-col"
+                    >
+                      {countries.map((c) => (
+                        <button
+                          key={c.code}
+                          type="button"
+                          onClick={() => {
+                            setFormData({ ...formData, phoneCountryCode: c.code });
+                            setIsCountryDropdownOpen(false);
+                          }}
+                          className={`w-full cursor-pointer flex items-center gap-3 px-4 py-2.5 text-left text-text-main hover:bg-primary/15 transition-colors text-sm font-medium ${c.code === formData.phoneCountryCode ? "bg-primary/10 text-primary" : ""}`}
+                        >
+                          <img
+                            src={`https://flagcdn.com/w40/${c.iso}.png`}
+                            alt={c.name}
+                            className="w-5 h-3.5 object-cover rounded-[2px] shrink-0"
+                          />
+                          <span>{c.code}</span>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-              <div className="w-3/4 relative flex items-center">
+              <div className="w-[70%] relative flex items-center">
                 <div className="absolute left-4 text-text-muted">
                   <PhoneIcon className="w-5 h-5" />
                 </div>

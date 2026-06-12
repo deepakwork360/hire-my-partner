@@ -362,6 +362,7 @@ function LoginForm() {
                 onChange={handleChange}
                 className="w-full bg-bg-base text-text-main text-sm rounded-xl pl-12 pr-5 py-3.5 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all placeholder:text-text-muted/45"
                 required
+                autoFocus
               />
             </div>
 
@@ -411,7 +412,7 @@ function LoginForm() {
                   type="button"
                   onClick={handleSendOtp}
                   disabled={isSendingOtp || !formData.emailOrPhone}
-                  className="shrink-0 bg-linear-to-r from-primary to-accent hover:opacity-90 disabled:opacity-50 text-white font-semibold text-xs rounded-xl px-5 py-3.5 transition-all shadow-md shadow-primary/10 disabled:cursor-not-allowed whitespace-nowrap"
+                  className="shrink-0 cursor-pointer bg-linear-to-r from-primary to-accent hover:opacity-90 disabled:opacity-50 text-white font-semibold text-xs rounded-xl px-5 py-3.5 transition-all shadow-md shadow-primary/10 disabled:cursor-not-allowed whitespace-nowrap"
                 >
                   {isSendingOtp ? "Sending..." : "Send OTP"}
                 </button>

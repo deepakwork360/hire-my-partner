@@ -13,6 +13,7 @@ interface PremiumDatePickerProps {
   placeholder?: string;
   label?: string;
   className?: string;
+  hasError?: boolean;
 }
 
 export default function PremiumDatePicker({
@@ -21,6 +22,7 @@ export default function PremiumDatePicker({
   placeholder = "Select Date",
   label,
   className = "",
+  hasError = false,
 }: PremiumDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [viewDate, setViewDate] = useState(new Date());
@@ -104,7 +106,7 @@ export default function PremiumDatePicker({
             e.stopPropagation();
             handleDateSelect(day);
           }}
-          className={`h-9 w-9 rounded-xl text-[10px] font-bold transition-all flex items-center justify-center relative ${
+          className={`h-9 w-9 rounded-xl text-[10px] font-bold transition-all flex items-center justify-center relative cursor-pointer ${
             isSelected 
             ? "bg-primary text-white shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] z-10" 
             : isToday
@@ -135,8 +137,12 @@ export default function PremiumDatePicker({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-full cursor-pointer h-14 pl-5 pr-12 rounded-2xl text-left transition-all duration-300 flex items-center gap-4 group/btn border border-border-main bg-bg-base shadow-sm ${
-            isOpen ? "border-primary/50 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)]" : "hover:border-primary/30"
+          className={`w-full cursor-pointer h-14 pl-5 pr-12 rounded-2xl text-left transition-all duration-300 flex items-center gap-4 group/btn border bg-bg-base shadow-sm ${
+            hasError
+              ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] bg-red-500/5"
+              : isOpen
+              ? "border-primary/50 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)]"
+              : "border-border-main hover:border-primary/30"
           }`}
         >
           <CalendarIcon 
@@ -161,7 +167,7 @@ export default function PremiumDatePicker({
                 e.stopPropagation();
                 onChange("");
               }}
-              className="absolute right-12 p-1 hover:bg-bg-card rounded-full transition-colors z-20"
+              className="absolute right-12 p-1 hover:bg-bg-card rounded-full transition-colors z-20 cursor-pointer"
             >
               <X size={14} className="text-text-muted" />
             </div>
@@ -186,7 +192,7 @@ export default function PremiumDatePicker({
               <div className="flex items-center justify-between mb-4 px-1">
                 <button 
                   onClick={handlePrevMonth}
-                  className="p-2 hover:bg-bg-card rounded-xl text-text-muted hover:text-text-main transition-all"
+                  className="p-2 hover:bg-bg-card rounded-xl text-text-muted hover:text-text-main transition-all cursor-pointer"
                 >
                   <ChevronLeft size={16} />
                 </button>
@@ -202,7 +208,7 @@ export default function PremiumDatePicker({
 
                 <button 
                   onClick={handleNextMonth}
-                  className="p-2 hover:bg-bg-card rounded-xl text-text-muted hover:text-text-main transition-all"
+                  className="p-2 hover:bg-bg-card rounded-xl text-text-muted hover:text-text-main transition-all cursor-pointer"
                 >
                   <ChevronRight size={16} />
                 </button>
