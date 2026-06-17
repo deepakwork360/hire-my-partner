@@ -22,6 +22,13 @@ export function usePartners() {
 
   useEffect(() => {
     fetchPartners();
+
+    const handleUpdate = () => {
+      fetchPartners();
+    };
+
+    window.addEventListener("reviews_updated", handleUpdate);
+    return () => window.removeEventListener("reviews_updated", handleUpdate);
   }, [fetchPartners]);
 
   return {

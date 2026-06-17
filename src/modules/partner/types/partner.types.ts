@@ -5,14 +5,18 @@ export interface Partner {
     gender: string;
     bio: string;
     location: string;
-    rating: string;
+    rating: number;
     verified: boolean;
-    distance: string;
+    distance: number;
     image: string;
     banner?: string;
     reviews: Review[];
     gallery: Gallery[];
     pricing: Pricing;
+    tags?: string[];
+    interests?: string;
+    languages?: string;
+    videos?: string[];
 }
 
 export interface Pricing {
@@ -31,6 +35,7 @@ export interface Review {
     text: string;
     image: string;
     rating: number;
+    videoUrl?: string;
 }
 
 export interface Gallery {

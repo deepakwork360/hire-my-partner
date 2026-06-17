@@ -83,7 +83,7 @@ export const useLogin = () => {
       const response = await authApi.login(data);
       setAuth(response);
       toast.success('Login successful! Welcome back.');
-      router.push('/'); // Redirect to home page
+      router.push('/become-a-partner'); // Redirect to become-a-partner page
     } catch (error) {
       toast.error(getErrorMsg(error));
     } finally {
@@ -111,9 +111,9 @@ export const useVerifyOtp = () => {
         setAuth(response);
         toast.success('Verification successful!');
         if (data.type === 'login') {
-          router.push('/'); // Redirect to home page on login verification
+          router.push('/become-a-partner'); // Redirect to become-a-partner page on login verification
         } else {
-          router.push('/profile/setup'); // Redirect to profile setup on registration verification
+          router.push('/become-a-partner'); // Redirect to become-a-partner page on registration verification
         }
       } else {
         toast.info('OTP Verified successfully.');

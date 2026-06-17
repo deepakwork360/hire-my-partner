@@ -47,9 +47,19 @@ export default function Gallery({ images, partner }: GalleryProps) {
   const bio = partner?.bio || "I love deep conversations, spontaneous laughs, and making every moment feel special. Whether you need someone for a formal event or just a relaxing dinner, I'm here to help you feel comfortable and confident.\n\nI'm easy to talk to, a great listener, and I genuinely enjoy getting to know new people.\n\nLet's make the time we share together meaningful, respectful, and memorable.";
   const paragraphs = bio.split("\n").filter(Boolean);
 
-  const tags = ["#Friendly", "#Empathetic", "#NonJudgmental"];
-  const interests = "Travel, Music, Coffee dates, Bollywood, Nature walks";
-  const languages = "English, Hindi";
+  const isMockPartner = partner?.id ? !isNaN(Number(partner.id)) : false;
+
+  const tags = partner?.tags && partner.tags.length > 0 
+    ? partner.tags 
+    : (isMockPartner ? ["#Friendly", "#Empathetic", "#NonJudgmental"] : ["NA"]);
+
+  const interests = partner?.interests 
+    ? partner.interests 
+    : (isMockPartner ? "Travel, Music, Coffee dates, Bollywood, Nature walks" : "NA");
+
+  const languages = partner?.languages 
+    ? partner.languages 
+    : (isMockPartner ? "English, Hindi" : "NA");
 
   return (
     <section
@@ -91,21 +101,48 @@ export default function Gallery({ images, partner }: GalleryProps) {
               {/* Vertical accent colored bar */}
               <div className="w-1.5 rounded-full bg-rose-500 shrink-0" />
               
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 w-full text-xs md:text-sm font-medium">
-                <div className="md:col-span-8 space-y-2.5">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 w-full text-xs md:text-sm font-medium">
+                <div className="md:col-span-8 space-y-4">
                   <div>
-                    <span className="font-bold text-rose-500 block md:inline md:mr-2">Tags:</span>
-                    <span className="text-text-muted">{tags.join(" ")}</span>
+                    <span className="font-bold text-rose-500 block mb-2">Tags:</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {tags.map((t, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2.5 py-0.5 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-full text-xs font-semibold select-none"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                   <div>
-                    <span className="font-bold text-rose-500 block md:inline md:mr-2">Interests:</span>
-                    <span className="text-text-muted">{interests}</span>
+                    <span className="font-bold text-rose-500 block mb-2">Interests:</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {(interests === "NA" ? ["NA"] : interests.split(",").map(i => i.trim()).filter(Boolean)).map((interest, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2.5 py-0.5 bg-primary/10 border border-primary/20 text-primary rounded-full text-xs font-semibold select-none"
+                        >
+                          {interest}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-                <div className="md:col-span-4 md:border-l md:border-border-main/40 md:pl-6 flex flex-col justify-center">
+                <div className="md:col-span-4 md:border-l md:border-border-main/40 md:pl-6 flex flex-col justify-start">
                   <div>
-                    <span className="font-bold text-text-main block mb-0.5">Languages:</span>
-                    <span className="text-text-muted">{languages}</span>
+                    <span className="font-bold text-text-main block mb-2">Languages:</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {(languages === "NA" ? ["NA"] : languages.split(",").map(l => l.trim()).filter(Boolean)).map((lang, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2.5 py-0.5 bg-white/5 border border-white/10 text-text-muted rounded-full text-xs font-semibold select-none"
+                        >
+                          {lang}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>

@@ -69,6 +69,13 @@ export function usePartner(id: string) {
 
   useEffect(() => {
     fetchPartner();
+
+    const handleUpdate = () => {
+      fetchPartner();
+    };
+
+    window.addEventListener("reviews_updated", handleUpdate);
+    return () => window.removeEventListener("reviews_updated", handleUpdate);
   }, [fetchPartner]);
 
   return {

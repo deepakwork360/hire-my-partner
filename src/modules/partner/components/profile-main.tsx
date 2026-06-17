@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Rochester, Outfit } from "next/font/google";
 import { MapPin, Star, ShieldCheck, Map, Heart, X, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useTheme } from "@/context/ThemeContext";
 
 import { Partner } from "../types/partner.types";
 
@@ -25,6 +26,7 @@ interface ProfileMainProps {
 
 export default function ProfileMain({ partner }: ProfileMainProps) {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const { appearance } = useTheme();
   
   const defaultProfile = {
     id: "1",
@@ -41,9 +43,11 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
   };
 
   const profileData = partner || defaultProfile;
-  const reviewsCount = typeof profileData.reviews === "number" 
-    ? profileData.reviews 
-    : (Array.isArray(profileData.reviews) ? profileData.reviews.length : 0);
+  const reviewsCount = Array.isArray(profileData.reviews) ? profileData.reviews.length : 0;
+  const rawRating = typeof profileData.rating === "number"
+    ? profileData.rating
+    : parseFloat(profileData.rating || "0");
+  const ratingScore = rawRating === 0 ? "0.0" : rawRating.toFixed(1);
 
   return (
     <section
@@ -58,21 +62,26 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
       <div className="max-w-[1250px] w-full mx-auto relative z-10">
         
         {/* Cover Photo Banner */}
-        {profileData.banner && (
-          <div 
-            onClick={() => setLightboxImage(profileData.banner || null)}
-            className="w-full h-[200px] sm:h-[280px] md:h-[340px] rounded-[36px] overflow-hidden border border-border-main relative shadow-2xl cursor-zoom-in group"
-          >
-            <Image
-              src={profileData.banner}
-              alt={`${profileData.name} cover banner`}
-              fill
-              className="object-cover transition-transform duration-1000 ease-in-out group-hover:scale-105"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-bg-base/90 via-black/10 to-transparent" />
-          </div>
-        )}
+        {(() => {
+          const bannerSrc = profileData.banner || "/images/love1.jpg";
+          return (
+            <div 
+              onClick={() => setLightboxImage(bannerSrc)}
+              className="w-full h-[200px] sm:h-[280px] md:h-[340px] rounded-[36px] overflow-hidden border border-border-main relative shadow-2xl cursor-zoom-in group"
+            >
+              <Image
+                src={bannerSrc}
+                alt={`${profileData.name} cover banner`}
+                fill
+                className="object-cover transition-transform duration-1000 ease-in-out group-hover:scale-105"
+                priority
+              />
+              {appearance === "dark" && (
+                <div className="absolute inset-0 bg-gradient-to-t from-bg-base/90 via-black/10 to-transparent" />
+              )}
+            </div>
+          );
+        })()}
 
         {/* Profile Info Header (with overlapping circular avatar) */}
         <div className="flex flex-col lg:flex-row items-center lg:items-center justify-between gap-6 px-6 sm:px-12 pb-8 relative z-20">
@@ -115,11 +124,18 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
               {/* Stars & Reviews */}
               <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
                 <div className="flex text-amber-400">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={14} className="fill-amber-400 text-amber-400" />
-                  ))}
+                  {[...Array(5)].map((_, i) => {
+                    const isFilled = rawRating >= i + 1;
+                    return (
+                      <Star
+                        key={i}
+                        size={14}
+                        className={isFilled ? "fill-amber-400 text-amber-400" : "text-text-muted/40"}
+                      />
+                    );
+                  })}
                 </div>
-                <span className="text-xs font-bold text-text-main">{profileData.rating}</span>
+                <span className="text-xs font-bold text-text-main">{ratingScore}</span>
                 <span className="text-text-muted text-[10px] font-bold">({reviewsCount} Reviews)</span>
               </div>
             </div>
@@ -165,7 +181,7 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
               </div>
               <div>
                 <p className="text-text-muted text-[7px] font-black uppercase tracking-widest">Rating Score</p>
-                <p className="text-text-main text-xs font-bold tracking-tight">{profileData.rating} ({reviewsCount} Reviews)</p>
+                <p className="text-text-main text-xs font-bold tracking-tight">{ratingScore} ({reviewsCount} Reviews)</p>
               </div>
             </div>
 
@@ -175,7 +191,11 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
               </div>
               <div>
                 <p className="text-text-muted text-[7px] font-black uppercase tracking-widest">Distance</p>
-                <p className="text-text-main text-xs font-bold tracking-tight">{profileData.distance} from you</p>
+                <p className="text-text-main text-xs font-bold tracking-tight">
+                  {profileData.distance !== undefined && profileData.distance !== null 
+                    ? `${typeof profileData.distance === "number" ? profileData.distance : String(profileData.distance).replace(/[^0-9.]/g, "")} km away` 
+                    : "N/A"}
+                </p>
               </div>
             </div>
           </div>

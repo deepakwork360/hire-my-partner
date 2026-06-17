@@ -33,7 +33,7 @@ const DEFAULT_USERS: MockUser[] = [
     name: "John Doe",
     email: "john@example.com",
     password: "password123",
-    avatar: "https://i.pinimg.com/1200x/ca/75/d5/ca75d50ec6781545c80105566d8eb051.jpg",
+    avatar: "/images/avatar6.jpg",
     isProfileComplete: false,
   }
 ];
@@ -125,7 +125,7 @@ export const mockDb = {
       email,
       phone: finalPhone,
       password,
-      avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
+      avatar: "/images/avatar6.jpg",
       isProfileComplete: false
     };
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Outfit } from "next/font/google";
@@ -13,14 +14,15 @@ const outfit = Outfit({
 });
 
 interface ProfileCardProps {
+  id?: string | number;
   image: string;
   name: string;
   age: number;
   location: string;
   hourlyRate: string;
   bio: string;
-  rating?: string;
-  distance?: string;
+  rating?: number | string;
+  distance?: number | string;
   confirmation?: string;
   buttonText?: string;
   buttonLink?: string;
@@ -32,6 +34,7 @@ interface ProfileCardProps {
 }
 
 export default function ProfileCard({
+  id,
   image,
   name,
   age,
@@ -69,20 +72,16 @@ export default function ProfileCard({
         {/* Rating Badge */}
         <div className="profile-card-rating">
           <Star className="profile-card-rating-icon" />
-          <span>{rating}</span>
+          <span>{(() => {
+            const rVal = typeof rating === "number" ? rating : parseFloat(rating || "0");
+            return rVal === 0 ? "0.0" : rVal.toFixed(1);
+          })()}</span>
         </div>
 
         {/* Rate Badge */}
         <div className="profile-card-badge">
           {hourlyRate}
         </div>
-
-        {/* Dynamic Tag Badge */}
-        {tag && (
-          <div className="absolute bottom-6 left-6 px-3 py-1 bg-primary/20 backdrop-blur-md rounded-full text-[10px] font-bold text-primary border border-primary/30 z-20 shadow-lg">
-            {tag}
-          </div>
-        )}
       </div>
 
       {/* Content */}
@@ -109,17 +108,17 @@ export default function ProfileCard({
                     <Navigation className="profile-card-confirmation-icon" />
                   <span>{confirmation}</span>
                 </div>
-                {distance && (
+                {distance !== undefined && distance !== null && (
                   <div className="profile-card-distance">
-                    {distance}
+                    {typeof distance === "number" ? distance : String(distance).replace(/[^0-9.]/g, "")} km away
                   </div>
                 )}
               </>
             ) : (
               <>
-                {distance && (
+                {distance !== undefined && distance !== null && (
                   <div className="profile-card-distance">
-                    {distance}
+                    {typeof distance === "number" ? distance : String(distance).replace(/[^0-9.]/g, "")} km away
                   </div>
                 )}
                 <div />

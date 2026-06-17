@@ -4,6 +4,41 @@ import { partners as mockPartners } from "../data/partners";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+function enrichPartnerWithDynamicReviews(partner: any): Partner {
+  let reviews = partner.reviews || [];
+  if (typeof window !== "undefined") {
+    try {
+      const saved = localStorage.getItem(`partner_reviews_${partner.id}`);
+      if (saved) {
+        reviews = JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error("Failed to parse reviews for partner", partner.id, e);
+    }
+  }
+
+  // Calculate average rating
+  let ratingNum = 0;
+  if (Array.isArray(reviews) && reviews.length > 0) {
+    const sum = reviews.reduce((acc, r: any) => acc + (r.rating || 5), 0);
+    ratingNum = parseFloat((sum / reviews.length).toFixed(1));
+  } else {
+    ratingNum = 0.0;
+  }
+
+  // Parse distance as a number
+  const distanceNum = typeof partner.distance === "number"
+    ? partner.distance
+    : parseFloat(String(partner.distance || "0").replace(/[^0-9.]/g, "")) || 0;
+
+  return {
+    ...partner,
+    reviews,
+    rating: ratingNum,
+    distance: distanceNum,
+  } as Partner;
+}
+
 export const PartnerService = {
   /**
    * Fetches all partners from the API.
@@ -37,16 +72,16 @@ export const PartnerService = {
       
       // Standard list check
       if (Array.isArray(data)) {
-        return [...localApproved, ...data] as Partner[];
+        return [...localApproved, ...data].map(enrichPartnerWithDynamicReviews);
       }
       
       // Check for nested wrapper patterns (e.g., { data: [...] } or { partners: [...] })
       if (data && typeof data === "object") {
         if (Array.isArray((data as any).data)) {
-          return [...localApproved, ...(data as any).data] as Partner[];
+          return [...localApproved, ...(data as any).data].map(enrichPartnerWithDynamicReviews);
         }
         if (Array.isArray((data as any).partners)) {
-          return [...localApproved, ...(data as any).partners] as Partner[];
+          return [...localApproved, ...(data as any).partners].map(enrichPartnerWithDynamicReviews);
         }
       }
       
@@ -55,7 +90,7 @@ export const PartnerService = {
       console.warn("PartnerService.getPartners failed, falling back to mock data:", error);
       // Simulate network latency for a realistic loading experience
       await delay(800);
-      return [...localApproved, ...mockPartners];
+      return [...localApproved, ...mockPartners].map(enrichPartnerWithDynamicReviews);
     }
   },
 
@@ -78,7 +113,7 @@ export const PartnerService = {
             const slugMatch = nameSlug === decodedId;
             return rawIdMatch || slugMatch;
           });
-          if (found) return found;
+          if (found) return enrichPartnerWithDynamicReviews(found);
         }
       } catch (e) {
         console.error("Failed to query local approved partners", e);
@@ -91,7 +126,7 @@ export const PartnerService = {
       
       // Check if response contains a valid partner object
       if (data && typeof data === "object" && ("id" in data || "name" in data)) {
-        return data as Partner;
+        return enrichPartnerWithDynamicReviews(data as Partner);
       }
       
       throw new Error("Invalid partner detail response format");
@@ -110,7 +145,7 @@ export const PartnerService = {
       if (!partner) {
         throw new Error("Partner not found");
       }
-      return partner;
+      return enrichPartnerWithDynamicReviews(partner);
     }
   }
 };

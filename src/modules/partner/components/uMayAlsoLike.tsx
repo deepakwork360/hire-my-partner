@@ -32,6 +32,7 @@ export default function UMayAlsoLike({ excludeId }: UMayAlsoLikeProps) {
   const displayPartners = filteredPartners.slice(0, 6);
 
   const profileItems = displayPartners.map((partner) => ({
+    id: partner.id,
     image: partner.image,
     hourlyRate: `₹${partner.pricing.oneHour}/hr`,
     name: partner.name,

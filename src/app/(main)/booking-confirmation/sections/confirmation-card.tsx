@@ -4,9 +4,13 @@ import { useEffect } from "react";
 import { motion, Variants } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
 import Image from "next/image";
+
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { partners } from "@/modules/partner/data/partners";
+import { usePartner } from "@/modules/partner/hooks/usePartner";
+import { Partner } from "@/modules/partner/types/partner.types";
+
 import {
   Check,
   Calendar,
@@ -42,6 +46,30 @@ const itemVariants: Variants = {
   },
 };
 
+
+const calculateEndTime = (startTimeStr: string, durationStr: string): string => {
+  if (!startTimeStr) return "09:00 PM";
+  const match = startTimeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return startTimeStr;
+
+  let hour = parseInt(match[1], 10);
+  const minute = match[2];
+  const ampm = match[3].toUpperCase();
+
+  if (ampm === "PM" && hour < 12) hour += 12;
+  if (ampm === "AM" && hour === 12) hour = 0;
+
+  const durationHours = parseInt(durationStr, 10) || 2;
+  let newHour = (hour + durationHours) % 24;
+
+  const newAmpm = newHour >= 12 ? "PM" : "AM";
+  newHour = newHour % 12;
+  newHour = newHour ? newHour : 12;
+
+  const strHours = String(newHour).padStart(2, "0");
+  return `${strHours}:${minute} ${newAmpm}`;
+};
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function ConfirmationCard() {
@@ -52,29 +80,28 @@ export default function ConfirmationCard() {
   const addonsParam = searchParams.get("addons") || "";
   const amountParam = searchParams.get("amount") || "1245";
 
+
   // Find partner from database
-  const partner = partners.find(
-    (p) => String(p.id).toLowerCase() === partnerId.toLowerCase()
-  ) || partners[0];
+  const { partner: activePartner } = usePartner(partnerId);
+  const partner = activePartner || partners[0];
 
   // Derive companion email
   const companionEmail = partner.name.toLowerCase().replace(/[^a-z0-9]/g, "") + "@email.com";
 
   // Parse date and time start/end
   const [dateLabel, timeRange] = dateParam.split(" | ");
-  let timeStart = "7:00 PM";
-  let timeEnd = "9:00 PM";
+
+
+  let timeStart = "07:00 PM";
+  let timeEnd = "09:00 PM";
   if (timeRange) {
-    const parts = timeRange.split(/ [–-] /);
+    const parts = timeRange.split(/\s*[-–]\s*/);
     if (parts.length === 2) {
-      timeStart = parts[0];
-      timeEnd = parts[1];
+      timeStart = parts[0].trim();
+      timeEnd = parts[1].trim();
     } else {
-      const partsAlt = timeRange.split("–");
-      if (partsAlt.length === 2) {
-        timeStart = partsAlt[0].trim();
-        timeEnd = partsAlt[1].trim();
-      }
+      timeStart = timeRange.trim();
+      timeEnd = calculateEndTime(timeStart, durationParam);
     }
   }
 
@@ -84,9 +111,8 @@ export default function ConfirmationCard() {
   // Parse amount
   const parsedAmount = parseInt(amountParam, 10) || 0;
 
-  // Generate dynamic Booking ID deterministically to prevent hydration mismatch
   const hash = (partner.name.length + dateParam.length + amountParam.length) % 10000;
-  const bookingId = `BK-2026-${partner.id.padStart(2, "0")}${String(hash).padStart(4, "0")}`;
+  const bookingId = `BK-2026-${String(partner.id).padStart(2, "0")}${String(hash).padStart(4, "0")}`;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -225,14 +251,14 @@ export default function ConfirmationCard() {
                       key={s}
                       size={12}
                       className={
-                        s <= Math.round(parseFloat(partner.rating))
+                        s <= Math.round(partner.rating)
                           ? "text-amber-400 fill-amber-400"
                           : "text-amber-400/30"
                       }
                     />
                   ))}
                   <span className="text-text-main text-xs font-black ml-1">
-                    {partner.rating}
+                    {typeof partner.rating === "number" ? partner.rating.toFixed(1) : parseFloat(partner.rating || "0.0").toFixed(1)}
                   </span>
                   <span className="text-text-muted text-xs">
                     ({partner.reviews.length})

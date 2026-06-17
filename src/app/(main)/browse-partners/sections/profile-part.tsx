@@ -17,9 +17,10 @@ interface ProfileData {
   age: number;
   gender: string;
   location: string;
+  distance?: number;
   bio: string;
   tag: string;
-  rating: string;
+  rating: number;
   confirmation: string;
   viewLink: string;
 }
@@ -44,9 +45,19 @@ export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean
         age: p.age || 22,
         gender: p.gender || "Select Gender",
         location: (p.location || "Mumbai, India").split(",")[0].trim(),
+        distance: p.distance,
         bio: p.bio || "",
-        tag: p.id === "1" ? "Friendly" : p.id === "2" ? "MusicFan" : p.id === "3" ? "Talkative" : p.id === "4" ? "Traveler" : p.id === "5" ? "NatureLover" : "BookLover",
-        rating: p.rating || "4.9",
+        tag: (() => {
+          if (p.tags && p.tags.length > 0 && p.tags[0]) {
+            const first = p.tags[0];
+            if (first === "NA") return "NA";
+            return first.startsWith("#") ? first.substring(1) : first;
+          }
+          const isMock = p.id ? !isNaN(Number(p.id)) : false;
+          if (!isMock) return "NA";
+          return p.id === "1" ? "Friendly" : p.id === "2" ? "MusicFan" : p.id === "3" ? "Talkative" : p.id === "4" ? "Traveler" : p.id === "5" ? "NatureLover" : "BookLover";
+        })(),
+        rating: p.rating || 4.9,
         confirmation: p.verified ? "Verified" : "",
         viewLink: `/partners/${p.id}`,
       };
@@ -95,7 +106,7 @@ export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean
 
     if (ratingParam) {
       const minRating = parseFloat(ratingParam);
-      if (parseFloat(profile.rating) < minRating) return false;
+      if (profile.rating < minRating) return false;
     }
 
     if (genderParam) {
@@ -134,7 +145,7 @@ export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean
     const filtered = dbProfiles.filter(filterProfile);
     return filtered.sort((a, b) => {
       if (sortBy === "top-rated") {
-        return parseFloat(b.rating) - parseFloat(a.rating);
+        return b.rating - a.rating;
       }
       return String(a.id).localeCompare(String(b.id), undefined, { numeric: true });
     });
@@ -214,11 +225,13 @@ export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean
               }}
             >
               <ProfileCard
+                id={profile.id}
                 image={profile.image}
                 hourlyRate={profile.hourlyRate}
                 name={profile.name}
                 age={profile.age}
                 location={profile.location}
+                distance={profile.distance}
                 bio={profile.bio}
                 tag={profile.tag}
                 rating={profile.rating}

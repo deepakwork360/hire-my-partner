@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { usePartner } from "@/modules/partner/hooks/usePartner";
 import ProfileMain from "@/modules/partner/components/profile-main";
 import Gallery from "@/modules/partner/components/gallery";
+import VideoShowcase from "@/modules/partner/components/video-showcase";
 import Availability from "@/modules/partner/components/availability";
 import CompanionSay from "@/modules/partner/components/companion-say";
 import Report from "@/modules/partner/components/report";
@@ -34,9 +35,10 @@ export default function PartnerDetailPage({ params }: PageProps) {
       <PageHeaderAccent />
       <ProfileMain partner={partner} />
       <Gallery images={partner.gallery} partner={partner} />
+      <VideoShowcase videos={partner.videos} />
       <Availability partner={partner} />
       <Report />
-      <CompanionSay reviews={partner.reviews} />
+      <CompanionSay reviews={partner.reviews} partnerId={partner.id} partnerName={partner.name} />
       <UMayAlsoLike excludeId={partner.id} />
       <Footer />
     </div>

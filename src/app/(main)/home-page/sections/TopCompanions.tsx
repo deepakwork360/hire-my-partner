@@ -26,6 +26,7 @@ export default function TopCompanions() {
   const { partners: fetchedPartners, loading } = usePartners();
 
   const profile = fetchedPartners.map((partner) => ({
+    id: partner.id,
     image: partner.image,
     hourlyRate: `₹${partner.pricing.oneHour}/hr`,
     name: partner.name,
@@ -35,6 +36,16 @@ export default function TopCompanions() {
     rating: partner.rating,
     distance: partner.distance,
     confirmation: partner.verified ? "Identity Verified" : undefined,
+    tag: (() => {
+      if (partner.tags && partner.tags.length > 0 && partner.tags[0]) {
+        const first = partner.tags[0];
+        if (first === "NA") return "NA";
+        return first.startsWith("#") ? first.substring(1) : first;
+      }
+      const isMock = partner.id ? !isNaN(Number(partner.id)) : false;
+      if (!isMock) return "NA";
+      return partner.id === "1" ? "Friendly" : partner.id === "2" ? "MusicFan" : partner.id === "3" ? "Talkative" : partner.id === "4" ? "Traveler" : partner.id === "5" ? "NatureLover" : "BookLover";
+    })(),
     buttonText: "Book Now",
     buttonLink: `/checkout?partner=${partner.id}`,
     viewLink: `/partners/${partner.id}`,

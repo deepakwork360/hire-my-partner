@@ -1,6 +1,6 @@
 import { Partner } from "../types/partner.types";
 
-export const partners: Partner[] = [
+export const partners: any[] = [
   {
     id: "1",
     name: "Gigi Hadid",
@@ -21,6 +21,11 @@ export const partners: Partner[] = [
       fiveHours: 24995,
       eightHours: 39992,
     },
+    videos: [
+      "https://assets.mixkit.co/videos/223/223-720.mp4",
+      "https://assets.mixkit.co/videos/42596/42596-720.mp4",
+      "https://assets.mixkit.co/videos/42741/42741-720.mp4"
+    ],
     gallery: [
       { id: "1-1", image: "https://i1-e.pinimg.com/736x/ee/f3/37/eef33796886eab1d9fc5184c0f4be91d.jpg" },
       { id: "1-2", image: "https://i1-e.pinimg.com/736x/e8/10/34/e81034443d4a25d862b9b881858830e7.jpg" },
@@ -28,7 +33,7 @@ export const partners: Partner[] = [
       { id: "1-4", image: "https://i1-e.pinimg.com/736x/6a/1f/c5/6a1fc5b5c9c46b588b3b93ebe129d015.jpg" },
       { id: "1-5", image: "https://i1-e.pinimg.com/736x/6e/20/8d/6e208d6e06a5b3546f2e0fd0f6d8d805.jpg" },
       { id: "1-6", image: "https://i1-e.pinimg.com/1200x/fb/e1/55/fbe155619f3f62c9e393f8d7c3d86558.jpg" },
-      { id: "1-7", image: "https://i236.pinimg.com/236x/dd/73/c8/dd73c80af2f314caa14651941f81978e.jpg" },
+      { id: "1-7", image: "https://i.pinimg.com/1200x/a7/d8/1b/a7d81b093bfb7a1fe04cfde479f401bd.jpg" },
       { id: "1-8", image: "https://i1-e.pinimg.com/736x/ac/a9/eb/aca9eb556f4c236152b991437be1fdb2.jpg" },
       { id: "1-9", image: "https://i1-e.pinimg.com/1200x/37/ab/8c/37ab8c924253fe388e84f305841c24b4.jpg" }
     ],
@@ -39,7 +44,8 @@ export const partners: Partner[] = [
         role: "User",
         text: "She made my sister's wedding feel so special. Everyone thought we were best friends for years!",
         image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&fit=crop",
-        rating: 5
+        rating: 3,
+        videoUrl: "https://assets.mixkit.co/active_storage/video_items/100149/1721151686/100149-video-720.mp4"
       },
       {
         id: "2",
@@ -47,7 +53,7 @@ export const partners: Partner[] = [
         role: "User",
         text: "Charming, respectful, and truly present in every moment. I felt totally at ease.",
         image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&fit=crop",
-        rating: 5
+        rating: 4
       },
       {
         id: "3",
@@ -55,7 +61,8 @@ export const partners: Partner[] = [
         role: "User",
         text: "Booked her for a formal event. Graceful, well-spoken, and made every interaction smooth and professional.",
         image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&fit=crop",
-        rating: 5
+        rating: 5,
+        videoUrl: "https://assets.mixkit.co/nbttnl98r60i925yue5p62rp7phr"
       },
       {
         id: "4",
@@ -63,7 +70,8 @@ export const partners: Partner[] = [
         role: "Companion",
         text: "We had great conversation during dinner. Intelligent, funny, and very respectful.",
         image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&fit=crop",
-        rating: 5
+        rating: 4,
+        videoUrl: "https://assets.mixkit.co/videos/32765/32765-720.mp4"
       },
      {
       id: "5",
@@ -95,6 +103,11 @@ export const partners: Partner[] = [
       fiveHours: 17495,
       eightHours: 27992
     },
+    videos: [
+      "https://www.desktophut.com/files/1761909407.mp4",
+      "https://www.desktophut.com/files/1Kegg7uJ9zlhHeB_Kugisaki%20Nobara%20Jujutsu%20Kaisen_3_170410.mp4",
+      "https://www.desktophut.com/files/1765401944.mp4"
+    ],
     gallery: [
       { id: "2-1", image: "https://i1-e.pinimg.com/1200x/45/b4/3c/45b43cae813588126aab65003788598f.jpg" },
       { id: "2-2", image: "https://i.pinimg.com/736x/89/ce/51/89ce51e26932f77105b2176b9fa1e6e8.jpg" },
@@ -117,6 +130,34 @@ export const partners: Partner[] = [
         text: "Had a lovely casual evening. Extremely sweet and respectful companion.",
         image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&fit=crop",
         rating: 5
+      },
+      ,
+      {
+        id: "3",
+        name: "Ravi",
+        role: "Companion",
+        text: "We had a great time together, she is very polite and humble",
+        image: "https://i1-e.pinimg.com/1200x/89/ae/2b/89ae2b246698578dac424b544e64d9ab.jpg",
+        rating: 5,
+        videoUrl: "https://assets.mixkit.co/videos/4640/4640-720.mp4"
+      },
+      {
+        id: "4",
+        name: "brad pitt",
+        role: "User",
+        text: "She is very nice and calm",
+        image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&fit=crop",
+        rating: 5,
+        videoUrl: "https://assets.mixkit.co/videos/46652/46652-720.mp4"
+      },
+      {
+        id: "5",
+        name: "Nick",
+        role: "Companion",
+        text: "had a great time together , would love to meet her again",
+        image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&fit=crop",
+        rating: 5,
+        videoUrl: "https://assets.mixkit.co/videos/4855/4855-720.mp4"
       }
     ]
   },
@@ -131,7 +172,7 @@ export const partners: Partner[] = [
     verified: true,
     distance: "7.1 km away",
     image: "https://i.pinimg.com/736x/31/77/f3/3177f3f1ae56801951d04631028304f4.jpg",
-    banner: "https://i.pinimg.com/736x/7c/84/29/7c8429ad181d4b5db45056b865b10a49.jpg",
+    banner: "",
     pricing: {
       oneHour: 5999,
       twoHours: 11998,
@@ -153,7 +194,7 @@ export const partners: Partner[] = [
         role: "User",
         text: "Perfect premium partner. Charming, intelligent, and highly professional at my company's dinner.",
         image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&fit=crop",
-        rating: 5
+        rating: 4
       }
     ]
   },
@@ -195,7 +236,7 @@ export const partners: Partner[] = [
         role: "User",
         text: "Rohan is extremely witty and positive. We went on a heritage walk and it was incredibly engaging.",
         image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&fit=crop",
-        rating: 5
+        rating: 4
       }
     ]
   },
@@ -230,7 +271,7 @@ export const partners: Partner[] = [
         role: "User",
         text: "Kavya is a blast to hang out with! Exceptionally talented and very humble. We attended a gig together.",
         image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&fit=crop",
-        rating: 5
+        rating: 3
       }
     ]
   },
@@ -265,7 +306,7 @@ export const partners: Partner[] = [
         role: "User",
         text: "Aanya is incredibly articulate and creative. A wonderful companion to visit local museum exhibits with.",
         image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&fit=crop",
-        rating: 5
+        rating: 3
       }
     ]
   },
@@ -278,7 +319,7 @@ export const partners: Partner[] = [
     location: "Los Angeles, California",
     rating: "4.9",
     verified: true,
-    distance: "Immediate availability",
+    distance: "1.2 km away",
     image: "https://i.pinimg.com/736x/0a/f3/28/0af328b807839bda2110abe51a181124.jpg",
     banner: "https://i.pinimg.com/1200x/b3/b1/9c/b3b19cf85b25399d0abc1e6f12b8b287.jpg",
     pricing: {
@@ -302,7 +343,7 @@ export const partners: Partner[] = [
         role: "VIP Member",
         text: "Exceeded all expectations. Highly charismatic, graceful, and brought an incredible positive energy to our exclusive dinner gala.",
         image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&fit=crop",
-        rating: 5
+        rating: 4
       },
       {
         id: "2",
@@ -323,7 +364,7 @@ export const partners: Partner[] = [
     location: "Los Angeles, California",
     rating: "5.0",
     verified: true,
-    distance: "Immediate availability",
+    distance: "2.9 km away",
     image: "https://i1-e.pinimg.com/1200x/97/e0/d9/97e0d90967df6209889c5a9c41fceffd.jpg",
     banner: "https://i.pinimg.com/1200x/69/de/5a/69de5af2ba2b046a16898743ff9e4981.jpg",
     pricing: {
@@ -347,7 +388,7 @@ export const partners: Partner[] = [
         role: "VIP Platinum",
         text: "Kylie is incredibly charming, elegant, and standard-setting in her professionalism. She made our product launch event truly spectacular.",
         image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&fit=crop",
-        rating: 5
+        rating: 4
       },
       {
         id: "2",
@@ -390,7 +431,7 @@ export const partners: Partner[] = [
         role: "User",
         text: "Kavya is a blast to hang out with! Exceptionally talented and very humble. We attended a gig together.",
         image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&fit=crop",
-        rating: 5
+        rating: 4
       }
     ]
   },
@@ -440,7 +481,7 @@ export const partners: Partner[] = [
     verified: true,
     distance: "1.2 km away",
     image: "https://i1-e.pinimg.com/736x/45/cc/52/45cc5257d35ee772d2775ad24ae8d371.jpg",
-    banner: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=1200&auto=format&fit=crop",
+    banner: "",
     pricing: {
       oneHour: 2000,
       twoHours: 4000,
@@ -460,7 +501,7 @@ export const partners: Partner[] = [
         role: "User",
         text: "Kavya is a blast to hang out with! Exceptionally talented and very humble. We attended a gig together.",
         image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&fit=crop",
-        rating: 5
+        rating: 4
       }
     ]
    },
@@ -475,7 +516,7 @@ export const partners: Partner[] = [
     verified: true,
     distance: "1.2 km away",
     image: "https://i1-e.pinimg.com/1200x/10/af/88/10af88e3d664ea493209912fb3d90be7.jpg",
-    banner: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1200&auto=format&fit=crop",
+    banner: "",
     pricing: {
       oneHour: 2000,
       twoHours: 4000,

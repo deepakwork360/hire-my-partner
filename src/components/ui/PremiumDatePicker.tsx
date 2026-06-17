@@ -14,6 +14,7 @@ interface PremiumDatePickerProps {
   label?: string;
   className?: string;
   hasError?: boolean;
+  minDate?: Date;
 }
 
 export default function PremiumDatePicker({
@@ -23,6 +24,7 @@ export default function PremiumDatePicker({
   label,
   className = "",
   hasError = false,
+  minDate,
 }: PremiumDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [viewDate, setViewDate] = useState(new Date());
@@ -55,8 +57,20 @@ export default function PremiumDatePicker({
     "July", "August", "September", "October", "November", "December"
   ];
 
+  const canGoPrev = useMemo(() => {
+    if (!minDate) return true;
+    const prevMonthDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
+    const minYear = minDate.getFullYear();
+    const minMonth = minDate.getMonth();
+    
+    if (prevMonthDate.getFullYear() < minYear) return false;
+    if (prevMonthDate.getFullYear() === minYear && prevMonthDate.getMonth() < minMonth) return false;
+    return true;
+  }, [viewDate, minDate]);
+
   const handlePrevMonth = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!canGoPrev) return;
     setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
   };
 
@@ -97,25 +111,38 @@ export default function PremiumDatePicker({
                       new Date().getMonth() === month && 
                       new Date().getFullYear() === year;
 
+      const cellDate = new Date(year, month, day);
+      let isDisabled = false;
+      if (minDate) {
+        const compareCell = new Date(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate()).getTime();
+        const compareMin = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate()).getTime();
+        isDisabled = compareCell < compareMin;
+      }
+
       days.push(
         <motion.button
           key={day}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={isDisabled ? undefined : { scale: 1.1 }}
+          whileTap={isDisabled ? undefined : { scale: 0.95 }}
           onClick={(e) => {
             e.stopPropagation();
-            handleDateSelect(day);
+            if (!isDisabled) {
+              handleDateSelect(day);
+            }
           }}
-          className={`h-9 w-9 rounded-xl text-[10px] font-bold transition-all flex items-center justify-center relative cursor-pointer ${
-            isSelected 
-            ? "bg-primary text-white shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] z-10" 
-            : isToday
-              ? "text-primary border border-primary/30"
-              : "text-text-muted hover:bg-bg-card hover:text-text-main"
+          disabled={isDisabled}
+          className={`h-9 w-9 rounded-xl text-[10px] font-bold transition-all flex items-center justify-center relative ${
+            isDisabled
+              ? "text-text-muted/30 cursor-not-allowed"
+              : isSelected 
+                ? "bg-primary text-white shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] z-10 cursor-pointer" 
+                : isToday
+                  ? "text-primary border border-primary/30 cursor-pointer"
+                  : "text-text-muted hover:bg-bg-card hover:text-text-main cursor-pointer"
           }`}
         >
           {day}
-          {isToday && !isSelected && (
+          {isToday && !isSelected && !isDisabled && (
             <div className="absolute bottom-1 w-1 h-1 bg-primary rounded-full" />
           )}
         </motion.button>
@@ -192,7 +219,12 @@ export default function PremiumDatePicker({
               <div className="flex items-center justify-between mb-4 px-1">
                 <button 
                   onClick={handlePrevMonth}
-                  className="p-2 hover:bg-bg-card rounded-xl text-text-muted hover:text-text-main transition-all cursor-pointer"
+                  disabled={!canGoPrev}
+                  className={`p-2 rounded-xl text-text-muted transition-all ${
+                    canGoPrev 
+                      ? "hover:bg-bg-card hover:text-text-main cursor-pointer" 
+                      : "opacity-30 cursor-not-allowed"
+                  }`}
                 >
                   <ChevronLeft size={16} />
                 </button>

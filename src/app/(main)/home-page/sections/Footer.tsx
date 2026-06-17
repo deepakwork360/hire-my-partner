@@ -1,10 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Rochester, Outfit } from "next/font/google";
 import Image from "next/image";
 import ThemeLogo from "@/components/ui/ThemeLogo";
 import { useTheme } from "@/context/ThemeContext";
+import { useAuthStore } from "@/modules/auth/store";
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -32,6 +34,12 @@ const SocialIcon = ({ d, href }: { d: string; href: string }) => (
 
 export default function Footer() {
   const { activeTheme } = useTheme();
+  const { isAuthenticated } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const ContactDetails = [
     {
@@ -77,10 +85,14 @@ export default function Footer() {
       label: "Safety & Trust",
       href: "/#safety-and-trust",
     },
-    {
-      label: "Login",
-      href: "/login",
-    },
+    ...(!(mounted && isAuthenticated)
+      ? [
+          {
+            label: "Login",
+            href: "/login",
+          },
+        ]
+      : []),
     {
       label: "Contact Us",
       href: "/contact",

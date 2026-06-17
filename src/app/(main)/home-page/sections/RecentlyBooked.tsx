@@ -35,17 +35,33 @@ export default function RecentlyBooked() {
   const { partners: fetchedPartners, loading } = usePartners();
 
   const profile = fetchedPartners.map((partner, index) => ({
+    id: partner.id,
     image: partner.image,
     hourlyRate: `₹${partner.pricing.oneHour}/hr`,
     name: partner.name,
     age: partner.age,
     location: partner.location.split(",")[0].trim(),
     bio: RECENT_EVENTS[index % RECENT_EVENTS.length],
+    rating: partner.rating,
     confirmation: "Just Booked",
+    tag: (() => {
+      if (partner.tags && partner.tags.length > 0 && partner.tags[0]) {
+        const first = partner.tags[0];
+        if (first === "NA") return "NA";
+        return first.startsWith("#") ? first.substring(1) : first;
+      }
+      const isMock = partner.id ? !isNaN(Number(partner.id)) : false;
+      if (!isMock) return "NA";
+      return partner.id === "1" ? "Friendly" : partner.id === "2" ? "MusicFan" : partner.id === "3" ? "Talkative" : partner.id === "4" ? "Traveler" : partner.id === "5" ? "NatureLover" : "BookLover";
+    })(),
     buttonText: "View Profile",
     buttonLink: `/partners/${partner.id}`,
     showViewIcon: false,
   }));
+
+  if (!loading && profile.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-10 md:py-16 px-4 bg-bg-secondary overflow-hidden border-b border-border-main">

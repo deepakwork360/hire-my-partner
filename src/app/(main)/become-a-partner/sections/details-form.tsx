@@ -18,6 +18,9 @@ import {
   AlertCircle,
   Edit3,
   ChevronUp,
+  Calendar,
+  Video,
+  ShieldAlert,
 } from "lucide-react";
 import PremiumButton from "@/components/ui/PremiumButton";
 import DiscoveryButton from "@/components/ui/DiscoveryButton";
@@ -33,8 +36,35 @@ const rochester = Rochester({
   subsets: ["latin"],
   weight: ["400"],
 });
+const getNext7Days = () => {
+  const dates = [];
+  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  for (let i = 1; i <= 7; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    dates.push({
+      dayName: weekdays[d.getDay()],
+      dayNum: d.getDate(),
+      month: months[d.getMonth()],
+      fullString: d.toISOString().split("T")[0],
+    });
+  }
+  return dates;
+};
+
+const timeSlots = [
+  "09:30 AM - 10:00 AM",
+  "10:30 AM - 11:00 AM",
+  "11:30 AM - 12:00 PM",
+  "02:00 PM - 02:30 PM",
+  "03:00 PM - 03:30 PM",
+  "04:00 PM - 04:30 PM",
+  "05:00 PM - 05:30 PM",
+];
 
 // --- Moved Components Outside to prevent Focus Loss ---
+
 
 const InputWrapper = ({
   children,
@@ -43,6 +73,90 @@ const InputWrapper = ({
   children: React.ReactNode;
   className?: string;
 }) => <div className={`w-full relative group ${className}`}>{children}</div>;
+
+interface TagInputProps {
+  tags: string[];
+  onChange: (tags: string[]) => void;
+  placeholder: string;
+}
+
+
+
+const TagInput = ({ tags, onChange, placeholder }: TagInputProps) => {
+  const tagsArray = Array.isArray(tags)
+    ? tags
+    : typeof tags === "string" && tags
+      ? (tags as string).split(",").map((t) => t.trim()).filter(Boolean)
+      : [];
+
+  const [inputValue, setInputValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const addTag = (val: string) => {
+    const trimmed = val.trim();
+    if (!trimmed) return;
+    if (!tagsArray.includes(trimmed)) {
+      onChange([...tagsArray, trimmed]);
+    }
+    setInputValue("");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addTag(inputValue);
+    } else if (e.key === "Backspace" && !inputValue && tagsArray.length > 0) {
+      onChange(tagsArray.slice(0, -1));
+    }
+  };
+
+  const removeTag = (indexToRemove: number) => {
+    onChange(tagsArray.filter((_, idx) => idx !== indexToRemove));
+  };
+
+  return (
+    <div 
+      onClick={() => inputRef.current?.focus()}
+      className="w-full flex flex-wrap items-center gap-2 p-4 min-h-[56px] bg-bg-secondary border border-border-main rounded-2xl focus-within:border-primary focus-within:bg-primary/5 focus-within:shadow-[0_0_25px_rgba(var(--primary-rgb),0.15)] group-hover:border-primary/50 transition-all duration-500 shadow-sm cursor-text"
+    >
+      {tagsArray.map((tag, idx) => (
+        <span 
+          key={idx} 
+          className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-xl text-text-main text-xs font-semibold border border-white/10 transition-colors hover:bg-white/15 select-none"
+        >
+          {tag}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              removeTag(idx);
+            }}
+            className="text-text-muted hover:text-text-main hover:scale-110 transition-transform p-0.5 flex items-center justify-center cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5 text-text-muted cursor-pointer" />
+          </button>
+        </span>
+      ))}
+      <input
+        ref={inputRef}
+        type="text"
+        placeholder={tagsArray.length === 0 ? placeholder : ""}
+        value={inputValue}
+        onChange={(e) => {
+          const val = e.target.value;
+          if (val.endsWith(",")) {
+            addTag(val.slice(0, -1));
+          } else {
+            setInputValue(val);
+          }
+        }}
+        onBlur={() => addTag(inputValue)}
+        onKeyDown={handleKeyDown}
+        className="flex-1 min-w-[120px] bg-transparent border-0 focus:outline-none focus:ring-0 text-text-main text-sm font-semibold placeholder:text-text-muted p-0 m-0"
+      />
+    </div>
+  );
+};
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
   <div className="flex items-center gap-4 mb-8">
@@ -216,6 +330,8 @@ export default function DetailsForm() {
     otherAddon: "",
     languages: [] as string[],
     bio: "",
+    tagsInput: [] as string[],
+    interestsInput: [] as string[],
     hourlyRate: "",
     availability: [] as string[],
     instagram: "",
@@ -223,20 +339,29 @@ export default function DetailsForm() {
     termsAgreed: false,
     idProofs: [null, null, null] as (string | null)[],
     gallery: Array(9).fill(null) as (string | null)[],
+    videos: Array(3).fill(null) as (string | null)[],
   });
-
   const [isGenderOpen, setIsGenderOpen] = useState(false);
   const genders = ["Male", "Female", "Other", "Prefer not to say"];
 
-  const [view, setView] = useState<"form" | "processing" | "summary">("form");
+  const [view, setView] = useState<"form" | "processing" | "kyc-schedule" | "summary">("form");
   const [submissionStatus, setSubmissionStatus] = useState<
     "pending" | "success" | "failed"
   >("pending");
   
-  // Custom Verification Life-cycle States
+
   const [verificationStatus, setVerificationStatus] = useState<
     "DRAFT" | "PENDING" | "VERIFIED" | "REJECTED" | "NEEDS_REVISION"
   >("DRAFT");
+  const [kycStatus, setKycStatus] = useState<
+    "NOT_SCHEDULED" | "SCHEDULED" | "APPROVED" | "REJECTED" | "RESCHEDULE_REQUESTED" | "LINK_SHARED"
+  >("NOT_SCHEDULED");
+  const [kycDate, setKycDate] = useState("");
+  const [kycSlot, setKycSlot] = useState("");
+  const [selectedKycDate, setSelectedKycDate] = useState("");
+  const [selectedKycSlot, setSelectedKycSlot] = useState("");
+  const [zoomLink, setZoomLink] = useState("");
+
   const [verificationNotes, setVerificationNotes] = useState<string>("");
   const [revisionText, setRevisionText] = useState<string>("");
   const [showRevisionForm, setShowRevisionForm] = useState<boolean>(false);
@@ -264,21 +389,39 @@ export default function DetailsForm() {
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        // Merge saved data including the browser object URLs
+        const loadedFormData = parsed.formData || {};
+        if (typeof loadedFormData.tagsInput === "string") {
+          loadedFormData.tagsInput = loadedFormData.tagsInput
+            ? loadedFormData.tagsInput.split(",").map((t: string) => t.trim()).filter(Boolean)
+            : [];
+        }
+        if (typeof loadedFormData.interestsInput === "string") {
+          loadedFormData.interestsInput = loadedFormData.interestsInput
+            ? loadedFormData.interestsInput.split(",").map((i: string) => i.trim()).filter(Boolean)
+            : [];
+        }
+        if (!loadedFormData.videos || !Array.isArray(loadedFormData.videos)) {
+          loadedFormData.videos = Array(3).fill(null);
+        }
         setFormData((prev) => ({
           ...prev,
-          ...parsed.formData,
+          ...loadedFormData,
         }));
         setSubmissionStatus(parsed.submissionStatus || "pending");
         setVerificationStatus(parsed.verificationStatus || "DRAFT");
         setVerificationNotes(parsed.verificationNotes || "");
-        
+        setKycStatus(parsed.kycStatus || "NOT_SCHEDULED");
+        setKycDate(parsed.kycDate || "");
+        setKycSlot(parsed.kycSlot || "");
+        setZoomLink(parsed.zoomLink || "");        
         // If they already submitted successfully or are pending review/verified, show summary
         if (parsed.submissionStatus === "success" || parsed.verificationStatus === "PENDING" || parsed.verificationStatus === "VERIFIED" || parsed.verificationStatus === "REJECTED") {
           setView("summary");
           setShowSuccessCard(false);
         } else if (parsed.verificationStatus === "NEEDS_REVISION") {
           setView("form");
+        } else if (parsed.view === "kyc-schedule") {
+          setView("kyc-schedule");
         }
       } catch (e) {
         console.error("Failed to parse saved application data", e);
@@ -286,7 +429,6 @@ export default function DetailsForm() {
     }
     setIsHydrated(true);
   }, []);
-
   // Persistence: Save on Change (Include lightweight Browser Object URLs)
   useEffect(() => {
     if (isHydrated) {
@@ -298,21 +440,25 @@ export default function DetailsForm() {
           view,
           verificationStatus,
           verificationNotes,
+          kycStatus,
+          kycDate,
+          kycSlot,
+          zoomLink,
         }),
       );
     }
-  }, [formData, submissionStatus, view, verificationStatus, verificationNotes, isHydrated]);
+  }, [formData, submissionStatus, view, verificationStatus, verificationNotes, kycStatus, kycDate, kycSlot, zoomLink, isHydrated]);
+
 
   // Auto-Scroll on View Change
   useEffect(() => {
-    if (isHydrated && (view === "processing" || view === "summary")) {
+    if (isHydrated && (view === "processing" || view === "summary" || view === "kyc-schedule")) {
       sectionRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
     }
   }, [view, isHydrated]);
-
   const toggleArrayItem = (
     field: "addons" | "languages" | "availability",
     item: string,
@@ -333,43 +479,82 @@ export default function DetailsForm() {
     };
 
     if (!formData.photo) {
+      toast.error("Please upload a profile photo.");
       scrollTo(basicInfoRef);
       return false;
     }
-    if (!formData.fullName || !formData.age || !formData.city || !formData.mobile || !formData.email || !formData.hourlyRate || formData.gender === "Select Gender") {
+    if (!formData.fullName) {
+      toast.error("Please enter your full name.");
+      scrollTo(basicInfoRef);
+      return false;
+    }
+    if (formData.gender === "Select Gender") {
+      toast.error("Please select your gender.");
+      scrollTo(basicInfoRef);
+      return false;
+    }
+    if (!formData.age) {
+      toast.error("Please enter your age.");
+      scrollTo(basicInfoRef);
+      return false;
+    }
+    if (parseInt(formData.age) < 18) {
+      toast.error("You must be 18 years or older to become a partner.");
+      scrollTo(basicInfoRef);
+      return false;
+    }
+    if (!formData.city) {
+      toast.error("Please enter your city.");
+      scrollTo(basicInfoRef);
+      return false;
+    }
+    if (!formData.mobile) {
+      toast.error("Please enter your mobile number.");
+      scrollTo(basicInfoRef);
+      return false;
+    }
+    if (!formData.email) {
+      toast.error("Please enter your email address.");
+      scrollTo(basicInfoRef);
+      return false;
+    }
+    if (!formData.hourlyRate) {
+      toast.error("Please enter your hourly rate.");
       scrollTo(basicInfoRef);
       return false;
     }
 
     const filledGallery = formData.gallery.filter(p => p !== null).length;
     if (filledGallery < 3) {
+      toast.error("Please upload at least 3 photos to your gallery.");
       scrollTo(galleryRef);
       return false;
     }
 
     if (!formData.bio) {
+      toast.error("Please write a bio about yourself.");
       scrollTo(bioRef);
       return false;
     }
 
-    if (formData.availability.length === 0) {
-      scrollTo(scheduleRef);
-      return false;
-    }
 
     const filledProofs = formData.idProofs.filter(p => p !== null).length;
     if (filledProofs < 2) {
+      toast.error("Please upload at least 2 ID verification proofs.");
       scrollTo(docsRef);
       return false;
     }
 
     if (!formData.termsAgreed) {
+      toast.error("You must agree to the terms and conditions.");
       scrollTo(termsRef);
       return false;
     }
 
     return true;
   };
+
+
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
@@ -385,12 +570,19 @@ export default function DetailsForm() {
     setVerificationNotes("");
     setShowSuccessCard(true);
     await new Promise((resolve) => setTimeout(resolve, 1500));
+    setShowSuccessCard(false);
 
-    setView("summary");
+    if (kycStatus === "NOT_SCHEDULED") {
+      setView("kyc-schedule");
+    } else {
+      setView("summary");
+    }
   };
+
 
   const handleApprove = () => {
     setVerificationStatus("VERIFIED");
+    setKycStatus("APPROVED");
     setVerificationNotes("");
     toast.success("Application Approved successfully!");
 
@@ -404,17 +596,26 @@ export default function DetailsForm() {
       age: parseInt(formData.age) || 22,
       gender: formData.gender,
       location: formData.city || "Mumbai, India",
-      rating: "4.9",
+      rating: 0,
       verified: true,
-      distance: "0.8 km",
+      distance: 0.8,
       image: formData.photo || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256",
       banner: formData.banner || undefined,
       bio: formData.bio || "",
+
+
+      tags: formData.tagsInput.length > 0 ? formData.tagsInput.map(t => {
+        const trimmed = t.trim();
+        return trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
+      }).filter(Boolean) : ["NA"],
+      interests: formData.interestsInput.length > 0 ? formData.interestsInput.map(i => i.trim()).filter(Boolean).join(", ") : "NA",
+      languages: formData.languages && formData.languages.length > 0 ? formData.languages.join(", ") : "NA",
       reviews: [],
       gallery: formData.gallery.filter(Boolean).map((img, idx) => ({
         id: String(idx + 1),
         image: img as string,
       })),
+      videos: formData.videos.filter(Boolean) as string[],
       pricing: {
         oneHour: parseFloat(formData.hourlyRate) || 499,
         twoHours: (parseFloat(formData.hourlyRate) || 499) * 1.8,
@@ -454,12 +655,15 @@ export default function DetailsForm() {
     setVerificationNotes("Your application does not meet our community standards.");
     toast.error("Application Declined.");
   };
-
   const handleReset = () => {
     setVerificationStatus("DRAFT");
     setVerificationNotes("");
     setSubmissionStatus("pending");
     setView("form");
+    setKycStatus("NOT_SCHEDULED");
+    setKycDate("");
+    setKycSlot("");
+    setZoomLink("");
     setFormData({
       photo: null,
       banner: null,
@@ -473,6 +677,8 @@ export default function DetailsForm() {
       otherAddon: "",
       languages: [],
       bio: "",
+      tagsInput: [],
+      interestsInput: [],
       hourlyRate: "",
       availability: [],
       instagram: "",
@@ -480,6 +686,7 @@ export default function DetailsForm() {
       termsAgreed: false,
       idProofs: [null, null, null],
       gallery: Array(9).fill(null),
+      videos: Array(3).fill(null),
     });
     localStorage.removeItem("partnerApplication");
     // Also remove from approved_partners
@@ -536,6 +743,26 @@ export default function DetailsForm() {
       const newGallery = [...prev.gallery];
       newGallery[index] = null;
       return { ...prev, gallery: newGallery };
+    });
+  };
+
+  const handleVideoUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const blobUrl = URL.createObjectURL(file);
+      setFormData((prev) => {
+        const newVideos = [...prev.videos];
+        newVideos[index] = blobUrl;
+        return { ...prev, videos: newVideos };
+      });
+    }
+  };
+
+  const removeVideo = (index: number) => {
+    setFormData((prev) => {
+      const newVideos = [...prev.videos];
+      newVideos[index] = null;
+      return { ...prev, videos: newVideos };
     });
   };
 
@@ -773,7 +1000,7 @@ export default function DetailsForm() {
                   </InputWrapper>
  
                   <InputWrapper>
-                    <div className={`flex bg-bg-secondary border rounded-2xl overflow-hidden transition-all duration-500 shadow-sm min-h-[60px] ${showErrors && !formData.age ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] bg-red-500/5" : "border-border-main hover:border-primary/50 focus-within:border-primary ring-primary/20"}`}>
+                    <div className={`flex bg-bg-secondary border rounded-2xl overflow-hidden transition-all duration-500 shadow-sm min-h-[60px] ${showErrors && (!formData.age || parseInt(formData.age) < 18) ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] bg-red-500/5" : "border-border-main hover:border-primary/50 focus-within:border-primary ring-primary/20"}`}>
                       <input
                         type="number"
                         placeholder="Age"
@@ -955,6 +1182,33 @@ export default function DetailsForm() {
                     </InputWrapper>
                   </div>
                 </div>
+                {/* Tags & Interests */}
+                <div>
+                  <SectionTitle>Tags & Interests (Optional)</SectionTitle>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <InputWrapper>
+                      <label className="text-xs font-bold text-text-muted uppercase tracking-widest block mb-2 ml-1">
+                        Tags
+                      </label>
+                      <TagInput
+                        tags={formData.tagsInput}
+                        onChange={(tags) => setFormData({ ...formData, tagsInput: tags })}
+                        placeholder="e.g. Friendly, Traveler, Foodie (Enter or comma to add)"
+                      />
+                    </InputWrapper>
+
+                    <InputWrapper>
+                      <label className="text-xs font-bold text-text-muted uppercase tracking-widest block mb-2 ml-1">
+                        Interests
+                      </label>
+                      <TagInput
+                        tags={formData.interestsInput}
+                        onChange={(interests) => setFormData({ ...formData, interestsInput: interests })}
+                        placeholder="e.g. Cooking, Photography, Music (Enter or comma to add)"
+                      />
+                    </InputWrapper>
+                  </div>
+                </div>
 
                 <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
 
@@ -1024,6 +1278,79 @@ export default function DetailsForm() {
                                 accept="image/*"
                                 className="hidden"
                                 onChange={(e) => handleGalleryUpload(index, e)}
+                              />
+                              {/* Hover Effect Light */}
+                              <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover/add:opacity-100 transition-opacity duration-700" />
+                            </label>
+                          )}
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
+
+                {/* Video Portfolio */}
+                <div>
+                  <SectionTitle>
+                    Video Introductions
+                    <span className="text-text-muted text-sm font-normal ml-2 tracking-normal italic">
+                      (Optional - Upload up to 3 premium video portfolios or intros)
+                    </span>
+                  </SectionTitle>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {formData.videos.map((video, index) => {
+                      return (
+                        <motion.div
+                          key={index}
+                          className="relative aspect-video rounded-[32px] overflow-hidden border-2 transition-all duration-700 group shadow-2xl border-white/5 bg-bg-secondary/40 backdrop-blur-xl hover:border-primary/40"
+                        >
+                          {video ? (
+                            <div className="w-full h-full group/video relative bg-black">
+                              <video
+                                src={video}
+                                className="w-full h-full object-cover"
+                                preload="metadata"
+                                muted
+                                playsInline
+                                onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.pause();
+                                  e.currentTarget.currentTime = 0;
+                                }}
+                              />
+                              <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-100 group-hover/video:opacity-0 transition-opacity duration-300 pointer-events-none">
+                                <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 text-white">
+                                  <Video className="w-5 h-5 animate-pulse" />
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removeVideo(index)}
+                                className="absolute cursor-pointer top-3 right-3 w-10 h-10 bg-accent/90 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shadow-lg border-2 border-white/20 z-10 transition-all duration-300 hover:bg-accent hover:scale-110 hover:-rotate-12"
+                                title="Remove video"
+                              >
+                                <X className="w-5 h-5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <label className="w-full h-full flex flex-col items-center justify-center gap-3 cursor-pointer group/add transition-all duration-500 hover:bg-primary/5 min-h-[160px]">
+                              <div className="w-14 h-14 rounded-[20px] flex items-center justify-center transition-all duration-700 group-hover/add:rotate-90 group-hover/add:scale-110 bg-primary/10 border border-primary/20">
+                                <Video className="w-6 h-6 text-primary group-hover/add:text-accent" />
+                              </div>
+                              <div className="flex flex-col items-center gap-1">
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted group-hover/add:text-primary">
+                                  Upload Video {index + 1}
+                                </span>
+                                <span className="text-[9px] text-text-muted/60">Max size: 15MB</span>
+                              </div>
+                              <input
+                                type="file"
+                                accept="video/*"
+                                className="hidden"
+                                onChange={(e) => handleVideoUpload(index, e)}
                               />
                               {/* Hover Effect Light */}
                               <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover/add:opacity-100 transition-opacity duration-700" />
@@ -1278,6 +1605,191 @@ export default function DetailsForm() {
             </motion.div>
           )}
 
+          {view === "kyc-schedule" && (
+            <motion.div
+              key="kyc-schedule"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              className="relative bg-bg-card/50 backdrop-blur-2xl border border-border-main rounded-[32px] md:rounded-[48px] p-8 md:p-14 shadow-2xl overflow-hidden"
+            >
+              {/* Subtle background glow */}
+              <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
+
+              {/* Funnel Progress Stepper */}
+              <div className="flex items-center justify-between max-w-2xl mx-auto mb-12 relative">
+                <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-white/10 z-0" />
+                
+                {/* Step 1 */}
+                <div className="relative z-10 flex flex-col items-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-green-500/20 border border-green-500 flex items-center justify-center text-green-500 font-bold text-sm">
+                    <Check className="w-5 h-5 text-green-500" />
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-green-500">Details Form</span>
+                </div>
+                
+                {/* Step 2 */}
+                <div className="relative z-10 flex flex-col items-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary flex items-center justify-center text-primary font-bold text-sm shadow-[0_0_15px_rgba(var(--primary-rgb),0.4)] animate-pulse">
+                    2
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Video KYC</span>
+                </div>
+
+                {/* Step 3 */}
+                <div className="relative z-10 flex flex-col items-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-bg-secondary border border-border-main flex items-center justify-center text-text-muted font-bold text-sm">
+                    3
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">Approval Review</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                {/* Left side: slot choices */}
+                <div className="lg:col-span-8 flex flex-col justify-between">
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-black text-text-main mb-3 tracking-wide flex items-center gap-3">
+                      <Video className="w-8 h-8 text-primary" />
+                      Schedule Your Video KYC Call
+                    </h2>
+                    <p className="text-text-muted text-sm md:text-base font-medium max-w-xl mb-8">
+                      Select a date and direct time slot to perform your 30-minute quick identity review call with our verification officer.
+                    </p>
+
+                    {/* Dates Horizontal Row */}
+                    <div className="mb-8">
+                      <label className="text-xs font-black uppercase tracking-widest text-text-muted block mb-4">
+                        Available Dates
+                      </label>
+                      <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-thin scrollbar-thumb-white/10">
+                        {getNext7Days().map((d) => {
+                          const isSelected = selectedKycDate === d.fullString;
+                          return (
+                            <button
+                              key={d.fullString}
+                              type="button"
+                              onClick={() => {
+                                setSelectedKycDate(d.fullString);
+                                setSelectedKycSlot(""); // Reset slot when date changes
+                              }}
+                              className={`cursor-pointer min-w-[90px] p-4 rounded-2xl border transition-all duration-300 flex flex-col items-center text-center gap-1 shrink-0 ${
+                                isSelected
+                                  ? "bg-primary/10 border-primary text-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.2)]"
+                                  : "bg-bg-secondary/40 border-border-main text-text-muted hover:border-white/20 hover:text-text-main"
+                              }`}
+                            >
+                              <span className="text-[10px] font-bold uppercase tracking-wider">{d.dayName}</span>
+                              <span className="text-2xl font-black">{d.dayNum}</span>
+                              <span className="text-[9px] font-semibold uppercase">{d.month}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Time Slots Grid */}
+                    {selectedKycDate && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-8"
+                      >
+                        <label className="text-xs font-black uppercase tracking-widest text-text-muted block mb-4">
+                          Available Slots
+                        </label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                          {timeSlots.map((slot) => {
+                            const isSelected = selectedKycSlot === slot;
+                            return (
+                              <button
+                                key={slot}
+                                type="button"
+                                onClick={() => setSelectedKycSlot(slot)}
+                                className={`cursor-pointer p-4 rounded-2xl border transition-all duration-300 text-center text-xs font-bold flex items-center justify-center gap-2 ${
+                                  isSelected
+                                    ? "bg-primary border-primary text-white shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]"
+                                    : "bg-bg-secondary/40 border-border-main text-text-main hover:border-white/20"
+                                }`}
+                              >
+                                <Clock className="w-3.5 h-3.5" />
+                                {slot}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+
+                  <div className="pt-6 border-t border-white/5 flex items-center justify-between gap-6">
+                    <button
+                      type="button"
+                      onClick={() => setView("form")}
+                      className="cursor-pointer text-text-muted hover:text-text-main transition-colors text-sm font-semibold uppercase tracking-wider"
+                    >
+                      Back to Form
+                    </button>
+                    <PremiumButton
+                      label="Confirm & Schedule Call"
+                      onClick={() => {
+                        if (!selectedKycDate || !selectedKycSlot) {
+                          toast.error("Please select both date and time slot first.");
+                          return;
+                        }
+                        setKycDate(selectedKycDate);
+                        setKycSlot(selectedKycSlot);
+                        setKycStatus("SCHEDULED");
+                        setView("summary");
+                        toast.success("Video KYC Scheduled successfully!");
+                      }}
+                      disabled={!selectedKycDate || !selectedKycSlot}
+                      variant="primary"
+                      icon={<Check className="w-5 h-5" />}
+                    />
+                  </div>
+                </div>
+
+                {/* Right side: visual checklist cards */}
+                <div className="lg:col-span-4 bg-bg-secondary/30 border border-border-main p-6 rounded-3xl flex flex-col gap-6 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+                  
+                  <h3 className="text-sm font-black uppercase tracking-wider text-text-main flex items-center gap-2">
+                    <ShieldAlert className="w-4 h-4 text-primary" />
+                    KYC Requirements
+                  </h3>
+
+                  <div className="space-y-4 text-xs font-semibold text-text-muted leading-relaxed">
+                    <div className="flex gap-3">
+                      <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-[10px] text-text-main">1</div>
+                      <p>
+                        Keep your registered physical government ID card ready (Aadhaar, PAN, Passport, or DL).
+                      </p>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-[10px] text-text-main">2</div>
+                      <p>
+                        A stable high-speed internet connection is required for video streaming.
+                      </p>
+                    </div>
+                    <div className="flex gap-3">
+                      <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-[10px] text-text-main">3</div>
+                      <p>
+                        Position yourself in a well-lit, quiet room to ensure a clean camera stream and clear voice capture.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-auto p-4 bg-white/5 border border-white/5 rounded-2xl">
+                    <p className="text-[10px] font-bold text-text-muted text-center uppercase tracking-wide">
+                      Your data is 100% encrypted & secure.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {view === "summary" && (
             <motion.div
               key="summary"
@@ -1458,6 +1970,177 @@ export default function DetailsForm() {
                       className="mt-2 text-xs font-bold text-red-500 hover:underline flex items-center gap-1 group cursor-pointer"
                     >
                       Reset Form & Re-apply <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Video KYC Status block inside summary */}
+              {kycStatus === "SCHEDULED" && verificationStatus === "PENDING" && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mb-12 p-6 bg-primary/10 border border-primary/30 rounded-3xl flex items-start gap-4 relative overflow-hidden shadow-lg z-10"
+                >
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-primary" />
+                  <Video className="w-6 h-6 text-primary shrink-0 mt-0.5" />
+                  <div className="space-y-1 w-full">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-primary text-[10px] font-black uppercase tracking-widest leading-none">
+                        Video KYC Call Scheduled
+                      </h4>
+                      <span className="text-[10px] font-bold text-text-muted bg-white/5 border border-white/10 rounded-full px-2 py-0.5">
+                        Status: Pending Live Check
+                      </span>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm font-bold text-text-main">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-primary" />
+                        <span>Date: {kycDate}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-primary" />
+                        <span>Time: {kycSlot}</span>
+                      </div>
+                    </div>
+                    <p className="text-text-muted text-xs font-semibold mt-2 leading-relaxed">
+                      A representative will contact you via a secure link on your scheduled time. Please keep your physical ID cards ready.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setView("kyc-schedule")}
+                      className="mt-3 text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      Reschedule Call <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {kycStatus === "REJECTED" && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mb-12 p-6 bg-red-500/10 border border-red-500/30 rounded-3xl flex items-start gap-4 relative overflow-hidden shadow-lg z-10"
+                >
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-red-500" />
+                  <ShieldAlert className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
+                  <div className="space-y-1 w-full">
+                    <h4 className="text-red-500 text-[10px] font-black uppercase tracking-widest leading-none">
+                      Video KYC Call Rejected
+                    </h4>
+                    <p className="text-text-main text-sm font-semibold leading-relaxed">
+                      Your identity verification check was unsuccessful.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setView("kyc-schedule")}
+                      className="mt-3 text-xs font-bold text-red-500 hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      Reschedule Another Slot <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {kycStatus === "RESCHEDULE_REQUESTED" && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mb-12 p-6 bg-amber-500/10 border border-amber-500/30 rounded-3xl flex items-start gap-4 relative overflow-hidden shadow-lg z-10"
+                >
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500" />
+                  <AlertCircle className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
+                  <div className="space-y-1 w-full">
+                    <h4 className="text-amber-500 text-[10px] font-black uppercase tracking-widest leading-none">
+                      KYC Reschedule Required
+                    </h4>
+                    <p className="text-text-main text-sm font-semibold leading-relaxed">
+                      The verification officer missed the scheduled appointment or requested a reschedule. Please select a new date and time slot.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setView("kyc-schedule")}
+                      className="mt-3 text-xs font-bold text-amber-500 hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      Select New Slot <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {kycStatus === "LINK_SHARED" && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mb-12 p-6 bg-green-500/10 border border-green-500/30 rounded-3xl flex items-start gap-4 relative overflow-hidden shadow-lg z-10"
+                >
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-green-500" />
+                  <Video className="w-6 h-6 text-green-500 shrink-0 mt-0.5" />
+                  <div className="space-y-1 w-full">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-green-500 text-[10px] font-black uppercase tracking-widest leading-none">
+                        Video KYC Link Ready
+                      </h4>
+                      <span className="text-[10px] font-bold text-green-400 bg-green-500/10 border border-green-500/20 rounded-full px-2 py-0.5">
+                        Status: Active Call Room
+                      </span>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm font-bold text-text-main">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-green-500" />
+                        <span>Date: {kycDate}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-green-500" />
+                        <span>Time: {kycSlot}</span>
+                      </div>
+                    </div>
+                    <p className="text-text-muted text-xs font-semibold mt-2 leading-relaxed">
+                      The verification officer is waiting for you. Click below to join the call room.
+                    </p>
+                    <div className="mt-4 flex gap-4">
+                      <a
+                        href={zoomLink || "https://zoom.us/j/become-a-partner-kyc-call"}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold text-xs py-2.5 px-5 rounded-xl transition-all duration-300 shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:scale-[1.02]"
+                      >
+                        <Video size={12} /> Join KYC Call
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => setView("kyc-schedule")}
+                        className="text-xs font-bold text-text-muted hover:text-text-main transition-colors flex items-center gap-1 cursor-pointer"
+                      >
+                        Change Slot <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {kycStatus === "NOT_SCHEDULED" && verificationStatus === "PENDING" && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mb-12 p-6 bg-amber-500/10 border border-amber-500/30 rounded-3xl flex items-start gap-4 relative overflow-hidden shadow-lg z-10"
+                >
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500" />
+                  <Video className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
+                  <div className="space-y-1 w-full">
+                    <h4 className="text-amber-500 text-[10px] font-black uppercase tracking-widest leading-none">
+                      Action Required: Schedule Video KYC
+                    </h4>
+                    <p className="text-text-main text-sm font-semibold leading-relaxed">
+                      You must book a time slot for video identity verification before your profile can be activated.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setView("kyc-schedule")}
+                      className="mt-3 text-xs font-bold text-amber-500 hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      Book Slot Now <ArrowRight className="w-3 h-3" />
                     </button>
                   </div>
                 </motion.div>
@@ -1669,20 +2352,50 @@ export default function DetailsForm() {
                           >
                             Cancel
                           </button>
-                        </div>
-                      </motion.div>
+                        </div>                      </motion.div>
                     ) : (
                       <div className="grid grid-cols-1 gap-3">
+                        {/* 1. Share Zoom Meeting Link */}
+                        {(kycStatus === "SCHEDULED" || kycStatus === "RESCHEDULE_REQUESTED") && (
+                          <button
+                            onClick={() => {
+                              setKycStatus("LINK_SHARED");
+                              setZoomLink("https://zoom.us/j/become-a-partner-kyc-call");
+                              toast.success("Zoom meeting link shared successfully!");
+                            }}
+                            className="w-full bg-primary text-white font-bold text-xs py-3 px-4 rounded-xl border border-primary hover:bg-primary-dark transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] hover:scale-[1.02]"
+                          >
+                            <Video size={14} /> Share Zoom Call Link
+                          </button>
+                        )}
+
+                        {/* 2. Request Reschedule */}
+                        {(kycStatus === "SCHEDULED" || kycStatus === "LINK_SHARED") && (
+                          <button
+                            onClick={() => {
+                              setKycStatus("RESCHEDULE_REQUESTED");
+                              setZoomLink("");
+                              toast.info("Reschedule request sent to the candidate.");
+                            }}
+                            className="w-full bg-amber-500/10 border border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-white font-bold text-xs py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02]"
+                          >
+                            <Calendar size={14} /> Request KYC Reschedule (Admin Missed)
+                          </button>
+                        )}
+
+                        {/* 3. Approve and Make Live */}
                         <button
                           onClick={handleApprove}
-                          disabled={verificationStatus === "VERIFIED"}
+                          disabled={verificationStatus === "VERIFIED" || kycStatus !== "LINK_SHARED"}
                           className={`w-full font-bold text-xs py-3 px-4 rounded-xl border transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
                             verificationStatus === "VERIFIED"
                               ? "bg-green-500/10 border-green-500/20 text-green-500/50 cursor-not-allowed animate-none"
-                              : "bg-green-500 border-green-600 text-white hover:bg-green-600 shadow-[0_0_20px_rgba(34,197,94,0.2)] hover:scale-[1.02]"
+                              : kycStatus !== "LINK_SHARED"
+                                ? "bg-white/5 border-white/10 text-text-muted cursor-not-allowed"
+                                : "bg-green-500 border-green-600 text-white hover:bg-green-600 shadow-[0_0_20px_rgba(34,197,94,0.2)] hover:scale-[1.02]"
                           }`}
                         >
-                          <CheckCircle2 size={14} /> Approve & Make Live
+                          <CheckCircle2 size={14} /> {kycStatus === "APPROVED" || verificationStatus === "VERIFIED" ? "Approved & Live" : kycStatus === "LINK_SHARED" ? "Approve Partner Live (Post-Call)" : "Waiting for Call Link"}
                         </button>
                         
                         <div className="grid grid-cols-2 gap-3">
@@ -1725,7 +2438,6 @@ export default function DetailsForm() {
           )}
         </AnimatePresence>
       </div>
-
       {/* Crop Modal */}
       <AnimatePresence>
         {cropModalOpen && tempImageSrc && (
@@ -1800,7 +2512,6 @@ export default function DetailsForm() {
                       setTempImageSrc(null);
                     }
                   }}
-                  className="px-6 py-2.5 bg-linear-to-r from-primary to-accent text-white font-bold text-xs rounded-xl shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] hover:scale-[1.02] cursor-pointer transition-all duration-300"
                 >
                   Apply Crop
                 </button>
@@ -1810,7 +2521,8 @@ export default function DetailsForm() {
         )}
       </AnimatePresence>
 
-      {/* CSS Overrides */}
+
+
       <style jsx global>{`
         @keyframes shine {
           100% {

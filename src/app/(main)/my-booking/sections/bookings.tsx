@@ -17,6 +17,7 @@ import {
 import { Rochester, Outfit } from "next/font/google";
 import { partners } from "@/modules/partner/data/partners";
 import CategorySwitcher from "./category-switcher";
+import Loader from "@/components/loader/Loader";
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -152,6 +153,32 @@ const MOCK_CLIENT_REQUESTS: BookingData[] = [
   },
 ];
 
+const findPartnerByNameOrId = (nameOrId: string | number): any => {
+  if (!nameOrId) return null;
+  const target = String(nameOrId).toLowerCase();
+
+  if (typeof window !== "undefined") {
+    try {
+      const saved = localStorage.getItem("approved_partners");
+      if (saved) {
+        const localList: any[] = JSON.parse(saved);
+        const found = localList.find((p) => 
+          String(p.id).toLowerCase() === target ||
+          p.name.toLowerCase() === target
+        );
+        if (found) return found;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  return partners.find((p) => 
+    String(p.id).toLowerCase() === target ||
+    p.name.toLowerCase() === target
+  ) || null;
+};
+
 function BookingCard({
   booking,
   category,
@@ -173,11 +200,7 @@ function BookingCard({
         ? "accepted"
         : "rejected";
 
-  const partner = partners.find(
-    (p) =>
-      p.name.toLowerCase() === booking.name.toLowerCase() ||
-      String(p.id).toLowerCase() === String(booking.id).toLowerCase()
-  );
+  const partner = findPartnerByNameOrId(booking.id) || findPartnerByNameOrId(booking.name);
   const href = partner
     ? `/partners/${partner.name.toLowerCase().replace(/\s+/g, "-")}`
     : `/partners/${booking.id}`;
@@ -473,15 +496,7 @@ export default function Bookings({
   const gridClasses = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4";
 
   if (!mounted) {
-    return (
-      <div className="flex flex-col items-center justify-center py-40">
-        <div className="relative w-16 h-16">
-          <div className="absolute inset-0 rounded-full border-4 border-primary/20 animate-pulse" />
-          <div className="absolute inset-0 rounded-full border-4 border-t-primary animate-spin" />
-        </div>
-        <p className="mt-4 text-xs font-black uppercase tracking-[0.25em] text-text-muted">Loading bookings...</p>
-      </div>
-    );
+    return <Loader />;
   }
 
   return (

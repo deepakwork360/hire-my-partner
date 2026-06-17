@@ -55,15 +55,11 @@ export default function PartnersNearby() {
 
     // 2. Rating filter (minimum rating selection)
     if (rating) {
-      if (parseFloat(partner.rating) < parseFloat(rating)) return false;
+      if (partner.rating < parseFloat(rating)) return false;
     }
 
     // 3. Distance filter range
-    const distMatch = partner.distance.match(/^([\d.]+)/);
-    if (distMatch) {
-      const distVal = parseFloat(distMatch[1]);
-      if (distVal < values[0] || distVal > values[1]) return false;
-    }
+    if (partner.distance < values[0] || partner.distance > values[1]) return false;
 
     return true;
   });
@@ -80,6 +76,16 @@ export default function PartnersNearby() {
       rating: partner.rating,
       bio: bioText.substring(0, 45) + (bioText.length > 45 ? "..." : ""),
       distance: partner.distance,
+      tag: (() => {
+        if (partner.tags && partner.tags.length > 0 && partner.tags[0]) {
+          const first = partner.tags[0];
+          if (first === "NA") return "NA";
+          return first.startsWith("#") ? first.substring(1) : first;
+        }
+        const isMock = partner.id ? !isNaN(Number(partner.id)) : false;
+        if (!isMock) return "NA";
+        return partner.id === "1" ? "Friendly" : partner.id === "2" ? "MusicFan" : partner.id === "3" ? "Talkative" : partner.id === "4" ? "Traveler" : partner.id === "5" ? "NatureLover" : "BookLover";
+      })(),
       buttonText: "View Profile",
       buttonLink: `/partners/${partner.id}`,
       showViewIcon: false,
@@ -87,8 +93,6 @@ export default function PartnersNearby() {
       mapLink: "#",
     };
   });
-
-
   return (
     <section className="py-10 md:py-16 px-4 bg-bg-secondary overflow-visible border-b border-border-main">
       <div className="max-w-[1600px] w-full mx-auto">
@@ -180,7 +184,20 @@ export default function PartnersNearby() {
                   min={0}
                   max={100}
                   values={values}
-                  onChange={(vals) => setValues(vals)}
+                  onChange={(vals) => {
+                    const minGap = 1;
+                    if (vals[1] - vals[0] < minGap) {
+                      if (vals[0] !== values[0]) {
+                        const newLower = Math.min(vals[0], vals[1] - minGap);
+                        setValues([newLower, vals[1]]);
+                      } else {
+                        const newUpper = Math.max(vals[1], vals[0] + minGap);
+                        setValues([vals[0], newUpper]);
+                      }
+                    } else {
+                      setValues(vals);
+                    }
+                  }}
                   renderTrack={({ props, children }) => (
                     <div
                       onMouseDown={props.onMouseDown}
@@ -255,6 +272,33 @@ export default function PartnersNearby() {
                 <div className="hidden sm:block"><ProfileCardSkeleton /></div>
                 <div className="hidden lg:block"><ProfileCardSkeleton /></div>
                 <div className="hidden 2xl:block"><ProfileCardSkeleton /></div>
+              </div>
+            ) : filteredProfiles.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-8 md:p-16 rounded-[32px] bg-white/5 backdrop-blur-xl border border-border-main shadow-xl text-center max-w-2xl mx-auto my-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="relative mb-6">
+                  {/* Glowing background */}
+                  <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl scale-150" />
+                  <div className="relative w-20 h-20 rounded-full bg-bg-secondary border border-border-main flex items-center justify-center shadow-lg">
+                    <Search className="w-8 h-8 text-primary animate-pulse" />
+                  </div>
+                </div>
+                <h3 className="text-2xl font-bold text-text-main mb-2 tracking-tight">
+                  No Companions Found Nearby
+                </h3>
+                <p className="text-text-muted font-medium mb-8 max-w-md">
+                  We couldn't find any companions matching your selected filters. Try adjusting the age, rating, or distance parameters to discover more partners.
+                </p>
+                <button
+                  onClick={() => {
+                    setAge("");
+                    setEventType("");
+                    setRating("");
+                    setValues([0, 100]);
+                  }}
+                  className="px-6 py-3 rounded-full bg-linear-to-br from-primary to-primary-dark text-white font-bold text-sm uppercase tracking-wider hover:scale-105 active:scale-95 transition-all shadow-lg hover:shadow-primary/25 cursor-pointer"
+                >
+                  Reset All Filters
+                </button>
               </div>
             ) : (
               <Slider

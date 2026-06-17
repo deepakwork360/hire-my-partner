@@ -177,12 +177,12 @@ export default function Navbar() {
           {/* Profile / Login */}
           {mounted && isAuthenticated ? (
             <Link
-              href="/profile"
+              href="/become-a-partner"
               className={`hidden lg:block w-10 h-10 rounded-full overflow-hidden border cursor-pointer hover:scale-105 transition shadow-sm ${isScrolled ? "border-white/20" : "border-white/20"
                 }`}
             >
               <Image
-                src={user?.avatar || "https://images.unsplash.com/photo-1494790108377-be9c29b29330"}
+                src={user?.avatar || "/images/avatar6.jpg"}
                 alt="profile"
                 width={40}
                 height={40}
@@ -279,10 +279,10 @@ export default function Navbar() {
                   {mounted && isAuthenticated ? (
                     <div className="flex flex-col gap-6">
                       <Link
-                        href="/profile"
+                        href="/become-a-partner"
                         onClick={() => setIsOpen(false)}
                         className={`group relative flex items-center justify-between text-4xl md:text-5xl font-black tracking-tighter transition-all duration-300 ${
-                          pathname === "/profile" ? "text-primary" : "text-text-main hover:text-primary/80"
+                          pathname === "/become-a-partner" ? "text-primary" : "text-text-main hover:text-primary/80"
                         }`}
                       >
                         <span>My Profile</span>

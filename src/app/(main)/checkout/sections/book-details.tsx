@@ -4,8 +4,12 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
 import Image from "next/image";
+
 import { useSearchParams } from "next/navigation";
 import { partners } from "@/modules/partner/data/partners";
+import { usePartner } from "@/modules/partner/hooks/usePartner";
+import { Partner } from "@/modules/partner/types/partner.types";
+
 import {
   Calendar,
   Clock,
@@ -38,7 +42,7 @@ const dateTimeOptions = [
   "July 15, 2025 | 6:00 PM – 8:00 PM",
 ];
 
-const durationOptions = ["1 hour", "2 hours", "3 hours", "4 hours"];
+const durationOptions = ["2 hours", "3 hours", "4 hours", "5 hours", "8 hours"];
 
 const addOnOptions = [
   { id: "photoshoot", label: "Casual Photoshoot", price: 1500 },
@@ -46,17 +50,11 @@ const addOnOptions = [
   { id: "travel", label: "Extra Travel Time", price: 2000 },
 ];
 
-// ── Component ─────────────────────────────────────────────────────────────────
-
 export default function BookDetails() {
   const searchParams = useSearchParams();
   const partnerId = searchParams.get("partner") || "1";
-
-  // Find the selected partner from our dynamic database
-  const partner = partners.find(
-    (p) => String(p.id).toLowerCase() === partnerId.toLowerCase()
-  ) || partners[0];
-
+  const { partner: activePartner } = usePartner(partnerId);
+  const partner = activePartner || partners[0];
   const initialDate = searchParams.get("date");
   const initialTime = searchParams.get("time");
   const initialDateTime = initialDate && initialTime ? `${initialDate} | ${initialTime}` : dateTimeOptions[0];
@@ -65,8 +63,17 @@ export default function BookDetails() {
     ? [initialDateTime, ...dateTimeOptions] 
     : dateTimeOptions;
 
+  const initialDurationParam = searchParams.get("duration");
+  const initialDuration = initialDurationParam 
+    ? (initialDurationParam === "1" ? "1 hour" : `${initialDurationParam} hours`)
+    : "2 hours";
+
+  const dynamicDurationOptions = durationOptions.includes(initialDuration)
+    ? durationOptions
+    : [initialDuration, ...durationOptions];
+
   const [selectedDateTime, setSelectedDateTime] = useState(initialDateTime);
-  const [selectedDuration, setSelectedDuration] = useState(durationOptions[1]);
+  const [selectedDuration, setSelectedDuration] = useState(initialDuration);
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>(() => {
     const param = searchParams.get("addons");
     return param ? param.split(",").filter(Boolean) : [];
@@ -89,19 +96,22 @@ export default function BookDetails() {
 
   const [dateLabel, timeRange] = selectedDateTime.split(" | ");
 
-  // ── Pricing Calculations ──
-  const getBasePrice = (duration: string, p: typeof partners[0]) => {
-    switch (duration) {
-      case "1 hour":
-        return p.pricing.oneHour;
-      case "2 hours":
-        return p.pricing.twoHours;
-      case "3 hours":
-        return p.pricing.threeHours;
-      case "4 hours":
-        return p.pricing.fourHours || (p.pricing.threeHours + p.pricing.oneHour);
+
+  const getBasePrice = (duration: string, p: Partner) => {
+    const hours = parseInt(duration, 10) || 2;
+    switch (hours) {
+      case 2:
+        return p.pricing.twoHours || (p.pricing.oneHour * 1.8);
+      case 3:
+        return p.pricing.threeHours || (p.pricing.oneHour * 2.5);
+      case 4:
+        return p.pricing.fourHours || (p.pricing.oneHour * 3.2);
+      case 5:
+        return p.pricing.fiveHours || (p.pricing.oneHour * 4.0);
+      case 8:
+        return p.pricing.eightHours || (p.pricing.oneHour * 6.0);
       default:
-        return p.pricing.oneHour;
+        return p.pricing.oneHour * hours;
     }
   };
 
@@ -221,7 +231,7 @@ export default function BookDetails() {
                   </button>
                   {showDurationMenu && (
                     <div className="absolute top-full mt-2 left-0 right-0 z-20 bg-bg-base/95 backdrop-blur-2xl border border-border-main rounded-2xl overflow-hidden shadow-2xl">
-                      {durationOptions.map((opt) => (
+                      {dynamicDurationOptions.map((opt) => (
                         <button
                           key={opt}
                           onClick={() => {
@@ -377,14 +387,16 @@ export default function BookDetails() {
                         key={s}
                         size={13}
                         className={
-                          s <= Math.round(parseFloat(partner.rating))
+                          s <= Math.round(partner.rating)
                             ? "text-amber-400 fill-amber-400"
                             : "text-amber-400/30 fill-none"
                         }
                       />
                     ))}
                   </div>
-                  <span className="text-text-main text-xs font-black">{partner.rating}</span>
+                  <span className="text-text-main text-xs font-black">
+                    {typeof partner.rating === "number" ? partner.rating.toFixed(1) : parseFloat(partner.rating || "0.0").toFixed(1)}
+                  </span>
                   <span className="text-text-muted text-xs font-medium">
                     ({partner.reviews.length})
                   </span>
