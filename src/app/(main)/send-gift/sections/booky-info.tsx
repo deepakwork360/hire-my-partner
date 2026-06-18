@@ -212,7 +212,7 @@ export default function BookyInfo() {
               </Link>
 
               <MotionLink
-                href="/checkout?partner=1"
+                href="/partners/1#booking-section"
                 animate={{
                   boxShadow: isHovered
                     ? [

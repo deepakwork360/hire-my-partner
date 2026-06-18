@@ -75,7 +75,11 @@ export function usePartner(id: string) {
     };
 
     window.addEventListener("reviews_updated", handleUpdate);
-    return () => window.removeEventListener("reviews_updated", handleUpdate);
+    window.addEventListener("partner_profile_updated", handleUpdate);
+    return () => {
+      window.removeEventListener("reviews_updated", handleUpdate);
+      window.removeEventListener("partner_profile_updated", handleUpdate);
+    };
   }, [fetchPartner]);
 
   return {

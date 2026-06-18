@@ -1,12 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Rochester, Outfit } from "next/font/google";
+import { Outfit, Rochester } from "next/font/google";
 import { Bell, Mail, MessageSquare, Monitor, Check, Save } from "lucide-react";
 import { useState, useMemo } from "react";
 
-const rochester = Rochester({ subsets: ["latin"], weight: ["400"] });
 const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "800"] });
+const rochester = Rochester({ subsets: ["latin"], weight: ["400"] });
 
 type ToggleProps = {
   label: string;
@@ -91,72 +91,56 @@ export default function Notification() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <NotificationToggle 
-              icon={Mail}
-              label="Email Notifications"
-              description="Receive booking updates and platform news via email."
-              enabled={prefs.email}
-              onToggle={() => setPrefs(p => ({...p, email: !p.email}))}
+               label="Email Alerts"
+               description="Receive daily status emails, recommendations and booking logs."
+               icon={Mail}
+               enabled={prefs.email}
+               onToggle={() => setPrefs(prev => ({ ...prev, email: !prev.email }))}
             />
             <NotificationToggle 
-              icon={MessageSquare}
-              label="SMS Alerts"
-              description="Get instant text messages for urgent booking changes."
-              enabled={prefs.sms}
-              onToggle={() => setPrefs(p => ({...p, sms: !p.sms}))}
+               label="SMS Notifications"
+               description="Direct mobile text alerts for critical security events and bookings."
+               icon={MessageSquare}
+               enabled={prefs.sms}
+               onToggle={() => setPrefs(prev => ({ ...prev, sms: !prev.sms }))}
             />
-            <NotificationToggle 
-              icon={Monitor}
-              label="Push Notifications"
-              description="Browser alerts for new messages and app activity."
-              enabled={prefs.push}
-              onToggle={() => setPrefs(p => ({...p, push: !p.push}))}
-            />
-            
-            <div className="flex items-center justify-center p-6 border border-dashed border-border-main rounded-2xl opacity-50">
-               <p className="text-text-muted text-[11px] font-bold uppercase tracking-widest">More options coming soon</p>
+            <div className="md:col-span-2">
+              <NotificationToggle 
+                 label="Browser Push Notifications"
+                 description="Get real-time updates and interactive notifications in your browser window."
+                 icon={Monitor}
+                 enabled={prefs.push}
+                 onToggle={() => setPrefs(prev => ({ ...prev, push: !prev.push }))}
+              />
             </div>
           </div>
 
-          <div className="pt-6 border-t border-border-main flex flex-col sm:flex-row items-center justify-between gap-6">
-            <p className="text-text-muted text-[10px] font-medium italic">
-              * Select your preferred channels to stay updated with your bookings.
-            </p>
-            
-            <div className="flex items-center gap-4 w-full sm:w-auto">
-                {hasChanges && !success && (
-                    <button 
-                        onClick={() => setPrefs(initialPrefs)}
-                        className="text-text-muted text-[10px] font-black uppercase tracking-widest hover:text-text-main transition-colors"
-                    >
-                        Reset
-                    </button>
+          {/* Action Row */}
+          <div className="flex items-center justify-end gap-4 border-t border-border-main pt-6 mt-4">
+             <button
+               onClick={handleUpdate}
+               disabled={isUpdating || !hasChanges}
+               className={`px-12 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] relative overflow-hidden transition-all duration-300 ${
+                 success 
+                   ? "bg-emerald-600 text-white" 
+                   : hasChanges 
+                     ? "bg-primary text-white hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5" 
+                     : "bg-bg-secondary border border-border-main text-text-muted cursor-not-allowed"
+               }`}
+             >
+              <div className="relative z-10 flex items-center justify-center gap-3">
+                {isUpdating ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : success ? (
+                  <><Check size={16} /> Saved</>
+                ) : (
+                  <><Save size={16} /> Save Settings</>
                 )}
-                <button 
-                    onClick={handleUpdate}
-                    disabled={isUpdating || !hasChanges}
-                    className={`flex-1 sm:flex-none px-8 h-12 rounded-xl font-black tracking-widest uppercase text-[10px] flex items-center justify-center gap-2 transition-all duration-300 ${
-                        success 
-                        ? "bg-emerald-600 text-white"
-                        : hasChanges 
-                        ? "bg-linear-to-r from-primary to-primary-dark text-white shadow-lg active:scale-95"
-                        : "bg-bg-secondary text-text-muted border border-border-main cursor-not-allowed"
-                    }`}
-                >
-                    {isUpdating ? (
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : success ? (
-                        <><Check size={14} strokeWidth={3} /> Preferences Updated</>
-                    ) : (
-                        <><Save size={14} /> Update Preferences</>
-                    )}
-                </button>
-            </div>
+              </div>
+             </button>
           </div>
         </motion.div>
       </div>
     </section>
   );
 }
-
-
-

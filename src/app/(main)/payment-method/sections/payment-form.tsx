@@ -40,12 +40,12 @@ const bookingCharges = {
     { label: "Casual Photoshoot", price: 99 },
     { label: "Personalized Playlist", price: 99 },
   ],
-  serviceFee: 49,
 };
 
 const baseTotal = bookingCharges.baseRate * bookingCharges.hours;
 const addOnTotal = bookingCharges.addOns.reduce((s, a) => s + a.price, 0);
-const grandTotal = baseTotal + addOnTotal + bookingCharges.serviceFee;
+const taxAmount = Math.round((baseTotal + addOnTotal) * 0.18);
+const grandTotal = baseTotal + addOnTotal + taxAmount;
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -461,23 +461,13 @@ export default function PaymentForm() {
                   </div>
                 </div>
 
-                {/* Service Fee */}
+                {/* 18% Tax */}
                 <div className="flex items-center justify-between pt-2 border-t border-border-main">
                   <span className="text-text-muted text-sm font-medium">
-                    Service Fee
+                    18% Tax
                   </span>
                   <span className="text-text-main font-bold text-sm">
-                    ₹{bookingCharges.serviceFee}
-                  </span>
-                </div>
-
-                {/* Taxes */}
-                <div className="flex items-center justify-between">
-                  <span className="text-text-muted text-sm font-medium">
-                    Taxes
-                  </span>
-                  <span className="text-emerald-400 text-xs font-black uppercase tracking-widest">
-                    Included
+                    ₹{taxAmount}
                   </span>
                 </div>
               </div>

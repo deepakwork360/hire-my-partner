@@ -3,11 +3,10 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Rochester, Outfit } from "next/font/google";
-import { MapPin, Star, ShieldCheck, Map, Heart, X, MessageSquare } from "lucide-react";
+import { MapPin, Star, ShieldCheck, Map, Heart, X, UserPlus, UserCheck, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
 import { useTheme } from "@/context/ThemeContext";
-
+import { toast } from "@/components/ui/toastStore";
 import { Partner } from "../types/partner.types";
 
 const rochester = Rochester({
@@ -48,6 +47,37 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
     ? profileData.rating
     : parseFloat(profileData.rating || "0");
   const ratingScore = rawRating === 0 ? "0.0" : rawRating.toFixed(1);
+
+  // Followers & Follow State
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followers, setFollowers] = useState(() => {
+    // Generate deterministic followers based on partner id/name
+    const base = (profileData.name.length * 83) % 900 + 350;
+    return base;
+  });
+
+  const handleFollowToggle = () => {
+    if (isFollowing) {
+      setIsFollowing(false);
+      setFollowers((prev) => prev - 1);
+      toast.success(`Unfollowed ${profileData.name}`);
+    } else {
+      setIsFollowing(true);
+      setFollowers((prev) => prev + 1);
+      toast.success(`Followed ${profileData.name}!`);
+    }
+  };
+
+  // Wishlist State
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const handleWishlistToggle = () => {
+    setIsWishlisted(!isWishlisted);
+    if (!isWishlisted) {
+      toast.success(`Added ${profileData.name} to wishlist!`);
+    } else {
+      toast.success(`Removed ${profileData.name} from wishlist.`);
+    }
+  };
 
   return (
     <section
@@ -137,27 +167,51 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
                 </div>
                 <span className="text-xs font-bold text-text-main">{ratingScore}</span>
                 <span className="text-text-muted text-[10px] font-bold">({reviewsCount} Reviews)</span>
+                <span className="text-text-muted/45 font-light">|</span>
+                <span className="text-text-main text-[10px] font-bold uppercase tracking-wider bg-primary/10 px-2.5 py-0.5 rounded-lg border border-primary/20 flex items-center gap-1.5 shadow-sm">
+                  <Users size={12} className="text-primary shrink-0" />
+                  {followers.toLocaleString()} Followers
+                </span>
               </div>
             </div>
           </div>
 
           {/* Quick Actions */}
-          <div className="w-full lg:w-auto flex items-center gap-3 shrink-0 mt-4 lg:mt-0">
+          <div className="w-full lg:w-auto flex flex-wrap sm:flex-nowrap items-center gap-3 shrink-0 mt-4 lg:mt-0">
             <a
               href="#booking-section"
               onClick={(e) => {
                 e.preventDefault();
                 document.getElementById("booking-section")?.scrollIntoView({ behavior: "smooth" });
               }}
-              className="flex-1 sm:flex-none sm:px-8 h-12 bg-primary hover:bg-primary/95 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/35 active:scale-95 transition-all cursor-pointer text-center"
+              className="flex-1 sm:flex-none sm:px-6 h-12 bg-primary hover:bg-primary/95 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/35 active:scale-95 transition-all cursor-pointer text-center"
             >
               <Heart className="w-4 h-4 fill-white" />
               <span>Book Now</span>
             </a>
+
+            <button
+              onClick={handleFollowToggle}
+              className={`flex-1 sm:flex-none sm:px-6 h-12 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl flex items-center justify-center gap-2 border transition-all cursor-pointer text-center ${
+                isFollowing
+                  ? "bg-primary/10 border-primary/40 text-primary hover:bg-primary/20"
+                  : "bg-bg-secondary border-border-main text-text-main hover:bg-bg-card hover:border-primary/30"
+              }`}
+            >
+              {isFollowing ? <UserCheck size={14} /> : <UserPlus size={14} />}
+              <span>{isFollowing ? "Following" : "Follow"}</span>
+            </button>
             
-            <Link href="#" className="p-3 w-12 h-12 bg-bg-secondary border border-border-main rounded-xl hover:bg-bg-card hover:border-primary/30 transition-all text-text-main shadow-sm flex items-center justify-center shrink-0">
-              <MessageSquare size={16} />
-            </Link>
+            <button 
+              onClick={handleWishlistToggle}
+              className="p-3 w-12 h-12 bg-bg-secondary border border-border-main rounded-xl hover:bg-bg-card hover:border-primary/30 transition-all shadow-sm flex items-center justify-center shrink-0 cursor-pointer"
+              title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+            >
+              <Heart 
+                size={16} 
+                className={`transition-all duration-300 ${isWishlisted ? "fill-red-500 text-red-500 scale-110" : "text-text-main"}`} 
+              />
+            </button>
           </div>
         </div>
 

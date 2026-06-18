@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/toastStore";
 import { Partner } from "../types/partner.types";
 import PremiumDatePicker from "@/components/ui/PremiumDatePicker";
+import { useAuthStore } from "@/modules/auth/store";
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -302,30 +303,32 @@ function PremiumTimePicker({
                   Suggested Slots
                 </p>
                 <div className="space-y-1">
-                  {times.map((t) => {
-                    const isSelected = value === t;
-                    const isValid = isTimeValid(t);
-                    return (
-                      <button
-                        key={t}
-                        type="button"
-                        disabled={!isValid}
-                        onClick={() => {
-                          onChange(t);
-                          setIsOpen(false);
-                        }}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                          !isValid
-                            ? "opacity-30 cursor-not-allowed text-text-muted"
-                            : isSelected 
-                            ? "bg-primary text-white cursor-pointer" 
-                            : "text-text-muted hover:bg-bg-card hover:text-text-main cursor-pointer"
-                        }`}
-                      >
-                        {t} {!isValid && "(Past)"}
-                      </button>
-                    );
-                  })}
+                  {times.filter(isTimeValid).length > 0 ? (
+                    times.filter(isTimeValid).map((t) => {
+                      const isSelected = value === t;
+                      return (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => {
+                            onChange(t);
+                            setIsOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                            isSelected 
+                              ? "bg-primary text-white" 
+                              : "text-text-muted hover:bg-bg-card hover:text-text-main"
+                          }`}
+                        >
+                          {t}
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <p className="text-[11px] font-medium text-text-muted text-center py-4">
+                      No slots available for today. Please set a custom time above.
+                    </p>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -340,7 +343,7 @@ function PremiumDurationPicker({
   value,
   onChange,
   label,
-  options = [2, 3, 4, 5, 8],
+  options = [2, 3, 4, 5, 8, 10, 12, 24],
 }: {
   value: number;
   onChange: (value: number) => void;
@@ -441,6 +444,7 @@ function PremiumDurationPicker({
 
 export default function Availability({ partner }: AvailabilityProps) {
   const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
   
   // Graceful fallback to Gigi Hadid if no partner is provided
   const activePartner = partner || {
@@ -500,6 +504,12 @@ export default function Availability({ partner }: AvailabilityProps) {
   };
 
   const handleBookingSubmit = () => {
+    if (!isAuthenticated) {
+      toast.error("Please login first to book a companion.");
+      router.push("/login");
+      return;
+    }
+
     if (!selectedDate || !selectedTime) {
       setShowErrors(true);
       if (!selectedDate) {

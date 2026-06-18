@@ -1,14 +1,63 @@
+"use client";
+
 import Navbar from "@/components/Navbar/Navbar";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useAuthStore } from "@/modules/auth/store";
+import SideDashboard from "@/components/side-dashboard/side-dashboard";
 
 interface MainLayoutProps {
   children: React.ReactNode;
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
+  const pathname = usePathname();
+  const { isAuthenticated } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
+  const [isLivePartner, setIsLivePartner] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+
+    const checkPartnerStatus = () => {
+      try {
+        const savedData = localStorage.getItem("partnerApplication");
+        if (savedData) {
+          const parsed = JSON.parse(savedData);
+          if (parsed.verificationStatus === "VERIFIED") {
+            setIsLivePartner(true);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      setIsLivePartner(false);
+    };
+
+    checkPartnerStatus();
+    window.addEventListener("storage", checkPartnerStatus);
+    window.addEventListener("partnerStatusChange", checkPartnerStatus);
+
+    return () => {
+      window.removeEventListener("storage", checkPartnerStatus);
+      window.removeEventListener("partnerStatusChange", checkPartnerStatus);
+    };
+  }, []);
+
+  const dashboardTabs = [
+    "/my-booking",
+    "/my-earning",
+    "/viewed-profile",
+    "/showed-interest"
+  ];
+
+  const showGlobalDashboard = mounted && isAuthenticated && !dashboardTabs.includes(pathname);
+
   return (
     <>
       <Navbar />
+      {showGlobalDashboard && <SideDashboard />}
       <main className="flex-1">{children}</main>
     </>
   );

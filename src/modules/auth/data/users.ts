@@ -12,6 +12,14 @@ export interface MockUser {
 
 const DEFAULT_USERS: MockUser[] = [
   {
+    id: "usr_sabrina",
+    name: "Sabrina Carpenter",
+    email: "sabrina@gmail.com",
+    password: "sabrina@123",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256",
+    isProfileComplete: true,
+  },
+  {
     id: "usr_gigi",
     name: "Gigi Hadid",
     email: "gigi@example.com",
@@ -71,7 +79,16 @@ export const mockDb = {
     const stored = getStorageItem(USERS_KEY);
     if (stored) {
       try {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored) as MockUser[];
+        const hasSabrina = parsed.some(u => u.email === "sabrina@gmail.com");
+        if (!hasSabrina) {
+          const sabrina = DEFAULT_USERS.find(u => u.email === "sabrina@gmail.com");
+          if (sabrina) {
+            parsed.push(sabrina);
+            this.saveUsers(parsed);
+          }
+        }
+        return parsed;
       } catch (e) {
         return inMemoryUsers;
       }

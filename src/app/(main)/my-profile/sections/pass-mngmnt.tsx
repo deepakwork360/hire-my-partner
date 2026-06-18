@@ -1,12 +1,12 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Rochester, Outfit } from "next/font/google";
+import { Outfit, Rochester } from "next/font/google";
 import { Lock, ShieldCheck, Key, Eye, EyeOff, Check, AlertCircle } from "lucide-react";
 import { useState } from "react";
 
-const rochester = Rochester({ subsets: ["latin"], weight: ["400"] });
 const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "800"] });
+const rochester = Rochester({ subsets: ["latin"], weight: ["400"] });
 
 export default function PassMngmnt() {
   const [showPass, setShowPass] = useState(false);
@@ -82,7 +82,7 @@ export default function PassMngmnt() {
             <div className="flex flex-col gap-6">
               {/* Current Password */}
               <div className="flex flex-col gap-3">
-                <label className="text-text-muted text-xs font-black uppercase tracking-widest ml-1">Current Password</label>
+                <label className="text-text-main text-xs md:text-sm font-bold uppercase tracking-wider ml-1">Current Password</label>
                 <div className="relative">
                   <Lock size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-text-muted" />
                   <input 
@@ -108,7 +108,7 @@ export default function PassMngmnt() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* New Password */}
                 <div className="flex flex-col gap-3">
-                  <label className="text-text-muted text-xs font-black uppercase tracking-widest ml-1">New Password</label>
+                  <label className="text-text-main text-xs md:text-sm font-bold uppercase tracking-wider ml-1">New Password</label>
                   <div className="relative">
                     <Key size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-text-muted" />
                     <input 
@@ -123,7 +123,7 @@ export default function PassMngmnt() {
 
                 {/* Confirm New Password */}
                 <div className="flex flex-col gap-3">
-                  <label className="text-text-muted text-xs font-black uppercase tracking-widest ml-1">Confirm New Password</label>
+                  <label className="text-text-main text-xs md:text-sm font-bold uppercase tracking-wider ml-1">Confirm New Password</label>
                   <div className="relative">
                     <Key size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-text-muted" />
                     <input 
@@ -142,56 +142,44 @@ export default function PassMngmnt() {
               </div>
             </div>
 
-            {/* Error Message Display */}
-            <AnimatePresence>
-                {error && (
-                    <motion.div 
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="flex items-center gap-2 text-primary text-[10px] font-black uppercase tracking-[0.2em] bg-primary/5 p-3 rounded-xl border border-primary/10"
-                    >
-                        <AlertCircle size={14} />
-                        {error}
-                    </motion.div>
-                )}
+            <AnimatePresence mode="wait">
+              {error && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="flex items-center gap-3 text-red-500 text-xs font-semibold bg-red-500/5 p-4 rounded-xl border border-red-500/10"
+                >
+                  <AlertCircle size={16} />
+                  <span>{error}</span>
+                </motion.div>
+              )}
             </AnimatePresence>
 
-            {/* Submit Button */}
-            <div className="flex flex-col sm:flex-row items-center gap-6 pt-4">
-              <button 
-                type="submit"
-                disabled={isSubmitting || !isFormFilled}
-                className={`w-full h-14 rounded-2xl font-black tracking-[0.2em] uppercase text-xs flex items-center justify-center gap-3 relative transition-all duration-300 ${
-                  success 
-                    ? "bg-emerald-600 text-white" 
-                    : isFormFilled
-                    ? "bg-linear-to-r from-primary to-primary-dark text-white shadow-lg hover:shadow-primary/20 active:scale-[0.98]"
+            <button
+              type="submit"
+              disabled={isSubmitting || !isFormFilled}
+              className={`w-full h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] relative overflow-hidden transition-all duration-300 ${
+                success 
+                  ? "bg-emerald-600 text-white" 
+                  : isFormFilled 
+                    ? "bg-primary text-white hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5" 
                     : "bg-bg-secondary border border-border-main text-text-muted cursor-not-allowed"
-                }`}
-              >
+              }`}
+            >
+              <div className="relative z-10 flex items-center justify-center gap-3">
                 {isSubmitting ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : success ? (
-                  <><Check size={18} strokeWidth={3} /> Password Updated</>
+                  <><Check size={16} /> Password Updated</>
                 ) : (
-                  "Update Password"
+                  <>Update Password</>
                 )}
-              </button>
-              
-              <div className="flex items-center gap-2 whitespace-nowrap">
-                <ShieldCheck size={14} className="text-emerald-500" />
-                <p className="text-text-muted text-[10px] font-medium tracking-wide">
-                  Your security is our top priority.
-                </p>
               </div>
-            </div>
+            </button>
           </form>
         </motion.div>
       </div>
     </section>
   );
 }
-
-
-

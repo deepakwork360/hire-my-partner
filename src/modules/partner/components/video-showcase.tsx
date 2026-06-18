@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
-import { Play, X, Volume2, VolumeX } from "lucide-react";
+import { Play, X, Volume2, VolumeX, ChevronLeft, ChevronRight } from "lucide-react";
 import LazyVideo from "@/components/common/lazy-video";
 
 const rochester = Rochester({
@@ -29,6 +29,8 @@ const DEFAULT_VIDEOS = [
 export default function VideoShowcase({ videos }: VideoShowcaseProps) {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(true);
+  const [activeIndex, setActiveIndex] = useState<number>(0);
+  const touchStartX = useRef<number>(0);
 
   // Filter out empty/null/undefined items
   const validVideos = (videos || []).filter(Boolean);
@@ -39,6 +41,54 @@ export default function VideoShowcase({ videos }: VideoShowcaseProps) {
   }
 
   const displayVideos = validVideos.slice(0, 3);
+
+  const handlePrev = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (activeIndex > 0) {
+      const newIdx = activeIndex - 1;
+      setActiveIndex(newIdx);
+      setSelectedVideo(displayVideos[newIdx]);
+    }
+  };
+
+  const handleNext = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (activeIndex < displayVideos.length - 1) {
+      const newIdx = activeIndex + 1;
+      setActiveIndex(newIdx);
+      setSelectedVideo(displayVideos[newIdx]);
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const swipeDistance = touchStartX.current - touchEndX;
+    const swipeThreshold = 40;
+    if (swipeDistance > swipeThreshold) {
+      handleNext();
+    } else if (swipeDistance < -swipeThreshold) {
+      handlePrev();
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedVideo) return;
+      if (e.key === "ArrowLeft") {
+        handlePrev();
+      } else if (e.key === "ArrowRight") {
+        handleNext();
+      } else if (e.key === "Escape") {
+        setSelectedVideo(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedVideo, activeIndex, displayVideos]);
 
   const CLIP_DETAILS = [
     {
@@ -101,7 +151,13 @@ export default function VideoShowcase({ videos }: VideoShowcaseProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-40px" }}
                 transition={{ duration: 0.7, delay: idx * 0.15, ease: "easeOut" }}
-                onClick={() => setSelectedVideo(url)}
+                onClick={() => {
+                  const idxUrl = displayVideos.indexOf(url);
+                  if (idxUrl !== -1) {
+                    setActiveIndex(idxUrl);
+                    setSelectedVideo(url);
+                  }
+                }}
                 className="relative aspect-video rounded-[36px] overflow-hidden bg-bg-card border border-white/5 hover:border-primary/45 cursor-pointer shadow-[0_30px_60px_rgba(0,0,0,0.4)] group transition-all duration-500 hover:shadow-[0_40px_80px_rgba(var(--primary-rgb),0.15)] hover:-translate-y-1"
               >
                 {/* Glow border overlay */}
@@ -159,7 +215,7 @@ export default function VideoShowcase({ videos }: VideoShowcaseProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#050506]/98 backdrop-blur-xl cursor-default p-4 md:p-8"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#050506]/98 backdrop-blur-xl cursor-default select-none"
           >
             {/* Real-time ambient backdrop glow (Ambilight effect) */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-30 select-none">
@@ -194,15 +250,34 @@ export default function VideoShowcase({ videos }: VideoShowcaseProps) {
               </button>
             </div>
 
-            {/* Cinema Video Frame Wrapper */}
-            <motion.div
-              initial={{ scale: 0.92, opacity: 0, y: 30 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.92, opacity: 0, y: 30 }}
-              transition={{ type: "spring", damping: 25, stiffness: 150 }}
-              className="relative z-20 w-full max-w-5xl aspect-video rounded-[36px] overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(var(--primary-rgb),0.35)] bg-black"
+            {/* Left Control Button (hidden on mobile, shown on desktop) */}
+            <button
+              onClick={handlePrev}
+              disabled={activeIndex === 0}
+              className="hidden md:flex fixed left-8 top-1/2 -translate-y-1/2 z-30 w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 hover:border-primary/50 items-center justify-center text-white transition-all duration-300 group shadow-2xl backdrop-blur-xl cursor-pointer disabled:opacity-20 disabled:pointer-events-none"
+              aria-label="Previous video"
+            >
+              <ChevronLeft className="w-8 h-8 group-hover:-translate-x-0.5 transition-transform" />
+            </button>
+
+            {/* Right Control Button (hidden on mobile, shown on desktop) */}
+            <button
+              onClick={handleNext}
+              disabled={activeIndex === displayVideos.length - 1}
+              className="hidden md:flex fixed right-8 top-1/2 -translate-y-1/2 z-30 w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 hover:border-primary/50 items-center justify-center text-white transition-all duration-300 group shadow-2xl backdrop-blur-xl cursor-pointer disabled:opacity-20 disabled:pointer-events-none"
+              aria-label="Next video"
+            >
+              <ChevronRight className="w-8 h-8 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+
+            {/* Cinema Video Frame Wrapper with swipe events */}
+            <div
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              className="relative z-20 w-full max-w-5xl aspect-video rounded-[36px] overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(var(--primary-rgb),0.35)] bg-black pointer-events-auto"
             >
               <video
+                key={selectedVideo}
                 src={selectedVideo}
                 className="w-full h-full object-contain"
                 autoPlay
@@ -211,7 +286,7 @@ export default function VideoShowcase({ videos }: VideoShowcaseProps) {
                 playsInline
                 loop
               />
-            </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

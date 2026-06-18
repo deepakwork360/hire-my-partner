@@ -180,6 +180,10 @@ export const partners: any[] = [
       fiveHours: 29995,
       eightHours: 47992
     },
+    videos: [
+      "https://assets.mixkit.co/videos/71/71-720.mp4",
+      "https://assets.mixkit.co/videos/44541/44541-720.mp4",
+    ],
     gallery: [
       { id: "3-1", image: "https://i1-e.pinimg.com/736x/fa/a0/6b/faa06bf2ba68fc0a8f03e985b393cffd.jpg" },
       { id: "3-2", image: "https://i1-e.pinimg.com/736x/4c/27/b9/4c27b9c0b22538958870d27d2b184623.jpg" },

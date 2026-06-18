@@ -184,7 +184,7 @@ export default function PremiumDatePicker({
                 </span>
               )}
              <span className={`text-xs font-bold ${value ? "text-text-main" : "text-text-muted"}`}>
-               {value ? selectedDate?.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : "Choose a date"}
+               {value ? selectedDate?.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : placeholder}
              </span>
           </div>
 

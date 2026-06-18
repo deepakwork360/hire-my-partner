@@ -64,7 +64,7 @@ export default function PartnersNearby() {
     return true;
   });
 
-  const profile = filteredProfiles.map((partner) => {
+  const profile = filteredProfiles.slice(0, 12).map((partner) => {
     const oneHourRate = partner.pricing?.oneHour || 499;
     const bioText = partner.bio || "";
     return {
@@ -89,8 +89,6 @@ export default function PartnersNearby() {
       buttonText: "View Profile",
       buttonLink: `/partners/${partner.id}`,
       showViewIcon: false,
-      messageLink: `/checkout?partner=${partner.id}`,
-      mapLink: "#",
     };
   });
   return (

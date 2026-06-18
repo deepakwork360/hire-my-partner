@@ -65,6 +65,22 @@ const timeSlots = [
 
 // --- Moved Components Outside to prevent Focus Loss ---
 
+const countries = [
+  { code: "+91", iso: "in", name: "India" },
+  { code: "+1", iso: "us", name: "United States" },
+  { code: "+44", iso: "gb", name: "United Kingdom" },
+  { code: "+61", iso: "au", name: "Australia" },
+  { code: "+971", iso: "ae", name: "United Arab Emirates" },
+  { code: "+65", iso: "sg", name: "Singapore" },
+  { code: "+49", iso: "de", name: "Germany" },
+  { code: "+33", iso: "fr", name: "France" },
+  { code: "+966", iso: "sa", name: "Saudi Arabia" },
+  { code: "+974", iso: "qa", name: "Qatar" },
+  { code: "+977", iso: "np", name: "Nepal" },
+  { code: "+880", iso: "bd", name: "Bangladesh" },
+  { code: "+94", iso: "lk", name: "Sri Lanka" },
+];
+
 
 const InputWrapper = ({
   children,
@@ -159,7 +175,7 @@ const TagInput = ({ tags, onChange, placeholder }: TagInputProps) => {
 };
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex items-center gap-4 mb-8">
+  <div className="flex items-center gap-4 mb-5">
     <div className="w-2 h-8 rounded-full bg-linear-to-b from-primary to-accent shadow-[0_0_15px_rgba(var(--primary-rgb),0.6)]" />
     <h3 className="text-text-main text-xl md:text-2xl font-bold tracking-wide">
       {children}
@@ -325,7 +341,15 @@ export default function DetailsForm() {
     age: "",
     city: "",
     mobile: "",
+    phoneCountryCode: "+91",
     email: "",
+    bankName: "",
+    bankAccountNumber: "",
+    bankIfscCode: "",
+    bankAccountHolderName: "",
+    country: "",
+    pincode: "",
+    upiId: "",
     addons: [] as string[],
     otherAddon: "",
     languages: [] as string[],
@@ -337,10 +361,27 @@ export default function DetailsForm() {
     instagram: "",
     linkedin: "",
     termsAgreed: false,
-    idProofs: [null, null, null] as (string | null)[],
+    idProofs: [null, null, null, null] as (string | null)[],
     gallery: Array(9).fill(null) as (string | null)[],
     videos: Array(3).fill(null) as (string | null)[],
   });
+  const countryDropdownRef = useRef<HTMLDivElement>(null);
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        countryDropdownRef.current &&
+        !countryDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsCountryDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   const [isGenderOpen, setIsGenderOpen] = useState(false);
   const genders = ["Male", "Female", "Other", "Prefer not to say"];
 
@@ -446,6 +487,7 @@ export default function DetailsForm() {
           zoomLink,
         }),
       );
+      window.dispatchEvent(new Event("partnerStatusChange"));
     }
   }, [formData, submissionStatus, view, verificationStatus, verificationNotes, kycStatus, kycDate, kycSlot, zoomLink, isHydrated]);
 
@@ -518,6 +560,41 @@ export default function DetailsForm() {
       scrollTo(basicInfoRef);
       return false;
     }
+    if (!formData.country) {
+      toast.error("Please enter your country.");
+      scrollTo(basicInfoRef);
+      return false;
+    }
+    if (!formData.pincode) {
+      toast.error("Please enter your pincode.");
+      scrollTo(basicInfoRef);
+      return false;
+    }
+    if (!formData.upiId) {
+      toast.error("Please enter your UPI ID.");
+      scrollTo(basicInfoRef);
+      return false;
+    }
+    if (!formData.bankAccountHolderName) {
+      toast.error("Please enter bank account holder name.");
+      scrollTo(basicInfoRef);
+      return false;
+    }
+    if (!formData.bankName) {
+      toast.error("Please enter your bank name.");
+      scrollTo(basicInfoRef);
+      return false;
+    }
+    if (!formData.bankAccountNumber) {
+      toast.error("Please enter your bank account number.");
+      scrollTo(basicInfoRef);
+      return false;
+    }
+    if (!formData.bankIfscCode) {
+      toast.error("Please enter bank IFSC code.");
+      scrollTo(basicInfoRef);
+      return false;
+    }
     if (!formData.hourlyRate) {
       toast.error("Please enter your hourly rate.");
       scrollTo(basicInfoRef);
@@ -538,9 +615,8 @@ export default function DetailsForm() {
     }
 
 
-    const filledProofs = formData.idProofs.filter(p => p !== null).length;
-    if (filledProofs < 2) {
-      toast.error("Please upload at least 2 ID verification proofs.");
+    if (!formData.idProofs[0] || !formData.idProofs[1] || !formData.idProofs[2] || !formData.idProofs[3]) {
+      toast.error("Please upload Aadhaar Front, Aadhaar Back, PAN Card Front, and PAN Card Back.");
       scrollTo(docsRef);
       return false;
     }
@@ -602,8 +678,14 @@ export default function DetailsForm() {
       image: formData.photo || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256",
       banner: formData.banner || undefined,
       bio: formData.bio || "",
-
-
+      phoneCountryCode: formData.phoneCountryCode || "+91",
+      bankName: formData.bankName,
+      bankAccountNumber: formData.bankAccountNumber,
+      bankIfscCode: formData.bankIfscCode,
+      bankAccountHolderName: formData.bankAccountHolderName,
+      country: formData.country,
+      pincode: formData.pincode,
+      upiId: formData.upiId,
       tags: formData.tagsInput.length > 0 ? formData.tagsInput.map(t => {
         const trimmed = t.trim();
         return trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
@@ -672,7 +754,15 @@ export default function DetailsForm() {
       age: "",
       city: "",
       mobile: "",
+      phoneCountryCode: "+91",
       email: "",
+      bankName: "",
+      bankAccountNumber: "",
+      bankIfscCode: "",
+      bankAccountHolderName: "",
+      country: "",
+      pincode: "",
+      upiId: "",
       addons: [],
       otherAddon: "",
       languages: [],
@@ -684,7 +774,7 @@ export default function DetailsForm() {
       instagram: "",
       linkedin: "",
       termsAgreed: false,
-      idProofs: [null, null, null],
+      idProofs: [null, null, null, null],
       gallery: Array(9).fill(null),
       videos: Array(3).fill(null),
     });
@@ -828,7 +918,7 @@ export default function DetailsForm() {
               )}
 
               <form
-                className="space-y-16 relative z-10"
+                className="space-y-12 relative z-10"
                 onSubmit={(e) => {
                   e.preventDefault();
                   handleSubmit();
@@ -1047,18 +1137,6 @@ export default function DetailsForm() {
  
                   <InputWrapper>
                     <input
-                      type="tel"
-                      placeholder="Mobile Number"
-                      className={getInputClass(showErrors && !formData.mobile)}
-                      value={formData.mobile}
-                      onChange={(e) =>
-                        setFormData({ ...formData, mobile: e.target.value })
-                      }
-                    />
-                  </InputWrapper>
- 
-                  <InputWrapper>
-                    <input
                       type="email"
                       placeholder="Email Address"
                       className={getInputClass(showErrors && !formData.email)}
@@ -1068,7 +1146,72 @@ export default function DetailsForm() {
                       }
                     />
                   </InputWrapper>
- 
+
+                  {/* Phone Country Code & Number */}
+                  <div className="flex gap-4 col-span-1">
+                    <div className="w-[105px] shrink-0 relative" ref={countryDropdownRef}>
+                      <button
+                        type="button"
+                        onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
+                        className={`${getInputClass(showErrors && !formData.phoneCountryCode)} flex items-center justify-between gap-1 whitespace-nowrap cursor-pointer pl-3 pr-2`}
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <img
+                            src={`https://flagcdn.com/w40/${(countries.find(c => c.code === formData.phoneCountryCode)?.iso || "in")}.png`}
+                            alt="Flag"
+                            className="w-5 h-3.5 object-cover rounded-[2px] shrink-0"
+                          />
+                          <span>{formData.phoneCountryCode}</span>
+                        </span>
+                        <ChevronDown className={`w-3.5 h-3.5 text-text-muted transition-transform duration-300 shrink-0 ${isCountryDropdownOpen ? "rotate-180" : ""}`} />
+                      </button>
+
+                      <AnimatePresence>
+                        {isCountryDropdownOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                            className="absolute z-50 left-0 top-full mt-2 w-56 max-h-60 overflow-y-auto bg-bg-base border border-border-main rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.3)] backdrop-blur-xl custom-scrollbar flex flex-col"
+                          >
+                            {countries.map((c) => (
+                              <button
+                                key={c.code}
+                                type="button"
+                                onClick={() => {
+                                  setFormData({ ...formData, phoneCountryCode: c.code });
+                                  setIsCountryDropdownOpen(false);
+                                }}
+                                className={`w-full cursor-pointer flex items-center gap-3 px-4 py-2.5 text-left text-text-main hover:bg-primary/15 transition-colors text-sm font-medium ${c.code === formData.phoneCountryCode ? "bg-primary/10 text-primary" : ""}`}
+                              >
+                                <img
+                                  src={`https://flagcdn.com/w40/${c.iso}.png`}
+                                  alt={c.name}
+                                  className="w-5 h-3.5 object-cover rounded-[2px] shrink-0"
+                                />
+                                <span className="text-xs font-semibold">{c.code} ({c.name})</span>
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    <div className="flex-1">
+                      <InputWrapper>
+                        <input
+                          type="tel"
+                          placeholder="Mobile Number"
+                          className={getInputClass(showErrors && !formData.mobile)}
+                          value={formData.mobile}
+                          onChange={(e) =>
+                            setFormData({ ...formData, mobile: e.target.value })
+                          }
+                        />
+                      </InputWrapper>
+                    </div>
+                  </div>
+
                   <InputWrapper>
                     <div className="relative group">
                       <div className={`absolute left-5 top-1/2 -translate-y-1/2 font-bold text-lg transition-colors ${showErrors && !formData.hourlyRate ? "text-red-500" : "text-text-muted group-focus-within:text-primary"}`}>
@@ -1090,49 +1233,107 @@ export default function DetailsForm() {
                   </InputWrapper>
                 </div>
 
-
-                {/* Divider */}
-                <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
-
-                {/* Add-Ons */}
-                {/* <div>
-                  <SectionTitle>
-                    Premium Add-Ons{" "}
-                    <span className="text-text-muted text-sm font-normal ml-2 tracking-normal italic">
-                      (Optional)
-                    </span>
-                  </SectionTitle>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
-                    {[
-                      "Casual Photoshoot",
-                      "Personalized Playlist",
-                      "Extra Travel Time",
-                    ].map((item) => (
-                      <CheckboxItem
-                        key={item}
-                        label={item}
-                        checked={formData.addons.includes(item)}
-                        onChange={() => toggleArrayItem("addons", item)}
+                {/* Location & Payment Details */}
+                <div>
+                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
+                  <SectionTitle>Location & Payment Details</SectionTitle>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                    <InputWrapper>
+                      <input
+                        type="text"
+                        placeholder="Country"
+                        className={getInputClass(showErrors && !formData.country)}
+                        value={formData.country}
+                        onChange={(e) =>
+                          setFormData({ ...formData, country: e.target.value })
+                        }
                       />
-                    ))}
-                  </div>
-                  <InputWrapper>
-                    <input
-                      type="text"
-                      placeholder="Specify other services..."
-                      className={getInputClass()}
-                      value={formData.otherAddon}
-                      onChange={(e) =>
-                        setFormData({ ...formData, otherAddon: e.target.value })
-                      }
-                    />
-                  </InputWrapper>
-                </div> */}
+                    </InputWrapper>
 
-                {/* <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" /> */}
+                    <InputWrapper>
+                      <input
+                        type="text"
+                        placeholder="Pincode"
+                        className={getInputClass(showErrors && !formData.pincode)}
+                        value={formData.pincode}
+                        onChange={(e) =>
+                          setFormData({ ...formData, pincode: e.target.value })
+                        }
+                      />
+                    </InputWrapper>
+
+                    <InputWrapper className="col-span-1 md:col-span-2">
+                      <input
+                        type="text"
+                        placeholder="UPI ID"
+                        className={getInputClass(showErrors && !formData.upiId)}
+                        value={formData.upiId}
+                        onChange={(e) =>
+                          setFormData({ ...formData, upiId: e.target.value })
+                        }
+                      />
+                    </InputWrapper>
+                  </div>
+                </div>
+
+                {/* Bank Account Details */}
+                <div>
+                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
+                  <SectionTitle>Bank Account Details</SectionTitle>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                    <InputWrapper className="col-span-1 md:col-span-2">
+                      <input
+                        type="text"
+                        placeholder="Account Holder Name"
+                        className={getInputClass(showErrors && !formData.bankAccountHolderName)}
+                        value={formData.bankAccountHolderName}
+                        onChange={(e) =>
+                          setFormData({ ...formData, bankAccountHolderName: e.target.value })
+                        }
+                      />
+                    </InputWrapper>
+
+                    <InputWrapper>
+                      <input
+                        type="text"
+                        placeholder="Bank Name"
+                        className={getInputClass(showErrors && !formData.bankName)}
+                        value={formData.bankName}
+                        onChange={(e) =>
+                          setFormData({ ...formData, bankName: e.target.value })
+                        }
+                      />
+                    </InputWrapper>
+
+                    <InputWrapper>
+                      <input
+                        type="text"
+                        placeholder="Account Number"
+                        className={getInputClass(showErrors && !formData.bankAccountNumber)}
+                        value={formData.bankAccountNumber}
+                        onChange={(e) =>
+                          setFormData({ ...formData, bankAccountNumber: e.target.value })
+                        }
+                      />
+                    </InputWrapper>
+
+                    <InputWrapper className="col-span-1 md:col-span-2">
+                      <input
+                        type="text"
+                        placeholder="IFSC Code"
+                        className={getInputClass(showErrors && !formData.bankIfscCode)}
+                        value={formData.bankIfscCode}
+                        onChange={(e) =>
+                          setFormData({ ...formData, bankIfscCode: e.target.value })
+                        }
+                      />
+                    </InputWrapper>
+                  </div>
+                </div>
 
                 {/* Languages Spoken */}
                 <div>
+                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
                   <SectionTitle>Languages</SectionTitle>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-5">
                     {["English", "Hindi", "Bengali", "Tamil", "Telugu", "Marathi", "Gujarati", "Kannada", "Malayalam", "Punjabi", "Urdu", "Odia", "Spanish", "French", "German", "Arabic"].map((item, idx) => {
@@ -1167,10 +1368,9 @@ export default function DetailsForm() {
                   </button>
                 </div>
 
-                <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
-
                 {/* Short Bio */}
                 <div ref={bioRef}>
+                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
                   <SectionTitle>Short Bio</SectionTitle>
                   <div className="space-y-6">
                     <InputWrapper>
@@ -1188,6 +1388,7 @@ export default function DetailsForm() {
                 </div>
                 {/* Tags & Interests */}
                 <div>
+                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
                   <SectionTitle>Tags & Interests (Optional)</SectionTitle>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <InputWrapper>
@@ -1214,10 +1415,9 @@ export default function DetailsForm() {
                   </div>
                 </div>
 
-                <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
-
                 {/* Gallery Upload */}
                 <div ref={galleryRef}>
+                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
                   <SectionTitle>
                     Partner Gallery{" "}
                     <span className="text-text-muted text-sm font-normal ml-2 tracking-normal italic">
@@ -1293,10 +1493,9 @@ export default function DetailsForm() {
                   </div>
                 </div>
 
-                <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
-
                 {/* Video Portfolio */}
                 <div>
+                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
                   <SectionTitle>
                     Video Introductions
                     <span className="text-text-muted text-sm font-normal ml-2 tracking-normal italic">
@@ -1377,72 +1576,10 @@ export default function DetailsForm() {
                   </div>
                 </div>
 
-                {/* <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" /> */}
-
-                {/* Availability */}
-                {/* <div ref={scheduleRef}>
-                  <SectionTitle>Availability Schedule</SectionTitle>
-                  <div className={`grid grid-cols-1 md:grid-cols-2 gap-5 p-2 rounded-2xl transition-all duration-500 ${showErrors && formData.availability.length === 0 ? "bg-red-500/5 shadow-[0_0_20px_rgba(239,68,68,0.1)]" : ""}`}>
-                    {[
-                      "Weekdays (5 PM - 10 PM)",
-                      "Weekends (12 PM - 10 PM)",
-                    ].map((item) => (
-                      <CheckboxItem
-                        key={item}
-                        label={item}
-                        checked={formData.availability.includes(item)}
-                        onChange={() => toggleArrayItem("availability", item)}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" /> */}
-
-                {/* Social Links */}
-                {/* <div>
-                  <SectionTitle>
-                    Social Links{" "}
-                    <span className="text-text-muted text-sm font-normal ml-2 tracking-normal italic">
-                      (Optional)
-                    </span>
-                  </SectionTitle>                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <InputWrapper>
-                      <input
-                        type="url"
-                        placeholder="Instagram Profile URL"
-                        className={getInputClass()}
-                        value={formData.instagram}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            instagram: e.target.value,
-                          })
-                        }
-                      />
-                    </InputWrapper>
-                    <InputWrapper>
-                      <input
-                        type="url"
-                        placeholder="LinkedIn Profile URL"
-                        className={getInputClass()}
-                        value={formData.linkedin}
-                        onChange={(e) =>
-                          setFormData({ ...formData, linkedin: e.target.value })
-                        }
-                      />
-                    </InputWrapper>
-                  </div>
- 
-                 
-
-                </div> */}
-
-                {/* <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent" /> */}
-
                 {/* terms and condition agreement  */}
-
-                 <div ref={termsRef} className={`bg-white/2 border p-6 rounded-2xl flex items-start md:items-center gap-4 transition-all duration-500 ${showErrors && !formData.termsAgreed ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] bg-red-500/5" : "border-border-main"}`}>
+                <div ref={termsRef}>
+                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
+                  <div className={`bg-white/2 border p-6 rounded-2xl flex items-start md:items-center gap-4 transition-all duration-500 ${showErrors && !formData.termsAgreed ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] bg-red-500/5" : "border-border-main"}`}>
                     <label className="flex items-center gap-4 w-fit cursor-pointer group">
                       <div
                         className={`w-6 h-6 shrink-0 rounded flex items-center justify-center border-2 transition-all duration-300 ${formData.termsAgreed ? "bg-primary border-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" : showErrors && !formData.termsAgreed ? "border-red-500" : "border-border-main group-hover:border-primary"}`}
@@ -1474,22 +1611,37 @@ export default function DetailsForm() {
                       />
                     </label>
                   </div>
+                </div>
 
                 {/* Government ID Proof */}
                 <div ref={docsRef}>
+                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
                   <SectionTitle>Verification Documents</SectionTitle>
-                  <p className="text-text-muted text-sm mb-6 max-w-2xl">
-                    Please upload clear pictures of your Government ID (Front,
-                    Back) and a selfie holding the ID for verification purposes.
+                  <p className="text-text-muted text-sm mb-5 max-w-2xl">
+                    Please upload clear pictures of your Aadhaar Card (Front,
+                    Back) and PAN Card (Front, Back) for verification purposes.
                   </p>
 
-                  <div className="bg-bg-secondary border border-border-main p-6 md:p-10 rounded-3xl flex flex-col md:flex-row gap-6 justify-center md:justify-start items-center relative overflow-hidden shadow-sm">
+                  <div className="bg-bg-secondary border border-border-main p-4 md:p-10 rounded-3xl grid grid-cols-2 md:flex md:flex-wrap gap-4 md:gap-6 justify-center md:justify-start items-center relative overflow-hidden shadow-sm">
                     {/* Subtle background gradient inside the tray */}
                     <div className="absolute inset-0 bg-linear-to-r from-primary/5 to-transparent pointer-events-none" />
 
-                    {[0, 1, 2].map((index) => {
-                      const isRequired = index < 2;
+                    {[0, 1, 2, 3].map((index) => {
+                      const isRequired = true;
                       const hasError = showErrors && isRequired && !formData.idProofs[index];
+
+                      const getLabel = (idx: number) => {
+                        switch (idx) {
+                          case 0:
+                            return "Aadhaar Front";
+                          case 1:
+                            return "Aadhaar Back";
+                          case 2:
+                            return "PAN Front";
+                          default:
+                            return "PAN Back";
+                        }
+                      };
 
                       return (
                         <motion.div
@@ -1498,7 +1650,7 @@ export default function DetailsForm() {
                             boxShadow: ["0 0 20px rgba(239,68,68,0.1)", "0 0 30px rgba(239,68,68,0.3)", "0 0 20px rgba(239,68,68,0.1)"] 
                           } : {}}
                           transition={{ duration: 3, repeat: Infinity }}
-                          className={`relative w-36 h-28 border-2 border-dashed transition-all duration-500 flex items-center justify-center cursor-pointer overflow-hidden rounded-2xl group shadow-sm ${
+                          className={`relative w-full h-24 sm:h-28 md:w-36 md:h-28 border-2 border-dashed transition-all duration-500 flex items-center justify-center cursor-pointer overflow-hidden rounded-2xl group shadow-sm ${
                             hasError 
                               ? "border-red-500 bg-red-500/5" 
                               : "border-border-main bg-bg-card hover:border-primary hover:bg-bg-secondary hover:shadow-[0_0_25px_rgba(var(--primary-rgb),0.15)]"
@@ -1508,7 +1660,7 @@ export default function DetailsForm() {
                             <div className="relative w-full h-full group/id">
                               <img
                                 src={formData.idProofs[index]!}
-                                alt={`ID Proof ${index + 1}`}
+                                alt={getLabel(index)}
                                 className="w-full h-full object-cover group-hover/id:scale-105 transition-transform duration-500"
                               />
                               <button
@@ -1532,15 +1684,15 @@ export default function DetailsForm() {
                             <>
                               <div className="flex flex-col items-center gap-2">
                                 <Plus className={`w-8 h-8 group-hover:scale-125 transition-all duration-300 ${hasError ? "text-red-500" : "text-text-muted group-hover:text-primary"}`} />
-                                <div className="flex flex-col items-center gap-1">
-                                  <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${hasError ? "text-red-500" : "text-text-muted group-hover:text-primary"}`}>
-                                    {index === 0 ? "ID Front" : index === 1 ? "ID Back" : "Selfie"}
+                                <div className="flex flex-col items-center gap-1 text-center px-1">
+                                  <span className={`text-[8px] font-black uppercase tracking-[0.1em] ${hasError ? "text-red-500" : "text-text-muted group-hover:text-primary"}`}>
+                                    {getLabel(index)}
                                   </span>
                                   {isRequired && !formData.idProofs[index] && (
                                     <motion.div 
                                       animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
                                       transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                                      className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]" 
+                                      className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)] mx-auto" 
                                     />
                                   )}
                                 </div>
@@ -1563,7 +1715,6 @@ export default function DetailsForm() {
                 <div className="pt-10 flex justify-center">
                   <PremiumButton
                     label="Submit Application"
-                    onClick={handleSubmit}
                     size="xl"
                     variant="primary"
                     icon={<ArrowRight className="w-6 h-6" />}
@@ -1993,40 +2144,67 @@ export default function DetailsForm() {
               {/* Video KYC Status block inside summary */}
               {kycStatus === "SCHEDULED" && verificationStatus === "PENDING" && (
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="mb-12 p-6 bg-primary/10 border border-primary/30 rounded-3xl flex items-start gap-4 relative overflow-hidden shadow-lg z-10"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-12 p-6 md:p-8 bg-bg-card border border-primary/25 hover:border-primary/45 rounded-[2rem] relative overflow-hidden shadow-[0_20px_50px_rgba(var(--primary-rgb),0.08)] z-10 transition-all duration-300"
                 >
-                  <div className="absolute top-0 left-0 w-1.5 h-full bg-primary" />
-                  <Video className="w-6 h-6 text-primary shrink-0 mt-0.5" />
-                  <div className="space-y-1 w-full">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-primary text-[10px] font-black uppercase tracking-widest leading-none">
-                        Video KYC Call Scheduled
-                      </h4>
-                      <span className="text-[10px] font-bold text-text-muted bg-white/5 border border-white/10 rounded-full px-2 py-0.5">
-                        Status: Pending Live Check
+                  <div className="absolute top-0 left-0 w-2 h-full bg-linear-to-b from-primary to-primary-dark" />
+                  
+                  {/* Card Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-main/50 pb-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 border border-primary/20 shadow-inner">
+                        <Video className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg md:text-xl font-extrabold text-text-main tracking-tight">
+                          Video KYC Appointment
+                        </h4>
+                        <p className="text-[10px] md:text-xs text-text-muted font-semibold mt-0.5">Identity Verification Call</p>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-primary bg-primary/10 border border-primary/25 rounded-full px-3 py-1.5 tracking-wider uppercase">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                        Pending Live Check
                       </span>
                     </div>
-                    <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm font-bold text-text-main">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-primary" />
-                        <span>Date: {kycDate}</span>
+                  </div>
+
+                  {/* Date/Time grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 p-5 bg-bg-secondary/40 border border-border-main/40 rounded-2xl">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted shrink-0 border border-white/5">
+                        <Calendar className="w-5 h-5 text-primary" />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-primary" />
-                        <span>Time: {kycSlot}</span>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Appointment Date</p>
+                        <p className="text-sm md:text-base font-black text-text-main mt-0.5">{kycDate}</p>
                       </div>
                     </div>
-                    <p className="text-text-muted text-xs font-semibold mt-2 leading-relaxed">
-                      A representative will contact you via a secure link on your scheduled time. Please keep your physical ID cards ready.
+                    <div className="flex items-center gap-3.5 border-t sm:border-t-0 sm:border-l border-border-main/40 pt-4 sm:pt-0 sm:pl-6">
+                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted shrink-0 border border-white/5">
+                        <Clock className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Scheduled Time Slot</p>
+                        <p className="text-sm md:text-base font-black text-text-main mt-0.5">{kycSlot}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card Footer actions */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 mt-6 pt-6 border-t border-border-main/50">
+                    <p className="text-xs text-text-muted font-semibold max-w-lg leading-relaxed">
+                      A representative will contact you via a secure link on your scheduled time. Please keep your physical original government ID cards ready.
                     </p>
                     <button
                       type="button"
                       onClick={() => setView("kyc-schedule")}
-                      className="mt-3 text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                      className="px-6 py-3.5 bg-bg-secondary hover:bg-bg-card border border-border-main hover:border-primary/50 text-text-main font-bold text-xs rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg shrink-0"
                     >
-                      Reschedule Call <ArrowRight className="w-3 h-3" />
+                      <Calendar className="w-4 h-4 text-primary" />
+                      Reschedule Appointment
                     </button>
                   </div>
                 </motion.div>
@@ -2034,25 +2212,51 @@ export default function DetailsForm() {
 
               {kycStatus === "REJECTED" && (
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="mb-12 p-6 bg-red-500/10 border border-red-500/30 rounded-3xl flex items-start gap-4 relative overflow-hidden shadow-lg z-10"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-12 p-6 md:p-8 bg-bg-card border border-red-500/20 hover:border-red-500/40 rounded-[2rem] relative overflow-hidden shadow-[0_20px_50px_rgba(239,68,68,0.08)] z-10 transition-all duration-300"
                 >
-                  <div className="absolute top-0 left-0 w-1.5 h-full bg-red-500" />
-                  <ShieldAlert className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
-                  <div className="space-y-1 w-full">
-                    <h4 className="text-red-500 text-[10px] font-black uppercase tracking-widest leading-none">
-                      Video KYC Call Rejected
-                    </h4>
-                    <p className="text-text-main text-sm font-semibold leading-relaxed">
-                      Your identity verification check was unsuccessful.
+                  <div className="absolute top-0 left-0 w-2 h-full bg-linear-to-b from-red-500 to-red-600" />
+                  
+                  {/* Card Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-main/50 pb-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-500 shrink-0 border border-red-500/20 shadow-inner">
+                        <ShieldAlert className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg md:text-xl font-extrabold text-text-main tracking-tight">
+                          Video KYC Verification Failed
+                        </h4>
+                        <p className="text-[10px] md:text-xs text-text-muted font-semibold mt-0.5">Identity Verification Check</p>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-red-500 bg-red-500/10 border border-red-500/25 rounded-full px-3 py-1.5 tracking-wider uppercase">
+                        Verification Failed
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Card Body */}
+                  <div className="mt-5">
+                    <p className="text-sm font-semibold text-text-main leading-relaxed">
+                      Your identity verification check was unsuccessful. The verification officer could not complete the KYC check.
+                    </p>
+                  </div>
+
+                  {/* Card Footer actions */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 mt-6 pt-6 border-t border-border-main/50">
+                    <p className="text-xs text-text-muted font-semibold max-w-lg leading-relaxed">
+                      To activate your companion profile, please schedule another video slot and ensure correct identification documents are available.
                     </p>
                     <button
                       type="button"
                       onClick={() => setView("kyc-schedule")}
-                      className="mt-3 text-xs font-bold text-red-500 hover:underline flex items-center gap-1 cursor-pointer"
+                      className="px-6 py-3.5 bg-red-500 text-white hover:bg-red-600 font-bold text-xs rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg shrink-0 border-0"
                     >
-                      Reschedule Another Slot <ArrowRight className="w-3 h-3" />
+                      <Calendar className="w-4 h-4 text-white" />
+                      Reschedule Another Slot
                     </button>
                   </div>
                 </motion.div>
@@ -2060,25 +2264,51 @@ export default function DetailsForm() {
 
               {kycStatus === "RESCHEDULE_REQUESTED" && (
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="mb-12 p-6 bg-amber-500/10 border border-amber-500/30 rounded-3xl flex items-start gap-4 relative overflow-hidden shadow-lg z-10"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-12 p-6 md:p-8 bg-bg-card border border-amber-500/20 hover:border-amber-500/40 rounded-[2rem] relative overflow-hidden shadow-[0_20px_50px_rgba(245,158,11,0.08)] z-10 transition-all duration-300"
                 >
-                  <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500" />
-                  <AlertCircle className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
-                  <div className="space-y-1 w-full">
-                    <h4 className="text-amber-500 text-[10px] font-black uppercase tracking-widest leading-none">
-                      KYC Reschedule Required
-                    </h4>
-                    <p className="text-text-main text-sm font-semibold leading-relaxed">
+                  <div className="absolute top-0 left-0 w-2 h-full bg-linear-to-b from-amber-500 to-amber-600" />
+                  
+                  {/* Card Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-main/50 pb-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0 border border-amber-500/20 shadow-inner">
+                        <AlertCircle className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg md:text-xl font-extrabold text-text-main tracking-tight">
+                          KYC Reschedule Required
+                        </h4>
+                        <p className="text-[10px] md:text-xs text-text-muted font-semibold mt-0.5">Slot Select Required</p>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-amber-500 bg-amber-500/10 border border-amber-500/25 rounded-full px-3 py-1.5 tracking-wider uppercase">
+                        Action Required
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Card Body */}
+                  <div className="mt-5">
+                    <p className="text-sm font-semibold text-text-main leading-relaxed">
                       The verification officer missed the scheduled appointment or requested a reschedule. Please select a new date and time slot.
+                    </p>
+                  </div>
+
+                  {/* Card Footer actions */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 mt-6 pt-6 border-t border-border-main/50">
+                    <p className="text-xs text-text-muted font-semibold max-w-lg leading-relaxed">
+                      Please select a new slot where you will be available with original identity verification documents.
                     </p>
                     <button
                       type="button"
                       onClick={() => setView("kyc-schedule")}
-                      className="mt-3 text-xs font-bold text-amber-500 hover:underline flex items-center gap-1 cursor-pointer"
+                      className="px-6 py-3.5 bg-amber-500 text-white hover:bg-amber-600 font-bold text-xs rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg shrink-0 border-0"
                     >
-                      Select New Slot <ArrowRight className="w-3 h-3" />
+                      <Calendar className="w-4 h-4 text-white" />
+                      Select New Slot
                     </button>
                   </div>
                 </motion.div>
@@ -2086,50 +2316,77 @@ export default function DetailsForm() {
 
               {kycStatus === "LINK_SHARED" && (
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="mb-12 p-6 bg-green-500/10 border border-green-500/30 rounded-3xl flex items-start gap-4 relative overflow-hidden shadow-lg z-10"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-12 p-6 md:p-8 bg-bg-card border border-green-500/20 hover:border-green-500/40 rounded-[2rem] relative overflow-hidden shadow-[0_20px_50px_rgba(34,197,94,0.08)] z-10 transition-all duration-300"
                 >
-                  <div className="absolute top-0 left-0 w-1.5 h-full bg-green-500" />
-                  <Video className="w-6 h-6 text-green-500 shrink-0 mt-0.5" />
-                  <div className="space-y-1 w-full">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-green-500 text-[10px] font-black uppercase tracking-widest leading-none">
-                        Video KYC Link Ready
-                      </h4>
-                      <span className="text-[10px] font-bold text-green-400 bg-green-500/10 border border-green-500/20 rounded-full px-2 py-0.5">
-                        Status: Active Call Room
+                  <div className="absolute top-0 left-0 w-2 h-full bg-linear-to-b from-green-500 to-green-600" />
+                  
+                  {/* Card Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-main/50 pb-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-500 shrink-0 border border-green-500/20 shadow-inner">
+                        <Video className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg md:text-xl font-extrabold text-text-main tracking-tight">
+                          Video KYC Link Ready
+                        </h4>
+                        <p className="text-[10px] md:text-xs text-text-muted font-semibold mt-0.5">Live Verification Room</p>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-green-500 bg-green-500/10 border border-green-500/25 rounded-full px-3 py-1.5 tracking-wider uppercase animate-pulse">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                        Active Call Room
                       </span>
                     </div>
-                    <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm font-bold text-text-main">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-green-500" />
-                        <span>Date: {kycDate}</span>
+                  </div>
+
+                  {/* Date/Time grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 p-5 bg-bg-secondary/40 border border-border-main/40 rounded-2xl">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted shrink-0 border border-white/5">
+                        <Calendar className="w-5 h-5 text-green-500" />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-green-500" />
-                        <span>Time: {kycSlot}</span>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Appointment Date</p>
+                        <p className="text-sm md:text-base font-black text-text-main mt-0.5">{kycDate}</p>
                       </div>
                     </div>
-                    <p className="text-text-muted text-xs font-semibold mt-2 leading-relaxed">
-                      The verification officer is waiting for you. Click below to join the call room.
+                    <div className="flex items-center gap-3.5 border-t sm:border-t-0 sm:border-l border-border-main/40 pt-4 sm:pt-0 sm:pl-6">
+                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted shrink-0 border border-white/5">
+                        <Clock className="w-5 h-5 text-green-500" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Scheduled Time Slot</p>
+                        <p className="text-sm md:text-base font-black text-text-main mt-0.5">{kycSlot}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card Footer actions */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 mt-6 pt-6 border-t border-border-main/50">
+                    <p className="text-xs text-text-muted font-semibold max-w-lg leading-relaxed">
+                      The verification officer is waiting for you in the call room. Please click below to join and complete your verification.
                     </p>
-                    <div className="mt-4 flex gap-4">
+                    <div className="flex items-center gap-3 self-end md:self-auto">
+                      <button
+                        type="button"
+                        onClick={() => setView("kyc-schedule")}
+                        className="px-4 py-3 bg-bg-secondary hover:bg-bg-card border border-border-main hover:border-primary/40 text-text-muted hover:text-text-main font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all duration-300"
+                      >
+                        Change Slot
+                      </button>
                       <a
                         href={zoomLink || "https://zoom.us/j/become-a-partner-kyc-call"}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold text-xs py-2.5 px-5 rounded-xl transition-all duration-300 shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:scale-[1.02]"
+                        className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(34,197,94,0.35)] shrink-0"
                       >
-                        <Video size={12} /> Join KYC Call
+                        <Video size={14} className="text-white" />
+                        Join KYC Call
                       </a>
-                      <button
-                        type="button"
-                        onClick={() => setView("kyc-schedule")}
-                        className="text-xs font-bold text-text-muted hover:text-text-main transition-colors flex items-center gap-1 cursor-pointer"
-                      >
-                        Change Slot <ArrowRight className="w-3 h-3" />
-                      </button>
                     </div>
                   </div>
                 </motion.div>
@@ -2137,25 +2394,51 @@ export default function DetailsForm() {
 
               {kycStatus === "NOT_SCHEDULED" && verificationStatus === "PENDING" && (
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="mb-12 p-6 bg-amber-500/10 border border-amber-500/30 rounded-3xl flex items-start gap-4 relative overflow-hidden shadow-lg z-10"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-12 p-6 md:p-8 bg-bg-card border border-amber-500/20 hover:border-amber-500/40 rounded-[2rem] relative overflow-hidden shadow-[0_20px_50px_rgba(245,158,11,0.08)] z-10 transition-all duration-300"
                 >
-                  <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500" />
-                  <Video className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
-                  <div className="space-y-1 w-full">
-                    <h4 className="text-amber-500 text-[10px] font-black uppercase tracking-widest leading-none">
-                      Action Required: Schedule Video KYC
-                    </h4>
-                    <p className="text-text-main text-sm font-semibold leading-relaxed">
-                      You must book a time slot for video identity verification before your profile can be activated.
+                  <div className="absolute top-0 left-0 w-2 h-full bg-linear-to-b from-amber-500 to-amber-600" />
+                  
+                  {/* Card Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-main/50 pb-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0 border border-amber-500/20 shadow-inner">
+                        <Video className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg md:text-xl font-extrabold text-text-main tracking-tight">
+                          Schedule Video KYC
+                        </h4>
+                        <p className="text-[10px] md:text-xs text-text-muted font-semibold mt-0.5">Identity Verification Required</p>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-amber-500 bg-amber-500/10 border border-amber-500/25 rounded-full px-3 py-1.5 tracking-wider uppercase">
+                        Action Required
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Card Body */}
+                  <div className="mt-5">
+                    <p className="text-sm font-semibold text-text-main leading-relaxed">
+                      You must book a time slot for video identity verification before your companion profile can be activated and made live on the platform.
+                    </p>
+                  </div>
+
+                  {/* Card Footer actions */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 mt-6 pt-6 border-t border-border-main/50">
+                    <p className="text-xs text-text-muted font-semibold max-w-lg leading-relaxed">
+                      The video call takes approximately 5-10 minutes. Please ensure you have a stable internet connection and physical identification documents.
                     </p>
                     <button
                       type="button"
                       onClick={() => setView("kyc-schedule")}
-                      className="mt-3 text-xs font-bold text-amber-500 hover:underline flex items-center gap-1 cursor-pointer"
+                      className="px-6 py-3.5 bg-amber-500 text-white hover:bg-amber-600 font-bold text-xs rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-[0_15px_35px_rgba(245,158,11,0.25)] shrink-0 border-0"
                     >
-                      Book Slot Now <ArrowRight className="w-3 h-3" />
+                      <Calendar className="w-4 h-4 text-white" />
+                      Book Slot Now
                     </button>
                   </div>
                 </motion.div>
@@ -2172,13 +2455,16 @@ export default function DetailsForm() {
                       label="Hourly Rate"
                       value={`₹ ${formData.hourlyRate}/hr`}
                     />
-                    <SummaryItem label="Contact" value={formData.mobile} />
+                    <SummaryItem label="Contact" value={`${formData.phoneCountryCode || "+91"} ${formData.mobile}`} />
                     <SummaryItem label="Email" value={formData.email} />
+                    <SummaryItem label="Country" value={formData.country} />
+                    <SummaryItem label="Pincode" value={formData.pincode} />
+                    <SummaryItem label="UPI ID" value={formData.upiId} />
+                    <SummaryItem label="Bank Holder" value={formData.bankAccountHolderName} />
+                    <SummaryItem label="Bank Name" value={formData.bankName} />
+                    <SummaryItem label="Bank Account" value={formData.bankAccountNumber} />
+                    <SummaryItem label="IFSC Code" value={formData.bankIfscCode} />
                     <SummaryItem label="Languages" value={formData.languages} />
-                    {/* <SummaryItem
-                      label="Availability"
-                      value={formData.availability}
-                    /> */}
                   </div>
 
                   <div className="space-y-4">

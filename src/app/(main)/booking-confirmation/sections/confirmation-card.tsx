@@ -16,8 +16,6 @@ import {
   Calendar,
   Clock,
   IndianRupee,
-  Mail,
-  MessageCircle,
   ArrowLeft,
   BookOpen,
   MapPin,
@@ -324,38 +322,6 @@ export default function ConfirmationCard() {
                 ))}
               </div>
             )}
-
-            {/* Email receipt note */}
-            <div className="mx-4 mb-4 mt-1 bg-bg-card border border-border-main rounded-2xl px-5 py-4 flex items-start gap-3">
-              <Mail size={14} className="text-text-muted mt-0.5 shrink-0" />
-              <p className="text-text-muted text-xs font-medium leading-relaxed">
-                Confirmation of your request has been emailed to{" "}
-                <span className="text-text-main font-bold">
-                  {companionEmail}
-                </span>
-              </p>
-            </div>
-
-            {/* Need to coordinate */}
-            <div className="px-6 pb-7 text-center">
-              <p className="text-text-main font-black text-sm mb-1">
-                Need to Coordinate?
-              </p>
-              <p className="text-text-muted text-xs font-medium mb-4">
-                Have any last-minute details or questions?
-              </p>
-              <a
-                href={`mailto:${companionEmail}?subject=Coordinating Booking ${bookingId}`}
-                className="inline-flex items-center gap-2 text-primary text-sm font-black hover:text-primary/80 transition-colors group"
-              >
-                <MessageCircle
-                  size={15}
-                  className="group-hover:scale-110 transition-transform"
-                />
-                Message {partner.name.split(" ")[0]}
-                <span className="text-primary/50 text-xs">→</span>
-              </a>
-            </div>
           </motion.div>
 
           {/* ── Action Buttons ── */}
@@ -384,28 +350,6 @@ export default function ConfirmationCard() {
                 View My Bookings
               </motion.div>
             </Link>
-          </motion.div>
-
-          {/* ── Secondary Actions ── */}
-          <motion.div
-            variants={itemVariants}
-            className="flex items-center gap-6"
-          >
-            <button className="flex cursor-pointer items-center gap-2 text-text-muted hover:text-text-muted transition-colors text-xs font-bold uppercase tracking-wider group">
-              <Download
-                size={13}
-                className="group-hover:scale-110 transition-transform"
-              />
-              Download Receipt
-            </button>
-            <div className="w-px h-4 bg-border-main" />
-            <button className="flex cursor-pointer items-center gap-2 text-text-muted hover:text-text-muted transition-colors text-xs font-bold uppercase tracking-wider group">
-              <Share2
-                size={13}
-                className="group-hover:scale-110 transition-transform"
-              />
-              Share Booking
-            </button>
           </motion.div>
         </motion.div>
       </div>

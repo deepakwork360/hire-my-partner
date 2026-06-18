@@ -25,7 +25,7 @@ const rochester = Rochester({
 export default function TopCompanions() {
   const { partners: fetchedPartners, loading } = usePartners();
 
-  const profile = fetchedPartners.map((partner) => ({
+  const profile = fetchedPartners.slice(0, 12).map((partner) => ({
     id: partner.id,
     image: partner.image,
     hourlyRate: `₹${partner.pricing.oneHour}/hr`,
@@ -47,7 +47,7 @@ export default function TopCompanions() {
       return partner.id === "1" ? "Friendly" : partner.id === "2" ? "MusicFan" : partner.id === "3" ? "Talkative" : partner.id === "4" ? "Traveler" : partner.id === "5" ? "NatureLover" : "BookLover";
     })(),
     buttonText: "Book Now",
-    buttonLink: `/checkout?partner=${partner.id}`,
+    buttonLink: `/partners/${partner.id}#booking-section`,
     viewLink: `/partners/${partner.id}`,
     showViewIcon: true,
   }));

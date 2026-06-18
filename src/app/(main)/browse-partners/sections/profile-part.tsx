@@ -237,7 +237,7 @@ export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean
                 rating={profile.rating}
                 confirmation={profile.confirmation}
                 buttonText="Book Now"
-                buttonLink={`/checkout?partner=${profile.id}`}
+                buttonLink={`/partners/${profile.id}#booking-section`}
                 viewLink={profile.viewLink}
                 showViewIcon={true}
               />

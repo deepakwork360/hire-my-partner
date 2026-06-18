@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
-import { X } from "lucide-react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -42,6 +42,62 @@ export default function Gallery({ images, partner }: GalleryProps) {
     ? images.map((img) => typeof img === "string" ? img : (img && img.image ? img.image : ""))
     : defaultImages
   ).filter(Boolean).slice(0, 9);
+
+  const [activeIndex, setActiveIndex] = useState<number>(0);
+  const touchStartX = useRef<number>(0);
+
+  const handlePrev = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (activeIndex > 0) {
+      setActiveIndex((prevIdx) => prevIdx - 1);
+    }
+  };
+
+  const handleNext = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (activeIndex < galleryImages.length - 1) {
+      setActiveIndex((prevIdx) => prevIdx + 1);
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const swipeDistance = touchStartX.current - touchEndX;
+    const swipeThreshold = 40;
+    if (swipeDistance > swipeThreshold) {
+      handleNext();
+    } else if (swipeDistance < -swipeThreshold) {
+      handlePrev();
+    }
+  };
+
+  useEffect(() => {
+    if (selectedImage) {
+      const idx = galleryImages.indexOf(selectedImage);
+      if (idx !== -1) {
+        setActiveIndex(idx);
+      }
+    }
+  }, [selectedImage]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedImage) return;
+      if (e.key === "ArrowLeft") {
+        handlePrev();
+      } else if (e.key === "ArrowRight") {
+        handleNext();
+      } else if (e.key === "Escape") {
+        setSelectedImage(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedImage, activeIndex]);
 
   // Split bio by newlines and handle fallbacks
   const bio = partner?.bio || "I love deep conversations, spontaneous laughs, and making every moment feel special. Whether you need someone for a formal event or just a relaxing dinner, I'm here to help you feel comfortable and confident.\n\nI'm easy to talk to, a great listener, and I genuinely enjoy getting to know new people.\n\nLet's make the time we share together meaningful, respectful, and memorable.";
@@ -214,30 +270,45 @@ export default function Gallery({ images, partner }: GalleryProps) {
             {/* Prominent Close Button */}
             <button
               onClick={() => setSelectedImage(null)}
-              className="fixed top-6 right-6 md:top-10 md:right-10 z-2100 w-14 h-14 rounded-full bg-white/10 hover:bg-rose-500/20 border border-white/20 hover:border-rose-500/50 flex items-center justify-center text-white transition-all duration-300 group shadow-2xl backdrop-blur-xl"
+              className="fixed top-6 right-6 md:top-10 md:right-10 z-2100 w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/10 hover:bg-rose-500/20 border border-white/20 hover:border-rose-500/50 flex items-center justify-center text-white transition-all duration-300 group shadow-2xl backdrop-blur-xl cursor-pointer"
             >
-              <X className="w-8 h-8 group-hover:rotate-90 transition-transform duration-500" />
+              <X className="w-6 h-6 md:w-8 md:h-8 group-hover:rotate-90 transition-transform duration-500" />
             </button>
 
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative z-10 w-full h-full max-w-[95vw] max-h-[calc(100vh-120px)] flex items-center justify-center p-4 md:p-10 pointer-events-none"
+            {/* Left Control Button (hidden on mobile, shown on desktop) */}
+            <button
+              onClick={handlePrev}
+              disabled={activeIndex === 0}
+              className="hidden md:flex fixed left-8 top-1/2 -translate-y-1/2 z-2100 w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 hover:border-primary/50 items-center justify-center text-white transition-all duration-300 group shadow-2xl backdrop-blur-xl cursor-pointer disabled:opacity-20 disabled:pointer-events-none"
+              aria-label="Previous image"
+            >
+              <ChevronLeft className="w-8 h-8 group-hover:-translate-x-0.5 transition-transform" />
+            </button>
+
+            {/* Right Control Button (hidden on mobile, shown on desktop) */}
+            <button
+              onClick={handleNext}
+              disabled={activeIndex === galleryImages.length - 1}
+              className="hidden md:flex fixed right-8 top-1/2 -translate-y-1/2 z-2100 w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 hover:border-primary/50 items-center justify-center text-white transition-all duration-300 group shadow-2xl backdrop-blur-xl cursor-pointer disabled:opacity-20 disabled:pointer-events-none"
+              aria-label="Next image"
+            >
+              <ChevronRight className="w-8 h-8 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+
+            {/* Image Container with swipe events */}
+            <div
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              className="relative z-10 w-full h-full max-w-[90vw] md:max-w-[70vw] max-h-[calc(100vh-160px)] flex items-center justify-center p-4 md:p-12 pointer-events-auto cursor-default"
             >
               <img
-                src={selectedImage}
-                alt="Portfolio Full Preview"
+                src={galleryImages[activeIndex]}
+                alt={`Portfolio Full Preview ${activeIndex + 1}`}
                 referrerPolicy="no-referrer"
-                className="max-w-full max-h-full object-contain shadow-[0_50px_100px_rgba(0,0,0,0.8)] rounded-lg pointer-events-auto"
+                className="max-w-full max-h-[80vh] md:max-h-[85vh] object-contain shadow-[0_50px_100px_rgba(0,0,0,0.85)] rounded-3xl border border-white/10 select-none pointer-events-none"
               />
-            </motion.div>
-            
-            {/* ESC Hint */}
-            {/* <div className="fixed bottom-8 left-1/2 -translate-x-1/2 text-white/30 text-[10px] font-black uppercase tracking-[0.4em] pointer-events-none">
-              Click anywhere to close
-            </div> */}
-          </motion.div>
+            </div>
+         </motion.div>
         )}
       </AnimatePresence>
     </section>

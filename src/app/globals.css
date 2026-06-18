@@ -173,8 +173,9 @@ h6 {
 }
 
 .profile-card-bio {
-  @apply text-text-muted text-[12px] line-clamp-2 leading-relaxed mt-2 font-medium;
+  @apply text-text-muted text-[12px] line-clamp-2 leading-relaxed mt-2 font-medium block;
   font-family: var(--font-inter), sans-serif;
+  height: 36px;
 }
 
 .profile-card-confirmation {

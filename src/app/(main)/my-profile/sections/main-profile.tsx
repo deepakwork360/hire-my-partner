@@ -1,219 +1,273 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
-import { Camera, MapPin, Star, ShieldCheck, Award, Zap, Heart, Share2, MoreHorizontal, X, Pencil } from "lucide-react";
+import { Camera, MapPin, Star, ShieldCheck, Award, Zap, Heart } from "lucide-react";
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { toast } from "@/components/ui/toastStore";
 
 const rochester = Rochester({ subsets: ["latin"], weight: ["400"] });
 const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "800"] });
 
 export default function MainProfile() {
+  const [profileData, setProfileData] = useState<any>(null);
   const [avatarUrl, setAvatarUrl] = useState("/images/img1.webp");
-  const [isCustomImage, setIsCustomImage] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const containerRef = useRef(null);
+  const [bannerUrl, setBannerUrl] = useState("/images/love1.jpg");
   
-  const { scrollY } = useScroll();
-  const y1 = useTransform(scrollY, [0, 500], [0, 200]);
-  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageClick = () => {
+  const loadData = () => {
+    try {
+      const savedData = localStorage.getItem("partnerApplication");
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        const fd = parsed.formData || {};
+        setProfileData(fd);
+        if (fd.photo) setAvatarUrl(fd.photo);
+        if (fd.banner) setBannerUrl(fd.banner);
+      }
+    } catch (e) {
+      console.error("Failed to load partner application data", e);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+    window.addEventListener("partner_profile_updated", loadData);
+    return () => window.removeEventListener("partner_profile_updated", loadData);
+  }, []);
+
+  const syncImageToDatabase = (type: "photo" | "banner", url: string) => {
+    try {
+      const savedData = localStorage.getItem("partnerApplication");
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        if (!parsed.formData) parsed.formData = {};
+        parsed.formData[type] = url;
+        localStorage.setItem("partnerApplication", JSON.stringify(parsed));
+        
+        // Find corresponding partner in approved_partners list
+        const nameToFind = parsed.formData.fullName;
+        if (nameToFind) {
+          const approvedStr = localStorage.getItem("approved_partners");
+          if (approvedStr) {
+            const list = JSON.parse(approvedStr);
+            const updatedList = list.map((p: any) => {
+              if (p.name === nameToFind) {
+                return {
+                  ...p,
+                  [type === "photo" ? "image" : "banner"]: url
+                };
+              }
+              return p;
+            });
+            localStorage.setItem("approved_partners", JSON.stringify(updatedList));
+          }
+        }
+        
+        // Dispatch events so components refresh in real-time
+        window.dispatchEvent(new Event("partnerStatusChange"));
+        window.dispatchEvent(new Event("partner_profile_updated"));
+        
+        toast.success(`${type === "photo" ? "Profile photo" : "Cover banner"} updated successfully!`);
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to update image in database");
+    }
+  };
+
+  const handleAvatarClick = () => {
     fileInputRef.current?.click();
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBannerClick = () => {
+    bannerInputRef.current?.click();
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        alert("Please select an image file.");
+        toast.error("Please select an image file.");
         return;
       }
       const url = URL.createObjectURL(file);
       setAvatarUrl(url);
-      setIsCustomImage(true);
+      syncImageToDatabase("photo", url);
     }
   };
 
-  const handleResetImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setAvatarUrl("/images/img1.webp");
-    setIsCustomImage(false);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please select an image file.");
+        return;
+      }
+      const url = URL.createObjectURL(file);
+      setBannerUrl(url);
+      syncImageToDatabase("banner", url);
     }
   };
+
+  const name = profileData?.fullName || "Kavya Sharma";
+  const age = profileData?.age || 22;
+  const location = profileData?.city || "Andheri East, Mumbai";
+  const bio = profileData?.bio || "A journey of a thousand miles begins with a single step. Traveler, art lover, and a believer in deep conversations.";
 
   return (
-    <div ref={containerRef} className={`relative ${outfit.className} overflow-hidden`}>
+    <div className={`relative pt-22 pb-4 md:pt-26 md:pb-6 px-4 overflow-hidden bg-bg-base ${outfit.className}`}>
+      {/* Hidden inputs */}
       <input 
         type="file" 
         ref={fileInputRef} 
-        onChange={handleImageChange} 
+        onChange={handleAvatarChange} 
+        accept="image/*" 
+        className="hidden" 
+      />
+      <input 
+        type="file" 
+        ref={bannerInputRef} 
+        onChange={handleBannerChange} 
         accept="image/*" 
         className="hidden" 
       />
 
-      {/* ── MAIN CONTENT ── */}
-      <div className="relative z-10 pt-40 pb-20 px-4">
-        <div className="max-w-6xl mx-auto flex flex-col items-center">
-          
-          {/* Header Actions */}
-          <div className="w-full flex justify-between items-center mb-12 max-w-4xl">
-             <motion.div 
-               initial={{ opacity: 0, x: -20 }}
-               animate={{ opacity: 1, x: 0 }}
-               className="flex items-center gap-2 px-4 py-2 bg-bg-card border border-border-main rounded-full backdrop-blur-xl"
-             >
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Online Now</span>
-             </motion.div>
-             <div className="flex items-center gap-3">
-                 <button className="w-10 h-10 rounded-full bg-bg-card border border-border-main flex items-center justify-center text-text-main hover:bg-bg-secondary transition-all">
-                   <Share2 size={16} />
-                 </button>
-                 <button className="w-10 h-10 rounded-full bg-bg-card border border-border-main flex items-center justify-center text-text-main hover:bg-bg-secondary transition-all">
-                   <MoreHorizontal size={16} />
-                 </button>
+      {/* Ambiance Glows */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-primary-dark/10 rounded-full blur-[120px] animate-pulse delay-700" />
+      </div>
+
+      <div className="max-w-[1250px] w-full mx-auto relative z-10">
+        
+        {/* Cover Photo Banner (Editable) */}
+        <div 
+          onClick={handleBannerClick}
+          className="w-full h-[200px] sm:h-[280px] md:h-[340px] rounded-[36px] overflow-hidden border border-border-main relative shadow-2xl cursor-pointer group"
+          title="Click to update cover banner"
+        >
+          <Image
+            src={bannerUrl}
+            alt="Cover banner"
+            fill
+            className="object-cover transition-transform duration-1000 ease-in-out group-hover:scale-102"
+            priority
+          />
+          {/* Cover Photo Hover Upload Hint Overlay */}
+          <div className="absolute inset-0 bg-[#050505]/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center backdrop-blur-sm gap-3 z-10">
+             <div className="w-14 h-14 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
+               <Camera size={24} className="text-white" />
              </div>
+             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white">Update Cover Banner</span>
+          </div>
+        </div>
+
+        {/* Profile Info Header (with overlapping circular avatar) */}
+        <div className="flex flex-col lg:flex-row items-center lg:items-center justify-between gap-6 px-6 sm:px-12 pb-8 relative z-20">
+          <div className="flex flex-col sm:flex-row items-center sm:items-center gap-6 text-center sm:text-left">
+            {/* Overlapping Circular Avatar */}
+            <div className="relative shrink-0 -mt-20 sm:-mt-24">
+              <div
+                onClick={handleAvatarClick}
+                className="w-40 h-40 sm:w-48 sm:h-48 rounded-full border-4 border-bg-base overflow-hidden shadow-2xl bg-bg-card relative cursor-pointer group/avatar"
+                title="Click to update profile photo"
+              >
+                <Image
+                  src={avatarUrl}
+                  alt={name}
+                  fill
+                  priority
+                  className="object-cover object-top transition-transform duration-700 group-hover/avatar:scale-105"
+                />
+                {/* Avatar Hover Upload Hint Overlay */}
+                <div className="absolute inset-0 bg-[#050505]/60 opacity-0 group-hover/avatar:opacity-100 transition-all duration-300 flex flex-col items-center justify-center backdrop-blur-xs gap-1.5 z-10">
+                   <Camera size={18} className="text-white" />
+                   <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white">Update Photo</span>
+                </div>
+              </div>
+              
+              {/* Verified Badge Stamp */}
+              <div className="absolute -top-1 -left-2 bg-primary text-white text-[8px] font-black uppercase tracking-[0.2em] px-2.5 py-1 rounded-md shadow-lg border border-bg-base rotate-[-12deg] flex items-center gap-1 z-30">
+                <ShieldCheck size={10} />
+                <span>Verified</span>
+              </div>
+            </div>
+
+            {/* Name, Age, Title */}
+            <div className="pb-1">
+              <h1 className={`${rochester.className} text-4xl sm:text-5xl md:text-6xl text-text-main font-bold leading-tight flex items-baseline justify-center sm:justify-start gap-3`}>
+                {name}
+                {age && (
+                  <span className={`${outfit.className} text-xl font-light text-primary/60`}>
+                    {age}
+                  </span>
+                )}
+              </h1>
+              
+              {/* Location & Rating */}
+              <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
+                <div className="flex text-amber-400">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      size={14}
+                      className="fill-amber-400 text-amber-400"
+                    />
+                  ))}
+                </div>
+                <span className="text-xs font-bold text-text-main">5.0</span>
+                <span className="text-text-muted text-[10px] font-bold">(Verified Partner)</span>
+              </div>
+            </div>
           </div>
 
-          {/* Profile Hero Card */}
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="w-full max-w-5xl relative group"
-          >
-            {/* Ambient Glow */}
-            <div className="absolute -inset-1 bg-linear-to-r from-primary/30 to-primary-dark/30 rounded-[48px] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-            
-            <div className="relative bg-bg-secondary/80 border border-border-main rounded-[48px] p-8 md:p-16 backdrop-blur-3xl shadow-2xl overflow-hidden">
-               {/* Background Glow */}
-               <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/10 rounded-full blur-[100px]" />
-               
-               <div className="flex flex-col lg:flex-row items-center lg:items-start gap-12 lg:gap-20">
-                  {/* Portrait Column */}
-                  <div className="relative shrink-0">
-                    <motion.div 
-                      whileHover={{ y: -10 }}
-                      transition={{ type: "spring", stiffness: 300 }}
-                      className="relative z-10"
-                    >
-                      <div 
-                        onClick={handleImageClick}
-                        className="relative w-56 h-72 md:w-64 md:h-80 rounded-[40px] overflow-hidden border-4 border-bg-card shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_30px_60px_-15px_rgba(var(--primary-rgb),0.2)] cursor-pointer group/img transition-all duration-500 hover:border-primary/30"
-                      >
-                        <Image 
-                          src={avatarUrl} 
-                          alt="Profile" 
-                          fill 
-                          className="object-cover object-top rounded-[40px] transition-transform duration-700 group-hover/img:scale-110"
-                          priority
-                        />
-                        {/* Hover Overlay - Always shows on hover for consistent UX */}
-                        <div className="absolute inset-0 bg-[#050505]/60 opacity-0 group-hover/img:opacity-100 transition-all duration-300 flex flex-col items-center justify-center backdrop-blur-md gap-4 rounded-[40px] z-10">
-                           <div className="w-14 h-14 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
-                             <Camera size={24} className="text-white" />
-                           </div>
-                           <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white">Update Photo</span>
-                        </div>
-
-                        {isCustomImage && (
-                          <button
-                            onClick={handleResetImage}
-                            className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer"
-                          >
-                            <X size={16} strokeWidth={3} stroke="currentColor" />
-                          </button>
-                        )}
-
-                         {/* Mobile-only Update Hint Badge - Moved to bottom-left to avoid overlap */}
-                         <motion.div 
-                           animate={{ y: [0, -5, 0] }}
-                           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                           className="lg:hidden absolute top-6 left-6 z-30 w-12 h-12 rounded-2xl bg-primary backdrop-blur-xl text-white flex items-center justify-center shadow-2xl border-2 border-white/30 overflow-hidden"
-                         >
-                           <Pencil size={18} className="relative z-10" />
-                           <motion.div
-                             initial={{ left: "-100%" }}
-                             animate={{ left: "200%" }}
-                             transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
-                             className="absolute top-0 bottom-0 w-8 bg-linear-to-r from-transparent via-white/40 to-transparent -skew-x-20"
-                           />
-                         </motion.div>
-                      </div>
-                      
-                      {/* Floating Badge */}
-                      <motion.div 
-                        animate={{ y: [0, -10, 0] }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute -bottom-6 -right-6 z-20"
-                      >
-                        <div className="w-20 h-20 bg-bg-base rounded-3xl p-1.5 border border-border-main shadow-2xl">
-                           <div className="w-full h-full bg-linear-to-br from-primary to-primary-dark rounded-[18px] flex items-center justify-center">
-                              <ShieldCheck size={32} className="text-white" />
-                           </div>
-                        </div>
-                      </motion.div>
-                    </motion.div>
-                  </div>
-
-                  {/* Info Column */}
-                  <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left pt-4">
-                     <div className="flex flex-col gap-2 mb-8">
-                        <div className="flex items-center justify-center lg:justify-start gap-3">
-                           <h1 className={`${rochester.className} text-6xl md:text-8xl text-text-main tracking-wide`}>
-                             Kavya Sharma
-                           </h1>
-                           <div className="px-3 py-1 bg-primary/20 border border-primary/40 rounded-lg text-primary text-[10px] font-black uppercase tracking-widest h-fit mt-4">
-                             PRO
-                           </div>
-                        </div>
-                        <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
-                           <div className="flex items-center gap-2 text-text-muted">
-                             <MapPin size={14} className="text-primary" />
-                             <span className="text-xs font-bold uppercase tracking-widest">Andheri East, Mumbai</span>
-                           </div>
-                            <div className="w-1.5 h-1.5 rounded-full bg-border-main" />
-                           <div className="flex items-center gap-2 text-text-muted">
-                             <Award size={14} className="text-amber-400" />
-                             <span className="text-xs font-bold uppercase tracking-widest text-amber-400/80">Platinum Elite</span>
-                           </div>
-                        </div>
-                     </div>
-
-                     <p className="text-text-muted text-sm leading-relaxed max-w-xl mb-12">
-                       "A journey of a thousand miles begins with a single step. I'm here to make that step memorable. 
-                       Traveler, art lover, and a believer in deep conversations."
-                     </p>
-
-                     {/* Stats Grid */}
-                     <div className="grid grid-cols-3 gap-6 md:gap-12 w-full">
-                        {[
-                          { label: "Sessions", value: "24", icon: Zap, color: "text-blue-400" },
-                          { label: "Followers", value: "1.2k", icon: Heart, color: "text-rose-400" },
-                          { label: "Rating", value: "4.9", icon: Star, color: "text-amber-400", isStar: true }
-                        ].map((stat) => (
-                          <div key={stat.label} className="flex flex-col items-center lg:items-start group/stat">
-                             <div className="flex items-center gap-2 mb-2">
-                                <stat.icon size={14} className={`${stat.color} ${stat.isStar ? 'fill-amber-400' : ''}`} />
-                                <span className="text-text-muted text-[9px] font-black uppercase tracking-[0.3em]">{stat.label}</span>
-                             </div>
-                              <span className="text-3xl font-black text-text-main group-hover/stat:text-primary transition-colors duration-500">{stat.value}</span>
-                          </div>
-                        ))}
-                     </div>
-                  </div>
-               </div>
+          {/* Quick Info Badges */}
+          <div className="w-full lg:w-auto flex items-center gap-3 shrink-0 mt-4 lg:mt-0 justify-center">
+            <div className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Dashboard Active</span>
             </div>
-          </motion.div>
+            <div className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-xl text-primary text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5">
+              <Award size={12} className="text-primary" />
+              <span>Platinum Elite</span>
+            </div>
+          </div>
         </div>
+
+        {/* Content Body: Bio & Stats */}
+        <div className="mt-4 pt-6 border-t border-border-main/50 px-6 sm:px-12">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="flex-1">
+              <p className="text-text-muted text-[10px] font-black uppercase tracking-wider mb-1">Companion Bio</p>
+              <p className="text-text-main text-sm leading-relaxed max-w-2xl font-medium">
+                "{bio}"
+              </p>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-3 gap-8 md:gap-12 shrink-0">
+              {[
+                { label: "Sessions", value: "24", icon: Zap, color: "text-blue-400" },
+                { label: "Followers", value: "1.2k", icon: Heart, color: "text-rose-400" },
+                { label: "Rating", value: "4.9", icon: Star, color: "text-amber-400", isStar: true }
+              ].map((stat) => (
+                <div key={stat.label} className="flex flex-col items-center md:items-start">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <stat.icon size={12} className={`${stat.color} ${stat.isStar ? 'fill-amber-400' : ''}`} />
+                    <span className="text-text-muted text-[9px] font-black uppercase tracking-wider">{stat.label}</span>
+                  </div>
+                  <span className="text-2xl font-black text-text-main">{stat.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
 }
-
-
-

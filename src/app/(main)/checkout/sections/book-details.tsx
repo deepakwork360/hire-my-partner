@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
 import Image from "next/image";
 
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "@/components/ui/toastStore";
 import { partners } from "@/modules/partner/data/partners";
 import { usePartner } from "@/modules/partner/hooks/usePartner";
 import { Partner } from "@/modules/partner/types/partner.types";
+import PremiumDatePicker from "@/components/ui/PremiumDatePicker";
 
 import {
   Calendar,
@@ -22,6 +24,8 @@ import {
   Sparkles,
   User,
   FileText,
+  ChevronLeft,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -33,16 +37,325 @@ const outfit = Outfit({
   weight: ["300", "400", "500", "600", "700", "800"],
 });
 
-// ── Static Data ──────────────────────────────────────────────────────────────
+// ── Helpers & Static Data ──────────────────────────────────────────────────────────────
 
-const dateTimeOptions = [
-  "July 8, 2025 | 7:00 PM – 9:00 PM",
-  "July 10, 2025 | 5:00 PM – 7:00 PM",
-  "July 12, 2025 | 8:00 PM – 10:00 PM",
-  "July 15, 2025 | 6:00 PM – 8:00 PM",
-];
+function parseDateTime(dateStr: string, timeStr: string): Date | null {
+  if (!dateStr || !timeStr) return null;
 
-const durationOptions = ["2 hours", "3 hours", "4 hours", "5 hours", "8 hours"];
+  const [year, month, day] = dateStr.split("-").map(Number);
+  let hours = 0;
+  let minutes = 0;
+
+  const match12 = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  const match24 = timeStr.match(/^(\d{1,2}):(\d{2})$/);
+
+  if (match12) {
+    hours = parseInt(match12[1], 10);
+    minutes = parseInt(match12[2], 10);
+    const ampm = match12[3].toUpperCase();
+    if (ampm === "PM" && hours < 12) hours += 12;
+    if (ampm === "AM" && hours === 12) hours = 0;
+  } else if (match24) {
+    hours = parseInt(match24[1], 10);
+    minutes = parseInt(match24[2], 10);
+  } else {
+    return null;
+  }
+
+  return new Date(year, month - 1, day, hours, minutes);
+}
+
+export const getFortyMinutesAheadTime = () => {
+  const date = new Date(Date.now() + 40 * 60 * 1000);
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const strHours = String(hours).padStart(2, '0');
+  const strMinutes = String(minutes).padStart(2, '0');
+  return {
+    formatted: `${strHours}:${strMinutes} ${ampm}`,
+    hour: strHours,
+    minute: strMinutes,
+    ampm
+  };
+};
+
+function PremiumTimePicker({
+  value,
+  onChange,
+  label,
+  placeholder = "Select Time",
+  hasError = false,
+  selectedDate = "",
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  label?: string;
+  placeholder?: string;
+  hasError?: boolean;
+  selectedDate?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const defaultTimeInfo = getFortyMinutesAheadTime();
+  const [customHour, setCustomHour] = useState(defaultTimeInfo.hour);
+  const [customMinute, setCustomMinute] = useState(defaultTimeInfo.minute);
+  const [customAmpm, setCustomAmpm] = useState(defaultTimeInfo.ampm);
+
+  useEffect(() => {
+    if (value) {
+      const match = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+      if (match) {
+        setCustomHour(match[1]);
+        setCustomMinute(match[2]);
+        setCustomAmpm(match[3].toUpperCase());
+      }
+    } else {
+      const defaultInfo = getFortyMinutesAheadTime();
+      setCustomHour(defaultInfo.hour);
+      setCustomMinute(defaultInfo.minute);
+      setCustomAmpm(defaultInfo.ampm);
+    }
+  }, [value]);
+
+  const times = [
+    "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
+    "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM",
+    "05:00 PM", "06:00 PM", "07:00 PM", "08:00 PM",
+    "09:00 PM", "10:00 PM"
+  ];
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleHourChange = (val: string) => {
+    const digits = val.replace(/\D/g, "");
+    setCustomHour(digits);
+  };
+
+  const handleMinuteChange = (val: string) => {
+    const digits = val.replace(/\D/g, "");
+    setCustomMinute(digits);
+  };
+
+  const handleHourBlur = () => {
+    if (!customHour) {
+      setCustomHour("12");
+      return;
+    }
+    let num = parseInt(customHour, 10);
+    if (isNaN(num) || num < 1 || num > 12) {
+      num = 12;
+    }
+    setCustomHour(String(num).padStart(2, '0'));
+  };
+
+  const handleMinuteBlur = () => {
+    if (!customMinute) {
+      setCustomMinute("00");
+      return;
+    }
+    let num = parseInt(customMinute, 10);
+    if (isNaN(num) || num < 0 || num > 59) {
+      num = 0;
+    }
+    setCustomMinute(String(num).padStart(2, '0'));
+  };
+
+  const isTimeValid = (timeStr: string) => {
+    if (!selectedDate) return true;
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    if (selectedDate !== todayStr) return true;
+
+    const targetDate = parseDateTime(selectedDate, timeStr);
+    if (!targetDate) return false;
+
+    return (targetDate.getTime() - today.getTime()) >= 40 * 60 * 1000;
+  };
+
+  const handleApplyCustom = () => {
+    const formattedCustom = `${customHour.padStart(2, '0')}:${customMinute.padStart(2, '0')} ${customAmpm}`;
+    if (selectedDate) {
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      if (selectedDate === todayStr) {
+        const targetDate = parseDateTime(selectedDate, formattedCustom);
+        if (!targetDate || (targetDate.getTime() - today.getTime()) < 40 * 60 * 1000) {
+          toast.error("Time must be at least 40 minutes in the future from now.");
+          return;
+        }
+      }
+    }
+    onChange(formattedCustom);
+    setIsOpen(false);
+  };
+
+  return (
+    <div ref={containerRef} className="relative flex flex-col gap-2 w-full z-20">
+      {label && (
+        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted ml-2">
+          {label}
+        </label>
+      )}
+
+      <div className="relative group">
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className={`w-full cursor-pointer h-14 pl-5 pr-12 rounded-2xl text-left transition-all duration-300 flex items-center gap-4 group/btn border bg-bg-base shadow-sm ${
+            hasError
+              ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] bg-red-500/5"
+              : isOpen
+              ? "border-primary/50 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)]"
+              : "border-border-main hover:border-primary/30"
+          }`}
+        >
+          <Clock 
+            size={18} 
+            className={`transition-colors duration-300 ${isOpen || value ? "text-primary" : "text-text-muted group-hover/btn:text-primary"}`} 
+          />
+          
+          <div className="flex flex-col">
+              {value && (
+                <span className={`text-[10px] font-black uppercase tracking-widest leading-none mb-0.5 text-primary/60`}>
+                  {placeholder}
+                </span>
+              )}
+             <span className={`text-xs font-bold ${value ? "text-text-main" : "text-text-muted"}`}>
+               {value || "Choose a time"}
+             </span>
+          </div>
+
+          <ChevronRight 
+            size={16} 
+            className={`absolute right-5 transition-transform duration-500 text-text-muted ${isOpen ? "rotate-90 text-primary" : ""}`} 
+          />
+        </button>
+
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="absolute z-[100] top-full mt-3 w-full bg-bg-secondary border border-border-main rounded-[20px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden"
+            >
+              {/* Custom exact time section */}
+              <div className="p-4 border-b border-border-main/50 space-y-3">
+                <p className="text-[10px] font-black uppercase tracking-[0.15em] text-text-muted">
+                  Custom Exact Time
+                </p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="HH"
+                    value={customHour}
+                    onChange={(e) => handleHourChange(e.target.value)}
+                    onBlur={handleHourBlur}
+                    onFocus={(e) => e.target.select()}
+                    className="w-14 text-center h-10 bg-bg-base border border-border-main rounded-xl text-xs font-bold text-text-main focus:outline-none focus:border-primary/50"
+                  />
+                  <span className="text-text-muted font-bold">:</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="MM"
+                    value={customMinute}
+                    onChange={(e) => handleMinuteChange(e.target.value)}
+                    onBlur={handleMinuteBlur}
+                    onFocus={(e) => e.target.select()}
+                    className="w-14 text-center h-10 bg-bg-base border border-border-main rounded-xl text-xs font-bold text-text-main focus:outline-none focus:border-primary/50"
+                  />
+                  <div className="flex bg-bg-base border border-border-main rounded-xl p-0.5 shrink-0 ml-auto">
+                    <button
+                      type="button"
+                      onClick={() => setCustomAmpm("AM")}
+                      className={`px-2.5 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all cursor-pointer ${
+                        customAmpm === "AM"
+                          ? "bg-primary text-white"
+                          : "text-text-muted hover:text-text-main"
+                      }`}
+                    >
+                      AM
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCustomAmpm("PM")}
+                      className={`px-2.5 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all cursor-pointer ${
+                        customAmpm === "PM"
+                          ? "bg-primary text-white"
+                          : "text-text-muted hover:text-text-main"
+                      }`}
+                    >
+                      PM
+                    </button>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleApplyCustom}
+                  className="w-full py-2 bg-primary hover:bg-primary/95 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer text-center"
+                >
+                  Set Custom Time
+                </button>
+              </div>
+
+              {/* Suggestions list */}
+              <div className="max-h-60 overflow-y-auto p-3 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-primary/20 hover:[&::-webkit-scrollbar-thumb]:bg-primary/40 [&::-webkit-scrollbar-thumb]:rounded-full">
+                <p className="text-[9px] font-black uppercase tracking-[0.15em] text-text-muted mb-2 px-1">
+                  Suggested Slots
+                </p>
+                <div className="space-y-1">
+                  {times.filter(isTimeValid).length > 0 ? (
+                    times.filter(isTimeValid).map((t) => {
+                      const isSelected = value === t;
+                      return (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => {
+                            onChange(t);
+                            setIsOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                            isSelected 
+                              ? "bg-primary text-white" 
+                              : "text-text-muted hover:bg-bg-card hover:text-text-main"
+                          }`}
+                        >
+                          {t}
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <p className="text-[11px] font-medium text-text-muted text-center py-4">
+                      No slots available for today. Please set a custom time above.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+const durationOptions = ["2 hours", "3 hours", "4 hours", "5 hours", "8 hours", "10 hours", "12 hours", "24 hours",];
 
 const addOnOptions = [
   { id: "photoshoot", label: "Casual Photoshoot", price: 1500 },
@@ -51,17 +364,56 @@ const addOnOptions = [
 ];
 
 export default function BookDetails() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const partnerId = searchParams.get("partner") || "1";
+  const partnerId = searchParams.get("partner") || "";
   const { partner: activePartner } = usePartner(partnerId);
   const partner = activePartner || partners[0];
   const initialDate = searchParams.get("date");
   const initialTime = searchParams.get("time");
-  const initialDateTime = initialDate && initialTime ? `${initialDate} | ${initialTime}` : dateTimeOptions[0];
 
-  const dynamicDateTimeOptions = initialDate && initialTime && !dateTimeOptions.includes(initialDateTime) 
-    ? [initialDateTime, ...dateTimeOptions] 
-    : dateTimeOptions;
+  useEffect(() => {
+    const rawPartnerId = searchParams.get("partner");
+    if (!initialDate || !initialTime || !rawPartnerId) {
+      if (rawPartnerId) {
+        toast.error("Please select a booking schedule first.");
+        router.replace(`/partners/${rawPartnerId}#booking-section`);
+      } else {
+        toast.error("Please choose a companion to book.");
+        router.replace("/browse-partners");
+      }
+    }
+  }, [initialDate, initialTime, searchParams, router]);
+
+  if (!initialDate || !initialTime || !searchParams.get("partner")) {
+    return (
+      <div className="py-40 text-center text-red-500 font-bold animate-pulse">
+        Redirecting to booking section...
+      </div>
+    );
+  }
+
+  const initialDateTime = initialDate && initialTime ? `${initialDate} | ${initialTime}` : "";
+
+  const [customDate, setCustomDate] = useState("");
+  const [customTime, setCustomTime] = useState("");
+  const [selectedDateTime, setSelectedDateTime] = useState(initialDateTime);
+  const [minDate, setMinDate] = useState<Date | undefined>(undefined);
+  const hasInitialized = useRef(false);
+
+  useEffect(() => {
+    setMinDate(new Date());
+  }, []);
+
+  // Sync custom inputs with initial params exactly once on load
+  useEffect(() => {
+    if (initialDate && initialTime && !hasInitialized.current) {
+      setCustomDate(initialDate);
+      setCustomTime(initialTime);
+      setSelectedDateTime(`${initialDate} | ${initialTime}`);
+      hasInitialized.current = true;
+    }
+  }, [initialDate, initialTime]);
 
   const initialDurationParam = searchParams.get("duration");
   const initialDuration = initialDurationParam 
@@ -72,16 +424,12 @@ export default function BookDetails() {
     ? durationOptions
     : [initialDuration, ...durationOptions];
 
-  const [selectedDateTime, setSelectedDateTime] = useState(initialDateTime);
   const [selectedDuration, setSelectedDuration] = useState(initialDuration);
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>(() => {
     const param = searchParams.get("addons");
     return param ? param.split(",").filter(Boolean) : [];
   });
-  const [notes, setNotes] = useState(
-    '"Please arrive 10 mins early. This is for a formal event."'
-  );
-  const [showDateMenu, setShowDateMenu] = useState(false);
+  const [notes, setNotes] = useState("");
   const [showDurationMenu, setShowDurationMenu] = useState(false);
 
   const toggleAddOn = (id: string) => {
@@ -120,8 +468,19 @@ export default function BookDetails() {
     const addon = addOnOptions.find((a) => a.id === addonId);
     return acc + (addon ? addon.price : 0);
   }, 0);
-  const serviceFee = 250;
-  const totalAmount = basePrice + addOnsTotal + serviceFee;
+  const subtotal = basePrice + addOnsTotal;
+  const taxAmount = Math.round(subtotal * 0.18);
+  const totalAmount = subtotal + taxAmount;
+
+  const handleBookingSubmit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!notes.trim()) {
+      toast.error("Please enter a reason for booking.");
+      return;
+    }
+    const url = `/booking-confirmation?partner=${partner.id}&date=${encodeURIComponent(selectedDateTime)}&duration=${encodeURIComponent(selectedDuration)}&addons=${encodeURIComponent(selectedAddOnLabels.join(","))}&amount=${totalAmount}`;
+    router.push(url);
+  };
 
   return (
     <section className={`bg-bg-base py-20 px-4 md:px-8 ${outfit.className}`}>
@@ -162,50 +521,52 @@ export default function BookDetails() {
                   </span>
                 </div>
 
-                {/* Date & Time */}
-                <div className="relative mb-4">
-                  <button
-                    onClick={() => {
-                      setShowDateMenu((p) => !p);
-                      setShowDurationMenu(false);
+                {/* Custom Date & Time Picker */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <PremiumDatePicker
+                    value={customDate}
+                    onChange={(val) => {
+                      setCustomDate(val);
+                      if (val) {
+                        if (!customTime) {
+                          const defaultTime = getFortyMinutesAheadTime().formatted;
+                          setCustomTime(defaultTime);
+                          setSelectedDateTime(`${val} | ${defaultTime}`);
+                        } else {
+                          // Validate if today's date is selected and current customTime is invalid
+                          const today = new Date();
+                          const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                          if (val === todayStr) {
+                            const targetDate = parseDateTime(val, customTime);
+                            if (!targetDate || (targetDate.getTime() - today.getTime()) < 40 * 60 * 1000) {
+                              const defaultTime = getFortyMinutesAheadTime().formatted;
+                              setCustomTime(defaultTime);
+                              setSelectedDateTime(`${val} | ${defaultTime}`);
+                              // toast.info("Time adjusted to at least 40 minutes in the future.");
+                              return;
+                            }
+                          }
+                          setSelectedDateTime(`${val} | ${customTime}`);
+                        }
+                      }
                     }}
-                    className="w-full cursor-pointer h-14 px-5 bg-bg-secondary/50 border border-border-main rounded-2xl text-text-main text-sm font-medium flex items-center justify-between hover:border-primary/30 transition-all group"
-                  >
-                    <span className="flex items-center gap-3">
-                      <Clock size={15} className="text-primary shrink-0" />
-                      <span className="text-text-muted text-xs font-bold uppercase tracking-widest mr-2">
-                        Date & Time:
-                      </span>
-                      {selectedDateTime}
-                    </span>
-                    <ChevronDown
-                      size={16}
-                      className={`text-primary transition-transform ${showDateMenu ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                  {showDateMenu && (
-                    <div className="absolute top-full mt-2 left-0 right-0 z-20 bg-bg-base/95 backdrop-blur-2xl border border-border-main rounded-2xl overflow-hidden shadow-2xl">
-                      {dynamicDateTimeOptions.map((opt) => (
-                        <button
-                          key={opt}
-                          onClick={() => {
-                            setSelectedDateTime(opt);
-                            setShowDateMenu(false);
-                          }}
-                          className={`w-full cursor-pointer px-5 py-3.5 text-left text-sm font-medium flex items-center justify-between hover:bg-primary/5 transition-colors ${
-                            selectedDateTime === opt
-                              ? "text-primary"
-                              : "text-text-main"
-                          }`}
-                        >
-                          {opt}
-                          {selectedDateTime === opt && (
-                            <span className="w-2 h-2 rounded-full bg-primary" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                    label="Date"
+                    placeholder="Select Date"
+                    minDate={minDate}
+                  />
+
+                  <PremiumTimePicker
+                    value={customTime}
+                    onChange={(val) => {
+                      setCustomTime(val);
+                      if (val) {
+                        setSelectedDateTime(`${customDate} | ${val}`);
+                      }
+                    }}
+                    label="Time"
+                    placeholder="Select Time"
+                    selectedDate={customDate}
+                  />
                 </div>
 
                 {/* Duration */}
@@ -213,7 +574,6 @@ export default function BookDetails() {
                   <button
                     onClick={() => {
                       setShowDurationMenu((p) => !p);
-                      setShowDateMenu(false);
                     }}
                     className="w-full cursor-pointer h-14 px-5 bg-bg-secondary/50 border border-border-main rounded-2xl text-text-main text-sm font-medium flex items-center justify-between hover:border-primary/30 transition-all"
                   >
@@ -307,32 +667,29 @@ export default function BookDetails() {
                 </div>
               </div> */}
 
-              {/* ── Notes ── */}
+              {/* ── Reason for Booking ── */}
               <div>
                 <div className="flex items-center gap-2 mb-5">
                   <FileText size={15} className="text-primary" />
                   <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">
-                    Preferences / Notes{" "}
-                    <span className="text-text-muted normal-case tracking-normal">
-                      (Optional)
-                    </span>
+                    Reason for Booking
                   </span>
                 </div>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
-                  placeholder="Any special requests or instructions..."
+                  placeholder="e.g. i want to have a time when i can talk to you and we can discuss about movies and web series "
                   className="w-full bg-bg-secondary/50 border border-border-main rounded-2xl p-5 text-text-main text-sm font-medium leading-relaxed placeholder:text-text-muted/40 focus:outline-none focus:border-primary/40 transition-all resize-none"
                 />
               </div>
 
               {/* ── CTA ── */}
-              <MotionLink
-                href={`/booking-confirmation?partner=${partner.id}&date=${encodeURIComponent(selectedDateTime)}&duration=${encodeURIComponent(selectedDuration)}&addons=${encodeURIComponent(selectedAddOnLabels.join(","))}&amount=${totalAmount}`}
+              <motion.button
+                onClick={handleBookingSubmit}
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full h-16 rounded-2xl bg-linear-to-r from-primary-dark to-accent text-white font-black tracking-[0.3em] uppercase text-xs shadow-[0_20px_40px_-10px_rgba(var(--primary-rgb),0.5)] flex items-center justify-center gap-3 group relative overflow-hidden"
+                className="w-full cursor-pointer h-16 rounded-2xl bg-linear-to-r from-primary-dark to-accent text-white font-black tracking-[0.3em] uppercase text-xs shadow-[0_20px_40px_-10px_rgba(var(--primary-rgb),0.5)] flex items-center justify-center gap-3 group relative overflow-hidden"
               >
                 <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 <span className="relative z-10 flex items-center gap-3">
@@ -342,7 +699,7 @@ export default function BookDetails() {
                     className="transition-transform group-hover:translate-x-1"
                   />
                 </span>
-              </MotionLink>
+              </motion.button>
             </motion.div>
           </div>
 
@@ -490,8 +847,8 @@ export default function BookDetails() {
                     </div>
                   )}
                   <div className="flex justify-between items-center text-xs font-semibold text-text-muted">
-                    <span>Service Fee</span>
-                    <span className="text-text-main">₹{serviceFee.toLocaleString("en-IN")}</span>
+                    <span>18% Tax</span>
+                    <span className="text-text-main">₹{taxAmount.toLocaleString("en-IN")}</span>
                   </div>
                   <div className="h-px bg-border-main my-0.5" />
                   <div className="flex justify-between items-center text-xs font-black text-text-main">

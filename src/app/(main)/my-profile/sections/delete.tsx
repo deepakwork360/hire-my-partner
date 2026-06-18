@@ -1,12 +1,12 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Rochester, Outfit } from "next/font/google";
+import { Outfit, Rochester } from "next/font/google";
 import { AlertCircle, Trash2, X, AlertTriangle, ShieldAlert } from "lucide-react";
 import { useState } from "react";
 
-const rochester = Rochester({ subsets: ["latin"], weight: ["400"] });
 const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "800"] });
+const rochester = Rochester({ subsets: ["latin"], weight: ["400"] });
 
 export default function DeleteAccount() {
   const [showConfirm, setShowConfirm] = useState(false);
@@ -48,99 +48,82 @@ export default function DeleteAccount() {
               </p>
             </div>
 
-            <button 
+            <button
               onClick={() => setShowConfirm(true)}
-              className="px-10 h-14 rounded-2xl bg-accent/10 border border-accent/30 text-accent font-black tracking-widest uppercase text-[10px] hover:bg-accent hover:text-white transition-all flex items-center justify-center gap-3 active:scale-95"
+              className="px-10 h-14 bg-red-950/20 hover:bg-red-950/40 border border-red-500/20 hover:border-red-500/40 text-red-400 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center gap-3"
             >
               <Trash2 size={16} />
               Delete Account
             </button>
           </div>
 
-          {/* Points illustrating what happens after deletion */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 opacity-60">
-            <div className="flex items-start gap-3">
-              <ShieldAlert size={14} className="text-accent mt-1 shrink-0" />
-              <p className="text-text-muted text-xs font-medium leading-relaxed">Personal data will be permanently wiped.</p>
-            </div>
-            <div className="flex items-start gap-3">
-              <ShieldAlert size={14} className="text-accent mt-1 shrink-0" />
-              <p className="text-text-muted text-xs font-medium leading-relaxed">Active bookings will be cancelled instantly.</p>
-            </div>
-            <div className="flex items-start gap-3">
-              <ShieldAlert size={14} className="text-accent mt-1 shrink-0" />
-              <p className="text-text-muted text-xs font-medium leading-relaxed">Subscription benefits will be terminated.</p>
-            </div>
-          </div>
+          <AnimatePresence>
+            {showConfirm && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden border-t border-border-main pt-8 mt-2"
+              >
+                <div className="max-w-md mx-auto flex flex-col gap-5">
+                  <div className="flex items-start gap-4 p-5 bg-red-500/5 border border-red-500/10 rounded-2xl">
+                     <ShieldAlert className="text-red-500 shrink-0 mt-0.5" size={20} />
+                     <div>
+                       <h4 className="text-text-main text-xs font-bold uppercase tracking-wider">Irreversible Action</h4>
+                       <p className="text-text-muted text-[11px] mt-1 leading-relaxed">
+                         This will permanently delete your companion profile, bookings history, active notifications, and disable account access.
+                       </p>
+                     </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                    <label className="text-text-main text-xs md:text-sm font-bold uppercase tracking-wider ml-1">
+                      Type <span className="text-accent">{confirmText}</span> to confirm
+                    </label>
+                    <div className="relative">
+                      <input 
+                        type="text" 
+                        value={typedConfirm}
+                        onChange={(e) => setTypedConfirm(e.target.value)}
+                        placeholder="Type standard confirmation text"
+                        className="w-full h-14 px-5 bg-bg-secondary border border-border-main rounded-2xl text-text-main text-sm font-medium focus:outline-none focus:border-red-500/50 transition-all placeholder:text-text-muted/50"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 mt-2">
+                     <button
+                       onClick={() => {
+                          setShowConfirm(false);
+                          setTypedConfirm("");
+                       }}
+                       disabled={isDeleting}
+                       className="flex-1 h-14 rounded-2xl border border-border-main text-text-muted text-[10px] font-black uppercase tracking-widest hover:bg-bg-secondary hover:text-text-main transition-all"
+                     >
+                       Cancel
+                     </button>
+                     <button
+                       onClick={handleDelete}
+                       disabled={typedConfirm !== confirmText || isDeleting}
+                       className={`flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-3 ${
+                         typedConfirm === confirmText
+                           ? "bg-red-600 text-white hover:bg-red-500 hover:shadow-lg hover:shadow-red-500/20"
+                           : "bg-bg-secondary border border-border-main text-text-muted cursor-not-allowed"
+                       }`}
+                     >
+                       {isDeleting ? (
+                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                       ) : (
+                         <>Confirm Delete</>
+                       )}
+                     </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
-
-      {/* Confirmation Modal */}
-      <AnimatePresence>
-        {showConfirm && (
-          <div className="fixed inset-0 z-100 flex items-center justify-center px-4">
-            <motion.div 
-               initial={{ opacity: 0 }}
-               animate={{ opacity: 1 }}
-               exit={{ opacity: 0 }}
-               onClick={() => setShowConfirm(false)}
-               className="absolute inset-0 bg-bg-base/80 backdrop-blur-sm"
-            />
-            
-            <motion.div
-               initial={{ opacity: 0, scale: 0.9, y: 20 }}
-               animate={{ opacity: 1, scale: 1, y: 0 }}
-               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-               className="relative w-full max-w-md bg-bg-secondary border border-border-main rounded-[32px] p-8 shadow-2xl"
-            >
-              <button 
-                onClick={() => setShowConfirm(false)}
-                className="absolute top-6 right-6 text-text-muted hover:text-text-main transition-colors"
-              >
-                <X size={20} />
-              </button>
-
-              <div className="flex flex-col items-center text-center gap-6">
-                <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
-                  <AlertCircle size={32} />
-                </div>
-                
-                <div>
-                  <h3 className="text-text-main text-xl font-black uppercase tracking-wider mb-2">Are you sure?</h3>
-                  <p className="text-text-muted text-sm leading-relaxed">
-                    This action is irreversible. To confirm, please type <span className="text-text-main font-bold">"{confirmText}"</span> below.
-                  </p>
-                </div>
-
-                <div className="w-full flex flex-col gap-4">
-                  <input 
-                    type="text" 
-                    value={typedConfirm}
-                    onChange={(e) => setTypedConfirm(e.target.value)}
-                    placeholder="Type confirmation here..."
-                    className="w-full h-14 px-5 bg-bg-secondary border border-accent/20 rounded-2xl text-text-main text-center text-sm font-black tracking-widest focus:outline-none focus:border-accent transition-all placeholder:text-text-muted/50 placeholder:font-medium placeholder:tracking-normal"
-                  />
-                  
-                  <button 
-                    onClick={handleDelete}
-                    disabled={typedConfirm !== confirmText || isDeleting}
-                    className={`w-full h-14 rounded-2xl font-black tracking-widest uppercase text-xs transition-all duration-300 ${
-                      typedConfirm === confirmText
-                        ? isDeleting ? "bg-accent/50 text-accent/30 cursor-wait" : "bg-accent text-white shadow-lg shadow-accent/20 active:scale-95"
-                        : "bg-bg-secondary text-text-muted cursor-not-allowed border border-border-main"
-                    }`}
-                  >
-                    {isDeleting ? "Deleting..." : "Permanently Delete"}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </section>
   );
 }
-
-
-
