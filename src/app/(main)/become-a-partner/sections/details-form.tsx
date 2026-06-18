@@ -749,6 +749,10 @@ export default function DetailsForm() {
   const handleVideoUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 15 * 1024 * 1024) {
+        toast.error("Video file is too large (max 15MB)");
+        return;
+      }
       const blobUrl = URL.createObjectURL(file);
       setFormData((prev) => {
         const newVideos = [...prev.videos];
@@ -1302,6 +1306,13 @@ export default function DetailsForm() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {formData.videos.map((video, index) => {
+                      const videoTypes = [
+                        { title: "Introduction Reel", desc: "Personal greeting & introduction" },
+                        { title: "Portfolio Vibe", desc: "Showcase hobbies, style & vibe" },
+                        { title: "Q&A Session", desc: "Answers to common questions" }
+                      ];
+                      const currentType = videoTypes[index] || { title: `Video ${index + 1}`, desc: "Optional video clip" };
+
                       return (
                         <motion.div
                           key={index}
@@ -1321,9 +1332,10 @@ export default function DetailsForm() {
                                   e.currentTarget.currentTime = 0;
                                 }}
                               />
-                              <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-100 group-hover/video:opacity-0 transition-opacity duration-300 pointer-events-none">
-                                <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 text-white">
-                                  <Video className="w-5 h-5 animate-pulse" />
+                              <div className="absolute inset-x-0 bottom-0 bg-black/60 backdrop-blur-xs p-4 flex items-center justify-between opacity-100 group-hover/video:opacity-0 transition-opacity duration-300 pointer-events-none">
+                                <span className="text-white text-xs font-bold">{currentType.title}</span>
+                                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white">
+                                  <Video className="w-4 h-4" />
                                 </div>
                               </div>
                               <button
@@ -1336,15 +1348,18 @@ export default function DetailsForm() {
                               </button>
                             </div>
                           ) : (
-                            <label className="w-full h-full flex flex-col items-center justify-center gap-3 cursor-pointer group/add transition-all duration-500 hover:bg-primary/5 min-h-[160px]">
+                            <label className="w-full h-full flex flex-col items-center justify-center gap-3 cursor-pointer group/add transition-all duration-500 hover:bg-primary/5 min-h-[160px] p-4 text-center">
                               <div className="w-14 h-14 rounded-[20px] flex items-center justify-center transition-all duration-700 group-hover/add:rotate-90 group-hover/add:scale-110 bg-primary/10 border border-primary/20">
                                 <Video className="w-6 h-6 text-primary group-hover/add:text-accent" />
                               </div>
                               <div className="flex flex-col items-center gap-1">
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted group-hover/add:text-primary">
-                                  Upload Video {index + 1}
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-main group-hover/add:text-primary">
+                                  {currentType.title}
                                 </span>
-                                <span className="text-[9px] text-text-muted/60">Max size: 15MB</span>
+                                <span className="text-[9px] text-text-muted/70 block mt-0.5 max-w-[200px] mx-auto font-medium">
+                                  {currentType.desc}
+                                </span>
+                                <span className="text-[8px] text-primary/80 font-bold uppercase tracking-wider mt-1">Max size: 15MB</span>
                               </div>
                               <input
                                 type="file"
@@ -2160,10 +2175,10 @@ export default function DetailsForm() {
                     <SummaryItem label="Contact" value={formData.mobile} />
                     <SummaryItem label="Email" value={formData.email} />
                     <SummaryItem label="Languages" value={formData.languages} />
-                    <SummaryItem
+                    {/* <SummaryItem
                       label="Availability"
                       value={formData.availability}
-                    />
+                    /> */}
                   </div>
 
                   <div className="space-y-4">

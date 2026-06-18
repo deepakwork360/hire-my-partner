@@ -131,7 +131,6 @@ export const partners: any[] = [
         image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&fit=crop",
         rating: 5
       },
-      ,
       {
         id: "3",
         name: "Ravi",

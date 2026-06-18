@@ -198,10 +198,18 @@ export default function Slider<T>({
 
     // Determine lock direction on first slight movement to prevent hijacking native vertical page scroll
     if (!isSwipeDirectionDetermined.current) {
-      if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8) {
+      const threshold = 15; // Increased from 8 to 15 for better sensitivity control
+      if (Math.abs(deltaX) > threshold || Math.abs(deltaY) > threshold) {
         isSwipeDirectionDetermined.current = true;
         isHorizontalSwipe.current = Math.abs(deltaX) > Math.abs(deltaY);
       }
+    }
+
+    // Set hasDragged to true if user moves finger in either direction beyond a minor threshold.
+    // This ensures that diagonal swipes or vertical scrolling doesn't register as a click
+    // on card links when the touch ends.
+    if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
+      hasDragged.current = true;
     }
 
     if (isHorizontalSwipe.current) {
@@ -209,7 +217,6 @@ export default function Slider<T>({
       if (e.cancelable) {
         e.preventDefault();
       }
-      hasDragged.current = true;
       updateDragTransform(deltaX);
     }
   };

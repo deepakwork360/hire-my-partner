@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
 import { Play, X, Volume2, VolumeX } from "lucide-react";
+import LazyVideo from "@/components/common/lazy-video";
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -29,117 +30,177 @@ export default function VideoShowcase({ videos }: VideoShowcaseProps) {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(true);
 
-  // If no videos are provided or the list is empty, fallback to DEFAULT_VIDEOS
-  const displayVideos = (videos && videos.length > 0 ? videos : DEFAULT_VIDEOS).slice(0, 3);
+  // Filter out empty/null/undefined items
+  const validVideos = (videos || []).filter(Boolean);
+
+  // If no videos are uploaded, do not render the section
+  if (validVideos.length === 0) {
+    return null;
+  }
+
+  const displayVideos = validVideos.slice(0, 3);
+
+  const CLIP_DETAILS = [
+    {
+      title: "Introduction Reel",
+      desc: "A warm personal greeting and introduction clip."
+    },
+    {
+      title: "Portfolio Vibe",
+      desc: "A look into my hobbies, personality, and styling."
+    },
+    {
+      title: "Quick Q&A Session",
+      desc: "Answering favorite topics and standard questions."
+    }
+  ];
 
   return (
-    <section className={`py-12 md:py-16 px-4 bg-bg-base border-b border-border-main relative overflow-hidden ${outfit.className}`}>
-      {/* Decorative luxury gradient background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
+    <section className={`py-16 md:py-24 px-4 bg-bg-base border-b border-border-main relative overflow-hidden ${outfit.className}`}>
+      {/* Cinematic top radial ambient light reflecting theme rgb */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[350px] bg-gradient-to-b from-primary/5 via-accent/2 to-transparent blur-[100px] pointer-events-none" />
+
+      {/* Modern abstract geometric visual grid lines for tech-luxury feel */}
+      <div className="absolute inset-0 opacity-[0.015] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none" />
 
       <div className="max-w-[1250px] w-full mx-auto relative z-10">
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-10"
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="text-center mb-16"
         >
-          <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-primary bg-primary/10 px-4 py-1.5 rounded-full border border-primary/20">
-            Showcase
+          <span className="inline-flex items-center gap-2 text-[10px] md:text-xs font-black uppercase tracking-[0.35em] text-primary bg-primary/10 px-5 py-2 rounded-full border border-primary/20 shadow-[0_0_15px_rgba(var(--primary-rgb),0.08)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
+            Media Showcase
           </span>
-          <h2 className={`${rochester.className} text-5xl md:text-6xl text-text-main mt-4 mb-3`}>
+          <h2 className={`${rochester.className} text-6xl md:text-7xl text-text-main mt-5 mb-4 tracking-wide`}>
             Video Introductions
           </h2>
-          <p className="text-text-muted text-sm md:text-base max-w-xl mx-auto font-medium">
+          <p className="text-text-muted text-sm md:text-base max-w-xl mx-auto font-medium leading-relaxed">
             Get to know them better. Watch high-definition introductions, portfolio reels, and personal greetings.
           </p>
         </motion.div>
 
-        {/* Video Card Grid */}
-        <div className={`grid grid-cols-1 md:grid-cols-${displayVideos.length} gap-6 md:gap-8 max-w-5xl mx-auto`}>
-          {displayVideos.map((url, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: idx * 0.1 }}
-              onClick={() => setSelectedVideo(url)}
-              className="relative aspect-video rounded-[32px] overflow-hidden bg-bg-card border border-border-main/60 hover:border-primary/40 cursor-pointer shadow-2xl group"
-            >
-              {/* Inner card glow border */}
-              <div className="absolute inset-0 z-20 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)] group-hover:shadow-[inset_0_0_0_2px_rgba(var(--primary-rgb),0.4)] transition-shadow duration-500 rounded-[32px]" />
+        {/* Video Card Grid - Adaptively scales based on video count */}
+        <div className={`grid grid-cols-1 ${
+          displayVideos.length === 3 
+            ? "md:grid-cols-3" 
+            : displayVideos.length === 2 
+              ? "md:grid-cols-2 max-w-4xl" 
+              : "max-w-2xl"
+        } gap-8 mx-auto`}>
+          {displayVideos.map((url, idx) => {
+            const details = CLIP_DETAILS[idx] || { title: "Companion Clip", desc: "Short video overview." };
+            
+            return (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.7, delay: idx * 0.15, ease: "easeOut" }}
+                onClick={() => setSelectedVideo(url)}
+                className="relative aspect-video rounded-[36px] overflow-hidden bg-bg-card border border-white/5 hover:border-primary/45 cursor-pointer shadow-[0_30px_60px_rgba(0,0,0,0.4)] group transition-all duration-500 hover:shadow-[0_40px_80px_rgba(var(--primary-rgb),0.15)] hover:-translate-y-1"
+              >
+                {/* Glow border overlay */}
+                <div className="absolute inset-0 z-20 shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.06)] group-hover:shadow-[inset_0_0_0_2px_rgba(var(--primary-rgb),0.5)] transition-all duration-500 rounded-[36px]" />
 
-              {/* Dynamic hover state video preview */}
-              <video
-                src={url}
-                className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out"
-                preload="metadata"
-                muted
-                loop
-                playsInline
-                onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
-                onMouseLeave={(e) => {
-                  e.currentTarget.pause();
-                  e.currentTarget.currentTime = 0;
-                }}
-              />
+                {/* Video Tag with autoplay preview on hover */}
+                <LazyVideo
+                  src={url}
+                  className="grayscale-[20%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000 ease-out"
+                  autoPlay={false}
+                  preload="metadata"
+                  onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.pause();
+                    e.currentTarget.currentTime = 0;
+                  }}
+                />
 
-              {/* Glassmorphic Play Trigger Overlay */}
-              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-300 flex flex-col items-center justify-center gap-4 z-10">
-                <motion.div 
-                  whileHover={{ scale: 1.15 }}
-                  className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl relative group-hover:border-primary/50 group-hover:bg-primary/20 transition-all duration-500"
-                >
-                  {/* Pulsing ring around the play button */}
-                  <span className="absolute inset-0 rounded-full border border-primary/40 animate-ping opacity-0 group-hover:opacity-100 duration-1000" />
-                  <Play className="w-6 h-6 text-white fill-white translate-x-0.5 group-hover:text-primary group-hover:fill-primary transition-colors duration-300" />
-                </motion.div>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80 group-hover:text-primary transition-colors duration-300">
-                  Intro Clip {idx + 1}
-                </span>
-              </div>
-            </motion.div>
-          ))}
+                {/* Premium Dark Gradient Overlay & Glassmorphic Details Panel */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent group-hover:from-black/98 transition-colors duration-500 flex flex-col justify-end p-6 z-10">
+                  {/* Sliding wrapper */}
+                  <div className="transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500 ease-out flex flex-col gap-0 w-full">
+                    <div className="flex items-center justify-between gap-4 w-full">
+                      <h3 className="text-primary! text-lg font-black tracking-wide leading-tight group-hover:text-primary! transition-colors" style={{ color: "white" }}>
+                        {details.title}
+                      </h3>
+                      
+                      {/* Interactive Play Circle Trigger */}
+                      <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center group-hover:bg-primary group-hover:border-primary shadow-2xl transition-all duration-500 shrink-0 group-hover:rotate-6">
+                        <Play className="w-4.5 h-4.5 text-white fill-white translate-x-0.5 group-hover:scale-110 transition-transform" />
+                      </div>
+                    </div>
+
+                    {/* Height animated description */}
+                    <div className="max-h-0 opacity-0 group-hover:max-h-16 group-hover:opacity-100 overflow-hidden transition-all duration-500 ease-out">
+                      <p className="text-white/60 text-xs font-semibold max-w-[85%] leading-relaxed pt-0.5">
+                        {details.desc}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ambient glow underneath hover */}
+                <div className="absolute -inset-10 bg-radial-gradient from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none blur-xl -z-10" />
+              </motion.div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Immersive Glassmorphic Lightbox Video Player */}
+      {/* Immersive Cinematic Lightbox Video Player */}
       <AnimatePresence>
         {selectedVideo && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-2000 flex items-center justify-center bg-[#070708]/95 backdrop-blur-md cursor-default p-4"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#050506]/98 backdrop-blur-xl cursor-default p-4 md:p-8"
           >
-            {/* Backdrop click to close */}
-            <div className="absolute inset-0 z-0" onClick={() => setSelectedVideo(null)} />
+            {/* Real-time ambient backdrop glow (Ambilight effect) */}
+            <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-30 select-none">
+              <video
+                src={selectedVideo}
+                className="hidden md:block w-full h-full object-cover filter blur-[40px] scale-125 translate-z-0 will-change-[filter,transform]"
+                autoPlay
+                muted
+                loop
+                playsInline
+              />
+              <div className="absolute inset-0 bg-[#050506]/60 backdrop-blur-[20px]" />
+            </div>
+
+            {/* Backdrop click zone to close */}
+            <div className="absolute inset-0 z-10 cursor-zoom-out" onClick={() => setSelectedVideo(null)} />
 
             {/* Controls panel top-bar */}
-            <div className="fixed top-6 right-6 md:top-10 md:right-10 z-2100 flex items-center gap-4">
+            <div className="fixed top-6 right-6 md:top-8 md:right-8 z-30 flex items-center gap-4">
               <button
                 onClick={() => setIsMuted(!isMuted)}
-                className="w-14 h-14 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-white transition-all duration-300 shadow-2xl backdrop-blur-xl"
-                title={isMuted ? "Unmute" : "Mute"}
+                className="w-12 h-12 cursor-pointer rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white transition-all duration-300 shadow-2xl backdrop-blur-md active:scale-95"
+                title={isMuted ? "Unmute Audio" : "Mute Audio"}
               >
-                {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+                {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
               </button>
               <button
                 onClick={() => setSelectedVideo(null)}
-                className="w-14 h-14 rounded-full bg-white/5 hover:bg-rose-500/20 border border-white/10 hover:border-rose-500/30 flex items-center justify-center text-white transition-all duration-300 group shadow-2xl backdrop-blur-xl"
+                className="w-12 h-12 cursor-pointer rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:border-rose-500/30 flex items-center justify-center text-rose-400 hover:text-rose-300 transition-all duration-300 group shadow-2xl backdrop-blur-md active:scale-95"
               >
-                <X className="w-7 h-7 group-hover:rotate-90 transition-transform duration-500" />
+                <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-500" />
               </button>
             </div>
 
-            {/* Premium Video Frame Container */}
+            {/* Cinema Video Frame Wrapper */}
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.92, opacity: 0, y: 30 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative z-10 w-full max-w-[95vw] md:max-w-4xl aspect-video rounded-[40px] overflow-hidden border border-white/10 shadow-[0_50px_100px_rgba(0,0,0,0.9)] bg-black"
+              exit={{ scale: 0.92, opacity: 0, y: 30 }}
+              transition={{ type: "spring", damping: 25, stiffness: 150 }}
+              className="relative z-20 w-full max-w-5xl aspect-video rounded-[36px] overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(var(--primary-rgb),0.35)] bg-black"
             >
               <video
                 src={selectedVideo}

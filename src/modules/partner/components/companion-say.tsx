@@ -7,6 +7,7 @@ import { Rochester, Outfit } from "next/font/google";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, X, Eye, ArrowRight, Play, Volume2, VolumeX } from "lucide-react";
 import { toast } from "@/components/ui/toastStore";
+import LazyVideo from "@/components/common/lazy-video";
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -67,22 +68,18 @@ const defaultReviews = [
 ];
 
 // Extracted Card Component for reuse in grid and modal
-const AutoplayVideo = ({ src }: { src: string }) => {
+const AutoplayVideo = ({ src, autoPlay = true }: { src: string; autoPlay?: boolean }) => {
   return (
-    <video
+    <LazyVideo
       src={src}
-      className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700 ease-out"
-      autoPlay
-      muted
-      loop
-      playsInline
-      preload="auto"
+      className="group-hover:scale-105 transition-all duration-700 ease-out"
+      autoPlay={autoPlay}
     />
   );
 };
 
 // Extracted Card Component for reuse in grid and modal
-const ReviewCard = ({ review, onPlay }: { review: any; onPlay?: (url: string) => void }) => {
+const ReviewCard = ({ review, onPlay, autoPlay = true }: { review: any; onPlay?: (url: string) => void; autoPlay?: boolean }) => {
   const hasVideo = !!review.videoUrl;
   
   if (hasVideo) {
@@ -95,7 +92,7 @@ const ReviewCard = ({ review, onPlay }: { review: any; onPlay?: (url: string) =>
       >
         {/* Background Autoplaying Video */}
         <div className="absolute inset-0 z-0">
-          <AutoplayVideo src={review.videoUrl} />
+          <AutoplayVideo src={review.videoUrl} autoPlay={autoPlay} />
         </div>
 
         {/* Content Overlay (Floats at bottom) */}
@@ -124,7 +121,7 @@ const ReviewCard = ({ review, onPlay }: { review: any; onPlay?: (url: string) =>
               />
             </div>
             <div className="min-w-0 flex-1">
-              <h4 className="text-xs font-black text-white truncate filter drop-shadow-sm">{review.name}</h4>
+              <h4 className="text-xs font-black text-white! truncate filter drop-shadow-sm" style={{ color: "white" }}>{review.name}</h4>
               <p className="text-[9px] font-bold text-white/60 uppercase tracking-wider truncate">{review.role}</p>
             </div>
             {/* Play Button Icon */}
@@ -290,7 +287,9 @@ export default function CompanionSay({ reviews: passedReviews, partnerId, partne
 
   // Sort reviews: video reviews first (on the left starting side)
   const sortedReviews = useMemo(() => {
-    return [...reviews].sort((a, b) => {
+    // Defensive check to filter out empty, null, or undefined review objects
+    const validReviews = (reviews || []).filter((r) => r && typeof r === "object");
+    return [...validReviews].sort((a, b) => {
       const aHasVideo = !!a.videoUrl;
       const bHasVideo = !!b.videoUrl;
       if (aHasVideo && !bHasVideo) return -1;
@@ -299,8 +298,8 @@ export default function CompanionSay({ reviews: passedReviews, partnerId, partne
     });
   }, [reviews]);
 
-  // If there are more than 4 reviews, we show 3 + "View All" card.
-  const hasMore = sortedReviews.length > 4;
+  // If there are more than 3 reviews, we show 3 + "View All" card.
+  const hasMore = sortedReviews.length > 3;
   const displayedReviews = hasMore ? sortedReviews.slice(0, 3) : sortedReviews;
 
   return (
@@ -373,7 +372,7 @@ export default function CompanionSay({ reviews: passedReviews, partnerId, partne
           </motion.div>
         ) : (
           /* 4-Column Grid Layout */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 min-h-[400px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 min-h-[400px]" style={{ contentVisibility: "auto", containIntrinsicSize: "400px" }}>
             {displayedReviews.map((review, idx) => (
               <motion.div
                 key={review.id}
@@ -485,7 +484,7 @@ export default function CompanionSay({ reviews: passedReviews, partnerId, partne
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {sortedReviews.map((review) => (
                     <div key={review.id} className="h-full min-h-[350px]">
-                      <ReviewCard review={review} onPlay={setActiveVideoUrl} />
+                      <ReviewCard review={review} onPlay={setActiveVideoUrl} autoPlay={false} />
                     </div>
                   ))}
                 </div>
