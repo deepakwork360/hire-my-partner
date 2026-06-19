@@ -12,16 +12,18 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [isLivePartner, setIsLivePartner] = useState(false);
+
+  const storageKey = user && user.email ? `partnerApplication_${user.email.replace(/[^a-zA-Z0-9]/g, "_")}` : "partnerApplication";
 
   useEffect(() => {
     setMounted(true);
 
     const checkPartnerStatus = () => {
       try {
-        const savedData = localStorage.getItem("partnerApplication");
+        const savedData = localStorage.getItem(storageKey);
         if (savedData) {
           const parsed = JSON.parse(savedData);
           if (parsed.verificationStatus === "VERIFIED") {
@@ -43,7 +45,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       window.removeEventListener("storage", checkPartnerStatus);
       window.removeEventListener("partnerStatusChange", checkPartnerStatus);
     };
-  }, []);
+  }, [storageKey]);
 
   const dashboardTabs = [
     "/my-booking",

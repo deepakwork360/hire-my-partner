@@ -444,7 +444,7 @@ function PremiumDurationPicker({
 
 export default function Availability({ partner }: AvailabilityProps) {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   
   // Graceful fallback to Gigi Hadid if no partner is provided
   const activePartner = partner || {
@@ -557,6 +557,12 @@ export default function Availability({ partner }: AvailabilityProps) {
         redirectUrl += "#booking-section";
       }
       router.push(`/login?redirect=${encodeURIComponent(redirectUrl)}`);
+      return;
+    }
+
+    if (!user?.gender || !user?.age || !user?.address || !user?.city || !user?.country) {
+      toast.error("Please complete your profile details (Gender, Age, Country, City, and Address) in the Account Center to book.");
+      window.dispatchEvent(new CustomEvent("open_account_center", { detail: { section: "personal-info" } }));
       return;
     }
 

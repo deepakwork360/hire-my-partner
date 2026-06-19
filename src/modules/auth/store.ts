@@ -9,6 +9,8 @@ interface AuthState {
   setAuth: (response: AuthResponse) => void;
   setAccessToken: (token: string) => void;
   clearAuth: () => void;
+  updateUserAvatar: (avatarUrl: string) => void;
+  updateUserProfile: (profileData: Partial<User>) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -43,6 +45,28 @@ export const useAuthStore = create<AuthState>()(
           user: null, 
           accessToken: null, 
           isAuthenticated: false 
+        });
+      },
+      updateUserAvatar: (avatarUrl) => {
+        set((state) => {
+          if (!state.user) return {};
+          return {
+            user: {
+              ...state.user,
+              avatar: avatarUrl
+            }
+          };
+        });
+      },
+      updateUserProfile: (profileData) => {
+        set((state) => {
+          if (!state.user) return {};
+          return {
+            user: {
+              ...state.user,
+              ...profileData
+            }
+          };
         });
       },
     }),

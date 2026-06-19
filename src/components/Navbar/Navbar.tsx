@@ -26,7 +26,6 @@ const navItems = [
   { label: "Home", href: "/" },
   { label: "How it Works", href: "/#how-it-works" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Become a Partner", href: "/become-a-partner" },
   { label: "Safety and Trust", href: "/#safety-and-trust" },
 ];
 

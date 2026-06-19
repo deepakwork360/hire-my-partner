@@ -26,6 +26,7 @@ import PremiumButton from "@/components/ui/PremiumButton";
 import DiscoveryButton from "@/components/ui/DiscoveryButton";
 import { toast } from "@/components/ui/toastStore";
 import Loader from "@/components/loader/Loader";
+import { useAuthStore } from "@/modules/auth/store";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -64,6 +65,22 @@ const timeSlots = [
 ];
 
 // --- Moved Components Outside to prevent Focus Loss ---
+
+const countryCitiesMap: Record<string, string[]> = {
+  "India": ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai", "Kolkata", "Pune", "Ahmedabad"],
+  "United States": ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia", "San Antonio", "San Diego"],
+  "United Kingdom": ["London", "Birmingham", "Leeds", "Glasgow", "Sheffield", "Manchester", "Edinburgh", "Liverpool"],
+  "Australia": ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Gold Coast", "Canberra", "Hobart"],
+  "United Arab Emirates": ["Dubai", "Abu Dhabi", "Sharjah", "Al Ain", "Ajman", "Ras Al Khaimah", "Fujairah", "Umm Al Quwain"],
+  "Singapore": ["Singapore"],
+  "Germany": ["Berlin", "Hamburg", "Munich", "Cologne", "Frankfurt", "Stuttgart", "Düsseldorf", "Dortmund"],
+  "France": ["Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes", "Strasbourg", "Montpellier"],
+  "Saudi Arabia": ["Riyadh", "Jeddah", "Mecca", "Medina", "Dammam", "Taif", "Tabuk", "Buraidah"],
+  "Qatar": ["Doha", "Al Rayyan", "Al Wakrah", "Al Khor", "Umm Salal", "Madinat ash Shamal"],
+  "Nepal": ["Kathmandu", "Pokhara", "Lalitpur", "Bharatpur", "Biratnagar", "Dharan"],
+  "Bangladesh": ["Dhaka", "Chittagong", "Khulna", "Rajshahi", "Sylhet", "Barisal"],
+  "Sri Lanka": ["Colombo", "Kandy", "Galle", "Jaffna", "Negombo", "Anuradhapura"]
+};
 
 const countries = [
   { code: "+91", iso: "in", name: "India" },
@@ -308,6 +325,9 @@ const getCroppedImg = (image: HTMLImageElement, crop: Crop): Promise<string> => 
 };
 
 export default function DetailsForm() {
+  const { user, updateUserProfile } = useAuthStore();
+  const storageKey = user && user.email ? `partnerApplication_${user.email.replace(/[^a-zA-Z0-9]/g, "_")}` : "partnerApplication";
+
   // Crop States
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
@@ -367,6 +387,8 @@ export default function DetailsForm() {
   });
   const countryDropdownRef = useRef<HTMLDivElement>(null);
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+  const [partnerCountryOpen, setPartnerCountryOpen] = useState(false);
+  const [partnerCityOpen, setPartnerCityOpen] = useState(false);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -426,7 +448,35 @@ export default function DetailsForm() {
     // Generate Stable ID for this session
     setApplicationId(`APP-${Math.floor(100000 + Math.random() * 900000)}`);
 
-    const savedData = localStorage.getItem("partnerApplication");
+    // Seed Sabrina Carpenter if she is logged in and doesn't have an application yet
+    if (user && user.email === "sabrina@gmail.com" && !localStorage.getItem(storageKey)) {
+      localStorage.setItem(storageKey, JSON.stringify({
+        formData: {
+          fullName: "Sabrina Carpenter",
+          displayName: "Sabrina",
+          gender: "Female",
+          age: "24",
+          city: "New York, USA",
+          mobile: "+91 9876543210",
+          phoneCountryCode: "+91",
+          email: "sabrina@gmail.com",
+          bio: "Singer, songwriter, actress and your companion. Let's talk about music, films, and coffee.",
+          hourlyRate: "899",
+          languages: ["English", "French"],
+          interestsInput: ["Music", "Coffee", "Films"],
+          tagsInput: ["Singer", "Actor", "Artist"],
+          termsAgreed: true,
+          photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256",
+          verificationStatus: "VERIFIED"
+        },
+        submissionStatus: "success",
+        verificationStatus: "VERIFIED",
+        kycStatus: "APPROVED",
+        view: "summary"
+      }));
+    }
+
+    const savedData = localStorage.getItem(storageKey);
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
@@ -467,14 +517,53 @@ export default function DetailsForm() {
       } catch (e) {
         console.error("Failed to parse saved application data", e);
       }
+    } else {
+      // Clear/reset form to blank defaults if no saved data exists for this user
+      setFormData({
+        photo: null,
+        banner: null,
+        fullName: "",
+        gender: "Select Gender",
+        age: "",
+        city: "",
+        mobile: "",
+        phoneCountryCode: "+91",
+        email: "",
+        bankName: "",
+        bankAccountNumber: "",
+        bankIfscCode: "",
+        bankAccountHolderName: "",
+        country: "",
+        pincode: "",
+        upiId: "",
+        addons: [],
+        otherAddon: "",
+        languages: [],
+        bio: "",
+        tagsInput: [],
+        interestsInput: [],
+        hourlyRate: "",
+        availability: [],
+        instagram: "",
+        linkedin: "",
+        termsAgreed: false,
+        idProofs: [null, null, null, null],
+        gallery: Array(9).fill(null),
+        videos: Array(3).fill(null),
+      });
+      setSubmissionStatus("pending");
+      setVerificationStatus("DRAFT");
+      setKycStatus("NOT_SCHEDULED");
+      setView("form");
     }
     setIsHydrated(true);
-  }, []);
+  }, [user, storageKey]);
+
   // Persistence: Save on Change (Include lightweight Browser Object URLs)
   useEffect(() => {
     if (isHydrated) {
       localStorage.setItem(
-        "partnerApplication",
+        storageKey,
         JSON.stringify({
           formData: formData,
           submissionStatus,
@@ -489,7 +578,7 @@ export default function DetailsForm() {
       );
       window.dispatchEvent(new Event("partnerStatusChange"));
     }
-  }, [formData, submissionStatus, view, verificationStatus, verificationNotes, kycStatus, kycDate, kycSlot, zoomLink, isHydrated]);
+  }, [formData, submissionStatus, view, verificationStatus, verificationNotes, kycStatus, kycDate, kycSlot, zoomLink, isHydrated, storageKey]);
 
 
   // Auto-Scroll on View Change
@@ -545,8 +634,8 @@ export default function DetailsForm() {
       scrollTo(basicInfoRef);
       return false;
     }
-    if (!formData.city) {
-      toast.error("Please enter your city.");
+    if (!formData.city || formData.city === "Select City") {
+      toast.error("Please select your city.");
       scrollTo(basicInfoRef);
       return false;
     }
@@ -560,8 +649,8 @@ export default function DetailsForm() {
       scrollTo(basicInfoRef);
       return false;
     }
-    if (!formData.country) {
-      toast.error("Please enter your country.");
+    if (!formData.country || formData.country === "Select Country") {
+      toast.error("Please select your country.");
       scrollTo(basicInfoRef);
       return false;
     }
@@ -714,6 +803,18 @@ export default function DetailsForm() {
       // Prevent duplicate IDs
       const filtered = list.filter((p: any) => p.id !== newPartner.id);
       localStorage.setItem("approved_partners", JSON.stringify([newPartner, ...filtered]));
+
+      updateUserProfile({
+        name: formData.fullName,
+        gender: formData.gender,
+        age: formData.age,
+        country: formData.country,
+        city: formData.city,
+        phone: formData.mobile,
+        phone_country_code: formData.phoneCountryCode,
+        address: `${formData.city}, ${formData.country || ""}`
+      });
+      window.dispatchEvent(new Event("partnerStatusChange"));
     } catch (e) {
       console.error(e);
     }
@@ -778,7 +879,7 @@ export default function DetailsForm() {
       gallery: Array(9).fill(null),
       videos: Array(3).fill(null),
     });
-    localStorage.removeItem("partnerApplication");
+    localStorage.removeItem(storageKey);
     // Also remove from approved_partners
     try {
       const saved = localStorage.getItem("approved_partners");
@@ -1125,18 +1226,6 @@ export default function DetailsForm() {
  
                   <InputWrapper>
                     <input
-                      type="text"
-                      placeholder="City"
-                      className={getInputClass(showErrors && !formData.city)}
-                      value={formData.city}
-                      onChange={(e) =>
-                        setFormData({ ...formData, city: e.target.value })
-                      }
-                    />
-                  </InputWrapper>
- 
-                  <InputWrapper>
-                    <input
                       type="email"
                       placeholder="Email Address"
                       className={getInputClass(showErrors && !formData.email)}
@@ -1239,15 +1328,98 @@ export default function DetailsForm() {
                   <SectionTitle>Location & Payment Details</SectionTitle>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                     <InputWrapper>
-                      <input
-                        type="text"
-                        placeholder="Country"
-                        className={getInputClass(showErrors && !formData.country)}
-                        value={formData.country}
-                        onChange={(e) =>
-                          setFormData({ ...formData, country: e.target.value })
-                        }
-                      />
+                      <button
+                        type="button"
+                        onClick={() => setPartnerCountryOpen(!partnerCountryOpen)}
+                        className={`${getInputClass(showErrors && (!formData.country || formData.country === "Select Country" || formData.country === ""))} flex items-center justify-between cursor-pointer`}
+                      >
+                        <span className={!formData.country || formData.country === "Select Country" || formData.country === "" ? "text-text-muted" : "text-text-main"}>
+                          {formData.country || "Select Country"}
+                        </span>
+                        <ChevronDown className={`w-5 h-5 text-text-muted transition-transform duration-300 ${partnerCountryOpen ? "rotate-180" : ""}`} />
+                      </button>
+
+                      <AnimatePresence>
+                        {partnerCountryOpen && (
+                          <>
+                            <div 
+                              className="fixed inset-0 z-40 cursor-default" 
+                              onClick={() => setPartnerCountryOpen(false)}
+                            />
+                            <motion.div
+                              initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                              className="absolute z-50 left-0 right-0 mt-2 max-h-60 overflow-y-auto bg-bg-base border border-border-main rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.3)] backdrop-blur-xl custom-scrollbar flex flex-col"
+                            >
+                              {Object.keys(countryCitiesMap).map((cName) => (
+                                <button
+                                  key={cName}
+                                  type="button"
+                                  onClick={() => {
+                                    setFormData({ ...formData, country: cName, city: "Select City" });
+                                    setPartnerCountryOpen(false);
+                                  }}
+                                  className={`w-full cursor-pointer p-4 text-left text-text-main hover:bg-primary/20 hover:text-text-main transition-colors font-medium border-b border-border-main last:border-0 hover:pl-6 duration-300 ${
+                                    formData.country === cName ? "bg-primary/10 text-primary" : ""
+                                  }`}
+                                >
+                                  {cName}
+                                </button>
+                              ))}
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
+                    </InputWrapper>
+
+                    <InputWrapper>
+                      <button
+                        type="button"
+                        disabled={!formData.country || formData.country === "Select Country" || formData.country === ""}
+                        onClick={() => setPartnerCityOpen(!partnerCityOpen)}
+                        className={`${getInputClass(showErrors && (!formData.city || formData.city === "Select City" || formData.city === ""))} flex items-center justify-between ${
+                          (!formData.country || formData.country === "Select Country" || formData.country === "") ? "opacity-55 cursor-not-allowed" : "cursor-pointer"
+                        }`}
+                      >
+                        <span className={!formData.city || formData.city === "Select City" || formData.city === "" ? "text-text-muted" : "text-text-main"}>
+                          {formData.city || "Select City"}
+                        </span>
+                        <ChevronDown className={`w-5 h-5 text-text-muted transition-transform duration-300 ${partnerCityOpen ? "rotate-180" : ""}`} />
+                      </button>
+
+                      <AnimatePresence>
+                        {partnerCityOpen && formData.country && formData.country !== "Select Country" && formData.country !== "" && (
+                          <>
+                            <div 
+                              className="fixed inset-0 z-40 cursor-default" 
+                              onClick={() => setPartnerCityOpen(false)}
+                            />
+                            <motion.div
+                              initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                              className="absolute z-50 left-0 right-0 mt-2 max-h-60 overflow-y-auto bg-bg-base border border-border-main rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.3)] backdrop-blur-xl custom-scrollbar flex flex-col"
+                            >
+                              {(countryCitiesMap[formData.country] || []).map((cName) => (
+                                <button
+                                  key={cName}
+                                  type="button"
+                                  onClick={() => {
+                                    setFormData({ ...formData, city: cName });
+                                    setPartnerCityOpen(false);
+                                  }}
+                                  className={`w-full cursor-pointer p-4 text-left text-text-main hover:bg-primary/20 hover:text-text-main transition-colors font-medium border-b border-border-main last:border-0 hover:pl-6 duration-300 ${
+                                    formData.city === cName ? "bg-primary/10 text-primary" : ""
+                                  }`}
+                                >
+                                  {cName}
+                                </button>
+                              ))}
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
                     </InputWrapper>
 
                     <InputWrapper>
@@ -1262,7 +1434,7 @@ export default function DetailsForm() {
                       />
                     </InputWrapper>
 
-                    <InputWrapper className="col-span-1 md:col-span-2">
+                    <InputWrapper>
                       <input
                         type="text"
                         placeholder="UPI ID"
