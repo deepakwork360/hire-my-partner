@@ -52,7 +52,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     "/showed-interest"
   ];
 
-  const showGlobalDashboard = mounted && isAuthenticated && !dashboardTabs.includes(pathname);
+  const showGlobalDashboard = mounted && !dashboardTabs.includes(pathname);
 
   return (
     <>

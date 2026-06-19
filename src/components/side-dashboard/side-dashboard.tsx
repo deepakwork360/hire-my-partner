@@ -61,7 +61,6 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
   const [mounted, setMounted] = useState(false);
   const [isLivePartner, setIsLivePartner] = useState(false);
   const [partnerPhoto, setPartnerPhoto] = useState("");
-  const [isOnline, setIsOnline] = useState(true);
   const [showThemeSettings, setShowThemeSettings] = useState(false);
 
   const renderMenuItem = (href: string, label: string, IconComponent: any, extraClass?: string) => {
@@ -93,16 +92,22 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
     }
   }, [isOpen]);
 
+  // Body scroll lock when sidebar is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
   // Close dashboard on ESC key
   useEffect(() => {
     setMounted(true);
     
-    // Read online status from localStorage
-    const savedOnlineStatus = localStorage.getItem("companion_online_status");
-    if (savedOnlineStatus !== null) {
-      setIsOnline(savedOnlineStatus === "true");
-    }
-
     const checkPartnerStatus = () => {
       try {
         const savedData = localStorage.getItem("partnerApplication");
@@ -144,15 +149,21 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
     };
   }, []);
 
-  const handleOnlineToggle = () => {
-    const nextStatus = !isOnline;
-    setIsOnline(nextStatus);
-    localStorage.setItem("companion_online_status", String(nextStatus));
-    window.dispatchEvent(new Event("companionOnlineChange"));
-  };
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setShowLogoutConfirm(false);
+    }
+  }, [isOpen]);
 
   const handleLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
     clearAuth();
+    setShowLogoutConfirm(false);
     setIsOpen(false);
     router.push("/");
   };
@@ -160,7 +171,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
   if (!mounted) return null;
 
   return (
-    <div className={`fixed inset-y-0 left-0 z-100 ${outfit.className}`}>
+    <div className={`fixed inset-y-0 left-0 z-100 h-[100dvh] overflow-hidden ${outfit.className}`}>
       {/* ── SLIDE-OUT PANEL ── */}
       <AnimatePresence>
         {isOpen && (
@@ -180,7 +191,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="h-full w-[320px] md:w-[380px] bg-bg-base border-r border-border-main shadow-[20px_0_50px_rgba(0,0,0,0.3)] p-6 md:p-8 flex flex-col relative"
+              className="h-[100dvh] w-[320px] md:w-[380px] bg-bg-base border-r border-border-main shadow-[20px_0_50px_rgba(0,0,0,0.3)] p-6 pb-8 md:p-8 md:pb-10 flex flex-col relative"
             >
               {/* Close Button */}
               <button
@@ -217,35 +228,9 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                     <span className="text-text-main text-lg font-bold tracking-wide">
                       {user.name}
                     </span>
-                    <span className="text-text-muted text-xs font-medium tracking-wide mb-3">
+                    <span className="text-text-muted text-xs font-medium tracking-wide">
                       {user.email}
                     </span>
-
-                    {/* Online/Offline Status Switch for Verified Partners */}
-                    {isLivePartner && (
-                      <div className="flex items-center justify-between w-full max-w-[220px] bg-bg-secondary/60 border border-border-main/80 rounded-full px-4 py-2 mt-2">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2.5 h-2.5 rounded-full ${isOnline ? "bg-green-500 shadow-[0_0_8px_#22c55e]" : "bg-text-muted"}`} />
-                          <span className="text-xs font-bold uppercase tracking-wider text-text-main">
-                            {isOnline ? "Online" : "Offline"}
-                          </span>
-                        </div>
-                        <button
-                          onClick={handleOnlineToggle}
-                          className={`relative w-10 h-6 rounded-full transition-colors duration-300 focus:outline-none cursor-pointer ${
-                            isOnline ? "bg-primary" : "bg-bg-card border border-border-main"
-                          }`}
-                        >
-                          <motion.div
-                            layout
-                            className={`w-4 h-4 rounded-full bg-white shadow-md absolute top-[3px]`}
-                            style={{
-                              left: isOnline ? "21px" : "3px"
-                            }}
-                          />
-                        </button>
-                      </div>
-                    )}
                   </div>
                 ) : (
                   <div className="flex flex-col items-center text-center py-6 w-full">
@@ -254,7 +239,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                     </div>
                     <h3 className={`${rochester.className} text-3xl text-text-main mb-1.5`}>Welcome Guest</h3>
                     <p className="text-text-muted text-xs max-w-[240px] leading-relaxed mb-5">
-                      Create an account to book companions or become a companion partner.
+                      Create an account to book companions or become a partner for exploring more.
                     </p>
                     <Link href="/login" className="w-full" onClick={() => setIsOpen(false)}>
                       <button className="w-full py-3 bg-linear-to-r from-primary-dark to-accent text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-md cursor-pointer">
@@ -301,7 +286,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                 {isAuthenticated && isLivePartner && (
                   <div>
                     <h4 className="text-[10px] font-bold uppercase tracking-[0.15em] text-text-muted/70 mb-2 px-1">
-                      Companion Hub
+                      Companion Settings
                     </h4>
                     <div className="flex flex-col gap-1.5">
                       {renderMenuItem("/my-profile", "Profile Manager", UserRound)}
@@ -452,6 +437,50 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                   </button>
                 </div>
               )}
+
+              {/* Logout Confirmation Modal Overlay */}
+              <AnimatePresence>
+                {showLogoutConfirm && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 bg-bg-base/90 backdrop-blur-md z-110 flex items-center justify-center p-6"
+                  >
+                    <motion.div
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.9, opacity: 0 }}
+                      transition={{ type: "spring", damping: 20 }}
+                      className="w-full max-w-[280px] bg-bg-card border border-border-main rounded-[24px] p-6 text-center shadow-2xl flex flex-col gap-5"
+                    >
+                      <div className="mx-auto w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20">
+                        <LogOut size={20} className="text-red-500" />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-text-main text-lg">Are you sure?</h4>
+                        <p className="text-text-muted text-xs leading-relaxed">
+                          You will be logged out of your account.
+                        </p>
+                      </div>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => setShowLogoutConfirm(false)}
+                          className="flex-1 cursor-pointer py-2.5 bg-bg-secondary hover:bg-bg-secondary/80 border border-border-main text-text-main text-xs font-bold uppercase tracking-wider rounded-xl transition-all"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={confirmLogout}
+                          className="flex-1 cursor-pointer py-2.5 bg-red-500 hover:bg-red-600 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md shadow-red-500/10"
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           </>
         )}
