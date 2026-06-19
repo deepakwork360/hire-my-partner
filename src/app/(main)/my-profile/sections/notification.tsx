@@ -80,12 +80,8 @@ export default function Notification() {
         >
           {/* Section Header */}
           <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-3">
-               <Bell size={13} className="text-primary" />
-               <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">Preferences</span>
-            </div>
             <h2 className={`${rochester.className} text-4xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-wide leading-tight`}>
-              Notification Settings
+              Notification <span className="text-primary">Settings</span>
             </h2>
           </div>
 

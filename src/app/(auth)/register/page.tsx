@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { useRegister } from "@/modules/auth/hooks";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,6 +11,7 @@ import { toast } from "@/components/ui/toastStore";
 import Image from "next/image";
 import ThemeLogo from "@/components/ui/ThemeLogo";
 import { useTheme } from "@/context/ThemeContext";
+import { useAuthStore } from "@/modules/auth/store";
 
 function MailIcon({ className }: { className?: string }) {
   return (
@@ -208,6 +210,8 @@ const countries = [
 ];
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const { handleRegister, isLoading } = useRegister();
   const [formData, setFormData] = useState({
@@ -220,6 +224,13 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
   const { activeTheme } = useTheme();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/");
+    }
+  }, [isAuthenticated, router]);
 
   // Country dropdown states
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);

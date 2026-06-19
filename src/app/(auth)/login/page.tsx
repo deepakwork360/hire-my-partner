@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useLogin } from "@/modules/auth/hooks";
 import { authApi } from "@/modules/auth/api";
 import { loginSchema } from "@/modules/auth/validation";
@@ -10,6 +10,7 @@ import { toast } from "@/components/ui/toastStore";
 import Image from "next/image";
 import ThemeLogo from "@/components/ui/ThemeLogo";
 import { useTheme } from "@/context/ThemeContext";
+import { useAuthStore } from "@/modules/auth/store";
 
 function MailIcon({ className }: { className?: string }) {
   return (
@@ -182,6 +183,8 @@ export default function LoginPage() {
 
 function LoginForm() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [loginMode, setLoginMode] = useState<"password" | "otp">("password");
   const { handleLogin, isLoading } = useLogin();
@@ -193,6 +196,14 @@ function LoginForm() {
   const [isSendingOtp, setIsSendingOtp] = useState(false);
 
   const { activeTheme } = useTheme();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      const redirect = searchParams.get("redirect") || "/";
+      router.replace(redirect);
+    }
+  }, [isAuthenticated, searchParams, router]);
 
   useEffect(() => {
     const emailOrPhoneParam = searchParams.get("emailOrPhone");
@@ -237,7 +248,8 @@ function LoginForm() {
       return;
     }
 
-    await handleLogin(formData);
+    const redirect = searchParams.get("redirect");
+    await handleLogin(formData, redirect);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

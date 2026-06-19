@@ -485,6 +485,40 @@ export default function Availability({ partner }: AvailabilityProps) {
   }, [selectedDate, selectedTime]);
   const [selectedDuration, setSelectedDuration] = useState<number>(2);
 
+  // Load pending booking if it exists for this partner
+  useEffect(() => {
+    try {
+      const pendingStr = localStorage.getItem("pending_booking");
+      if (pendingStr) {
+        const pending = JSON.parse(pendingStr);
+        if (pending && pending.partnerId === activePartner.id) {
+          if (pending.date) setSelectedDate(pending.date);
+          if (pending.time) setSelectedTime(pending.time);
+          if (pending.duration) setSelectedDuration(pending.duration);
+          
+          // Clear it so it doesn't trigger again next time
+          localStorage.removeItem("pending_booking");
+          toast.success("Restored your selected booking schedule!");
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load pending booking state", e);
+    }
+  }, [activePartner.id]);
+
+  // Scroll to booking-section if hash is present
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash === "#booking-section") {
+      const timer = setTimeout(() => {
+        const element = document.getElementById("booking-section");
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   const getDurationPrice = (duration: number) => {
     switch (duration) {
       case 2: return activePartner.pricing.twoHours || (activePartner.pricing.oneHour * 1.8);
@@ -506,7 +540,23 @@ export default function Availability({ partner }: AvailabilityProps) {
   const handleBookingSubmit = () => {
     if (!isAuthenticated) {
       toast.error("Please login first to book a companion.");
-      router.push("/login");
+      
+      try {
+        localStorage.setItem("pending_booking", JSON.stringify({
+          partnerId: activePartner.id,
+          date: selectedDate,
+          time: selectedTime,
+          duration: selectedDuration
+        }));
+      } catch (e) {
+        console.error("Failed to store pending booking state", e);
+      }
+
+      let redirectUrl = window.location.pathname + window.location.search;
+      if (!redirectUrl.includes("#booking-section")) {
+        redirectUrl += "#booking-section";
+      }
+      router.push(`/login?redirect=${encodeURIComponent(redirectUrl)}`);
       return;
     }
 

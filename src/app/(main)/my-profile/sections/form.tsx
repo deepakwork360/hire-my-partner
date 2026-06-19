@@ -197,10 +197,6 @@ export default function Form() {
             {/* Header Content */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16 pb-12 border-b border-border-main">
               <div className="space-y-2">
-                <div className="flex items-center gap-2 mb-2">
-                  <Fingerprint size={14} className="text-primary" />
-                  <span className="text-primary text-[10px] font-black uppercase tracking-[0.4em]">Profile Management</span>
-                </div>
                 <h2 className={`${rochester.className} text-5xl text-text-main tracking-tight`}>
                   General <span className="text-primary">Information</span>
                 </h2>

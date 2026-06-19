@@ -393,27 +393,11 @@ export default function BookDetails() {
     );
   }
 
-  const initialDateTime = initialDate && initialTime ? `${initialDate} | ${initialTime}` : "";
-
   const [customDate, setCustomDate] = useState("");
   const [customTime, setCustomTime] = useState("");
-  const [selectedDateTime, setSelectedDateTime] = useState(initialDateTime);
+  const [showErrors, setShowErrors] = useState(false);
   const [minDate, setMinDate] = useState<Date | undefined>(undefined);
   const hasInitialized = useRef(false);
-
-  useEffect(() => {
-    setMinDate(new Date());
-  }, []);
-
-  // Sync custom inputs with initial params exactly once on load
-  useEffect(() => {
-    if (initialDate && initialTime && !hasInitialized.current) {
-      setCustomDate(initialDate);
-      setCustomTime(initialTime);
-      setSelectedDateTime(`${initialDate} | ${initialTime}`);
-      hasInitialized.current = true;
-    }
-  }, [initialDate, initialTime]);
 
   const initialDurationParam = searchParams.get("duration");
   const initialDuration = initialDurationParam 
@@ -431,6 +415,38 @@ export default function BookDetails() {
   });
   const [notes, setNotes] = useState("");
   const [showDurationMenu, setShowDurationMenu] = useState(false);
+
+  useEffect(() => {
+    setMinDate(new Date());
+  }, []);
+
+  // Sync custom inputs with initial params exactly once on load
+  useEffect(() => {
+    if (initialDate && initialTime && !hasInitialized.current) {
+      setCustomDate(initialDate);
+      setCustomTime(initialTime);
+      hasInitialized.current = true;
+    }
+  }, [initialDate, initialTime]);
+
+  const isTimeCorrect = () => {
+    if (!customTime) return false;
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    if (customDate === todayStr) {
+      const targetDate = parseDateTime(customDate, customTime);
+      if (!targetDate || (targetDate.getTime() - today.getTime()) < 40 * 60 * 1000) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const isDateInvalid = showErrors && !customDate;
+  const isTimeInvalid = showErrors && (!customTime || !isTimeCorrect());
+  const isNotesInvalid = showErrors && !notes.trim();
+
+  const selectedDateTime = customDate && customTime ? `${customDate} | ${customTime}` : "";
 
   const toggleAddOn = (id: string) => {
     setSelectedAddOns((prev) =>
@@ -474,10 +490,33 @@ export default function BookDetails() {
 
   const handleBookingSubmit = (e: React.MouseEvent) => {
     e.preventDefault();
+    setShowErrors(true);
+
+    if (!customDate) {
+      toast.error("Please select a booking date.");
+      return;
+    }
+
+    if (!customTime) {
+      toast.error("Please select a booking time.");
+      return;
+    }
+
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    if (customDate === todayStr) {
+      const targetDate = parseDateTime(customDate, customTime);
+      if (!targetDate || (targetDate.getTime() - today.getTime()) < 40 * 60 * 1000) {
+        toast.error("Please select a time at least 40 minutes in the future.");
+        return;
+      }
+    }
+
     if (!notes.trim()) {
       toast.error("Please enter a reason for booking.");
       return;
     }
+
     const url = `/booking-confirmation?partner=${partner.id}&date=${encodeURIComponent(selectedDateTime)}&duration=${encodeURIComponent(selectedDuration)}&addons=${encodeURIComponent(selectedAddOnLabels.join(","))}&amount=${totalAmount}`;
     router.push(url);
   };
@@ -531,7 +570,6 @@ export default function BookDetails() {
                         if (!customTime) {
                           const defaultTime = getFortyMinutesAheadTime().formatted;
                           setCustomTime(defaultTime);
-                          setSelectedDateTime(`${val} | ${defaultTime}`);
                         } else {
                           // Validate if today's date is selected and current customTime is invalid
                           const today = new Date();
@@ -541,31 +579,27 @@ export default function BookDetails() {
                             if (!targetDate || (targetDate.getTime() - today.getTime()) < 40 * 60 * 1000) {
                               const defaultTime = getFortyMinutesAheadTime().formatted;
                               setCustomTime(defaultTime);
-                              setSelectedDateTime(`${val} | ${defaultTime}`);
-                              // toast.info("Time adjusted to at least 40 minutes in the future.");
                               return;
                             }
                           }
-                          setSelectedDateTime(`${val} | ${customTime}`);
                         }
                       }
                     }}
                     label="Date"
                     placeholder="Select Date"
                     minDate={minDate}
+                    hasError={isDateInvalid}
                   />
 
                   <PremiumTimePicker
                     value={customTime}
                     onChange={(val) => {
                       setCustomTime(val);
-                      if (val) {
-                        setSelectedDateTime(`${customDate} | ${val}`);
-                      }
                     }}
                     label="Time"
                     placeholder="Select Time"
                     selectedDate={customDate}
+                    hasError={isTimeInvalid}
                   />
                 </div>
 
@@ -680,7 +714,11 @@ export default function BookDetails() {
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
                   placeholder="e.g. i want to have a time when i can talk to you and we can discuss about movies and web series "
-                  className="w-full bg-bg-secondary/50 border border-border-main rounded-2xl p-5 text-text-main text-sm font-medium leading-relaxed placeholder:text-text-muted/40 focus:outline-none focus:border-primary/40 transition-all resize-none"
+                  className={`w-full bg-bg-secondary/50 border rounded-2xl p-5 text-text-main text-sm font-medium leading-relaxed placeholder:text-text-muted/40 focus:outline-none transition-all resize-none ${
+                    isNotesInvalid
+                      ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] bg-red-500/5"
+                      : "border-border-main focus:border-primary/40"
+                  }`}
                 />
               </div>
 

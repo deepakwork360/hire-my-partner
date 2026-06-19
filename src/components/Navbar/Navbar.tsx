@@ -13,10 +13,10 @@ import {
   Mail,
   ArrowRight,
   User,
+  ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import PremiumButton from "../ui/PremiumButton";
-import ThemeSwitcher from "./ThemeSwitcher";
 import { useTheme } from "@/context/ThemeContext";
 import ThemeLogo from "@/components/ui/ThemeLogo";
 import { useAuthStore } from "@/modules/auth/store";
@@ -32,27 +32,32 @@ const navItems = [
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { activeTheme } = useTheme();
   const { isAuthenticated, user, clearAuth } = useAuthStore();
   const [mounted, setMounted] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+
+    const onOpened = () => setIsSidebarOpen(true);
+    const onClosed = () => setIsSidebarOpen(false);
+
+    window.addEventListener("side_dashboard_opened", onOpened);
+    window.addEventListener("side_dashboard_closed", onClosed);
+    return () => {
+      window.removeEventListener("side_dashboard_opened", onOpened);
+      window.removeEventListener("side_dashboard_closed", onClosed);
+    };
   }, []);
 
-  // Body scroll lock
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen]);
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.dispatchEvent(new Event("toggle_side_dashboard"));
+  };
+
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -163,32 +168,42 @@ export default function Navbar() {
             />
           </div>
 
-          {/* Mobile Contact Icon */}
-          <Link
-            href="/contact"
-            className="lg:hidden w-10 h-10 flex items-center justify-center rounded-full bg-primary/20 text-primary/80 border border-primary/30"
-          >
-            <Phone size={18} />
-          </Link>
 
-          {/* Theme Switcher */}
-          <ThemeSwitcher isScrolled={isScrolled} />
+
+
 
           {/* Profile / Login */}
           {mounted && isAuthenticated ? (
-            <Link
-              href="/become-a-partner"
-              className={`hidden lg:block w-10 h-10 rounded-full overflow-hidden border cursor-pointer hover:scale-105 transition shadow-sm ${isScrolled ? "border-white/20" : "border-white/20"
-                }`}
+            <button
+              onClick={handleProfileClick}
+              className={`hidden lg:flex items-center gap-2.5 px-3 py-1.5 rounded-full border cursor-pointer hover:scale-102 transition-all duration-300 shadow-sm ${
+                isSidebarOpen 
+                  ? "bg-primary/10 border-primary/40 text-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.25)]" 
+                  : isScrolled
+                    ? "bg-bg-card/45 border-border-main hover:bg-bg-card/75 text-text-main"
+                    : "bg-black/25 border-white/20 hover:bg-black/45 text-white"
+              }`}
             >
-              <Image
-                src={user?.avatar || "/images/avatar6.jpg"}
-                alt="profile"
-                width={40}
-                height={40}
-                className="object-cover w-full h-full"
-              />
-            </Link>
+              <div className="relative w-7 h-7 rounded-full overflow-hidden border border-white/10 shrink-0">
+                <Image
+                  src={user?.avatar || "/images/avatar6.jpg"}
+                  alt="profile"
+                  width={28}
+                  height={28}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+              <span className="text-xs font-bold tracking-wide max-w-[100px] truncate">
+                {user?.name ? user.name.split(" ")[0] : "Profile"}
+              </span>
+              <motion.div
+                animate={{ rotate: isSidebarOpen ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center justify-center text-text-muted shrink-0"
+              >
+                <ChevronDown size={14} className={isSidebarOpen ? "text-primary" : ""} />
+              </motion.div>
+            </button>
           ) : (
             <Link
               href="/login"
@@ -206,165 +221,27 @@ export default function Navbar() {
 
           {/* Hamburger Menu - Mobile only */}
           <button
-            onClick={() => setIsOpen(!isOpen)}
-            className={`lg:hidden w-10 h-10 flex items-center justify-center rounded-full border transition-all active:scale-95 z-50 ${isScrolled
-                ? "bg-bg-secondary border-border-main text-text-main"
-                : "bg-black/20 backdrop-blur-md border-white/20 text-white"
-              }`}
+            onClick={handleProfileClick}
+            className={`lg:hidden flex items-center justify-center transition-all active:scale-95 z-50 p-2 cursor-pointer ${
+              isScrolled ? "text-text-main" : "text-white"
+            }`}
           >
             <AnimatePresence mode="wait">
               <motion.div
-                key={isOpen ? "close" : "open"}
+                key={isSidebarOpen ? "close" : "open"}
                 initial={{ rotate: -90, opacity: 0 }}
                 animate={{ rotate: 0, opacity: 1 }}
                 exit={{ rotate: 90, opacity: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                {isOpen ? <X size={20} /> : <Menu size={20} />}
+                {isSidebarOpen ? <X size={28} /> : <Menu size={28} />}
               </motion.div>
             </AnimatePresence>
           </button>
         </div>
       </nav>
 
-      {/* MOBILE MENU OVERLAY - MOVED OUTSIDE NAV TO PREVENT CLIPPING */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial="closed"
-            animate="open"
-            exit="closed"
-            variants={menuVariants}
-            className="fixed inset-0 bg-bg-base/95 backdrop-blur-2xl z-90 lg:hidden overflow-hidden"
-          >
-            {/* Background Decorative Elements */}
-            <div className="absolute top-0 right-0 w-[80%] h-[40%] bg-primary/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/3" />
-            <div className="absolute bottom-0 left-0 w-[60%] h-[30%] bg-primary-dark/5 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/4" />
 
-            <div className="relative h-full flex flex-col pt-32 pb-12 px-8 overflow-y-auto">
-              {/* Menu Links */}
-              <div className="flex flex-col gap-6">
-                {navItems.map((item) => {
-                  const isActive = pathname === item.href;
-                  return (
-                    <motion.div
-                      key={item.label}
-                      variants={itemVariants}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Link
-                        href={item.href}
-                        onClick={() => setIsOpen(false)}
-                        className={`group relative flex items-center justify-between text-4xl md:text-5xl font-black tracking-tighter transition-all duration-300 ${isActive
-                            ? "text-primary"
-                            : "text-text-main hover:text-primary/80"
-                          }`}
-                      >
-                        <span>{item.label}</span>
-                        <ArrowRight
-                          className={`w-8 h-8 transition-all duration-300 ${isActive
-                              ? "opacity-100 translate-x-0"
-                              : "opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0"
-                            }`}
-                        />
-                      </Link>
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              {/* Dynamic Auth Link for Mobile Drawer */}
-              <div className="flex flex-col gap-6 mt-6 border-t border-white/5 pt-6">
-                <motion.div variants={itemVariants} whileTap={{ scale: 0.95 }}>
-                  {mounted && isAuthenticated ? (
-                    <div className="flex flex-col gap-6">
-                      <Link
-                        href="/become-a-partner"
-                        onClick={() => setIsOpen(false)}
-                        className={`group relative flex items-center justify-between text-4xl md:text-5xl font-black tracking-tighter transition-all duration-300 ${
-                          pathname === "/become-a-partner" ? "text-primary" : "text-text-main hover:text-primary/80"
-                        }`}
-                      >
-                        <span>My Profile</span>
-                        <ArrowRight className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-4 group-hover:translate-x-0" />
-                      </Link>
-                      <button
-                        onClick={() => {
-                          clearAuth();
-                          setIsOpen(false);
-                        }}
-                        className="group relative flex items-center justify-between text-4xl md:text-5xl font-black tracking-tighter text-red-500 hover:text-red-400 transition-all duration-300 text-left cursor-pointer"
-                      >
-                        <span>Logout</span>
-                        <ArrowRight className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-4 group-hover:translate-x-0" />
-                      </button>
-                    </div>
-                  ) : (
-                    <Link
-                      href="/login"
-                      onClick={() => setIsOpen(false)}
-                      className={`group relative flex items-center justify-between text-4xl md:text-5xl font-black tracking-tighter transition-all duration-300 ${
-                        pathname === "/login" ? "text-primary" : "text-text-main hover:text-primary/80"
-                      }`}
-                    >
-                      <span>Login / Sign Up</span>
-                      <ArrowRight className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-4 group-hover:translate-x-0" />
-                    </Link>
-                  )}
-                </motion.div>
-              </div>
-
-              {/* Bottom Section */}
-              <motion.div
-                variants={itemVariants}
-                className="mt-auto space-y-10"
-              >
-                {/* CTA Button */}
-                <Link
-                  href="/browse-partners"
-                  onClick={() => setIsOpen(false)}
-                  className="block w-full text-center py-5 bg-linear-to-r from-primary-dark to-accent text-white font-black text-xl rounded-2xl shadow-xl shadow-primary/20 active:scale-95 transition-transform"
-                >
-                  Get Started Now
-                </Link>
-
-                {/* Social & Contact */}
-                <div className="flex flex-col gap-6 border-t border-white/5 pt-10">
-                  <div className="flex items-center gap-6">
-                    <a
-                      href="#"
-                      className="w-12 h-12 flex items-center justify-center rounded-xl bg-bg-secondary border border-border-main text-text-main hover:bg-primary hover:border-primary/80 transition-all"
-                    >
-                      <MessageCircle size={22} />
-                    </a>
-                    <a
-                      href="#"
-                      className="w-12 h-12 flex items-center justify-center rounded-xl bg-bg-secondary border border-border-main text-text-main hover:bg-primary hover:border-primary/80 transition-all"
-                    >
-                      <Send size={22} />
-                    </a>
-                    <a
-                      href="#"
-                      className="w-12 h-12 flex items-center justify-center rounded-xl bg-bg-secondary border border-border-main text-text-main hover:bg-primary hover:border-primary/80 transition-all"
-                    >
-                      <Mail size={22} />
-                    </a>
-                  </div>
-
-                  <div className="space-y-1">
-                    <p className="text-slate-500 text-sm font-bold uppercase tracking-widest">
-                      Inquiries
-                    </p>
-                    <p className="text-text-main text-lg font-medium">
-                      hello@hiremypartner.com
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 }

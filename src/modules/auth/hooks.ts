@@ -70,7 +70,7 @@ export const useLogin = () => {
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
 
-  const handleLogin = async (data: LoginPayload) => {
+  const handleLogin = async (data: LoginPayload, redirectUrl?: string | null) => {
     setIsLoading(true);
     try {
       // If client requests an OTP instead of password login
@@ -83,7 +83,11 @@ export const useLogin = () => {
       const response = await authApi.login(data);
       setAuth(response);
       toast.success('Login successful! Welcome back.');
-      router.push('/become-a-partner'); // Redirect to become-a-partner page
+      if (redirectUrl) {
+        router.push(redirectUrl);
+      } else {
+        router.push('/become-a-partner'); // Redirect to become-a-partner page
+      }
     } catch (error) {
       toast.error(getErrorMsg(error));
     } finally {

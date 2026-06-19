@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, Variants } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
 import Image from "next/image";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { partners } from "@/modules/partner/data/partners";
 import { usePartner } from "@/modules/partner/hooks/usePartner";
 import { Partner } from "@/modules/partner/types/partner.types";
@@ -71,7 +71,25 @@ const calculateEndTime = (startTimeStr: string, durationStr: string): string => 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function ConfirmationCard() {
+  const router = useRouter();
   const searchParams = useSearchParams();
+
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const accessAllowed = sessionStorage.getItem("booking_in_progress");
+      if (accessAllowed === "true") {
+        setIsAuthorized(true);
+        // Clear the token so reloading/bookmarking won't bypass the check next time
+        sessionStorage.removeItem("booking_in_progress");
+      } else {
+        setIsAuthorized(false);
+        router.replace("/browse-partners");
+      }
+    }
+  }, [router]);
+
   const partnerId = searchParams.get("partner") || "1";
   const dateParam = searchParams.get("date") || "July 8, 2025 | 7:00 PM – 9:00 PM";
   const durationParam = searchParams.get("duration") || "2 hours";
@@ -144,6 +162,18 @@ export default function ConfirmationCard() {
       console.error("Failed to persist booking in local storage", e);
     }
   }, [bookingId, partner, dateLabel, timeStart, timeEnd, parsedAmount]);
+
+  if (isAuthorized === null) {
+    return (
+      <div className="py-40 text-center text-text-muted font-bold animate-pulse">
+        Verifying booking session...
+      </div>
+    );
+  }
+
+  if (isAuthorized === false) {
+    return null;
+  }
 
   return (
     <section className={`bg-bg-base py-16 px-4 md:px-8 ${outfit.className}`}>
