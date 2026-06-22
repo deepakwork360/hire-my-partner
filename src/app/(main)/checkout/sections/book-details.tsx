@@ -517,6 +517,9 @@ export default function BookDetails() {
       return;
     }
 
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("booking_in_progress", "true");
+    }
     const url = `/booking-confirmation?partner=${partner.id}&date=${encodeURIComponent(selectedDateTime)}&duration=${encodeURIComponent(selectedDuration)}&addons=${encodeURIComponent(selectedAddOnLabels.join(","))}&amount=${totalAmount}`;
     router.push(url);
   };
@@ -534,7 +537,7 @@ export default function BookDetails() {
           <h2
             className={`${rochester.className} text-5xl md:text-6xl text-primary tracking-wide mb-3`}
           >
-            Booking Details Form
+            Booking <span className="text-accent">Details Form</span>
           </h2>
           <p className="text-text-muted text-sm">
             Fill in your preferences to complete your booking.

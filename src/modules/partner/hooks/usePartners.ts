@@ -28,7 +28,13 @@ export function usePartners() {
     };
 
     window.addEventListener("reviews_updated", handleUpdate);
-    return () => window.removeEventListener("reviews_updated", handleUpdate);
+    window.addEventListener("user_location_updated", handleUpdate);
+    window.addEventListener("partner_location_updated", handleUpdate);
+    return () => {
+      window.removeEventListener("reviews_updated", handleUpdate);
+      window.removeEventListener("user_location_updated", handleUpdate);
+      window.removeEventListener("partner_location_updated", handleUpdate);
+    };
   }, [fetchPartners]);
 
   return {

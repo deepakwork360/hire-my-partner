@@ -38,9 +38,12 @@ import {
   EyeOff,
   AlertCircle,
   ShieldAlert,
-  BadgeInfo
+  BadgeInfo,
+  MapPin,
+  Locate
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { getUserLocation, setUserLocation, resolveCoordinates } from "@/lib/location";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/modules/auth/store";
@@ -100,11 +103,30 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
       }
     };
 
+    const loadLocation = () => {
+      try {
+        const loc = getUserLocation();
+        setActiveLocationName(loc.city);
+        if (loc.useCustom) {
+          setUseCustomCoords(true);
+          setCustomLat(String(loc.lat));
+          setCustomLng(String(loc.lng));
+        } else {
+          setUseCustomCoords(false);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
     loadFavourites();
+    loadLocation();
     window.addEventListener("favourites_changed", loadFavourites);
+    window.addEventListener("user_location_updated", loadLocation);
     window.addEventListener("storage", loadFavourites);
     return () => {
       window.removeEventListener("favourites_changed", loadFavourites);
+      window.removeEventListener("user_location_updated", loadLocation);
       window.removeEventListener("storage", loadFavourites);
     };
   }, []);
@@ -114,6 +136,12 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
   const [showThemeSettings, setShowThemeSettings] = useState(false);
   const [activeMood, setActiveMood] = useState<string>("all");
   const [showMoodSettings, setShowMoodSettings] = useState(false);
+  const [showLocationSettings, setShowLocationSettings] = useState(false);
+  const [activeLocationName, setActiveLocationName] = useState("Mumbai");
+  const [useCustomCoords, setUseCustomCoords] = useState(false);
+  const [customLat, setCustomLat] = useState("");
+  const [customLng, setCustomLng] = useState("");
+  const [isLocating, setIsLocating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const storageKey = user && user.email ? `partnerApplication_${user.email.replace(/[^a-zA-Z0-9]/g, "_")}` : "partnerApplication";
 
@@ -315,6 +343,126 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
     }
   };
 
+  const presetCities = [
+    "Mumbai",
+    "Delhi/NCR",
+    "Bangalore",
+    "Dubai",
+    "Los Angeles",
+    "New York",
+    "Tokyo",
+    "Paris",
+    "London",
+    "Sydney",
+  ];
+
+  const handleUpdateLocation = (cityName: string, latVal?: number, lngVal?: number, useCustom?: boolean) => {
+    try {
+      let resolvedLat = latVal;
+      let resolvedLng = lngVal;
+
+      if (resolvedLat === undefined || resolvedLng === undefined) {
+        const coords = resolveCoordinates(cityName);
+        resolvedLat = coords.lat;
+        resolvedLng = coords.lng;
+      }
+
+      // 1. Update active user browsing location
+      setUserLocation({
+        city: cityName,
+        lat: resolvedLat,
+        lng: resolvedLng,
+        useCustom
+      });
+
+      setActiveLocationName(cityName);
+      if (useCustom) {
+        setCustomLat(String(resolvedLat));
+        setCustomLng(String(resolvedLng));
+      } else {
+        setUseCustomCoords(false);
+      }
+
+      // 2. If it's a verified live partner, update their profile too!
+      if (isLivePartner) {
+        const savedApp = localStorage.getItem(storageKey);
+        if (savedApp) {
+          const parsed = JSON.parse(savedApp);
+          if (!parsed.formData) parsed.formData = {};
+          parsed.formData.city = cityName;
+          parsed.formData.location = cityName;
+          parsed.formData.lat = resolvedLat;
+          parsed.formData.lng = resolvedLng;
+          localStorage.setItem(storageKey, JSON.stringify(parsed));
+
+          // Also update approved_partners list
+          const approvedStr = localStorage.getItem("approved_partners");
+          if (approvedStr) {
+            const list = JSON.parse(approvedStr);
+            const nameToFind = parsed.formData.fullName;
+            const updatedList = list.map((p: any) => {
+              if (p.name === nameToFind || String(p.id) === String(user?.id)) {
+                return { 
+                  ...p, 
+                  location: cityName, 
+                  city: cityName,
+                  lat: resolvedLat,
+                  lng: resolvedLng
+                };
+              }
+              return p;
+            });
+            localStorage.setItem("approved_partners", JSON.stringify(updatedList));
+          }
+        }
+        window.dispatchEvent(new Event("partner_profile_updated"));
+        toast.success(`Partner profile location updated to ${cityName}`);
+      } else {
+        toast.success(`Browsing location set to ${cityName}`);
+      }
+    } catch (err) {
+      console.error("Failed to update location:", err);
+      toast.error("Failed to update location");
+    }
+  };
+
+  const handleUseGPSLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = parseFloat(position.coords.latitude.toFixed(4));
+        const lng = parseFloat(position.coords.longitude.toFixed(4));
+        setIsLocating(false);
+        handleUpdateLocation("GPS Location", lat, lng, true);
+      },
+      (error) => {
+        setIsLocating(false);
+        console.error("Geolocation error:", error);
+        toast.error(error.message || "Failed to retrieve GPS location.");
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
+
+  const handleApplyCustomCoordinates = () => {
+    const lat = parseFloat(customLat);
+    const lng = parseFloat(customLng);
+    if (isNaN(lat) || isNaN(lng)) {
+      toast.error("Please enter valid latitude and longitude values.");
+      return;
+    }
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      toast.error("Latitude must be between -90 and 90. Longitude must be between -180 and 180.");
+      return;
+    }
+    handleUpdateLocation("Custom Position", lat, lng, true);
+  };
+
   const handleLogout = () => {
     setShowLogoutConfirm(true);
   };
@@ -455,16 +603,14 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                   <div className="flex flex-col gap-1.5">
                     {renderMenuItem("/browse-partners", "Browse Companions", Compass)}
                     {renderMenuItem("/pricing", "Pricing", CircleDollarSign, "lg:hidden")}
-                    {!isLivePartner && (
-                      <div className="mt-1 px-1">
-                        <Link href="/become-a-partner" onClick={() => setIsOpen(false)} className="w-full">
-                          <button className="w-full h-11 bg-linear-to-r from-primary to-accent hover:from-primary-dark hover:to-accent text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md cursor-pointer flex items-center justify-center gap-2">
-                            <Sparkles size={13} className="animate-pulse" />
-                            <span>Become a Partner</span>
-                          </button>
-                        </Link>
-                      </div>
-                    )}
+                    <div className="mt-1 px-1">
+                      <Link href="/become-a-partner" onClick={() => setIsOpen(false)} className="w-full">
+                        <button className="w-full h-11 bg-linear-to-r from-primary to-accent hover:from-primary-dark hover:to-accent text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md cursor-pointer flex items-center justify-center gap-2">
+                          <Sparkles size={13} className="animate-pulse" />
+                          <span>{isLivePartner ? "Manage Partner Profile" : "Become a Partner"}</span>
+                        </button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
 
@@ -731,7 +877,147 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                         </motion.div>
                       )}
                     </AnimatePresence>
-
+ 
+                    {/* Collapsible Location Trigger */}
+                    <button
+                      onClick={() => setShowLocationSettings(!showLocationSettings)}
+                      className={`w-full cursor-pointer flex items-center justify-between px-4 py-3.5 rounded-xl border-l-2 transition-all duration-200 group ${
+                        showLocationSettings
+                          ? "bg-primary/10 border-primary text-primary font-bold"
+                          : "bg-transparent border-transparent text-text-muted hover:bg-bg-secondary/60 hover:text-text-main"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3.5">
+                        <MapPin size={18} className={showLocationSettings ? "text-primary" : "text-text-muted group-hover:text-text-main group-hover:scale-105 transition-transform"} />
+                        <span className="text-sm font-semibold tracking-wide flex items-center gap-1.5 text-left">
+                          <span>{isLivePartner ? "Set Current Location" : "Set Your Location"}</span>
+                          <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-primary/25 text-primary max-w-[100px] truncate">
+                            {activeLocationName || "Mumbai"}
+                          </span>
+                        </span>
+                      </div>
+                      {showLocationSettings ? (
+                        <ChevronDown size={14} className="text-primary rotate-180 transition-transform duration-200" />
+                      ) : (
+                        <ChevronRight size={14} className="text-text-muted/40 group-hover:text-text-main transition-colors" />
+                      )}
+                    </button>
+ 
+                    {/* Collapsed Location Panel */}
+                    <AnimatePresence>
+                      {showLocationSettings && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden bg-bg-secondary/20 border border-border-main/30 rounded-xl px-4 py-3.5 flex flex-col gap-3 mt-1"
+                        >
+                          <span className="text-[10px] font-black uppercase tracking-widest text-text-muted text-left block">
+                            {isLivePartner 
+                              ? "Where are you serving from?" 
+                              : "Filter partners by distance from:"}
+                          </span>
+                          
+                          {/* City selection grid */}
+                          <div className="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto pr-1 custom-scrollbar">
+                            {presetCities.map((city) => {
+                              const isSelected = activeLocationName === city && !useCustomCoords;
+                              return (
+                                <button
+                                  key={city}
+                                  type="button"
+                                  onClick={() => handleUpdateLocation(city)}
+                                  className={`px-3 py-2 rounded-lg border text-[11px] font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 text-left ${
+                                    isSelected
+                                      ? "bg-primary text-white border-primary shadow-sm"
+                                      : "bg-bg-card border-border-main/40 text-text-muted hover:border-primary/30 hover:text-text-main"
+                                  }`}
+                                >
+                                  <MapPin size={10} className={isSelected ? "text-white" : "text-text-muted"} />
+                                  <span className="truncate">{city}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+ 
+                          {/* Geolocation Trigger */}
+                          <div className="pt-2 border-t border-border-main/30">
+                            <button
+                              type="button"
+                              onClick={handleUseGPSLocation}
+                              disabled={isLocating}
+                              className={`w-full cursor-pointer flex items-center justify-between p-2.5 rounded-xl border text-xs font-semibold transition-all ${
+                                isLocating
+                                  ? "bg-primary/10 border-primary/30 text-primary"
+                                  : "bg-bg-card border-border-main/50 text-text-muted hover:text-text-main"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <Locate size={14} className={isLocating ? "animate-pulse text-primary" : ""} />
+                                <span>
+                                  {isLocating ? "Locating via GPS..." : "Use My GPS Location"}
+                                </span>
+                              </div>
+                              {isLocating && <Sparkles size={10} className="text-primary animate-pulse shrink-0" />}
+                            </button>
+                          </div>
+ 
+                          {/* Custom Coordinates Toggle */}
+                          <div className="pt-2 border-t border-border-main/30 flex flex-col gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setUseCustomCoords(!useCustomCoords)}
+                              className={`w-full cursor-pointer flex items-center justify-between p-2 rounded-lg border text-[11px] font-bold transition-all ${
+                                useCustomCoords
+                                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                                  : "bg-bg-card border-border-main/40 text-text-muted"
+                              }`}
+                            >
+                              <span>Custom Coordinates</span>
+                              <ChevronDown size={12} className={`transition-transform duration-200 ${useCustomCoords ? "rotate-180" : ""}`} />
+                            </button>
+ 
+                            {useCustomCoords && (
+                              <div className="flex flex-col gap-2 p-2 bg-bg-card border border-border-main/40 rounded-lg">
+                                <div className="flex gap-2">
+                                  <div className="flex-1 flex flex-col gap-1">
+                                    <span className="text-[9px] font-black uppercase text-text-muted text-left">Lat</span>
+                                    <input
+                                      type="number"
+                                      step="0.0001"
+                                      placeholder="19.0760"
+                                      value={customLat}
+                                      onChange={(e) => setCustomLat(e.target.value)}
+                                      className="w-full text-xs bg-bg-base border border-border-main/60 rounded px-2 py-1 outline-none text-text-main focus:border-primary/50"
+                                    />
+                                  </div>
+                                  <div className="flex-1 flex flex-col gap-1">
+                                    <span className="text-[9px] font-black uppercase text-text-muted text-left">Lng</span>
+                                    <input
+                                      type="number"
+                                      step="0.0001"
+                                      placeholder="72.8777"
+                                      value={customLng}
+                                      onChange={(e) => setCustomLng(e.target.value)}
+                                      className="w-full text-xs bg-bg-base border border-border-main/60 rounded px-2 py-1 outline-none text-text-main focus:border-primary/50"
+                                    />
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={handleApplyCustomCoordinates}
+                                  className="w-full cursor-pointer py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider rounded transition-all shadow-sm"
+                                >
+                                  Apply Coordinates
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+ 
                     {/* Help & Support (Navigates to Contact) */}
                     <Link
                       href="/contact"

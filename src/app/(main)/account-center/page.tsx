@@ -8,6 +8,7 @@ import Footer from "../home-page/sections/Footer";
 import { useAuthStore } from "@/modules/auth/store";
 import { toast } from "@/components/ui/toastStore";
 import { mockDb } from "@/modules/auth/data/users";
+import { partners as mockPartnersList } from "@/modules/partner/data/partners";
 import {
   UserRound,
   Lock,
@@ -19,7 +20,9 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
-  Navigation
+  Navigation,
+  Plus,
+  X
 } from "lucide-react";
 
 const outfit = Outfit({
@@ -67,33 +70,30 @@ const countries = [
 type SettingsSection = "personal-info" | "profile" | "password" | "notifications" | "delete";
 
 const inputClassName = (invalid = false, disabled = false) => {
-  return `w-full h-12 px-4 rounded-xl text-text-main text-xs md:text-sm font-semibold transition-all duration-200 outline-none border focus:outline-none focus:ring-4 ${
-    disabled
+  return `w-full h-12 px-4 rounded-xl text-text-main text-xs md:text-sm font-semibold transition-all duration-200 outline-none border focus:outline-none focus:ring-4 ${disabled
       ? "bg-black/[0.015] dark:bg-white/[0.02] border-primary/15 text-text-muted/40 cursor-not-allowed select-none"
       : invalid
-      ? "bg-red-500/5 border-red-500 focus:border-red-500 focus:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]"
-      : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] hover:border-primary/60 focus:bg-bg-base dark:focus:bg-bg-base focus:border-primary focus:ring-primary/20"
-  }`;
+        ? "bg-red-500/5 border-red-500 focus:border-red-500 focus:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]"
+        : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] hover:border-primary/60 focus:bg-bg-base dark:focus:bg-bg-base focus:border-primary focus:ring-primary/20"
+    }`;
 };
 
 const textareaClassName = (invalid = false, disabled = false) => {
-  return `w-full p-4 rounded-xl text-text-main text-xs md:text-sm font-semibold transition-all duration-200 outline-none border focus:outline-none focus:ring-4 resize-none ${
-    disabled
+  return `w-full p-4 rounded-xl text-text-main text-xs md:text-sm font-semibold transition-all duration-200 outline-none border focus:outline-none focus:ring-4 resize-none ${disabled
       ? "bg-black/[0.015] dark:bg-white/[0.02] border-primary/15 text-text-muted/40 cursor-not-allowed select-none"
       : invalid
-      ? "bg-red-500/5 border-red-500 focus:border-red-500 focus:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]"
-      : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] hover:border-primary/60 focus:bg-bg-base dark:focus:bg-bg-base focus:border-primary focus:ring-primary/20"
-  }`;
+        ? "bg-red-500/5 border-red-500 focus:border-red-500 focus:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]"
+        : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] hover:border-primary/60 focus:bg-bg-base dark:focus:bg-bg-base focus:border-primary focus:ring-primary/20"
+    }`;
 };
 
 const selectBtnClassName = (disabled = false, invalid = false) => {
-  return `w-full h-12 px-4 rounded-xl text-text-main text-xs md:text-sm font-semibold transition-all duration-200 border flex items-center justify-between outline-none focus:outline-none focus:ring-4 ${
-    disabled
+  return `w-full h-12 px-4 rounded-xl text-text-main text-xs md:text-sm font-semibold transition-all duration-200 border flex items-center justify-between outline-none focus:outline-none focus:ring-4 ${disabled
       ? "bg-black/[0.015] dark:bg-white/[0.02] border-primary/15 text-text-muted/40 cursor-not-allowed select-none"
       : invalid
-      ? "bg-red-500/5 border-red-500 focus:border-red-500 focus:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]"
-      : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] hover:border-primary/60 focus:bg-bg-base dark:focus:bg-bg-base focus:border-primary focus:ring-primary/20"
-  }`;
+        ? "bg-red-500/5 border-red-500 focus:border-red-500 focus:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]"
+        : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] hover:border-primary/60 focus:bg-bg-base dark:focus:bg-bg-base focus:border-primary focus:ring-primary/20"
+    }`;
 };
 
 const labelClassName = "text-[10px] font-bold uppercase tracking-widest text-text-muted/90";
@@ -109,6 +109,34 @@ export default function AccountCenterPage() {
   useEffect(() => {
     setMounted(true);
     const checkPartnerStatus = () => {
+      // Auto-unlock and auto-seed Companion settings for testing accounts
+      if (user && (user.email === "sabrina@gmail.com" || user.email === "gigi@example.com" || user.email === "deepak@example.com")) {
+        setIsLivePartner(true);
+        try {
+          const key = `partnerApplication_${user.email.replace(/[^a-zA-Z0-9]/g, "_")}`;
+          if (!localStorage.getItem(key)) {
+            const mockProfile = mockPartnersList.find(p => p.name.toLowerCase().includes(user.name.toLowerCase()) || p.id === "2");
+            localStorage.setItem(key, JSON.stringify({
+              verificationStatus: "VERIFIED",
+              formData: {
+                fullName: mockProfile?.name || user.name,
+                displayName: mockProfile?.name.split(" ")[0] || user.name,
+                city: mockProfile?.location.split(",")[0] || "Mumbai",
+                bio: mockProfile?.bio || "An elegant soul seeking genuine connections.",
+                hourlyRate: String(mockProfile?.pricing.oneHour || "3499"),
+                languages: Array.isArray(mockProfile?.languages) ? mockProfile?.languages.join(", ") : (mockProfile?.languages || "English"),
+                interests: mockProfile?.interests || "Travel, Conversations",
+                tags: Array.isArray(mockProfile?.tags) ? mockProfile?.tags.join(", ") : (mockProfile?.tags || "#Friendly")
+              },
+              gallery: mockProfile?.gallery || []
+            }));
+          }
+        } catch (e) {
+          console.error(e);
+        }
+        return;
+      }
+
       try {
         const savedData = localStorage.getItem(storageKey);
         if (savedData) {
@@ -124,7 +152,7 @@ export default function AccountCenterPage() {
       setIsLivePartner(false);
     };
     checkPartnerStatus();
-  }, [storageKey]);
+  }, [storageKey, user]);
 
   if (!mounted) return null;
 
@@ -135,13 +163,6 @@ export default function AccountCenterPage() {
       icon: BadgeInfo,
       desc: "Manage your name, contact details, gender, age, and address",
       show: true
-    },
-    {
-      id: "profile",
-      label: "Companion Profile Settings",
-      icon: UserRound,
-      desc: "Edit your companion profile name, bio, rates, and search tags",
-      show: isLivePartner
     },
     {
       id: "password",
@@ -188,7 +209,7 @@ export default function AccountCenterPage() {
 
         {/* Content Section */}
         <div className="w-full max-w-[1600px] mx-auto px-6 py-6 md:py-16 flex-1 flex flex-col md:flex-row gap-8 xl:gap-12">
-          
+
           {/* Mobile Dropdown Menu Selector */}
           <div className="md:hidden w-full relative z-40">
             <label className="text-[10px] font-black uppercase tracking-wider text-text-muted mb-1.5 block">Select Settings Section</label>
@@ -215,16 +236,14 @@ export default function AccountCenterPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveSection(tab.id)}
-                  className={`w-full cursor-pointer flex items-center justify-between p-4 border rounded-2xl transition-all text-left ${
-                    isActive
+                  className={`w-full cursor-pointer flex items-center justify-between p-4 border rounded-2xl transition-all text-left ${isActive
                       ? "bg-primary/10 border-primary/45 shadow-[0_0_15px_rgba(var(--primary-rgb),0.1)] text-primary"
                       : "bg-bg-secondary hover:bg-bg-card border-border-main/50 text-text-muted hover:text-text-main"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                      isActive ? "bg-primary/20 text-primary" : "bg-bg-base text-text-muted"
-                    }`}>
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isActive ? "bg-primary/20 text-primary" : "bg-bg-base text-text-muted"
+                      }`}>
                       <Icon size={18} />
                     </div>
                     <div className="min-w-0">
@@ -248,7 +267,6 @@ export default function AccountCenterPage() {
                 transition={{ duration: 0.25 }}
               >
                 {activeSection === "personal-info" && <PersonalInfoForm />}
-                {activeSection === "profile" && <ProfileSettingsForm storageKey={storageKey} />}
                 {activeSection === "password" && <PasswordForm />}
                 {activeSection === "notifications" && <NotificationsForm />}
                 {activeSection === "delete" && <DeleteAccountForm />}
@@ -481,7 +499,7 @@ function PersonalInfoForm() {
 
       {/* Grid containing fields - spacious for desktop */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
+
         {/* Full Name */}
         <div className="flex flex-col gap-1.5">
           <label className={labelClassName}>Full Name</label>
@@ -578,9 +596,8 @@ function PersonalInfoForm() {
                             setInfoData(p => ({ ...p, phoneCountryCode: c.code }));
                             setIsCountryDropdownOpen(false);
                           }}
-                          className={`w-full cursor-pointer flex items-center gap-2.5 px-3 py-2.5 text-left text-text-main hover:bg-primary/10 transition-colors text-xs font-semibold ${
-                            c.code === infoData.phoneCountryCode ? "bg-primary/5 text-primary" : ""
-                          }`}
+                          className={`w-full cursor-pointer flex items-center gap-2.5 px-3 py-2.5 text-left text-text-main hover:bg-primary/10 transition-colors text-xs font-semibold ${c.code === infoData.phoneCountryCode ? "bg-primary/5 text-primary" : ""
+                            }`}
                         >
                           <img
                             src={`https://flagcdn.com/w40/${c.iso}.png`}
@@ -768,7 +785,7 @@ function PersonalInfoForm() {
               setInfoData((p) => ({ ...p, address: e.target.value }));
               if (invalidField === "address") setInvalidField(null);
             }}
-            placeholder="Your billing / shipping address"
+            placeholder="Your Home Address"
             rows={3}
             className={textareaClassName(invalidField === "address")}
           />
@@ -837,9 +854,8 @@ function PersonalInfoForm() {
                     setUnlockError("");
                     setUnlockInfo("");
                   }}
-                  className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                    unlockMethod === "password" ? "bg-primary text-white" : "text-text-muted hover:text-text-main"
-                  }`}
+                  className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${unlockMethod === "password" ? "bg-primary text-white" : "text-text-muted hover:text-text-main"
+                    }`}
                 >
                   Password
                 </button>
@@ -851,9 +867,8 @@ function PersonalInfoForm() {
                     setUnlockError("");
                     setUnlockInfo("");
                   }}
-                  className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                    unlockMethod === "otp" ? "bg-primary text-white" : "text-text-muted hover:text-text-main"
-                  }`}
+                  className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${unlockMethod === "otp" ? "bg-primary text-white" : "text-text-muted hover:text-text-main"
+                    }`}
                 >
                   OTP Verification
                 </button>
@@ -940,6 +955,7 @@ function PersonalInfoForm() {
    2. COMPANION PROFILE SETTINGS FORM
    ───────────────────────────────────────────────────────────────────────────── */
 function ProfileSettingsForm({ storageKey }: { storageKey: string }) {
+  const { user } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -953,6 +969,7 @@ function ProfileSettingsForm({ storageKey }: { storageKey: string }) {
     interests: "",
     tags: ""
   });
+  const [gallery, setGallery] = useState<string[]>([]);
 
   useEffect(() => {
     try {
@@ -970,11 +987,44 @@ function ProfileSettingsForm({ storageKey }: { storageKey: string }) {
           interests: Array.isArray(fd.interestsInput) ? fd.interestsInput.join(", ") : (fd.interests || ""),
           tags: Array.isArray(fd.tagsInput) ? fd.tagsInput.join(", ") : (fd.tags || "")
         });
+
+        let rawGallery = parsed.gallery || fd.gallery || [];
+        if (rawGallery.length === 0) {
+          const approvedStr = localStorage.getItem("approved_partners");
+          const list = approvedStr ? JSON.parse(approvedStr) : mockPartnersList;
+          const found = list.find((p: any) => p.name === fd.fullName || p.id === "sabrina-carpenter" || (user?.id && String(p.id) === String(user.id)));
+          if (found && found.gallery) {
+            rawGallery = found.gallery;
+          }
+        }
+        const mappedGallery = rawGallery.map((img: any) => typeof img === "string" ? img : (img && img.image ? img.image : "")).filter(Boolean);
+        setGallery(mappedGallery);
       }
     } catch (e) {
       console.error(e);
     }
-  }, [storageKey]);
+  }, [storageKey, user]);
+
+  const handleAddPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const newUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.type.startsWith("image/")) {
+          const url = URL.createObjectURL(file);
+          newUrls.push(url);
+        }
+      }
+      setGallery((prev) => [...prev, ...newUrls]);
+      toast.success(`Selected ${newUrls.length} new photo(s) to add.`);
+    }
+  };
+
+  const handleRemovePhoto = (index: number) => {
+    setGallery((prev) => prev.filter((_, idx) => idx !== index));
+    toast.success("Photo removed from gallery selection.");
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -987,6 +1037,13 @@ function ProfileSettingsForm({ storageKey }: { storageKey: string }) {
         let parsed = savedData ? JSON.parse(savedData) : {};
         if (!parsed.formData) parsed.formData = {};
 
+        const updatedGallery = gallery.map((img, idx) => ({
+          id: String(idx + 1),
+          image: img
+        }));
+
+        parsed.gallery = updatedGallery;
+        parsed.formData.gallery = updatedGallery;
         parsed.formData.fullName = formData.fullName;
         parsed.formData.displayName = formData.displayName;
         parsed.formData.city = formData.city;
@@ -1001,33 +1058,59 @@ function ProfileSettingsForm({ storageKey }: { storageKey: string }) {
         const nameToFind = parsed.formData.fullName;
         if (nameToFind) {
           const approvedStr = localStorage.getItem("approved_partners");
-          if (approvedStr) {
-            const list = JSON.parse(approvedStr);
-            const updatedList = list.map((p: any) => {
-              if (p.name === nameToFind || p.id === "sabrina-carpenter") {
-                return {
-                  ...p,
-                  name: formData.fullName,
-                  location: formData.city,
-                  bio: formData.bio,
-                  pricing: {
-                    ...p.pricing,
-                    oneHour: Number(formData.hourlyRate)
-                  },
-                  languages: formData.languages,
-                  interests: formData.interests,
-                  tags: formData.tags.split(",").map((s: string) => s.trim().startsWith("#") ? s.trim() : `#${s.trim()}`).filter(Boolean)
-                };
-              }
-              return p;
-            });
-            localStorage.setItem("approved_partners", JSON.stringify(updatedList));
+          const list = approvedStr ? JSON.parse(approvedStr) : [...mockPartnersList];
+          
+          let exists = false;
+          let updatedList = list.map((p: any) => {
+            if (p.name === nameToFind || p.id === "sabrina-carpenter" || (user?.id && String(p.id) === String(user.id))) {
+              exists = true;
+              return {
+                ...p,
+                name: formData.fullName,
+                location: formData.city,
+                bio: formData.bio,
+                pricing: {
+                  ...p.pricing,
+                  oneHour: Number(formData.hourlyRate)
+                },
+                languages: formData.languages,
+                interests: formData.interests,
+                tags: formData.tags.split(",").map((s: string) => s.trim().startsWith("#") ? s.trim() : `#${s.trim()}`).filter(Boolean),
+                gallery: updatedGallery
+              };
+            }
+            return p;
+          });
+
+          if (!exists) {
+            const newPartner = {
+              id: user?.id || "sabrina-carpenter",
+              name: formData.fullName,
+              location: formData.city,
+              bio: formData.bio,
+              pricing: {
+                oneHour: Number(formData.hourlyRate),
+                twoHours: Number(formData.hourlyRate) * 2,
+                threeHours: Number(formData.hourlyRate) * 3,
+                fourHours: Number(formData.hourlyRate) * 4,
+                fiveHours: Number(formData.hourlyRate) * 5,
+                eightHours: Number(formData.hourlyRate) * 8
+              },
+              languages: formData.languages,
+              interests: formData.interests,
+              tags: formData.tags.split(",").map((s: string) => s.trim().startsWith("#") ? s.trim() : `#${s.trim()}`).filter(Boolean),
+              gallery: updatedGallery,
+              verified: true
+            };
+            updatedList = [newPartner, ...updatedList];
           }
+
+          localStorage.setItem("approved_partners", JSON.stringify(updatedList));
         }
 
         window.dispatchEvent(new Event("partnerStatusChange"));
         window.dispatchEvent(new Event("partner_profile_updated"));
-        
+
         setIsSubmitting(false);
         setSuccess(true);
         toast.success("Companion profile details updated successfully!");
@@ -1150,6 +1233,48 @@ function ProfileSettingsForm({ storageKey }: { storageKey: string }) {
             required
           />
         </div>
+
+        {/* Manage Gallery */}
+        <div className="flex flex-col gap-3 md:col-span-2 pt-6 border-t border-border-main/30">
+          <label className={labelClassName}>Manage Portfolio Gallery</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {gallery.map((src, idx) => (
+              <div key={idx} className="relative aspect-square group overflow-hidden bg-bg-base border border-border-main rounded-xl">
+                <img
+                  src={src}
+                  alt={`Gallery Upload ${idx + 1}`}
+                  className="w-full h-full object-cover rounded-xl"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemovePhoto(idx)}
+                  className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md transition-colors cursor-pointer z-10"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+
+            <label
+              htmlFor="gallery-file-upload"
+              className="relative aspect-square border-2 border-dashed border-border-main/60 hover:border-primary/50 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer bg-bg-card hover:bg-primary/5 transition-all text-text-muted hover:text-primary group"
+            >
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                <Plus size={20} />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider">Add Photos</span>
+            </label>
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleAddPhoto}
+              className="hidden"
+              id="gallery-file-upload"
+            />
+          </div>
+          <p className="text-[10px] text-text-muted font-medium mt-1">Upload high-resolution JPG or PNG portfolio photos. You can upload as many as you want.</p>
+        </div>
       </div>
 
       {error && (
@@ -1161,9 +1286,8 @@ function ProfileSettingsForm({ storageKey }: { storageKey: string }) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className={`w-full md:w-fit md:px-10 h-12 rounded-xl font-black uppercase tracking-widest text-[9px] transition-all cursor-pointer mt-4 shadow-md self-end ${
-          success ? "bg-emerald-600 text-white" : "bg-primary text-white hover:bg-primary/95"
-        }`}
+        className={`w-full md:w-fit md:px-10 h-12 rounded-xl font-black uppercase tracking-widest text-[9px] transition-all cursor-pointer mt-4 shadow-md self-end ${success ? "bg-emerald-600 text-white" : "bg-primary text-white hover:bg-primary/95"
+          }`}
       >
         {isSubmitting ? (
           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
@@ -1292,11 +1416,10 @@ function PasswordForm() {
       <button
         type="submit"
         disabled={isSubmitting || !passData.current || !passData.new || !passData.confirm}
-        className={`w-full md:w-fit md:px-10 h-12 rounded-xl font-black uppercase tracking-widest text-[9px] transition-all mt-4 shadow-md self-end ${
-          (passData.current && passData.new && passData.confirm)
+        className={`w-full md:w-fit md:px-10 h-12 rounded-xl font-black uppercase tracking-widest text-[9px] transition-all mt-4 shadow-md self-end ${(passData.current && passData.new && passData.confirm)
             ? "bg-primary text-white hover:bg-primary/95 cursor-pointer"
             : "bg-bg-base border border-border-main/20 text-text-muted/50 cursor-not-allowed"
-        }`}
+          }`}
       >
         {isSubmitting ? (
           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
@@ -1318,7 +1441,7 @@ function NotificationsForm() {
       if (saved) {
         try {
           return JSON.parse(saved);
-        } catch (e) {}
+        } catch (e) { }
       }
     }
     return { email: true, sms: false, push: true };
@@ -1365,9 +1488,8 @@ function NotificationsForm() {
             setPrefs(prev => ({ ...prev, [key]: !prev[key] }));
             setError("");
           }}
-          className={`relative shrink-0 w-11 h-6 rounded-full transition-colors duration-300 focus:outline-none cursor-pointer ${
-            enabled ? "bg-primary" : "bg-bg-secondary border border-border-main/30"
-          }`}
+          className={`relative shrink-0 w-11 h-6 rounded-full transition-colors duration-300 focus:outline-none cursor-pointer ${enabled ? "bg-primary" : "bg-bg-secondary border border-border-main/30"
+            }`}
         >
           <motion.div
             animate={{ x: enabled ? 22 : 2 }}
@@ -1463,11 +1585,10 @@ function DeleteAccountForm() {
       <button
         onClick={handleDelete}
         disabled={typedConfirm !== confirmText || isDeleting}
-        className={`w-full md:w-fit md:px-10 h-12 rounded-xl font-black uppercase tracking-widest text-[9px] transition-all mt-4 self-end ${
-          typedConfirm === confirmText
+        className={`w-full md:w-fit md:px-10 h-12 rounded-xl font-black uppercase tracking-widest text-[9px] transition-all mt-4 self-end ${typedConfirm === confirmText
             ? "bg-red-600 text-white hover:bg-red-700 cursor-pointer shadow-md"
             : "bg-bg-base border border-border-main/20 text-text-muted/50 cursor-not-allowed"
-        }`}
+          }`}
       >
         {isDeleting ? (
           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />

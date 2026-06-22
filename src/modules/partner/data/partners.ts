@@ -35,7 +35,10 @@ export const partners: any[] = [
       { id: "1-6", image: "https://i1-e.pinimg.com/1200x/fb/e1/55/fbe155619f3f62c9e393f8d7c3d86558.jpg" },
       { id: "1-7", image: "https://i.pinimg.com/1200x/a7/d8/1b/a7d81b093bfb7a1fe04cfde479f401bd.jpg" },
       { id: "1-8", image: "https://i1-e.pinimg.com/736x/ac/a9/eb/aca9eb556f4c236152b991437be1fdb2.jpg" },
-      { id: "1-9", image: "https://i1-e.pinimg.com/1200x/37/ab/8c/37ab8c924253fe388e84f305841c24b4.jpg" }
+      { id: "1-9", image: "https://i1-e.pinimg.com/1200x/37/ab/8c/37ab8c924253fe388e84f305841c24b4.jpg" },
+      { id: "1-10", image: "https://i.pinimg.com/1200x/3a/ae/83/3aae839d17fde3deec34ea4871849fa1.jpg" },
+      { id: "1-11", image: "https://i.pinimg.com/736x/79/b2/bc/79b2bcc8030234223f40c82eb44e3419.jpg" },
+      { id: "1-12", image: "https://i.pinimg.com/736x/8b/bf/ef/8bbfef4bf6c0e74e0e282b430bfe6e98.jpg" },
     ],
     reviews: [
       {
@@ -112,7 +115,16 @@ export const partners: any[] = [
       { id: "2-1", image: "https://i1-e.pinimg.com/1200x/45/b4/3c/45b43cae813588126aab65003788598f.jpg" },
       { id: "2-2", image: "https://i.pinimg.com/736x/89/ce/51/89ce51e26932f77105b2176b9fa1e6e8.jpg" },
       { id: "2-3", image: "https://i1-e.pinimg.com/736x/c8/aa/5d/c8aa5d2cd1ffa29c0e628c8c99b7ada6.jpg" },
-      { id: "2-4", image: "https://i.pinimg.com/736x/95/83/95/95839543daa535dc0f7a97cc67888c55.jpg" }
+      { id: "2-4", image: "https://i.pinimg.com/736x/95/83/95/95839543daa535dc0f7a97cc67888c55.jpg" },
+      { id: "2-5", image: "https://i.pinimg.com/736x/23/0b/f8/230bf81301cf3ee8c7bc6c344a679d18.jpg" },
+      { id: "2-6", image: "https://i.pinimg.com/736x/80/4f/23/804f2367d69b00fe1a6a9cbdeb748126.jpg" },
+      { id: "2-7", image: "https://i.pinimg.com/736x/34/f9/c6/34f9c6de5dc9f4e3b3e20af13086e1cb.jpg" },
+      { id: "2-8", image: "https://i.pinimg.com/736x/67/53/eb/6753eb469793b1f73545efd2824d54e4.jpg" },
+      { id: "2-9", image: "https://i.pinimg.com/1200x/f7/91/97/f79197016ba127434c84a123cc68dbf3.jpg" },
+      { id: "2-10", image: "https://i.pinimg.com/736x/fe/a9/d4/fea9d40b244dac540b94ff5c38019c77.jpg" },
+      { id: "2-11", image: "https://i.pinimg.com/1200x/03/78/95/037895f89e9027a2cecffbcc99cd39ff.jpg" },
+      { id: "2-12", image: "https://i.pinimg.com/736x/82/c4/6b/82c46b2688eaf2ac3e52e0d7fee059c0.jpg" },
+      { id: "2-13", image: "https://i.pinimg.com/1200x/c0/2f/a1/c02fa14a3791816e600b4e3e2ad48305.jpg" },
     ],
     reviews: [
       {

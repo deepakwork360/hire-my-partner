@@ -68,6 +68,8 @@ const calculateEndTime = (startTimeStr: string, durationStr: string): string => 
   return `${strHours}:${minute} ${newAmpm}`;
 };
 
+let hasAuthorizedSession = false;
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function ConfirmationCard() {
@@ -79,8 +81,9 @@ export default function ConfirmationCard() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const accessAllowed = sessionStorage.getItem("booking_in_progress");
-      if (accessAllowed === "true") {
+      if (accessAllowed === "true" || hasAuthorizedSession) {
         setIsAuthorized(true);
+        hasAuthorizedSession = true;
         // Clear the token so reloading/bookmarking won't bypass the check next time
         sessionStorage.removeItem("booking_in_progress");
       } else {

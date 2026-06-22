@@ -1,6 +1,7 @@
 import { api } from "@/lib/axios";
 import { Partner } from "../types/partner.types";
 import { partners as mockPartners } from "../data/partners";
+import { getUserLocation, resolveCoordinates, calculateHaversineDistance } from "@/lib/location";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -26,10 +27,31 @@ function enrichPartnerWithDynamicReviews(partner: any): Partner {
     ratingNum = 0.0;
   }
 
-  // Parse distance as a number
-  const distanceNum = typeof partner.distance === "number"
-    ? partner.distance
-    : parseFloat(String(partner.distance || "0").replace(/[^0-9.]/g, "")) || 0;
+  // Parse or compute dynamic distance
+  let distanceNum = 0;
+  if (typeof window !== "undefined") {
+    try {
+      const userLoc = getUserLocation();
+      const partnerLat = partner.lat !== undefined ? partner.lat : undefined;
+      const partnerLng = partner.lng !== undefined ? partner.lng : undefined;
+
+      if (partnerLat !== undefined && partnerLng !== undefined) {
+        distanceNum = calculateHaversineDistance(userLoc.lat, userLoc.lng, partnerLat, partnerLng);
+      } else {
+        const coords = resolveCoordinates(partner.location || partner.city);
+        distanceNum = calculateHaversineDistance(userLoc.lat, userLoc.lng, coords.lat, coords.lng);
+      }
+    } catch (e) {
+      console.error("Failed to dynamically compute distance", e);
+      distanceNum = typeof partner.distance === "number"
+        ? partner.distance
+        : parseFloat(String(partner.distance || "0").replace(/[^0-9.]/g, "")) || 0;
+    }
+  } else {
+    distanceNum = typeof partner.distance === "number"
+      ? partner.distance
+      : parseFloat(String(partner.distance || "0").replace(/[^0-9.]/g, "")) || 0;
+  }
 
   return {
     ...partner,

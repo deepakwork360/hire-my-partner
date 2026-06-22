@@ -382,7 +382,7 @@ export default function DetailsForm() {
     linkedin: "",
     termsAgreed: false,
     idProofs: [null, null, null, null] as (string | null)[],
-    gallery: Array(9).fill(null) as (string | null)[],
+    gallery: [] as string[],
     videos: Array(3).fill(null) as (string | null)[],
   });
   const countryDropdownRef = useRef<HTMLDivElement>(null);
@@ -445,12 +445,13 @@ export default function DetailsForm() {
 
   // Persistence: Load on Mount
   useEffect(() => {
-    // Generate Stable ID for this session
-    setApplicationId(`APP-${Math.floor(100000 + Math.random() * 900000)}`);
+    let activeAppId = `APP-${Math.floor(100000 + Math.random() * 900000)}`;
 
     // Seed Sabrina Carpenter if she is logged in and doesn't have an application yet
     if (user && user.email === "sabrina@gmail.com" && !localStorage.getItem(storageKey)) {
+      activeAppId = "APP-123456";
       localStorage.setItem(storageKey, JSON.stringify({
+        applicationId: activeAppId,
         formData: {
           fullName: "Sabrina Carpenter",
           displayName: "Sabrina",
@@ -480,6 +481,10 @@ export default function DetailsForm() {
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
+        if (parsed.applicationId) {
+          activeAppId = parsed.applicationId;
+        }
+        setApplicationId(activeAppId);
         const loadedFormData = parsed.formData || {};
         if (typeof loadedFormData.tagsInput === "string") {
           loadedFormData.tagsInput = loadedFormData.tagsInput
@@ -493,6 +498,13 @@ export default function DetailsForm() {
         }
         if (!loadedFormData.videos || !Array.isArray(loadedFormData.videos)) {
           loadedFormData.videos = Array(3).fill(null);
+        }
+        if (loadedFormData.gallery && Array.isArray(loadedFormData.gallery)) {
+          loadedFormData.gallery = loadedFormData.gallery
+            .map((img: any) => typeof img === "string" ? img : (img && img.image ? img.image : null))
+            .filter(Boolean);
+        } else {
+          loadedFormData.gallery = [];
         }
         setFormData((prev) => ({
           ...prev,
@@ -518,6 +530,7 @@ export default function DetailsForm() {
         console.error("Failed to parse saved application data", e);
       }
     } else {
+      setApplicationId(activeAppId);
       // Clear/reset form to blank defaults if no saved data exists for this user
       setFormData({
         photo: null,
@@ -548,7 +561,7 @@ export default function DetailsForm() {
         linkedin: "",
         termsAgreed: false,
         idProofs: [null, null, null, null],
-        gallery: Array(9).fill(null),
+        gallery: [],
         videos: Array(3).fill(null),
       });
       setSubmissionStatus("pending");
@@ -565,6 +578,7 @@ export default function DetailsForm() {
       localStorage.setItem(
         storageKey,
         JSON.stringify({
+          applicationId,
           formData: formData,
           submissionStatus,
           view,
@@ -578,7 +592,7 @@ export default function DetailsForm() {
       );
       window.dispatchEvent(new Event("partnerStatusChange"));
     }
-  }, [formData, submissionStatus, view, verificationStatus, verificationNotes, kycStatus, kycDate, kycSlot, zoomLink, isHydrated, storageKey]);
+  }, [formData, submissionStatus, view, verificationStatus, verificationNotes, kycStatus, kycDate, kycSlot, zoomLink, isHydrated, storageKey, applicationId]);
 
 
   // Auto-Scroll on View Change
@@ -751,19 +765,31 @@ export default function DetailsForm() {
     setVerificationNotes("");
     toast.success("Application Approved successfully!");
 
+    const saved = localStorage.getItem("approved_partners");
+    const list = saved ? JSON.parse(saved) : [];
+
     // Map formData to Partner interface with unique collision-free ID
     const nameSlug = formData.fullName.toLowerCase().replace(/\s+/g, "-");
     const uniqueSuffix = applicationId ? applicationId.replace("APP-", "") : Math.floor(100000 + Math.random() * 900000);
     const uniqueId = `${nameSlug}-${uniqueSuffix}`;
+
+    // Find if the partner already exists in the approved list
+    const existingPartner = list.find((p: any) => 
+      p.name === formData.fullName || 
+      (p.id && (p.id === "2" || p.id === "sabrina-carpenter")) ||
+      (user?.id && String(p.id).includes(user.id))
+    );
+
     const newPartner = {
-      id: uniqueId,
+      ...existingPartner,
+      id: existingPartner?.id || uniqueId,
       name: formData.fullName,
       age: parseInt(formData.age) || 22,
       gender: formData.gender,
       location: formData.city || "Mumbai, India",
-      rating: 0,
+      rating: existingPartner?.rating || 0,
       verified: true,
-      distance: 0.8,
+      distance: existingPartner?.distance || 0.8,
       image: formData.photo || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256",
       banner: formData.banner || undefined,
       bio: formData.bio || "",
@@ -781,7 +807,7 @@ export default function DetailsForm() {
       }).filter(Boolean) : ["NA"],
       interests: formData.interestsInput.length > 0 ? formData.interestsInput.map(i => i.trim()).filter(Boolean).join(", ") : "NA",
       languages: formData.languages && formData.languages.length > 0 ? formData.languages.join(", ") : "NA",
-      reviews: [],
+      reviews: existingPartner?.reviews || [],
       gallery: formData.gallery.filter(Boolean).map((img, idx) => ({
         id: String(idx + 1),
         image: img as string,
@@ -798,8 +824,6 @@ export default function DetailsForm() {
     };
 
     try {
-      const saved = localStorage.getItem("approved_partners");
-      const list = saved ? JSON.parse(saved) : [];
       // Prevent duplicate IDs
       const filtered = list.filter((p: any) => p.id !== newPartner.id);
       localStorage.setItem("approved_partners", JSON.stringify([newPartner, ...filtered]));
@@ -815,6 +839,7 @@ export default function DetailsForm() {
         address: `${formData.city}, ${formData.country || ""}`
       });
       window.dispatchEvent(new Event("partnerStatusChange"));
+      window.dispatchEvent(new Event("partner_profile_updated"));
     } catch (e) {
       console.error(e);
     }
@@ -876,7 +901,7 @@ export default function DetailsForm() {
       linkedin: "",
       termsAgreed: false,
       idProofs: [null, null, null, null],
-      gallery: Array(9).fill(null),
+      gallery: [],
       videos: Array(3).fill(null),
     });
     localStorage.removeItem(storageKey);
@@ -917,24 +942,31 @@ export default function DetailsForm() {
     }
   };
 
-  const handleGalleryUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const blobUrl = URL.createObjectURL(file);
-      setFormData((prev) => {
-        const newGallery = [...prev.gallery];
-        newGallery[index] = blobUrl;
-        return { ...prev, gallery: newGallery };
-      });
+  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const newUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.type.startsWith("image/")) {
+          const url = URL.createObjectURL(file);
+          newUrls.push(url);
+        }
+      }
+      setFormData((prev) => ({
+        ...prev,
+        gallery: [...prev.gallery, ...newUrls]
+      }));
+      toast.success(`Selected ${newUrls.length} new photo(s) to add.`);
     }
   };
 
   const removeGalleryPhoto = (index: number) => {
-    setFormData((prev) => {
-      const newGallery = [...prev.gallery];
-      newGallery[index] = null;
-      return { ...prev, gallery: newGallery };
-    });
+    setFormData((prev) => ({
+      ...prev,
+      gallery: prev.gallery.filter((_, idx) => idx !== index)
+    }));
+    toast.success("Photo removed from gallery.");
   };
 
   const handleVideoUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1593,75 +1625,69 @@ export default function DetailsForm() {
                   <SectionTitle>
                     Partner Gallery{" "}
                     <span className="text-text-muted text-sm font-normal ml-2 tracking-normal italic">
-                      (Min 3, Max 9 photos)
+                      (Min 3 photos)
                     </span>
                   </SectionTitle>
                   
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-6">
-                    {formData.gallery.slice(0, Math.max(4, Math.min(9, formData.gallery.filter(p => p !== null).length + 1))).map((photo, index) => {
-                      const isRequired = index < 3;
-                      const hasError = showErrors && isRequired && !photo;
+                    {/* Render existing gallery images */}
+                    {formData.gallery.filter(Boolean).map((photo, index) => (
+                      <motion.div
+                        key={index}
+                        className="relative aspect-square rounded-[32px] overflow-hidden border-2 border-white/5 bg-bg-secondary/40 backdrop-blur-xl hover:border-primary/40 hover:shadow-primary/20 transition-all duration-700 group shadow-2xl"
+                      >
+                        <div className="w-full h-full group/photo relative">
+                          <img
+                            src={photo}
+                            alt={`Gallery ${index + 1}`}
+                            className="w-full h-full object-cover group-hover/photo:scale-110 transition-transform duration-1000"
+                          />
+                          <div className="absolute inset-0 bg-black/20 group-hover/photo:bg-black/40 transition-colors duration-500" />
+                          <button
+                            type="button"
+                            onClick={() => removeGalleryPhoto(index)}
+                            className="absolute cursor-pointer top-3 right-3 w-10 h-10 bg-accent/90 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shadow-lg border-2 border-white/20 z-10 transition-all duration-300 hover:bg-accent hover:scale-110 hover:-rotate-12"
+                            title="Remove photo"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
 
-                      return (
-                        <motion.div
-                          key={index}
-                          animate={hasError ? { 
-                            boxShadow: ["0 0 20px rgba(239,68,68,0.1)", "0 0 30px rgba(239,68,68,0.3)", "0 0 20px rgba(239,68,68,0.1)"] 
-                          } : {}}
-                          transition={{ duration: 3, repeat: Infinity }}
-                          className={`relative aspect-square rounded-[32px] overflow-hidden border-2 transition-all duration-700 group shadow-2xl ${
-                            hasError 
-                              ? "border-red-500/50 bg-red-500/5" 
-                              : "border-white/5 bg-bg-secondary/40 backdrop-blur-xl hover:border-primary/40 hover:shadow-primary/20"
-                          }`}
-                        >
-                          {photo ? (
-                            <div className="w-full h-full group/photo relative">
-                              <img
-                                src={photo}
-                                alt={`Gallery ${index + 1}`}
-                                className="w-full h-full object-cover group-hover/photo:scale-110 transition-transform duration-1000"
-                              />
-                              <div className="absolute inset-0 bg-black/20 group-hover/photo:bg-black/40 transition-colors duration-500" />
-                              <button
-                                type="button"
-                                onClick={() => removeGalleryPhoto(index)}
-                                className="absolute cursor-pointer top-3 right-3 w-10 h-10 bg-accent/90 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shadow-lg border-2 border-white/20 z-10 transition-all duration-300 hover:bg-accent hover:scale-110 hover:-rotate-12"
-                                title="Remove photo"
-                              >
-                                <X className="w-5 h-5" />
-                              </button>
-                            </div>
-                          ) : (
-                            <label className="w-full h-full flex flex-col items-center justify-center gap-3 cursor-pointer group/add transition-all duration-500 hover:bg-primary/5">
-                              <div className={`w-14 h-14 rounded-[20px] flex items-center justify-center transition-all duration-700 group-hover/add:rotate-90 group-hover/add:scale-110 ${hasError ? "bg-red-500/20" : "bg-primary/10 border border-primary/20"}`}>
-                                <Camera className={`w-6 h-6 ${hasError ? "text-red-500" : "text-primary group-hover/add:text-accent"}`} />
-                              </div>
-                              <div className="flex flex-col items-center gap-1">
-                                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${hasError ? "text-red-500" : "text-text-muted group-hover/add:text-primary"}`}>
-                                  {isRequired ? "Required" : `Photo ${index + 1}`}
-                                </span>
-                                {isRequired && !photo && (
-                                  <motion.div 
-                                    animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
-                                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                                    className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]" 
-                                  />
-                                )}
-                              </div>
-                              <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={(e) => handleGalleryUpload(index, e)}
-                              />
-                              {/* Hover Effect Light */}
-                              <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover/add:opacity-100 transition-opacity duration-700" />
-                            </label>
+                    {/* Add Photo Slot (always available for unlimited uploads) */}
+                    <motion.div
+                      className={`relative aspect-square rounded-[32px] overflow-hidden border-2 border-dashed transition-all duration-700 group shadow-2xl ${
+                        showErrors && formData.gallery.length < 3 
+                          ? "border-red-500/50 bg-red-500/5 animate-pulse" 
+                          : "border-primary/30 bg-bg-secondary/20 hover:border-primary hover:bg-primary/5"
+                      }`}
+                    >
+                      <label className="w-full h-full flex flex-col items-center justify-center gap-3 cursor-pointer group/add transition-all duration-500">
+                        <div className="w-14 h-14 rounded-[20px] bg-primary/10 border border-primary/20 flex items-center justify-center transition-all duration-700 group-hover/add:rotate-90 group-hover/add:scale-110">
+                          <Plus className="w-6 h-6 text-primary group-hover/add:text-accent" />
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted group-hover/add:text-primary">
+                            Add Photos
+                          </span>
+                          {formData.gallery.length < 3 && (
+                            <span className="text-[8px] font-bold text-red-500 uppercase tracking-wider">
+                              {3 - formData.gallery.length} more required
+                            </span>
                           )}
-                        </motion.div>
-                      );
-                    })}
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={handleGalleryUpload}
+                        />
+                        {/* Hover Effect Light */}
+                        <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover/add:opacity-100 transition-opacity duration-700" />
+                      </label>
+                    </motion.div>
                   </div>
                 </div>
 

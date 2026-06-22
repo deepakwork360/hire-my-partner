@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Images } from "lucide-react";
+import Link from "next/link";
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -38,10 +39,14 @@ export default function Gallery({ images, partner }: GalleryProps) {
     "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800&auto=format&fit=crop",
   ];
 
-  const galleryImages = (images && images.length > 0 
-    ? images.map((img) => typeof img === "string" ? img : (img && img.image ? img.image : ""))
-    : defaultImages
-  ).filter(Boolean).slice(0, 9);
+  const allImages = useMemo(() => {
+    return (images && images.length > 0 
+      ? images.map((img) => typeof img === "string" ? img : (img && img.image ? img.image : ""))
+      : defaultImages
+    ).filter(Boolean);
+  }, [images]);
+
+  const galleryImages = useMemo(() => allImages.slice(0, 9), [allImages]);
 
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const touchStartX = useRef<number>(0);
@@ -246,6 +251,17 @@ export default function Gallery({ images, partner }: GalleryProps) {
                   </motion.div>
                 ))}
               </div>
+
+              {allImages.length > 9 && partner?.id && (
+                <div className="mt-6 flex justify-center">
+                  <Link href={`/partners/${partner.id}/gallery`} className="w-full">
+                    <button className="w-full py-3.5 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm cursor-pointer flex items-center justify-center gap-2">
+                      <Images size={14} />
+                      View All Gallery ({allImages.length} Photos)
+                    </button>
+                  </Link>
+                </div>
+              )}
             </div>
           </motion.div>
 
@@ -259,7 +275,7 @@ export default function Gallery({ images, partner }: GalleryProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-2000 flex items-center justify-center bg-[#050505] cursor-default"
+            className="fixed inset-0 z-[2000] flex items-center justify-center bg-[#050505] cursor-default"
           >
             {/* Backdrop Click-to-Close */}
             <div 
@@ -270,7 +286,7 @@ export default function Gallery({ images, partner }: GalleryProps) {
             {/* Prominent Close Button */}
             <button
               onClick={() => setSelectedImage(null)}
-              className="fixed top-6 right-6 md:top-10 md:right-10 z-2100 w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/10 hover:bg-rose-500/20 border border-white/20 hover:border-rose-500/50 flex items-center justify-center text-white transition-all duration-300 group shadow-2xl backdrop-blur-xl cursor-pointer"
+              className="fixed top-6 right-6 md:top-10 md:right-10 z-[2100] w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/10 hover:bg-rose-500/20 border border-white/20 hover:border-rose-500/50 flex items-center justify-center text-white transition-all duration-300 group shadow-2xl backdrop-blur-xl cursor-pointer"
             >
               <X className="w-6 h-6 md:w-8 md:h-8 group-hover:rotate-90 transition-transform duration-500" />
             </button>
@@ -279,7 +295,7 @@ export default function Gallery({ images, partner }: GalleryProps) {
             <button
               onClick={handlePrev}
               disabled={activeIndex === 0}
-              className="hidden md:flex fixed left-8 top-1/2 -translate-y-1/2 z-2100 w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 hover:border-primary/50 items-center justify-center text-white transition-all duration-300 group shadow-2xl backdrop-blur-xl cursor-pointer disabled:opacity-20 disabled:pointer-events-none"
+              className="hidden md:flex fixed left-8 top-1/2 -translate-y-1/2 z-[2100] w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 hover:border-primary/50 items-center justify-center text-white transition-all duration-300 group shadow-2xl backdrop-blur-xl cursor-pointer disabled:opacity-20 disabled:pointer-events-none"
               aria-label="Previous image"
             >
               <ChevronLeft className="w-8 h-8 group-hover:-translate-x-0.5 transition-transform" />
@@ -289,7 +305,7 @@ export default function Gallery({ images, partner }: GalleryProps) {
             <button
               onClick={handleNext}
               disabled={activeIndex === galleryImages.length - 1}
-              className="hidden md:flex fixed right-8 top-1/2 -translate-y-1/2 z-2100 w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 hover:border-primary/50 items-center justify-center text-white transition-all duration-300 group shadow-2xl backdrop-blur-xl cursor-pointer disabled:opacity-20 disabled:pointer-events-none"
+              className="hidden md:flex fixed right-8 top-1/2 -translate-y-1/2 z-[2100] w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 hover:border-primary/50 items-center justify-center text-white transition-all duration-300 group shadow-2xl backdrop-blur-xl cursor-pointer disabled:opacity-20 disabled:pointer-events-none"
               aria-label="Next image"
             >
               <ChevronRight className="w-8 h-8 group-hover:translate-x-0.5 transition-transform" />
