@@ -110,7 +110,7 @@ function VerifyOtpForm() {
             }}
           />
 
-          <Link
+          {/* <Link
             href="/"
             className="relative z-10 flex items-center gap-3 w-fit hover:opacity-80 transition-opacity"
           >
@@ -122,7 +122,7 @@ function VerifyOtpForm() {
               style={{ width: "auto", height: "65px" }}
             />
             <span className="text-white text-xl font-bold tracking-tight">Go Partner</span>
-          </Link>
+          </Link> */}
 
           <div className="relative z-10 mt-auto pb-8">
             <div className="flex gap-2 mb-6">
