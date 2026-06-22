@@ -56,7 +56,7 @@ export default function SafetyTrust() {
             viewport={{ once: true }}
             className={`${rochester.className} text-center text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-linear-to-r from-primary via-accent to-primary animate-in fade-in slide-in-from-bottom-4 duration-700 py-4 leading-[1.2] mb-6`}
           >
-            Safety & Trust You Can Rely On
+           <span className="text-accent">Safety & Trust</span> You Can Rely On
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 10 }}

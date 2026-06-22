@@ -48,7 +48,7 @@ export default function FooterCTA() {
               <h3
                 className={`${rochester.className} text-4xl md:text-5xl lg:text-6xl text-primary`}
               >
-                Still Not Sure?
+                Still <span className="text-accent">Not Sure?</span>
               </h3>
               <h2 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-tight leading-tight">
                 Get in Touch

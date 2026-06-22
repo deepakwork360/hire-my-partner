@@ -69,7 +69,7 @@ export default function RecentlyBooked() {
         <h2
           className={`${rochester.className} text-center text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-linear-to-r from-primary via-accent to-primary mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 py-4 leading-[1.2]`}
         >
-          Recently Booked Partners
+            Recently <span className="text-accent">Booked Partners</span>
         </h2>
         <div className="relative -mx-4 md:mx-0">
           <div className="px-4 md:px-12 overflow-visible">

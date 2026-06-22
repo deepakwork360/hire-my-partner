@@ -99,7 +99,7 @@ export default function PartnersNearby() {
           <h1
             className={`${rochester.className} text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-linear-to-r from-primary via-accent to-primary animate-in fade-in slide-in-from-bottom-4 duration-700 py-4 px-4 leading-[1.2]`}
           >
-            Partners Nearby You
+            Partners <span className="text-accent">Nearby You</span>
           </h1>
           <p
           className={`${outfit.className} text-lg md:text-2xl text-text-muted max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200`}

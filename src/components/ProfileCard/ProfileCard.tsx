@@ -52,18 +52,28 @@ export default function ProfileCard({
   showViewIcon = false,
   tag,
 }: ProfileCardProps) {
+  const fallbackImage = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256";
+  const [imgSrc, setImgSrc] = useState(image || fallbackImage);
+
+  useEffect(() => {
+    setImgSrc(image || fallbackImage);
+  }, [image]);
+
   return (
     <div className={`main-profile-card group ${outfit.className}`}>
       {/* Photo Container */}
       <div className="profile-card-image">
         <Image
-          src={image}
+          src={imgSrc}
           alt={name}
           fill
           sizes="(max-w-768px) 100vw, 328px"
           className="object-cover"
           priority
           referrerPolicy="no-referrer"
+          onError={() => {
+            setImgSrc(fallbackImage);
+          }}
         />
         
         {/* Subtle Bottom Overlay for better text transition */}

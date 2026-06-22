@@ -179,257 +179,6 @@ const findPartnerByNameOrId = (nameOrId: string | number): any => {
   ) || null;
 };
 
-function BookingCard({
-  booking,
-  category,
-  onUpdateStatus,
-}: {
-  booking: BookingData;
-  category: string;
-  onUpdateStatus: (id: number | string, newStatus: BookingData["status"]) => void;
-}) {
-  const isPaid = booking.status === "Confirmed" || booking.status === "Completed";
-  const isCompleted = booking.status === "Completed";
-  const isDeclined = booking.status === "Declined";
-
-  // Logical state for "Hired Me" category
-  const requestStatus =
-    booking.status === "Pending"
-      ? "pending"
-      : (booking.status === "Confirmed" || booking.status === "Completed")
-        ? "accepted"
-        : "rejected";
-
-  const partner = findPartnerByNameOrId(booking.id) || findPartnerByNameOrId(booking.name);
-  const href = partner
-    ? `/partners/${partner.name.toLowerCase().replace(/\s+/g, "-")}`
-    : `/partners/${booking.id}`;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="main-profile-card group shrink-0"
-    >
-      <Link href={category === "hired_by_me" ? href : "#"} className="relative block">
-        {/* Photo Section */}
-        <div className="profile-card-image">
-          <div className="relative w-full h-full overflow-hidden rounded-[28px]">
-            <Image
-              src={booking.image}
-              alt={booking.name}
-              fill
-              className="object-cover transition-transform duration-700 group-hover:scale-110"
-            />
-          </div>
-
-          {/* Top Badges */}
-          <div className="profile-card-badge">
-            {isPaid ? "Paid: " : "Unpaid: "}
-            {booking.price}
-          </div>
-          <div className="profile-card-rating">
-            <Star className="profile-card-rating-icon" />
-            <span>{booking.rating}</span>
-          </div>
-
-          {/* Status Badge */}
-          <div
-            className={`absolute bottom-6 left-6 z-20 px-3 py-1 rounded-full border backdrop-blur-md text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 ${
-              isDeclined
-                ? "bg-rose-500/10 border-rose-500/20 text-rose-500"
-                : !isPaid
-                  ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
-                  : isCompleted
-                    ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
-                    : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
-            }`}
-          >
-            {isDeclined && <XCircle className="w-3 h-3" />}
-            {isPaid && !isDeclined && <Check className="w-3 h-3" />}
-            {isDeclined
-              ? "Declined"
-              : isPaid
-                ? isCompleted
-                  ? "Completed"
-                  : "Paid & Confirmed"
-                : "Payment Pending"}
-          </div>
-
-          {/* Bottom Vignette */}
-          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-black/80 to-transparent pointer-events-none z-10 mx-4 mb-4 rounded-b-[28px]" />
-        </div>
-
-        {/* Content Section */}
-        <div className="profile-card-content">
-          <div className="profile-card-header">
-            <span className="profile-card-name">{booking.name}</span>
-            <span className="profile-card-age">{booking.age}</span>
-          </div>
-
-          <div className="flex flex-col gap-2.5">
-            <div className="profile-card-location">
-              <MapPin className="profile-card-location-icon" />
-              <span>{booking.location}</span>
-            </div>
-
-            {/* Session Details */}
-            <div className="flex items-center gap-4 text-[11px] text-text-muted font-medium">
-              <div className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-primary/60" />
-                <span>{booking.date}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-primary/60" />
-                <span>{booking.time}</span>
-              </div>
-            </div>
-          </div>
-
-          <p className="profile-card-bio mt-3">{booking.bio}</p>
-        </div>
-      </Link>
-
-      {/* Actions Section - PREMIUM GLASS-BOX Workflow */}
-      <div className="profile-card-footer mt-auto pt-6">
-        <div className="flex items-center gap-3 w-full">
-          {isDeclined ? (
-            <div className="flex items-center justify-center h-12 w-full bg-rose-500/5 border border-rose-500/20 rounded-2xl">
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-rose-500">
-                Declined
-              </span>
-            </div>
-          ) : category === "hired_by_me" ? (
-            // --- HIRED BY ME ACTIONS (Existing) ---
-            isCompleted ? (
-              <Link href={href} className="flex-1">
-                <motion.div
-                  whileHover={{ y: -3, scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40 cursor-pointer"
-                >
-                  <Calendar className="w-4 h-4" />
-                  <span>Book Again</span>
-                </motion.div>
-              </Link>
-            ) : (
-              <>
-                {!isPaid ? (
-                  <>
-                    <motion.button
-                      onClick={() => onUpdateStatus(booking.id, "Confirmed")}
-                      whileHover={{ y: -3, scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="flex-2 cursor-pointer h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Pay Now</span>
-                    </motion.button>
- 
-                    <motion.button
-                      onClick={() => onUpdateStatus(booking.id, "Declined")}
-                      whileHover={{ y: -2, scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="flex-1 cursor-pointer h-12 bg-bg-secondary/80 border-2 border-border-main rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-text-muted shadow-inner hover:bg-bg-card hover:text-rose-500 transition-all"
-                    >
-                      <XCircle className="w-3.5 h-3.5" />
-                      <span>Cancel</span>
-                    </motion.button>
-                  </>
-                ) : (
-                  <>
-                    <a
-                      href={`mailto:${booking.name.toLowerCase().replace(/[^a-z0-9]/g, "")}@email.com?subject=Coordinating Session`}
-                      className="flex-2"
-                    >
-                      <motion.div
-                        whileHover={{ y: -3, scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="w-full h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40 cursor-pointer"
-                      >
-                        <MessageCircle className="w-4 h-4" />
-                        <span>Message</span>
-                      </motion.div>
-                    </a>
- 
-                    <motion.button
-                      onClick={() => onUpdateStatus(booking.id, "Declined")}
-                      whileHover={{ y: -2, scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="flex-1 h-12 cursor-pointer bg-bg-secondary/80 border-2 border-border-main rounded-2xl flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-text-muted shadow-inner hover:bg-bg-card hover:text-rose-500 transition-all"
-                    >
-                      <XCircle className="w-3.5 h-3.5" />
-                      <span>Cancel</span>
-                    </motion.button>
-                  </>
-                )}
-              </>
-            )
-          ) : (
-            // --- HIRED ME ACTIONS (New) ---
-            <div className="w-full">
-              {requestStatus === "pending" && (
-                <div className="flex items-center gap-3 w-full">
-                  <motion.button
-                    onClick={() => onUpdateStatus(booking.id, "Confirmed")}
-                    whileHover={{ y: -3, scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="flex-1 cursor-pointer h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-primary/20 transition-all hover:shadow-primary/40"
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Accept</span>
-                  </motion.button>
- 
-                  <motion.button
-                    onClick={() => onUpdateStatus(booking.id, "Declined")}
-                    whileHover={{ y: -2, scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="flex-[0.6] cursor-pointer h-12 bg-bg-secondary/80 border-2 border-border-main rounded-2xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-rose-500 shadow-inner hover:bg-bg-card transition-all"
-                  >
-                    <XCircle className="w-3.5 h-3.5" />
-                    <span>Reject</span>
-                  </motion.button>
-                </div>
-              )}
-
-              {requestStatus === "accepted" && (
-                <div className="flex items-center gap-4">
-                  <a
-                    href={`mailto:client-${booking.name.toLowerCase().replace(/[^a-z0-9]/g, "")}@email.com?subject=Session Approved`}
-                    className="flex-1"
-                  >
-                    <motion.div
-                      whileHover={{ y: -3, scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full h-12 bg-linear-to-br from-primary via-primary-dark to-primary rounded-2xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all cursor-pointer"
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      <span>Message Client</span>
-                    </motion.div>
-                  </a>
-                  <div className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[9px] font-black text-emerald-500 uppercase tracking-widest">
-                    Accepted
-                  </div>
-                </div>
-              )}
-
-              {requestStatus === "rejected" && (
-                <div className="flex items-center justify-center h-12 w-full bg-rose-500/5 border border-rose-500/20 rounded-2xl">
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-rose-500">
-                    Declined
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
 interface BookingsProps {
   activeFilter: string;
   activeCategory: string;
@@ -492,9 +241,6 @@ export default function Bookings({
     return true;
   });
 
-  // Standardized Grid Classes (3 on laptop, 4 on monitor)
-  const gridClasses = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4";
-
   if (!mounted) {
     return <Loader />;
   }
@@ -523,7 +269,7 @@ export default function Bookings({
         />
       </div>
 
-      {/* List Header & Grid */}
+      {/* List Header & Table */}
       <div className="space-y-8">
         <div className="flex items-center justify-between p-4 bg-bg-card rounded-3xl border border-border-main backdrop-blur-xl">
           <h3 className="text-xl font-bold text-text-main pl-4">Session Records</h3>
@@ -532,20 +278,277 @@ export default function Bookings({
           </div>
         </div>
 
-        {/* Grid Area */}
-        <div className={`grid ${gridClasses} gap-8 justify-items-center`}>
-          {filteredBookings.map((booking) => (
-            <BookingCard
-              key={`${activeCategory}-${booking.id}`}
-              booking={booking}
-              category={activeCategory}
-              onUpdateStatus={
-                activeCategory === "hired_by_me"
+        {/* Tabular/Table Area */}
+        <div className="relative overflow-x-auto rounded-[24px] border border-border-main overflow-hidden shadow-xl shadow-black/5 custom-scrollbar">
+          <table className="w-full text-left min-w-[950px] border-collapse">
+            <thead className="bg-linear-to-r from-primary-dark via-primary to-accent text-white">
+              <tr className="uppercase font-black text-[10px] xl:text-[11px] tracking-widest">
+                <th className="px-6 py-5.5">{activeCategory === "hired_by_me" ? "Companion" : "Client"}</th>
+                <th className="px-6 py-5.5">Date & Time</th>
+                <th className="px-6 py-5.5">About Session</th>
+                <th className="px-6 py-5.5">Price</th>
+                <th className="px-6 py-5.5">Status</th>
+                <th className="px-6 py-5.5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border-main bg-bg-secondary/20">
+              {filteredBookings.map((booking, idx) => {
+                const isPaid = booking.status === "Confirmed" || booking.status === "Completed";
+                const isCompleted = booking.status === "Completed";
+                const isDeclined = booking.status === "Declined";
+                
+                const requestStatus =
+                  booking.status === "Pending"
+                    ? "pending"
+                    : (booking.status === "Confirmed" || booking.status === "Completed")
+                      ? "accepted"
+                      : "rejected";
+
+                const partner = findPartnerByNameOrId(booking.id) || findPartnerByNameOrId(booking.name);
+                const href = partner
+                  ? `/partners/${partner.name.toLowerCase().replace(/\s+/g, "-")}`
+                  : `/partners/${booking.id}`;
+
+                const onUpdateStatus = activeCategory === "hired_by_me"
                   ? handleUpdateBookingStatus
-                  : handleUpdateClientRequestStatus
-              }
-            />
-          ))}
+                  : handleUpdateClientRequestStatus;
+
+                return (
+                  <motion.tr
+                    key={`${activeCategory}-${booking.id}`}
+                    initial={{ opacity: 0, y: 12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: idx * 0.04 }}
+                    className="group hover:bg-primary/5 transition-all duration-200"
+                  >
+                    {/* 1. Companion / Client Info */}
+                    <td className="px-6 py-5.5">
+                      <div className="flex items-center gap-3">
+                        {activeCategory === "hired_by_me" ? (
+                          <Link href={href} className="relative w-12 h-12 rounded-2xl overflow-hidden border border-border-main shrink-0 hover:ring-2 hover:ring-primary/50 transition-all">
+                            <Image
+                              src={booking.image}
+                              alt={booking.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </Link>
+                        ) : (
+                          <div className="relative w-12 h-12 rounded-2xl overflow-hidden border border-border-main shrink-0">
+                            <Image
+                              src={booking.image}
+                              alt={booking.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex flex-col text-left">
+                          <div className="flex items-center gap-1.5">
+                            {activeCategory === "hired_by_me" ? (
+                              <Link href={href} className="text-sm font-bold text-text-main hover:text-primary transition-colors uppercase tracking-tight">
+                                {booking.name}
+                              </Link>
+                            ) : (
+                              <span className="text-sm font-bold text-text-main uppercase tracking-tight">
+                                {booking.name}
+                              </span>
+                            )}
+                            <span className="text-xs text-text-muted">({booking.age})</span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1 text-[11px] text-text-muted font-medium">
+                            <span className="flex items-center gap-1">
+                              <MapPin size={11} className="text-primary/60" />
+                              {booking.location}
+                            </span>
+                            <span className="w-1 h-1 bg-border-main rounded-full" />
+                            <span className="flex items-center gap-0.5 text-amber-500 font-bold">
+                              <Star size={11} className="fill-amber-500" />
+                              {booking.rating}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* 2. Date & Time */}
+                    <td className="px-6 py-5.5">
+                      <div className="flex flex-col gap-1 text-left">
+                        <div className="flex items-center gap-1.5 text-xs text-text-main font-semibold">
+                          <Calendar size={13} className="text-primary/70 shrink-0" />
+                          <span>{booking.date}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[11px] text-text-muted italic">
+                          <Clock size={13} className="text-primary/50 shrink-0" />
+                          <span>{booking.time}</span>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* 3. Session Bio */}
+                    <td className="px-6 py-5.5 max-w-[280px]">
+                      <p className="text-xs text-text-muted/90 line-clamp-2 leading-relaxed text-left font-medium">
+                        {booking.bio}
+                      </p>
+                    </td>
+
+                    {/* 4. Price */}
+                    <td className="px-6 py-5.5">
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="text-sm font-black text-text-main">{booking.price}</span>
+                        <span className={`text-[9px] font-black uppercase tracking-wider ${
+                          isPaid ? "text-emerald-500" : "text-amber-500"
+                        }`}>
+                          {isPaid ? "Paid" : "Pending"}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* 5. Status */}
+                    <td className="px-6 py-5.5">
+                      <div
+                        className={`inline-flex px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest items-center gap-1.5 ${
+                          isDeclined
+                            ? "bg-rose-500/10 border-rose-500/20 text-rose-500"
+                            : isCompleted
+                              ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
+                              : booking.status === "Pending"
+                                ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
+                                : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
+                        }`}
+                      >
+                        {isDeclined && <XCircle className="w-3 h-3" />}
+                        {booking.status === "Pending" && <Clock className="w-3 h-3" />}
+                        {isPaid && !isCompleted && !isDeclined && <Check className="w-3 h-3" />}
+                        {isCompleted && <CheckCircle2 className="w-3 h-3" />}
+                        {booking.status}
+                      </div>
+                    </td>
+
+                    {/* 6. Actions */}
+                    <td className="px-6 py-5.5 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {isDeclined ? (
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-500/60 pr-2">
+                            Declined
+                          </span>
+                        ) : activeCategory === "hired_by_me" ? (
+                          isCompleted ? (
+                            <Link href={href}>
+                              <motion.div
+                                whileHover={{ y: -2, scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                className="px-4 py-2 bg-linear-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white shadow-md hover:shadow-primary/30 transition-all cursor-pointer"
+                              >
+                                <Calendar className="w-3.5 h-3.5" />
+                                <span>Book Again</span>
+                              </motion.div>
+                            </Link>
+                          ) : (
+                            <>
+                              {!isPaid ? (
+                                <>
+                                  <motion.button
+                                    onClick={() => onUpdateStatus(booking.id, "Confirmed")}
+                                    whileHover={{ y: -2, scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    className="px-4 py-2 bg-linear-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white shadow-md hover:shadow-primary/30 transition-all cursor-pointer"
+                                  >
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    <span>Pay Now</span>
+                                  </motion.button>
+                                  <motion.button
+                                    onClick={() => onUpdateStatus(booking.id, "Declined")}
+                                    whileHover={{ y: -1, scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="px-3 py-2 bg-bg-secondary border border-border-main rounded-xl flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-widest text-text-muted hover:text-rose-500 transition-all cursor-pointer"
+                                  >
+                                    <XCircle className="w-3 h-3" />
+                                    <span>Cancel</span>
+                                  </motion.button>
+                                </>
+                              ) : (
+                                <>
+                                  <a href={`mailto:${booking.name.toLowerCase().replace(/[^a-z0-9]/g, "")}@email.com?subject=Coordinating Session`}>
+                                    <motion.div
+                                      whileHover={{ y: -2, scale: 1.03 }}
+                                      whileTap={{ scale: 0.97 }}
+                                      className="px-4 py-2 bg-linear-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white shadow-md hover:shadow-primary/30 transition-all cursor-pointer"
+                                    >
+                                      <MessageCircle className="w-3.5 h-3.5" />
+                                      <span>Message</span>
+                                    </motion.div>
+                                  </a>
+                                  <motion.button
+                                    onClick={() => onUpdateStatus(booking.id, "Declined")}
+                                    whileHover={{ y: -1, scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="px-3 py-2 bg-bg-secondary border border-border-main rounded-xl flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-widest text-text-muted hover:text-rose-500 transition-all cursor-pointer"
+                                  >
+                                    <XCircle className="w-3 h-3" />
+                                    <span>Cancel</span>
+                                  </motion.button>
+                                </>
+                              )}
+                            </>
+                          )
+                        ) : (
+                          // Client Requests ("Hired Me")
+                          <>
+                            {requestStatus === "pending" && (
+                              <>
+                                <motion.button
+                                  onClick={() => onUpdateStatus(booking.id, "Confirmed")}
+                                  whileHover={{ y: -2, scale: 1.03 }}
+                                  whileTap={{ scale: 0.97 }}
+                                  className="px-4 py-2 bg-linear-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white shadow-md hover:shadow-primary/30 transition-all cursor-pointer"
+                                >
+                                  <Check className="w-3.5 h-3.5" />
+                                  <span>Accept</span>
+                                </motion.button>
+                                <motion.button
+                                  onClick={() => onUpdateStatus(booking.id, "Declined")}
+                                  whileHover={{ y: -1, scale: 1.02 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  className="px-3 py-2 bg-bg-secondary border border-border-main rounded-xl flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-widest text-rose-500 transition-all cursor-pointer"
+                                >
+                                  <XCircle className="w-3 h-3" />
+                                  <span>Reject</span>
+                                </motion.button>
+                              </>
+                            )}
+                            {requestStatus === "accepted" && (
+                              <>
+                                <a href={`mailto:client-${booking.name.toLowerCase().replace(/[^a-z0-9]/g, "")}@email.com?subject=Session Approved`}>
+                                  <motion.div
+                                    whileHover={{ y: -2, scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    className="px-4 py-2 bg-linear-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white shadow-md hover:shadow-primary/30 transition-all cursor-pointer"
+                                  >
+                                    <MessageCircle className="w-3.5 h-3.5" />
+                                    <span>Message</span>
+                                  </motion.div>
+                                </a>
+                                <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[9px] font-black text-emerald-500 uppercase tracking-widest">
+                                  Accepted
+                                </span>
+                              </>
+                            )}
+                            {requestStatus === "rejected" && (
+                              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-500/60 pr-2">
+                                Declined
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </motion.tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
 
         {filteredBookings.length === 0 && (

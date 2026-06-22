@@ -73,7 +73,7 @@ export default function FAQ() {
             viewport={{ once: true }}
             className={`${rochester.className} text-center text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-linear-to-r from-primary via-accent to-primary animate-in fade-in slide-in-from-bottom-4 duration-700 py-4 leading-[1.2] mb-6`}
           >
-            Frequently Asked Questions
+            Frequently Asked <span className="text-accent">Questions</span>
           </motion.h2>
           <div className="w-24 h-1 bg-linear-to-r from-primary to-accent mx-auto rounded-full shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]" />
         </div>

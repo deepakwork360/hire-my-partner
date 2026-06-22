@@ -216,6 +216,7 @@ export default function ProfilePart({ isSidebarOpen }: { isSidebarOpen?: boolean
           {displayedProfiles.map((profile, index) => (
             <motion.div
               key={profile.id}
+              className="w-full flex justify-center"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{

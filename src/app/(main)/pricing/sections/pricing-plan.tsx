@@ -123,7 +123,7 @@ export default function PricingPlan() {
           <h2
             className={`${rochester.className} text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main mb-4`}
           >
-            Pricing Plans
+            Pricing <span className="text-accent">Plans</span>
           </h2>
           <div className="w-24 h-1 bg-linear-to-r from-primary to-primary-dark mx-auto rounded-full shadow-lg shadow-primary/20" />
         </motion.div>

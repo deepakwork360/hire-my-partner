@@ -16,7 +16,7 @@ export default function HeroSection() {
     <section className="relative overflow-visible pb-0 pt-0">
       <div className="relative z-10 w-full">
         <Banner
-          title="Find Your Ideal Partner — Anytime, Anywhere"
+          title="Find Your Ideal Partner Anytime, Anywhere"
           subtitle="Hire a companion on an hourly basis. Safe, verified, and easy to book."
           image="/assets/home-banner.webp"
           buttons={[

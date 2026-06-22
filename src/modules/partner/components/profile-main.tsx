@@ -19,6 +19,15 @@ const outfit = Outfit({
   weight: ["300", "400", "500", "700"],
 });
 
+const moods = [
+  { id: "all", label: "All Vibes", emoji: "✨" },
+  { id: "romantic", label: "Romantic", emoji: "❤️" },
+  { id: "happy", label: "Happy", emoji: "🌟" },
+  { id: "chilled", label: "Chilled", emoji: "🍹" },
+  { id: "adventurous", label: "Adventurous", emoji: "🏔️" },
+  { id: "serious", label: "Serious", emoji: "💼" },
+];
+
 interface ProfileMainProps {
   partner?: Partner;
 }
@@ -26,6 +35,7 @@ interface ProfileMainProps {
 export default function ProfileMain({ partner }: ProfileMainProps) {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const { appearance } = useTheme();
+  const [currentMoodId, setCurrentMoodId] = useState<string>("");
   
   const defaultProfile = {
     id: "1",
@@ -39,6 +49,14 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
     distance: "5 km away",
     image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop",
     banner: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop",
+    pricing: {
+      oneHour: 499,
+      twoHours: 998,
+      threeHours: 1497,
+      fourHours: 1996,
+      fiveHours: 2495,
+      eightHours: 3992,
+    }
   };
 
   const profileData = partner || defaultProfile;
@@ -68,16 +86,102 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
     }
   };
 
-  // Wishlist State
-  const [isWishlisted, setIsWishlisted] = useState(false);
-  const handleWishlistToggle = () => {
-    setIsWishlisted(!isWishlisted);
-    if (!isWishlisted) {
-      toast.success(`Added ${profileData.name} to wishlist!`);
-    } else {
-      toast.success(`Removed ${profileData.name} from wishlist.`);
+  // Favourites State
+  const [isFavorited, setIsFavorited] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const favs = localStorage.getItem("favourite_partners");
+        if (favs) {
+          const favList = JSON.parse(favs);
+          if (Array.isArray(favList)) {
+            setIsFavorited(favList.some((p: any) => String(p.id) === String(profileData.id)));
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, [profileData.id]);
+
+  const handleFavouriteToggle = () => {
+    const nextState = !isFavorited;
+    setIsFavorited(nextState);
+    
+    if (typeof window !== "undefined") {
+      try {
+        const favs = localStorage.getItem("favourite_partners");
+        let favList = favs ? JSON.parse(favs) : [];
+        if (!Array.isArray(favList)) favList = [];
+        
+        if (nextState) {
+          const oneHourRate = profileData.pricing?.oneHour || 499;
+          const companion = {
+            id: profileData.id,
+            name: profileData.name,
+            age: profileData.age,
+            image: profileData.image,
+            location: profileData.location,
+            rating: profileData.rating,
+            verified: profileData.verified,
+            distance: profileData.distance,
+            hourlyRate: `₹${oneHourRate}/hr`,
+            bio: profileData.bio || ""
+          };
+          favList.push(companion);
+        } else {
+          favList = favList.filter((p: any) => String(p.id) !== String(profileData.id));
+        }
+        
+        localStorage.setItem("favourite_partners", JSON.stringify(favList));
+        window.dispatchEvent(new Event("favourites_changed"));
+      } catch (e) {
+        console.error(e);
+      }
     }
   };
+
+  useEffect(() => {
+    const loadPartnerMood = () => {
+      if (typeof window !== "undefined") {
+        try {
+          let savedStr = localStorage.getItem("partner_moods");
+          if (!savedStr) {
+            const defaultMoods = {
+              "1": "romantic",
+              "Gigi Hadid": "romantic",
+              "2": "chilled",
+              "Sabrina Carpenter": "chilled",
+              "3": "serious",
+              "Kristen Stewart": "serious",
+              "4": "adventurous",
+              "Can Yaman": "adventurous"
+            };
+            localStorage.setItem("partner_moods", JSON.stringify(defaultMoods));
+            savedStr = JSON.stringify(defaultMoods);
+          }
+          const savedMoods = JSON.parse(savedStr);
+          const mood = savedMoods[profileData.id] || savedMoods[profileData.name];
+          if (mood && mood !== "all") {
+            setCurrentMoodId(mood);
+          } else {
+            setCurrentMoodId("");
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    };
+
+    loadPartnerMood();
+    window.addEventListener("user_mood_changed", loadPartnerMood);
+    return () => {
+      window.removeEventListener("user_mood_changed", loadPartnerMood);
+    };
+  }, [profileData.id, profileData.name]);
+
+  const currentMoodInfo = moods.find(m => m.id === currentMoodId);
 
   return (
     <section
@@ -172,6 +276,15 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
                   <Users size={12} className="text-primary shrink-0" />
                   {followers.toLocaleString()} Followers
                 </span>
+                {currentMoodInfo && (
+                  <>
+                    <span className="text-text-muted/45 font-light">|</span>
+                    <span className="text-text-main text-[10px] font-black uppercase tracking-widest bg-linear-to-br from-primary/10 to-accent/10 px-3 py-0.5 rounded-lg border border-primary/30 flex items-center gap-1 shadow-sm">
+                      <span className="text-xs shrink-0 leading-none">{currentMoodInfo.emoji}</span>
+                      <span>Mood: {currentMoodInfo.label}</span>
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -203,13 +316,13 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
             </button>
             
             <button 
-              onClick={handleWishlistToggle}
+              onClick={handleFavouriteToggle}
               className="p-3 w-12 h-12 bg-bg-secondary border border-border-main rounded-xl hover:bg-bg-card hover:border-primary/30 transition-all shadow-sm flex items-center justify-center shrink-0 cursor-pointer"
-              title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+              title={isFavorited ? "Remove from Favourites" : "Add to Favourites"}
             >
-              <Heart 
+              <Star 
                 size={16} 
-                className={`transition-all duration-300 ${isWishlisted ? "fill-red-500 text-red-500 scale-110" : "text-text-main"}`} 
+                className={`transition-all duration-300 ${isFavorited ? "fill-amber-400 text-amber-400 scale-110" : "text-text-main"}`} 
               />
             </button>
           </div>

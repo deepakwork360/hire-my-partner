@@ -104,7 +104,7 @@ h6 {
 
 /* Premium Profile Card Styling - Overhauled for "Glowing Pink Dark" Aesthetic (Dating-Focused) */
 .main-profile-card {
-  @apply relative flex flex-col bg-bg-base overflow-hidden transition-all duration-500 ease-in-out border border-border-main;
+  @apply relative flex flex-col bg-bg-base overflow-hidden transition-all duration-500 ease-in-out border border-border-main shrink-0;
   border-radius: 36px;
   width: 100%;
   max-width: 328px;
@@ -528,3 +528,63 @@ html[data-theme='emerald'] .theme-logo-cyan { display: none !important; }
 html[data-theme='emerald'] .theme-logo-violet { display: none !important; }
 html[data-theme='emerald'] .theme-logo-emerald { display: block !important; }
 
+/* ── GLOBAL PREMIUM INPUT STYLING OVERRIDES ── */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+input[type="password"],
+textarea,
+select {
+  background-color: rgba(0, 0, 0, 0.025) !important;
+  border-color: rgba(var(--primary-rgb), 0.35) !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+[data-appearance='dark'] input[type="text"],
+[data-appearance='dark'] input[type="email"],
+[data-appearance='dark'] input[type="tel"],
+[data-appearance='dark'] input[type="number"],
+[data-appearance='dark'] input[type="password"],
+[data-appearance='dark'] textarea,
+[data-appearance='dark'] select {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(var(--primary-rgb), 0.35) !important;
+}
+
+input[type="text"]:hover,
+input[type="email"]:hover,
+input[type="tel"]:hover,
+input[type="number"]:hover,
+input[type="password"]:hover,
+textarea:hover,
+select:hover {
+  background-color: rgba(0, 0, 0, 0.035) !important;
+  border-color: rgba(var(--primary-rgb), 0.60) !important;
+}
+
+[data-appearance='dark'] input[type="text"]:hover,
+[data-appearance='dark'] input[type="email"]:hover,
+[data-appearance='dark'] input[type="tel"]:hover,
+[data-appearance='dark'] input[type="number"]:hover,
+[data-appearance='dark'] input[type="password"]:hover,
+[data-appearance='dark'] textarea:hover,
+[data-appearance='dark'] select:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(var(--primary-rgb), 0.60) !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  background-color: rgb(var(--bg-base)) !important;
+  border-color: rgb(var(--primary-rgb)) !important;
+  box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.20) !important;
+  outline: none !important;
+}

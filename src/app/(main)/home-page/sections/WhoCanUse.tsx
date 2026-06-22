@@ -54,7 +54,7 @@ export default function WhoCanUse() {
             viewport={{ once: true }}
             className={`${rochester.className} text-4xl md:text-5xl lg:text-6xl text-transparent bg-clip-text bg-linear-to-r from-primary via-accent to-primary font-bold text-center tracking-tight py-4 leading-[1.2]`}
           >
-            Who Can Use This?
+            Who Can <span className="text-accent">Use This?</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 10 }}

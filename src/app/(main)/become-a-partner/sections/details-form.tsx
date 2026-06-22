@@ -150,7 +150,7 @@ const TagInput = ({ tags, onChange, placeholder }: TagInputProps) => {
   return (
     <div 
       onClick={() => inputRef.current?.focus()}
-      className="w-full flex flex-wrap items-center gap-2 p-4 min-h-[56px] bg-bg-secondary border border-border-main rounded-2xl focus-within:border-primary focus-within:bg-primary/5 focus-within:shadow-[0_0_25px_rgba(var(--primary-rgb),0.15)] group-hover:border-primary/50 transition-all duration-500 shadow-sm cursor-text"
+      className="w-full flex flex-wrap items-center gap-2 p-4 min-h-[56px] rounded-2xl border transition-all duration-300 shadow-sm cursor-text bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] hover:border-primary/60 focus-within:bg-bg-base dark:focus-within:bg-bg-base focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/20"
     >
       {tagsArray.map((tag, idx) => (
         <span 
@@ -278,10 +278,10 @@ const CheckboxItem = ({
 );
 
 const getInputClass = (hasError = false) =>
-  `w-full bg-bg-secondary border rounded-2xl p-4 md:p-5 text-text-main placeholder:text-text-muted transition-all duration-500 shadow-sm font-medium tracking-wide outline-none ${
+  `w-full border rounded-2xl p-4 md:p-5 text-text-main placeholder:text-text-muted transition-all duration-300 shadow-sm font-medium tracking-wide outline-none focus:outline-none focus:ring-4 ${
     hasError
-      ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] bg-red-500/5"
-      : "border-border-main focus:border-primary focus:bg-primary/5 focus:shadow-[0_0_25px_rgba(var(--primary-rgb),0.15)] group-hover:border-primary/50"
+      ? "bg-red-500/5 border-red-500 focus:border-red-500 focus:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]"
+      : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] hover:border-primary/60 focus:bg-bg-base dark:focus:bg-bg-base focus:border-primary focus:ring-primary/20"
   }`;
 
 const getCroppedImg = (image: HTMLImageElement, crop: Crop): Promise<string> => {
@@ -1145,7 +1145,7 @@ export default function DetailsForm() {
  
                   <InputWrapper>
                     <div className="relative">
-                      <div className={`flex bg-bg-secondary border rounded-2xl overflow-hidden transition-all duration-500 shadow-sm ${showErrors && formData.gender === "Select Gender" ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] bg-red-500/5" : "border-border-main hover:border-primary/50 focus-within:border-primary ring-primary/20"}`}>
+                      <div className={`flex rounded-2xl overflow-hidden transition-all duration-300 border focus-within:ring-4 focus-within:ring-primary/20 ${showErrors && formData.gender === "Select Gender" ? "bg-red-500/5 border-red-500 focus-within:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]" : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:border-primary/60 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] focus-within:bg-bg-base dark:focus-within:bg-bg-base focus-within:border-primary"}`}>
                         <button
                           type="button"
                           onClick={() => setIsGenderOpen(!isGenderOpen)}
@@ -1195,7 +1195,7 @@ export default function DetailsForm() {
                   </InputWrapper>
  
                   <InputWrapper>
-                    <div className={`flex bg-bg-secondary border rounded-2xl overflow-hidden transition-all duration-500 shadow-sm min-h-[60px] ${showErrors && (!formData.age || parseInt(formData.age) < 18) ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] bg-red-500/5" : "border-border-main hover:border-primary/50 focus-within:border-primary ring-primary/20"}`}>
+                    <div className={`flex rounded-2xl overflow-hidden transition-all duration-300 border min-h-[60px] focus-within:ring-4 focus-within:ring-primary/20 ${showErrors && (!formData.age || parseInt(formData.age) < 18) ? "bg-red-500/5 border-red-500 focus-within:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]" : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:border-primary/60 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] focus-within:bg-bg-base dark:focus-within:bg-bg-base focus-within:border-primary"}`}>
                       <input
                         type="number"
                         placeholder="Age"
