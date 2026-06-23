@@ -151,12 +151,12 @@ const TagInput = ({ tags, onChange, placeholder }: TagInputProps) => {
   return (
     <div 
       onClick={() => inputRef.current?.focus()}
-      className="w-full flex flex-wrap items-center gap-2 p-4 min-h-[56px] rounded-2xl border transition-all duration-300 shadow-sm cursor-text bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] hover:border-primary/60 focus-within:bg-bg-base dark:focus-within:bg-bg-base focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/20"
+      className="w-full flex flex-wrap items-center gap-2 p-4 min-h-[56px] rounded-2xl border transition-all duration-300 shadow-sm cursor-text bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:border-primary/60 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/20"
     >
       {tagsArray.map((tag, idx) => (
         <span 
           key={idx} 
-          className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-xl text-text-main text-xs font-semibold border border-white/10 transition-colors hover:bg-white/15 select-none"
+          className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-xl text-text-main text-xs font-semibold transition-colors hover:bg-white/15 select-none"
         >
           {tag}
           <button
@@ -186,7 +186,8 @@ const TagInput = ({ tags, onChange, placeholder }: TagInputProps) => {
         }}
         onBlur={() => addTag(inputValue)}
         onKeyDown={handleKeyDown}
-        className="flex-1 min-w-[120px] bg-transparent border-0 focus:outline-none focus:ring-0 text-text-main text-sm font-semibold placeholder:text-text-muted p-0 m-0"
+        className="flex-1 min-w-[120px] !bg-transparent !border-none !outline-none focus:!outline-none focus:!border-none focus:!ring-0 !ring-0 text-text-main text-sm font-semibold placeholder:text-text-muted p-0 m-0 !shadow-none"
+        style={{ border: "none", outline: "none", boxShadow: "none", background: "transparent", backgroundColor: "transparent" }}
       />
     </div>
   );
@@ -282,7 +283,7 @@ const getInputClass = (hasError = false) =>
   `w-full border rounded-2xl p-4 md:p-5 text-text-main placeholder:text-text-muted transition-all duration-300 shadow-sm font-medium tracking-wide outline-none focus:outline-none focus:ring-4 ${
     hasError
       ? "bg-red-500/5 border-red-500 focus:border-red-500 focus:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]"
-      : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] hover:border-primary/60 focus:bg-bg-base dark:focus:bg-bg-base focus:border-primary focus:ring-primary/20"
+      : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:border-primary/60 focus:border-primary focus:ring-primary/20"
   }`;
 
 const getCroppedImg = (image: HTMLImageElement, crop: Crop): Promise<string> => {
