@@ -3013,6 +3013,7 @@ export default function DetailsForm() {
                         alt="Source"
                         onLoad={onImageLoad}
                         className="max-w-full h-auto block"
+                        crossOrigin="anonymous"
                       />
                     </ReactCrop>
                   </div>

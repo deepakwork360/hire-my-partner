@@ -233,7 +233,6 @@ export default function CircleCropper({ imageSrc, onCropComplete, onCancel }: Ci
         className="relative overflow-hidden bg-black/40 border border-white/10 rounded-2xl cursor-move shadow-inner flex items-center justify-center"
         style={{ width: cropSize, height: cropSize }}
       >
-        {/* Rendered Image */}
         <img
           ref={imgRef}
           src={imageSrc}
@@ -245,6 +244,7 @@ export default function CircleCropper({ imageSrc, onCropComplete, onCancel }: Ci
             height: dimensions.renderedHeight,
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
           }}
+          crossOrigin="anonymous"
         />
 
         {/* Circular Mask Overlay */}
