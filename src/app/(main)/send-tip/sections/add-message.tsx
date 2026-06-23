@@ -72,7 +72,7 @@ export default function AddMessage({
               }}
               placeholder="e.g. Thank you so much — you made the evening truly unforgettable! 🌸"
               rows={5}
-              className="w-full bg-transparent text-text-main placeholder-text-muted/40 text-base md:text-lg font-medium leading-relaxed resize-none outline-none focus:outline-none"
+              className="w-full borderless-textarea bg-transparent border-none border-0 focus:ring-0 text-text-main placeholder-text-muted/40 text-base md:text-lg font-medium leading-relaxed resize-none outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-0"
             />
 
             {/* Bottom bar */}

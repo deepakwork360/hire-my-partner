@@ -50,6 +50,7 @@ import { useAuthStore } from "@/modules/auth/store";
 import { useTheme, Theme } from "@/context/ThemeContext";
 import { toast } from "@/components/ui/toastStore";
 import { mockDb } from "@/modules/auth/data/users";
+import CircleCropper from "@/components/ui/CircleCropper";
 
 const themes: { id: Theme; label: string; color: string }[] = [
   { id: "rose", label: "Rose", color: "bg-rose-500" },
@@ -88,6 +89,10 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
 
   const [mounted, setMounted] = useState(false);
   const [favouriteCompanions, setFavouriteCompanions] = useState<any[]>([]);
+
+  // Crop States for Avatar Upload
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
 
   useEffect(() => {
     const loadFavourites = () => {
@@ -307,40 +312,48 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
         toast.error("Please select an image file.");
         return;
       }
-      const url = URL.createObjectURL(file);
-      updateUserAvatar(url);
-      if (isLivePartner) {
-        try {
-          const savedApp = localStorage.getItem(storageKey);
-          if (savedApp) {
-            const parsed = JSON.parse(savedApp);
-            if (!parsed.formData) parsed.formData = {};
-            parsed.formData.photo = url;
-            localStorage.setItem(storageKey, JSON.stringify(parsed));
-            setPartnerPhoto(url);
-            const nameToFind = parsed.formData.fullName;
-            if (nameToFind) {
-              const approvedStr = localStorage.getItem("approved_partners");
-              if (approvedStr) {
-                const list = JSON.parse(approvedStr);
-                const updatedList = list.map((p: any) => {
-                  if (p.name === nameToFind) {
-                    return { ...p, image: url };
-                  }
-                  return p;
-                });
-                localStorage.setItem("approved_partners", JSON.stringify(updatedList));
-              }
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        setTempImageSrc(reader.result as string);
+        setCropModalOpen(true);
+      });
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const saveCroppedAvatar = (url: string) => {
+    updateUserAvatar(url);
+    if (isLivePartner) {
+      try {
+        const savedApp = localStorage.getItem(storageKey);
+        if (savedApp) {
+          const parsed = JSON.parse(savedApp);
+          if (!parsed.formData) parsed.formData = {};
+          parsed.formData.photo = url;
+          localStorage.setItem(storageKey, JSON.stringify(parsed));
+          setPartnerPhoto(url);
+          const nameToFind = parsed.formData.fullName;
+          if (nameToFind) {
+            const approvedStr = localStorage.getItem("approved_partners");
+            if (approvedStr) {
+              const list = JSON.parse(approvedStr);
+              const updatedList = list.map((p: any) => {
+                if (p.name === nameToFind) {
+                  return { ...p, image: url };
+                }
+                return p;
+              });
+              localStorage.setItem("approved_partners", JSON.stringify(updatedList));
             }
           }
-        } catch (err) {
-          console.error("Failed to sync partner photo upload:", err);
         }
+      } catch (err) {
+        console.error("Failed to sync partner photo upload:", err);
       }
-      window.dispatchEvent(new Event("partnerStatusChange"));
-      window.dispatchEvent(new Event("partner_profile_updated"));
-      toast.success("Profile photo updated successfully!");
     }
+    window.dispatchEvent(new Event("partnerStatusChange"));
+    window.dispatchEvent(new Event("partner_profile_updated"));
+    toast.success("Profile photo updated successfully!");
   };
 
   const presetCities = [
@@ -1092,6 +1105,53 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                       </div>
                     </motion.div>
                   </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Avatar Crop Modal */}
+              <AnimatePresence>
+                {cropModalOpen && tempImageSrc && (
+                  <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="bg-bg-secondary border border-border-main/50 rounded-3xl max-w-sm w-full p-6 flex flex-col gap-5 shadow-2xl relative"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCropModalOpen(false);
+                          setTempImageSrc(null);
+                        }}
+                        className="absolute top-4 right-4 text-text-muted hover:text-text-main cursor-pointer"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
+
+                      <div className="text-center">
+                        <h3 className="text-lg font-bold text-text-main mb-1">
+                          Crop Profile Photo
+                        </h3>
+                        <p className="text-xs text-text-muted">
+                          Drag and zoom the image to adjust your avatar.
+                        </p>
+                      </div>
+
+                      <CircleCropper
+                        imageSrc={tempImageSrc}
+                        onCropComplete={(croppedUrl) => {
+                          saveCroppedAvatar(croppedUrl);
+                          setCropModalOpen(false);
+                          setTempImageSrc(null);
+                        }}
+                        onCancel={() => {
+                          setCropModalOpen(false);
+                          setTempImageSrc(null);
+                        }}
+                      />
+                    </motion.div>
+                  </div>
                 )}
               </AnimatePresence>
 

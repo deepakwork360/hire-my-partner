@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
 import {
@@ -23,6 +24,33 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { TipFormData } from "../page";
+import { partners } from "@/modules/partner/data/partners";
+
+const findPartnerByNameOrId = (nameOrId: string | number): any => {
+  if (!nameOrId) return null;
+  const target = String(nameOrId).toLowerCase();
+
+  if (typeof window !== "undefined") {
+    try {
+      const saved = localStorage.getItem("approved_partners");
+      if (saved) {
+        const localList: any[] = JSON.parse(saved);
+        const found = localList.find((p) => 
+          String(p.id).toLowerCase() === target ||
+          p.name.toLowerCase() === target
+        );
+        if (found) return found;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  return partners.find((p) => 
+    String(p.id).toLowerCase() === target ||
+    p.name.toLowerCase() === target
+  ) || null;
+};
 
 const rochester = Rochester({ subsets: ["latin"], weight: ["400"] });
 const outfit = Outfit({
@@ -58,6 +86,7 @@ export default function ChoosePayment({
   onPaymentMethodChange: (method: string) => void;
   onReset: () => void;
 }) {
+  const router = useRouter();
   const [selectedMethod, setSelectedMethod] = useState<string>("");
   const [addingNew, setAddingNew] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -87,6 +116,41 @@ export default function ChoosePayment({
 
   const handleSubmit = () => {
     if (!canSubmit) return;
+
+    if (typeof window !== "undefined") {
+      try {
+        const transaction = {
+          id: `TXN-${Date.now()}`,
+          type: "tip",
+          sender: "You",
+          amount: tipAmount,
+          date: new Date().toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }),
+          rawDate: new Date().toISOString().split("T")[0],
+          time: new Date().toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          message: formData.message,
+          isVirtual: true,
+          partnerId: formData.partnerId,
+        };
+
+        const existing = localStorage.getItem("hire_my_partner_partner_earnings");
+        const earningsList = existing ? JSON.parse(existing) : [];
+        localStorage.setItem(
+          "hire_my_partner_partner_earnings",
+          JSON.stringify([transaction, ...earningsList])
+        );
+      } catch (e) {
+        console.error("Failed to save tip transaction", e);
+      }
+    }
+
     console.log("TIP SUBMITTED:", formData);
     setShowSuccess(true);
   };
@@ -94,11 +158,16 @@ export default function ChoosePayment({
   const handleCloseSuccess = () => {
     setShowSuccess(false);
     onReset();
+    router.push("/my-booking");
   };
 
   const tipDisplay =
     formData.tipLabel ||
     (formData.customTipAmount ? `₹${formData.customTipAmount}` : "");
+
+  const partner = findPartnerByNameOrId(formData.partnerId);
+  const partnerImage = partner?.image || "/images/girl1.webp";
+  const partnerLocation = partner?.location?.split(",")[0]?.trim() || "Bengaluru";
 
   return (
     <>
@@ -183,7 +252,7 @@ export default function ChoosePayment({
                   <div className="flex items-center gap-4 p-5 border-b border-border-main">
                     <div className="relative w-14 h-14 rounded-2xl overflow-hidden border border-border-main shrink-0">
                       <Image
-                        src="/images/girl1.webp"
+                        src={partnerImage}
                         alt={formData.recipientName}
                         fill
                         className="object-cover"
@@ -193,7 +262,7 @@ export default function ChoosePayment({
                       <p className="text-text-main font-black text-base">{formData.recipientName}</p>
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         <span className="flex items-center gap-1 text-text-muted text-xs font-medium">
-                          <MapPin size={11} className="text-primary" /> Bengaluru
+                          <MapPin size={11} className="text-primary" /> {partnerLocation}
                         </span>
                       </div>
                     </div>

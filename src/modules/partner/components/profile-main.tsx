@@ -218,8 +218,8 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
         })()}
 
         {/* Profile Info Header (with overlapping circular avatar) */}
-        <div className="flex flex-col lg:flex-row items-center lg:items-center justify-between gap-6 px-6 sm:px-12 pb-8 relative z-20">
-          <div className="flex flex-col sm:flex-row items-center sm:items-center gap-6 text-center sm:text-left">
+        <div className="flex flex-col lg:flex-row items-center lg:items-center justify-between gap-6 px-6 sm:px-12 pb-8 relative z-20 w-full">
+          <div className="flex flex-col sm:flex-row items-center sm:items-center gap-6 text-center sm:text-left w-full sm:w-auto">
             {/* Circular Avatar */}
             <div className="relative shrink-0 -mt-20 sm:-mt-24">
               <div
@@ -245,7 +245,7 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
             </div>
 
             {/* Name, Age, Rating */}
-            <div className="pb-1">
+            <div className="pb-1 w-full sm:w-auto">
               <h1 className={`${rochester.className} text-4xl sm:text-5xl md:text-6xl text-text-main font-bold leading-tight flex items-baseline justify-center sm:justify-start gap-3`}>
                 {profileData.name}
                 {profileData.age && (
@@ -256,30 +256,32 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
               </h1>
               
               {/* Stars & Reviews */}
-              <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
-                <div className="flex text-amber-400">
-                  {[...Array(5)].map((_, i) => {
-                    const isFilled = rawRating >= i + 1;
-                    return (
-                      <Star
-                        key={i}
-                        size={14}
-                        className={isFilled ? "fill-amber-400 text-amber-400" : "text-text-muted/40"}
-                      />
-                    );
-                  })}
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1.5 mt-2">
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex text-amber-400">
+                    {[...Array(5)].map((_, i) => {
+                      const isFilled = rawRating >= i + 1;
+                      return (
+                        <Star
+                          key={i}
+                          size={14}
+                          className={isFilled ? "fill-amber-400 text-amber-400" : "text-text-muted/40"}
+                        />
+                      );
+                    })}
+                  </div>
+                  <span className="text-xs font-bold text-text-main">{ratingScore}</span>
+                  <span className="text-text-muted text-[10px] font-bold">({reviewsCount} Reviews)</span>
                 </div>
-                <span className="text-xs font-bold text-text-main">{ratingScore}</span>
-                <span className="text-text-muted text-[10px] font-bold">({reviewsCount} Reviews)</span>
-                <span className="text-text-muted/45 font-light">|</span>
-                <span className="text-text-main text-[10px] font-bold uppercase tracking-wider bg-primary/10 px-2.5 py-0.5 rounded-lg border border-primary/20 flex items-center gap-1.5 shadow-sm">
+                <span className="hidden sm:inline text-text-muted/45 font-light">|</span>
+                <span className="text-text-main text-[10px] font-bold uppercase tracking-wider bg-primary/10 px-2.5 py-0.5 rounded-lg border border-primary/20 flex items-center gap-1.5 shadow-sm shrink-0">
                   <Users size={12} className="text-primary shrink-0" />
                   {followers.toLocaleString()} Followers
                 </span>
                 {currentMoodInfo && (
                   <>
-                    <span className="text-text-muted/45 font-light">|</span>
-                    <span className="text-text-main text-[10px] font-black uppercase tracking-widest bg-linear-to-br from-primary/10 to-accent/10 px-3 py-0.5 rounded-lg border border-primary/30 flex items-center gap-1 shadow-sm">
+                    <span className="hidden sm:inline text-text-muted/45 font-light">|</span>
+                    <span className="text-text-main text-[10px] font-black uppercase tracking-widest bg-linear-to-br from-primary/10 to-accent/10 px-3 py-0.5 rounded-lg border border-primary/30 flex items-center gap-1 shadow-sm shrink-0">
                       <span className="text-xs shrink-0 leading-none">{currentMoodInfo.emoji}</span>
                       <span>Mood: {currentMoodInfo.label}</span>
                     </span>

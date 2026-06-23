@@ -4,7 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, User, MessageSquare, CreditCard, CheckCircle2, Gift as GiftIcon, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Rochester, Outfit } from "next/font/google";
+import { partners } from "@/modules/partner/data/partners";
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -20,6 +22,7 @@ interface GiftModalProps {
   isOpen: boolean;
   onClose: () => void;
   recipientName: string;
+  partnerId: string | number;
   selectedGift: {
     image: string;
     title: string;
@@ -33,10 +36,21 @@ export default function GiftModal({
   isOpen,
   onClose,
   recipientName,
+  partnerId,
   selectedGift,
 }: GiftModalProps) {
+  const router = useRouter();
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<ModalStatus>("confirm");
+  const [giftType, setGiftType] = useState<"virtual" | "physical">("virtual");
+  const [partner, setPartner] = useState<any>(null);
+
+  const handleClose = () => {
+    onClose();
+    if (status === "success") {
+      router.push("/my-booking");
+    }
+  };
 
   // Reset status when modal closes
   useEffect(() => {
@@ -44,10 +58,48 @@ export default function GiftModal({
       const timer = setTimeout(() => {
         setStatus("confirm");
         setMessage("");
+        setGiftType("virtual");
       }, 500);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen && partnerId) {
+      const target = String(partnerId).toLowerCase();
+      let found = null;
+      if (typeof window !== "undefined") {
+        try {
+          const saved = localStorage.getItem("approved_partners");
+          if (saved) {
+            const localList: any[] = JSON.parse(saved);
+            found = localList.find((p) => 
+              String(p.id).toLowerCase() === target ||
+              p.name.toLowerCase() === target
+            );
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      if (!found) {
+        found = partners.find((p: any) => 
+          String(p.id).toLowerCase() === target ||
+          p.name.toLowerCase() === target
+        );
+      }
+      setPartner(found);
+    }
+  }, [isOpen, partnerId]);
+
+  const getRegisteredAddress = () => {
+    if (!partner) return "Loading registered address...";
+    const parts = [];
+    if (partner.location) parts.push(partner.location);
+    if (partner.pincode) parts.push(partner.pincode);
+    if (partner.country) parts.push(partner.country);
+    return parts.join(", ");
+  };
 
   if (!selectedGift) return null;
 
@@ -55,6 +107,50 @@ export default function GiftModal({
     setStatus("processing");
     // Simulate payment processing delay
     await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // Save to localStorage if virtual
+    if (typeof window !== "undefined") {
+      try {
+        const rawPriceStr = selectedGift.price.replace(/[^0-9]/g, "");
+        const priceNum = parseInt(rawPriceStr, 10) || 0;
+
+        const transaction = {
+          id: `TXN-${Date.now()}`,
+          type: "gift",
+          sender: "You",
+          amount: priceNum,
+          date: new Date().toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }),
+          rawDate: new Date().toISOString().split("T")[0],
+          time: new Date().toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          giftTitle: selectedGift.title,
+          giftImage: selectedGift.image,
+          message: message,
+          isVirtual: giftType === "virtual",
+          partnerId: partnerId,
+          shippingAddress: giftType === "physical" ? getRegisteredAddress() : null,
+        };
+
+        if (giftType === "virtual") {
+          const existing = localStorage.getItem("hire_my_partner_partner_earnings");
+          const earningsList = existing ? JSON.parse(existing) : [];
+          localStorage.setItem(
+            "hire_my_partner_partner_earnings",
+            JSON.stringify([transaction, ...earningsList])
+          );
+        }
+      } catch (e) {
+        console.error("Failed to save transaction", e);
+      }
+    }
+
     setStatus("success");
   };
 
@@ -77,9 +173,9 @@ export default function GiftModal({
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-2xl bg-bg-base border border-border-main rounded-[44px] shadow-2xl overflow-hidden"
+            className="relative w-full max-w-2xl bg-bg-base border border-border-main rounded-[44px] shadow-2xl overflow-hidden my-auto"
           >
-            <div className="p-8 md:p-12">
+            <div className="p-8 md:p-12 max-h-[85vh] overflow-y-auto custom-scrollbar">
               <AnimatePresence mode="wait">
                 {status === "confirm" && (
                   <motion.div
@@ -99,11 +195,7 @@ export default function GiftModal({
                     </div>
 
                     <div className="mb-10">
-                      <div className="flex items-center gap-3 text-primary mb-3">
-                        <User size={18} className="drop-shadow-sm" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.4em]">Confirmation Required</span>
-                      </div>
-                      <h2 className="text-4xl md:text-5xl font-black text-text-main tracking-tight leading-tight">
+                      <h2 className={`text-4xl md:text-5xl text-text-main tracking-tight leading-tight ${rochester.className}`}>
                         Send gift to <span className="text-primary drop-shadow-sm">{recipientName}</span>
                       </h2>
                     </div>
@@ -120,6 +212,66 @@ export default function GiftModal({
                       </div>
                     </div>
 
+                    {/* Gift Delivery Method Selection */}
+                    <div className="mb-8">
+                      <label className="flex items-center gap-3 text-text-muted mb-4 px-2">
+                        <GiftIcon size={16} className="text-primary" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Select Delivery Mode</span>
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div
+                          onClick={() => setGiftType("virtual")}
+                          className={`cursor-pointer rounded-3xl p-5 border text-left flex flex-col gap-1.5 transition-all ${
+                            giftType === "virtual"
+                              ? "bg-primary/10 border-primary shadow-[0_4px_20px_rgba(236,72,153,0.15)]"
+                              : "bg-bg-secondary border-border-main hover:bg-bg-card"
+                          }`}
+                        >
+                          <span className="text-text-main font-bold text-sm">Virtual Gift</span>
+                          <span className="text-[11px] text-text-muted leading-relaxed">
+                            Sent virtually. The gift's value is added directly to the partner's account earnings.
+                          </span>
+                        </div>
+                        <div
+                          onClick={() => setGiftType("physical")}
+                          className={`cursor-pointer rounded-3xl p-5 border text-left flex flex-col gap-1.5 transition-all ${
+                            giftType === "physical"
+                              ? "bg-primary/10 border-primary shadow-[0_4px_20px_rgba(236,72,153,0.15)]"
+                              : "bg-bg-secondary border-border-main hover:bg-bg-card"
+                          }`}
+                        >
+                          <span className="text-text-main font-bold text-sm">Physical Gift</span>
+                          <span className="text-[11px] text-text-muted leading-relaxed">
+                            A real item will be shipped directly to the partner's address.
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Conditional Address Fields */}
+                    {giftType === "physical" && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        className="mb-8"
+                      >
+                        <label className="flex items-center gap-3 text-text-muted mb-4 px-2">
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em]">Shipping Destination</span>
+                        </label>
+                        <div className="bg-bg-secondary border border-border-main rounded-3xl p-6 text-left">
+                          <p className="text-[10px] text-text-muted mb-2 font-bold uppercase tracking-wider">
+                            Partner's Registered Address
+                          </p>
+                          <div className="p-4 bg-bg-card border border-border-main rounded-2xl text-text-main font-semibold text-xs md:text-sm">
+                            {getRegisteredAddress()}
+                          </div>
+                          <p className="text-[10px] text-text-muted mt-3 leading-relaxed">
+                            Note: The physical item will be automatically dispatched to this registered address on file.
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+
                     <div className="mb-12">
                       <label className="flex items-center gap-3 text-text-muted mb-4 px-2">
                         <MessageSquare size={16} className="text-primary" />
@@ -134,14 +286,14 @@ export default function GiftModal({
                     </div>
 
                     <div className="flex items-center gap-3 w-full">
-                      <button 
-                        onClick={onClose} 
+                      <button
+                        onClick={onClose}
                         className="flex-[1.2] cursor-pointer h-14 rounded-2xl bg-bg-secondary text-text-main font-bold tracking-widest uppercase text-[9px] hover:bg-border-main/5 transition-all border border-border-main shadow-sm"
                       >
                         Cancel
                       </button>
-                      <button 
-                        onClick={handleSend} 
+                      <button
+                        onClick={handleSend}
                         className="flex-2 cursor-pointer h-14 rounded-2xl bg-linear-to-r from-primary to-primary-dark text-white font-black tracking-[0.2em] uppercase text-[9px] shadow-xl shadow-primary/20 flex items-center justify-center gap-3 group hover:scale-[1.02] active:scale-[0.98] transition-all"
                       >
                         Confirm & Pay <CreditCard size={16} className="transition-transform group-hover:translate-x-1" />
@@ -197,9 +349,16 @@ export default function GiftModal({
                     <div className="bg-bg-secondary border border-border-main rounded-[32px] p-8 w-full mb-10 relative overflow-hidden shadow-sm">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full" />
                       
-                      <p className="text-text-muted text-center leading-relaxed font-medium mb-8 text-lg">
-                        Your gift <span className="text-text-main font-black italic">"{selectedGift.title}"</span> has been scheduled for delivery to <span className="text-primary font-black">{recipientName}</span>. 
-                        They will receive it on <span className="text-text-main font-black">April 14, 2024</span>, before their booking time.
+                      <p className="text-text-muted text-center leading-relaxed font-medium mb-8 text-sm md:text-base">
+                        {giftType === "virtual" ? (
+                          <>
+                            Your virtual gift <span className="text-text-main font-black italic">"{selectedGift.title}"</span> was sent to <span className="text-primary font-black">{recipientName}</span>. The cash value of <span className="text-emerald-500 font-bold">{selectedGift.price}</span> has been credited to their account.
+                          </>
+                        ) : (
+                          <>
+                            Your physical gift <span className="text-text-main font-black italic">"{selectedGift.title}"</span> has been scheduled for shipping to <span className="text-primary font-black">{recipientName}</span>'s registered address: <span className="text-text-main font-bold">{getRegisteredAddress()}</span>.
+                          </>
+                        )}
                       </p>
 
                       {/* Summary Connection View */}
@@ -207,7 +366,7 @@ export default function GiftModal({
                         {/* Recipient Circle */}
                         <div className="relative group">
                            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-primary/30 overflow-hidden relative z-10 shadow-2xl">
-                             <Image src="/images/girl1.webp" alt={recipientName} fill className="object-cover" />
+                             <Image src={partner?.image || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256"} alt={recipientName} fill className="object-cover object-top" />
                            </div>
                            <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center z-20 shadow-lg border-2 border-bg-base">
                              <User size={14} className="text-white font-bold" />
@@ -237,7 +396,7 @@ export default function GiftModal({
                     </div>
 
                     <button
-                      onClick={onClose}
+                      onClick={handleClose}
                       className="w-full h-16 cursor-pointer rounded-2xl bg-text-main text-bg-base font-black tracking-[0.4em] uppercase text-xs hover:opacity-90 transition-all shadow-xl active:scale-95"
                     >
                       Brilliant

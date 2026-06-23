@@ -65,7 +65,7 @@ function parseDateTime(dateStr: string, timeStr: string): Date | null {
   return new Date(year, month - 1, day, hours, minutes);
 }
 
-export const getFortyMinutesAheadTime = () => {
+export const getThirtyMinutesAheadTime = () => {
   const date = new Date(Date.now() + 40 * 60 * 1000);
   let hours = date.getHours();
   const minutes = date.getMinutes();
@@ -100,7 +100,7 @@ function PremiumTimePicker({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const defaultTimeInfo = getFortyMinutesAheadTime();
+  const defaultTimeInfo = getThirtyMinutesAheadTime();
   const [customHour, setCustomHour] = useState(defaultTimeInfo.hour);
   const [customMinute, setCustomMinute] = useState(defaultTimeInfo.minute);
   const [customAmpm, setCustomAmpm] = useState(defaultTimeInfo.ampm);
@@ -114,7 +114,7 @@ function PremiumTimePicker({
         setCustomAmpm(match[3].toUpperCase());
       }
     } else {
-      const defaultInfo = getFortyMinutesAheadTime();
+      const defaultInfo = getThirtyMinutesAheadTime();
       setCustomHour(defaultInfo.hour);
       setCustomMinute(defaultInfo.minute);
       setCustomAmpm(defaultInfo.ampm);
@@ -181,7 +181,7 @@ function PremiumTimePicker({
     const targetDate = parseDateTime(selectedDate, timeStr);
     if (!targetDate) return false;
 
-    return (targetDate.getTime() - today.getTime()) >= 40 * 60 * 1000;
+    return (targetDate.getTime() - today.getTime()) >= 30 * 60 * 1000;
   };
 
   const handleApplyCustom = () => {
@@ -191,8 +191,8 @@ function PremiumTimePicker({
       const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
       if (selectedDate === todayStr) {
         const targetDate = parseDateTime(selectedDate, formattedCustom);
-        if (!targetDate || (targetDate.getTime() - today.getTime()) < 40 * 60 * 1000) {
-          toast.error("Time must be at least 40 minutes in the future from now.");
+        if (!targetDate || (targetDate.getTime() - today.getTime()) < 30 * 60 * 1000) {
+          toast.error("Time must be at least 30 minutes in the future from now.");
           return;
         }
       }
@@ -435,7 +435,7 @@ export default function BookDetails() {
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     if (customDate === todayStr) {
       const targetDate = parseDateTime(customDate, customTime);
-      if (!targetDate || (targetDate.getTime() - today.getTime()) < 40 * 60 * 1000) {
+      if (!targetDate || (targetDate.getTime() - today.getTime()) < 30 * 60 * 1000) {
         return false;
       }
     }
@@ -506,8 +506,8 @@ export default function BookDetails() {
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     if (customDate === todayStr) {
       const targetDate = parseDateTime(customDate, customTime);
-      if (!targetDate || (targetDate.getTime() - today.getTime()) < 40 * 60 * 1000) {
-        toast.error("Please select a time at least 40 minutes in the future.");
+      if (!targetDate || (targetDate.getTime() - today.getTime()) < 30 * 60 * 1000) {
+        toast.error("Please select a time at least 30 minutes in the future.");
         return;
       }
     }
@@ -571,7 +571,7 @@ export default function BookDetails() {
                       setCustomDate(val);
                       if (val) {
                         if (!customTime) {
-                          const defaultTime = getFortyMinutesAheadTime().formatted;
+                          const defaultTime = getThirtyMinutesAheadTime().formatted;
                           setCustomTime(defaultTime);
                         } else {
                           // Validate if today's date is selected and current customTime is invalid
@@ -579,8 +579,8 @@ export default function BookDetails() {
                           const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
                           if (val === todayStr) {
                             const targetDate = parseDateTime(val, customTime);
-                            if (!targetDate || (targetDate.getTime() - today.getTime()) < 40 * 60 * 1000) {
-                              const defaultTime = getFortyMinutesAheadTime().formatted;
+                            if (!targetDate || (targetDate.getTime() - today.getTime()) < 30 * 60 * 1000) {
+                              const defaultTime = getThirtyMinutesAheadTime().formatted;
                               setCustomTime(defaultTime);
                               return;
                             }

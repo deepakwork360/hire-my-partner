@@ -3,11 +3,37 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
 import { Calendar, Filter, FileText, X, CheckCircle2, TrendingUp } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import PremiumDatePicker from "@/components/ui/PremiumDatePicker";
+import { useAuthStore } from "@/modules/auth/store";
+import { partners } from "@/modules/partner/data/partners";
 
 const rochester = Rochester({ subsets: ["latin"], weight: ["400"] });
 const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "800"] });
+
+const getLoggedPartner = (currentUser: any) => {
+  if (!currentUser) return null;
+  try {
+    const approvedStr = localStorage.getItem("approved_partners");
+    if (approvedStr) {
+      const list = JSON.parse(approvedStr);
+      const found = list.find((p: any) => 
+        (p.id && String(p.id).toLowerCase() === String(currentUser.id).toLowerCase()) ||
+        (p.name && p.name.toLowerCase() === currentUser.name.toLowerCase())
+      );
+      if (found) return found;
+    }
+  } catch (e) {
+    console.error(e);
+  }
+  
+  const nameLower = currentUser.name?.toLowerCase();
+  const matched = partners.find(p => 
+    p.name.toLowerCase() === nameLower ||
+    String(p.id).toLowerCase() === String(currentUser.id).toLowerCase()
+  );
+  return matched || null;
+};
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 
@@ -24,14 +50,54 @@ const rawEarningsData = [
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function Overview() {
+  const { user } = useAuthStore();
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [filterApplied, setFilterApplied] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [customEarnings, setCustomEarnings] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const existing = localStorage.getItem("hire_my_partner_partner_earnings");
+        if (existing) {
+          setCustomEarnings(JSON.parse(existing));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
 
   const { items, totalAmount } = useMemo(() => {
+    const loggedPartner = getLoggedPartner(user);
+    if (!loggedPartner) {
+      return { items: [], totalAmount: 0 };
+    }
+    const filteredCustom = customEarnings.filter((item: any) => 
+      String(item.partnerId).toLowerCase() === String(loggedPartner.id).toLowerCase()
+    );
+
+    const combined = [
+      ...filteredCustom.map((item) => ({
+        id: item.id,
+        date: item.date,
+        rawDate: item.rawDate,
+        time: item.time,
+        amount: item.amount,
+        isDynamic: true,
+        type: item.type,
+      })),
+      ...rawEarningsData.map((item) => ({
+        ...item,
+        isDynamic: false,
+        type: undefined,
+      })),
+    ];
+
     // 1. Filter logic using string comparison (reliable for YYYY-MM-DD)
-    const filtered = rawEarningsData.filter(item => {
+    const filtered = combined.filter(item => {
       if (!filterApplied || (!startDate && !endDate)) return true;
       if (startDate && item.rawDate < startDate) return false;
       if (endDate && item.rawDate > endDate) return false;
@@ -45,7 +111,7 @@ export default function Overview() {
     const total = sorted.reduce((sum, item) => sum + item.amount, 0);
 
     return { items: sorted, totalAmount: total };
-  }, [startDate, endDate, filterApplied]);
+  }, [startDate, endDate, filterApplied, customEarnings, user]);
 
   const handleExport = () => {
     setIsExporting(true);
@@ -193,6 +259,11 @@ export default function Overview() {
                           <td className="px-6 xl:px-8 py-5 xl:py-7">
                              <div className="inline-block px-4 py-1.5 rounded-full bg-linear-to-r from-primary/10 to-accent/5 border border-primary/10 text-text-main text-xs xl:text-sm font-medium">
                                 {row.date}
+                                {row.isDynamic && (
+                                   <span className="ml-2 px-2.5 py-1 rounded-md bg-primary/20 text-primary border border-primary/30 text-[9px] uppercase font-black tracking-widest shrink-0">
+                                      {row.type}
+                                   </span>
+                                )}
                              </div>
                           </td>
                           <td className="px-6 xl:px-8 py-5 xl:py-7">

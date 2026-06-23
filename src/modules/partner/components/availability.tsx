@@ -48,7 +48,7 @@ function parseDateTime(dateStr: string, timeStr: string): Date | null {
   }
 
   return new Date(year, month - 1, day, hours, minutes);
-}export const getFortyMinutesAheadTime = () => {
+}export const getThirtyMinutesAheadTime = () => {
   const date = new Date(Date.now() + 40 * 60 * 1000);
   let hours = date.getHours();
   const minutes = date.getMinutes();
@@ -83,7 +83,7 @@ function PremiumTimePicker({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const defaultTimeInfo = getFortyMinutesAheadTime();
+  const defaultTimeInfo = getThirtyMinutesAheadTime();
   const [customHour, setCustomHour] = useState(defaultTimeInfo.hour);
   const [customMinute, setCustomMinute] = useState(defaultTimeInfo.minute);
   const [customAmpm, setCustomAmpm] = useState(defaultTimeInfo.ampm);
@@ -97,7 +97,7 @@ function PremiumTimePicker({
         setCustomAmpm(match[3].toUpperCase());
       }
     } else {
-      const defaultInfo = getFortyMinutesAheadTime();
+      const defaultInfo = getThirtyMinutesAheadTime();
       setCustomHour(defaultInfo.hour);
       setCustomMinute(defaultInfo.minute);
       setCustomAmpm(defaultInfo.ampm);
@@ -469,16 +469,20 @@ export default function Availability({ partner }: AvailabilityProps) {
     setMinDate(new Date());
   }, []);
 
-  // Reset time if it becomes invalid when switching date to today
+  // Reset/adjust time if it becomes invalid when switching date to today
   useEffect(() => {
-    if (selectedDate && selectedTime) {
+    if (selectedDate) {
       const today = new Date();
       const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
       if (selectedDate === todayStr) {
-        const targetDate = parseDateTime(selectedDate, selectedTime);
-        if (!targetDate || (targetDate.getTime() - today.getTime()) < 30 * 60 * 1000) {
-          setSelectedTime("");
-          toast.info("Time reset: Please select a time at least 30 minutes in the future.");
+        if (selectedTime) {
+          const targetDate = parseDateTime(selectedDate, selectedTime);
+          if (!targetDate || (targetDate.getTime() - today.getTime()) < 30 * 60 * 1000) {
+            setSelectedTime(getThirtyMinutesAheadTime().formatted);
+            toast.info("Time adjusted: Applied the default booking time for today.");
+          }
+        } else {
+          setSelectedTime(getThirtyMinutesAheadTime().formatted);
         }
       }
     }
@@ -576,7 +580,6 @@ export default function Availability({ partner }: AvailabilityProps) {
       return;
     }
 
-    // Double check today's date validation on submit
     const today = new Date();
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     if (selectedDate === todayStr) {
@@ -640,8 +643,12 @@ export default function Availability({ partner }: AvailabilityProps) {
                       setSelectedDate(val);
                       if (val) {
                         setShowErrors(false);
-                        if (!selectedTime) {
-                          setSelectedTime(getFortyMinutesAheadTime().formatted);
+                        const today = new Date();
+                        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                        if (val === todayStr) {
+                          setSelectedTime(getThirtyMinutesAheadTime().formatted);
+                        } else if (!selectedTime) {
+                          setSelectedTime(getThirtyMinutesAheadTime().formatted);
                         }
                       }
                     }}

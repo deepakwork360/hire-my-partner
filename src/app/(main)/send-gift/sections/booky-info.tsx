@@ -29,8 +29,22 @@ const outfit = Outfit({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800"],
 });
-export default function BookyInfo() {
+interface BookyInfoProps {
+  partner: any;
+  bookingDate: string;
+  bookingTime: string;
+}
+
+export default function BookyInfo({ partner, bookingDate, bookingTime }: BookyInfoProps) {
   const [isHovered, setIsHovered] = useState(false);
+
+  const profileHref = partner
+    ? `/partners/${partner.name.toLowerCase().replace(/\s+/g, "-")}`
+    : "/partners/1";
+
+  const bookingHref = partner
+    ? `/partners/${partner.name.toLowerCase().replace(/\s+/g, "-")}#booking-section`
+    : "/partners/1#booking-section";
 
   return (
     <section
@@ -62,7 +76,7 @@ export default function BookyInfo() {
               Booking <span className="text-primary">Information</span>
             </h1>
             <p className="text-text-muted max-w-xl">
-              Review your official reservation details and manage your booking preferences below.
+              Review reservation details and send a gift to show your appreciation.
             </p>
           </motion.div>
         </div>
@@ -108,10 +122,10 @@ export default function BookyInfo() {
             {/* Professional Scrim for white-background uploads */}
             <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent z-10 shadow-[inset_0_-150px_100px_-50px_rgba(0,0,0,0.4)]" />
             <Image
-              src="/images/girl1.webp"
-              alt="Aarushi Kumari"
+              src={partner?.image || "/images/girl1.webp"}
+              alt={partner?.name || "Partner"}
               fill
-              className="object-cover transition-transform duration-1000 group-hover:scale-105"
+              className="object-cover object-top transition-transform duration-1000 group-hover:scale-105"
               priority
             />
 
@@ -132,17 +146,17 @@ export default function BookyInfo() {
                   <motion.h3
                     className={`${rochester.className} text-5xl md:text-7xl text-white! mb-2 leading-none drop-shadow-[0_10px_40px_rgba(0,0,0,0.5)]`}
                   >
-                    Aarushi Kumari
+                    {partner?.name || "Aarushi Kumari"}
                   </motion.h3>
                   <div className="w-24 h-1.5 bg-linear-to-r from-primary via-primary/50 to-transparent rounded-full mb-4 shadow-lg shadow-primary/20" />
                 </div>
                 <div className="flex items-center gap-3 bg-black/30 backdrop-blur-md px-4 py-1.5 rounded-full w-fit border border-white/20">
                   <span className="text-white text-[10px] font-black uppercase tracking-widest">
-                    Age 24
+                    Age {partner?.age || 24}
                   </span>
                   <div className="w-1 h-1 bg-primary rounded-full" />
                   <span className="text-white text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
-                    <MapPin className="w-3 h-3 text-primary" /> Bengaluru
+                    <MapPin className="w-3 h-3 text-primary" /> {partner?.location?.split(",")[0]?.trim() || "Bengaluru"}
                   </span>
                 </div>
               </div>
@@ -175,8 +189,8 @@ export default function BookyInfo() {
                       Reservation
                     </span>
                   </div>
-                  <div className="text-text-main font-black text-lg lg:text-xl">
-                    APRIL 14, 2024
+                  <div className="text-text-main font-black text-lg lg:text-xl uppercase">
+                    {bookingDate}
                   </div>
                 </div>
 
@@ -188,31 +202,24 @@ export default function BookyInfo() {
                       Scheduled
                     </span>
                   </div>
-                  <div className="text-text-main font-black text-lg lg:text-xl uppercase">
-                    07:00 PM
+                  <div className="text-text-main font-black text-sm lg:text-base whitespace-nowrap">
+                    {bookingTime}
                   </div>
                 </div>
 
                 {/* QUOTE / DETAIL - Smaller */}
                 <div className="col-span-2 bg-bg-secondary p-4 rounded-2xl border border-border-main mt-2">
                   <p className="text-text-muted text-xs md:text-sm leading-relaxed font-medium italic opacity-80">
-                    "An exclusive engagement tailored for sophisticated
-                    connection and shared luxury moments."
+                    "{partner?.bio || "An exclusive engagement tailored for sophisticated connection and shared luxury moments."}"
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* REDESIGNED Action Buttons - Simplified */}
-            <div className="mt-12 flex items-center justify-between gap-6 px-2 w-full">
-              <Link href="/partners/1" className="shrink-0">
-                <span className="text-text-muted text-[10px] font-black uppercase tracking-[0.3em] hover:text-primary transition-colors cursor-pointer border-b border-transparent hover:border-primary pb-1 whitespace-nowrap">
-                  View Profile
-                </span>
-              </Link>
-
+            {/* REDESIGNED Action Buttons - Styled View Profile only */}
+            <div className="mt-12 flex items-center justify-center w-full px-2">
               <MotionLink
-                href="/partners/1#booking-section"
+                href={profileHref}
                 animate={{
                   boxShadow: isHovered
                     ? [
@@ -227,10 +234,10 @@ export default function BookyInfo() {
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
-                className="flex-1 h-14 bg-linear-to-r from-primary to-primary-dark rounded-2xl text-white font-black text-[10px] uppercase tracking-[0.4em] shadow-[0_15px_30px_-5px_rgba(var(--primary-rgb),0.4)] hover:-translate-y-1 active:scale-95 transition-all relative overflow-hidden group flex items-center justify-center"
+                className="w-full h-14 bg-linear-to-r from-primary to-primary-dark rounded-2xl text-white font-black text-[10px] uppercase tracking-[0.4em] shadow-[0_15px_30px_-5px_rgba(var(--primary-rgb),0.4)] hover:-translate-y-1 active:scale-95 transition-all relative overflow-hidden group flex items-center justify-center cursor-pointer"
               >
                 <span className="relative z-10 flex items-center justify-center gap-3">
-                  Book Now <Zap className="w-3 h-3 fill-white" />
+                  View Profile <Zap className="w-3 h-3 fill-white" />
                 </span>
                 <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
               </MotionLink>

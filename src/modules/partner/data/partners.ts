@@ -349,7 +349,17 @@ export const partners: any[] = [
       { id: "k-1", image: "https://i.pinimg.com/736x/a7/1d/1d/a71d1d6e64c971001bed055b55f3d2d8.jpg" },
       { id: "k-2", image: "https://i1-e.pinimg.com/736x/e8/9e/71/e89e711994807f7cb90a57b11badfc55.jpg" },
       { id: "k-3", image: "https://i1-e.pinimg.com/1200x/94/5c/31/945c31e3eef21dca15292325b11b5dbf.jpg" },
-      { id: "k-4", image: "https://i.pinimg.com/736x/b0/05/20/b0052092fb7e32a79156fba029f19008.jpg" }
+      { id: "k-4", image: "https://i.pinimg.com/736x/b0/05/20/b0052092fb7e32a79156fba029f19008.jpg" },
+      {id: "k-5", image: "https://i.pinimg.com/1200x/86/09/88/860988254caac5ba2f5799040aaa7e65.jpg"},
+      {id: "k-6", image: "https://i.pinimg.com/1200x/33/80/9a/33809aedd37f363a41c2014da595f18b.jpg"},
+      {id: "k-7", image: "https://i.pinimg.com/736x/f4/03/c5/f403c53e4d5e1e65ccf64f6db795533f.jpg"},
+      {id: "k-8", image: "https://i.pinimg.com/736x/6a/30/ed/6a30ed8254e0f219ffda9868a99a522a.jpg"},
+      {id: "k-9", image: "https://i.pinimg.com/control1/1200x/4c/fc/c1/4cfcc13ad1e789cd7d9fb4334395c7b6.jpg"},
+      {id: "k-10", image: "https://i.pinimg.com/1200x/b6/b5/a8/b6b5a8e875976a313001119b5cca307a.jpg"},
+      {id: "k-11", image: "https://i.pinimg.com/control1/1200x/3a/6a/d0/3a6ad0d93e32c9c349bf2ee033c89b59.jpg"},
+      {id: "k-12", image: "https://i.pinimg.com/736x/e0/21/fa/e021fa0d61279866cad836488af8fc36.jpg"},
+      {id: "k-13", image: "https://i.pinimg.com/control1/736x/cf/e9/53/cfe9536c87d3eb0258aad3c7d7995391.jpg"},
+      {id: "k-14", image: "https://i.pinimg.com/736x/60/bc/6c/60bc6c8c4086a40c216837ea5f5d7945.jpg"}
     ],
     reviews: [
       {

@@ -13,11 +13,14 @@ import {
   CheckCircle2,
   XCircle,
   Check,
+  Gift,
+  Coins,
 } from "lucide-react";
 import { Rochester, Outfit } from "next/font/google";
 import { partners } from "@/modules/partner/data/partners";
 import CategorySwitcher from "./category-switcher";
 import Loader from "@/components/loader/Loader";
+import { toast } from "@/components/ui/toastStore";
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -179,6 +182,76 @@ const findPartnerByNameOrId = (nameOrId: string | number): any => {
   ) || null;
 };
 
+function parseBookingEndDateTime(dateStr: string, timeRangeStr: string): Date | null {
+  try {
+    const parts = timeRangeStr.split(/\s*[-–]\s*/);
+    const endTimeStr = parts.length === 2 ? parts[1].trim() : parts[0].trim();
+    const sanitizedTime = endTimeStr.replace(/\s+/g, ' ');
+    const combinedStr = `${dateStr} ${sanitizedTime}`;
+    const parsedDate = new Date(combinedStr);
+    if (isNaN(parsedDate.getTime())) {
+      return null;
+    }
+    return parsedDate;
+  } catch (e) {
+    return null;
+  }
+}
+
+function parseBookingStartDateTime(dateStr: string, timeRangeStr: string): Date | null {
+  try {
+    const parts = timeRangeStr.split(/\s*[-–]\s*/);
+    const startTimeStr = parts[0].trim();
+    
+    let year = 0, month = 0, day = 0;
+    if (dateStr.includes("-")) {
+      const dParts = dateStr.split("-");
+      year = parseInt(dParts[0], 10);
+      month = parseInt(dParts[1], 10) - 1;
+      day = parseInt(dParts[2], 10);
+    } else {
+      const parsedDate = new Date(dateStr);
+      if (isNaN(parsedDate.getTime())) return null;
+      year = parsedDate.getFullYear();
+      month = parsedDate.getMonth();
+      day = parsedDate.getDate();
+    }
+    
+    const timeMatch = startTimeStr.match(/(\d+)[:.](\d+)\s*(AM|PM)/i);
+    if (!timeMatch) {
+      const timeMatch24 = startTimeStr.match(/(\d+)[:.](\d+)/);
+      if (timeMatch24) {
+        const hours = parseInt(timeMatch24[1], 10);
+        const minutes = parseInt(timeMatch24[2], 10);
+        const res = new Date(year, month, day, hours, minutes, 0, 0);
+        return isNaN(res.getTime()) ? null : res;
+      }
+      return null;
+    }
+    
+    let hours = parseInt(timeMatch[1], 10);
+    const minutes = parseInt(timeMatch[2], 10);
+    const ampm = timeMatch[3].toUpperCase();
+    
+    if (ampm === "PM" && hours < 12) hours += 12;
+    if (ampm === "AM" && hours === 12) hours = 0;
+    
+    const res = new Date(year, month, day, hours, minutes, 0, 0);
+    return isNaN(res.getTime()) ? null : res;
+  } catch (e) {
+    return null;
+  }
+}
+
+function canCancelBooking(dateStr: string, timeRangeStr: string): boolean {
+  const startDateTime = parseBookingStartDateTime(dateStr, timeRangeStr);
+  if (!startDateTime) return true;
+  const now = new Date();
+  const diffMs = startDateTime.getTime() - now.getTime();
+  const diffMinutes = diffMs / (1000 * 60);
+  return diffMinutes >= 20;
+}
+
 interface BookingsProps {
   activeFilter: string;
   activeCategory: string;
@@ -198,20 +271,84 @@ export default function Bookings({
   useEffect(() => {
     setMounted(true);
     try {
+      let initialBookings: BookingData[] = [];
       const localBookings = localStorage.getItem("hire_my_partner_bookings");
       if (localBookings) {
-        setBookings(JSON.parse(localBookings));
+        initialBookings = JSON.parse(localBookings);
       } else {
-        setBookings(MOCK_BOOKINGS);
-        localStorage.setItem("hire_my_partner_bookings", JSON.stringify(MOCK_BOOKINGS));
+        initialBookings = MOCK_BOOKINGS;
       }
 
+      let initialRequests: BookingData[] = [];
       const localRequests = localStorage.getItem("hire_my_partner_requests");
       if (localRequests) {
-        setClientRequests(JSON.parse(localRequests));
+        initialRequests = JSON.parse(localRequests);
       } else {
-        setClientRequests(MOCK_CLIENT_REQUESTS);
-        localStorage.setItem("hire_my_partner_requests", JSON.stringify(MOCK_CLIENT_REQUESTS));
+        initialRequests = MOCK_CLIENT_REQUESTS;
+      }
+
+      // Check and auto-complete past bookings
+      let bookingsChanged = false;
+      const checkedBookings = initialBookings.map((b) => {
+        if (b.status === "Confirmed") {
+          const endDate = parseBookingEndDateTime(b.date, b.time);
+          if (endDate && endDate.getTime() < Date.now()) {
+            bookingsChanged = true;
+            return { ...b, status: "Completed" as const };
+          }
+        }
+        return b;
+      });
+
+      // Ensure there is at least one Completed booking for testing post-booking engagement
+      const hasCompleted = checkedBookings.some((b) => b.status === "Completed");
+      if (!hasCompleted) {
+        const testPartner = partners[0] || {
+          id: "1",
+          image: "/images/girl1.webp",
+          name: "Aarushi Kumari",
+          age: 24,
+          location: "Bengaluru, Karnataka",
+          rating: "4.9",
+          pricing: { twoHours: 5000 },
+          bio: "Elegant companion for premium dining and social events."
+        };
+        checkedBookings.push({
+          id: testPartner.id,
+          image: testPartner.image,
+          name: testPartner.name,
+          age: testPartner.age,
+          location: testPartner.location.split(",")[0].trim(),
+          rating: testPartner.rating,
+          date: "May 12, 2026",
+          time: "07:00 PM - 09:00 PM",
+          price: `₹${(testPartner.pricing?.twoHours || 5000).toLocaleString("en-IN")}`,
+          status: "Completed",
+          bio: testPartner.bio || "Had a great time visiting the local museums and vintage cafes.",
+        });
+        bookingsChanged = true;
+      }
+
+      let requestsChanged = false;
+      const checkedRequests = initialRequests.map((r) => {
+        if (r.status === "Confirmed") {
+          const endDate = parseBookingEndDateTime(r.date, r.time);
+          if (endDate && endDate.getTime() < Date.now()) {
+            requestsChanged = true;
+            return { ...r, status: "Completed" as const };
+          }
+        }
+        return r;
+      });
+
+      setBookings(checkedBookings);
+      if (bookingsChanged || !localBookings) {
+        localStorage.setItem("hire_my_partner_bookings", JSON.stringify(checkedBookings));
+      }
+
+      setClientRequests(checkedRequests);
+      if (requestsChanged || !localRequests) {
+        localStorage.setItem("hire_my_partner_requests", JSON.stringify(checkedRequests));
       }
     } catch (error) {
       console.error("Error reading localStorage", error);
@@ -312,6 +449,17 @@ export default function Bookings({
                 const onUpdateStatus = activeCategory === "hired_by_me"
                   ? handleUpdateBookingStatus
                   : handleUpdateClientRequestStatus;
+
+                const allowedToCancel = canCancelBooking(booking.date, booking.time);
+                
+                const handleCancelAction = () => {
+                  if (!allowedToCancel) {
+                    toast.error("Sessions can only be cancelled at least 20 minutes before starting time.");
+                    return;
+                  }
+                  onUpdateStatus(booking.id, "Declined");
+                  toast.success("Booking cancelled successfully.");
+                };
 
                 return (
                   <motion.tr
@@ -435,16 +583,41 @@ export default function Bookings({
                           </span>
                         ) : activeCategory === "hired_by_me" ? (
                           isCompleted ? (
-                            <Link href={href}>
-                              <motion.div
-                                whileHover={{ y: -2, scale: 1.03 }}
-                                whileTap={{ scale: 0.97 }}
-                                className="px-4 py-2 bg-linear-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white shadow-md hover:shadow-primary/30 transition-all cursor-pointer"
-                              >
-                                <Calendar className="w-3.5 h-3.5" />
-                                <span>Book Again</span>
-                              </motion.div>
-                            </Link>
+                            <div className="flex items-center justify-end gap-2">
+                              <Link href={`/send-gift?partner=${partner?.id || booking.id}&booking=${booking.id}`}>
+                                <motion.div
+                                  whileHover={{ y: -2, scale: 1.03 }}
+                                  whileTap={{ scale: 0.97 }}
+                                  className="px-3.5 py-2 bg-linear-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white shadow-md hover:shadow-primary/30 transition-all cursor-pointer"
+                                >
+                                  <Gift className="w-3.5 h-3.5" />
+                                  <span>Send Gift</span>
+                                </motion.div>
+                              </Link>
+                              
+                              <Link href={`/send-tip?partner=${partner?.id || booking.id}&booking=${booking.id}`}>
+                                <motion.div
+                                  whileHover={{ y: -2, scale: 1.03 }}
+                                  whileTap={{ scale: 0.97 }}
+                                  className="px-3.5 py-2 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white shadow-md hover:shadow-emerald-500/30 transition-all cursor-pointer"
+                                >
+                                  <Coins className="w-3.5 h-3.5" />
+                                  <span>Send Tip</span>
+                                </motion.div>
+                              </Link>
+
+                              <Link href={href}>
+                                <motion.div
+                                  whileHover={{ y: -1 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  className="px-3 py-2 bg-bg-secondary border border-border-main rounded-xl flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-widest text-text-muted hover:text-primary transition-all cursor-pointer"
+                                  title="Book Again"
+                                >
+                                  <Calendar className="w-3 h-3" />
+                                  <span>Book Again</span>
+                                </motion.div>
+                              </Link>
+                            </div>
                           ) : (
                             <>
                               {!isPaid ? (
@@ -459,10 +632,14 @@ export default function Bookings({
                                     <span>Pay Now</span>
                                   </motion.button>
                                   <motion.button
-                                    onClick={() => onUpdateStatus(booking.id, "Declined")}
-                                    whileHover={{ y: -1, scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="px-3 py-2 bg-bg-secondary border border-border-main rounded-xl flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-widest text-text-muted hover:text-rose-500 transition-all cursor-pointer"
+                                    onClick={handleCancelAction}
+                                    whileHover={allowedToCancel ? { y: -1, scale: 1.02 } : {}}
+                                    whileTap={allowedToCancel ? { scale: 0.98 } : {}}
+                                    className={`px-3 py-2 border rounded-xl flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-widest transition-all ${
+                                      allowedToCancel
+                                        ? "bg-bg-secondary border-border-main text-text-muted hover:text-rose-500 cursor-pointer"
+                                        : "bg-bg-secondary/40 border-border-main/50 text-text-muted/40 cursor-not-allowed opacity-50"
+                                    }`}
                                   >
                                     <XCircle className="w-3 h-3" />
                                     <span>Cancel</span>
@@ -481,10 +658,14 @@ export default function Bookings({
                                     </motion.div>
                                   </a>
                                   <motion.button
-                                    onClick={() => onUpdateStatus(booking.id, "Declined")}
-                                    whileHover={{ y: -1, scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="px-3 py-2 bg-bg-secondary border border-border-main rounded-xl flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-widest text-text-muted hover:text-rose-500 transition-all cursor-pointer"
+                                    onClick={handleCancelAction}
+                                    whileHover={allowedToCancel ? { y: -1, scale: 1.02 } : {}}
+                                    whileTap={allowedToCancel ? { scale: 0.98 } : {}}
+                                    className={`px-3 py-2 border rounded-xl flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-widest transition-all ${
+                                      allowedToCancel
+                                        ? "bg-bg-secondary border-border-main text-text-muted hover:text-rose-500 cursor-pointer"
+                                        : "bg-bg-secondary/40 border-border-main/50 text-text-muted/40 cursor-not-allowed opacity-50"
+                                    }`}
                                   >
                                     <XCircle className="w-3 h-3" />
                                     <span>Cancel</span>

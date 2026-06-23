@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
+import CircleCropper from "@/components/ui/CircleCropper";
 import { motion, AnimatePresence } from "framer-motion";
 import { Outfit, Rochester } from "next/font/google";
 import {
@@ -332,18 +333,20 @@ export default function DetailsForm() {
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState<Crop>();
+  const [cropType, setCropType] = useState<'photo' | 'banner' | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [showAllLanguages, setShowAllLanguages] = useState(false);
 
   const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget;
+    const aspect = cropType === "photo" ? 1 : 3 / 1;
     const initialCrop = centerCrop(
       makeAspectCrop(
         {
           unit: "%",
           width: 90,
         },
-        3 / 1,
+        aspect,
         width,
         height
       ),
@@ -1095,6 +1098,7 @@ export default function DetailsForm() {
                               const reader = new FileReader();
                               reader.addEventListener("load", () => {
                                 setTempImageSrc(reader.result as string);
+                                setCropType("banner");
                                 setCropModalOpen(true);
                               });
                               reader.readAsDataURL(file);
@@ -1116,11 +1120,13 @@ export default function DetailsForm() {
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) {
-                              const blobUrl = URL.createObjectURL(file);
-                              setFormData({
-                                ...formData,
-                                photo: blobUrl,
+                              const reader = new FileReader();
+                              reader.addEventListener("load", () => {
+                                setTempImageSrc(reader.result as string);
+                                setCropType("photo");
+                                setCropModalOpen(true);
                               });
+                              reader.readAsDataURL(file);
                             }
                           }}
                         />
@@ -2940,7 +2946,7 @@ export default function DetailsForm() {
       {/* Crop Modal */}
       <AnimatePresence>
         {cropModalOpen && tempImageSrc && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-55 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -2953,6 +2959,7 @@ export default function DetailsForm() {
                 onClick={() => {
                   setCropModalOpen(false);
                   setTempImageSrc(null);
+                  setCropType(null);
                 }}
                 className="absolute top-4 right-4 text-text-muted hover:text-text-main cursor-pointer"
               >
@@ -2961,60 +2968,87 @@ export default function DetailsForm() {
 
               <div>
                 <h3 className="text-lg md:text-xl font-bold text-text-main mb-1">
-                  Crop Profile Banner
+                  {cropType === "photo" ? "Crop Profile Photo" : "Crop Profile Banner"}
                 </h3>
                 <p className="text-xs text-text-muted">
-                  Drag the corners to crop your banner image to the perfect 3:1 aspect ratio.
+                  {cropType === "photo"
+                    ? "Drag the corners to crop your profile photo to a perfect 1:1 circle format."
+                    : "Drag the corners to crop your banner image to the perfect 3:1 aspect ratio."}
                 </p>
               </div>
 
               {/* Crop Component */}
-              <div className="max-h-[50vh] overflow-y-auto flex justify-center bg-black/20 rounded-2xl p-2 border border-border-main/10">
-                <ReactCrop
-                  crop={crop}
-                  onChange={(c) => setCrop(c)}
-                  aspect={3 / 1}
-                  circularCrop={false}
-                  className="max-w-full"
-                >
-                  <img
-                    ref={imgRef}
-                    src={tempImageSrc}
-                    alt="Source"
-                    onLoad={onImageLoad}
-                    className="max-h-[40vh] object-contain"
-                  />
-                </ReactCrop>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
+              {cropType === "photo" ? (
+                <CircleCropper
+                  imageSrc={tempImageSrc}
+                  onCropComplete={(croppedUrl) => {
+                    setFormData({
+                      ...formData,
+                      photo: croppedUrl,
+                    });
                     setCropModalOpen(false);
                     setTempImageSrc(null);
+                    setCropType(null);
                   }}
-                  className="px-5 py-2.5 rounded-xl border border-border-main/50 text-text-muted hover:text-text-main font-bold text-xs cursor-pointer transition-all duration-300"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (imgRef.current && crop) {
-                      const croppedUrl = await getCroppedImg(imgRef.current, crop);
-                      setFormData({
-                        ...formData,
-                        banner: croppedUrl,
-                      });
-                      setCropModalOpen(false);
-                      setTempImageSrc(null);
-                    }
+                  onCancel={() => {
+                    setCropModalOpen(false);
+                    setTempImageSrc(null);
+                    setCropType(null);
                   }}
-                >
-                  Apply Crop
-                </button>
-              </div>
+                />
+              ) : (
+                <>
+                  <div className="max-h-[50vh] overflow-y-auto w-full flex justify-center bg-black/20 rounded-2xl p-2 border border-border-main/10">
+                    <ReactCrop
+                      crop={crop}
+                      onChange={(c) => setCrop(c)}
+                      aspect={3 / 1}
+                      circularCrop={false}
+                      className="max-w-full"
+                    >
+                      <img
+                        ref={imgRef}
+                        src={tempImageSrc}
+                        alt="Source"
+                        onLoad={onImageLoad}
+                        className="max-w-full h-auto block"
+                      />
+                    </ReactCrop>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCropModalOpen(false);
+                        setTempImageSrc(null);
+                        setCropType(null);
+                      }}
+                      className="px-5 py-2.5 rounded-xl border border-border-main/50 text-text-muted hover:text-text-main font-bold text-xs cursor-pointer transition-all duration-300"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (imgRef.current && crop) {
+                          const croppedUrl = await getCroppedImg(imgRef.current, crop);
+                          setFormData({
+                            ...formData,
+                            banner: croppedUrl,
+                          });
+                          setCropModalOpen(false);
+                          setTempImageSrc(null);
+                          setCropType(null);
+                        }
+                      }}
+                      className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-bold text-xs cursor-pointer transition-all duration-300"
+                    >
+                      Apply Crop
+                    </button>
+                  </div>
+                </>
+              )}
             </motion.div>
           </div>
         )}

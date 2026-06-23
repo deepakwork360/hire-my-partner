@@ -3,6 +3,7 @@
 import SideDashboard from "@/components/side-dashboard/side-dashboard";
 import EarningPart from "./sections/earning-part";
 import Overview from "./sections/overview";
+import VirtualGifts from "./sections/virtual-gifts";
 import RecentPaid from "./sections/recent-paid";
 import Note from "./sections/note";
 import Footer from "../home-page/sections/Footer";
@@ -27,6 +28,7 @@ export default function MyEarning() {
         <main className="max-w-5xl mx-auto flex flex-col gap-10 xl:gap-14">
           <EarningPart />
           <Overview />
+          <VirtualGifts />
           <RecentPaid />
           <Note />
         </main>
