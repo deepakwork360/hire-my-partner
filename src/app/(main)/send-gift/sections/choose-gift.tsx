@@ -78,14 +78,14 @@ export default function ChooseGift({
   }, [searchQuery, sortBy]);
 
   return (
-    <div className="w-full bg-bg-base pt-0 pb-16 px-4 md:px-8">
+    <div className="w-full bg-bg-base pt-12 pb-16 px-4 md:px-8">
       <div className="max-w-[1400px] mx-auto">
         {/* SECTION HEADER */}
         <div className="mb-6 flex flex-col items-center text-center space-y-4">
           <motion.h2
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            className={`${rochester.className} text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-tight`}
+            className={`${rochester.className} text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-tight`}
           >
             Select the{" "}
             <span className={`${rochester.className} text-primary`}>

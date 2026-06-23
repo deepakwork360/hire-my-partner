@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Coins, Heart, Star, Sparkles, CheckCircle2 } from "lucide-react";
-import { Outfit } from "next/font/google";
+import { Outfit, Rochester } from "next/font/google";
 
 const outfit = Outfit({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
+const rochester = Rochester({ subsets: ["latin"], weight: ["400"] });
 
 type ProportionProps = {
   onTipChange: (amount: number | null, label: string, custom: string) => void;
@@ -71,8 +72,17 @@ export default function ChooseTip({ onTipChange }: ProportionProps) {
     <div className={`max-w-[1600px] mx-auto px-4 md:px-8 xl:px-12 py-12 ${outfit.className}`}>
       <div className="space-y-10">
         {/* Header */}
-        <div className="flex flex-col gap-3">
-          <h2 className="text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main text-3xl font-black uppercase tracking-wider">Choose Tip Amount</h2>
+        <div className="flex flex-col items-center gap-3">
+          <motion.h2
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      className={`${rochester.className} text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-tight`}
+                    >
+                      Choose{" "}
+                      <span className={`${rochester.className} text-primary`}>
+                        Tip Amount
+                      </span>
+                    </motion.h2>
           <p className="text-text-muted text-sm font-medium tracking-wide">Select a preset amount or enter a custom value below</p>
         </div>
 

@@ -66,8 +66,11 @@ export default function EarningPart() {
     }
   }, [user]);
 
-  const totalDisplay = isPartner ? (12350 + dynamicEarnings) : 0;
-  const withdrawableDisplay = isPartner ? (9000 + dynamicEarnings) : 0;
+  const mockBaseTotal = user?.email === "sabrina@gmail.com" ? 12350 : 0;
+  const mockBaseWithdrawable = user?.email === "sabrina@gmail.com" ? 9000 : 0;
+
+  const totalDisplay = isPartner ? (mockBaseTotal + dynamicEarnings) : 0;
+  const withdrawableDisplay = isPartner ? (mockBaseWithdrawable + dynamicEarnings) : 0;
 
   const handleWithdraw = () => {
     setIsWithdrawing(true);

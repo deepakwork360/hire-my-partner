@@ -17,6 +17,7 @@ import {
   Coins,
 } from "lucide-react";
 import { Rochester, Outfit } from "next/font/google";
+import { useAuthStore } from "@/modules/auth/store";
 import { partners } from "@/modules/partner/data/partners";
 import CategorySwitcher from "./category-switcher";
 import Loader from "@/components/loader/Loader";
@@ -264,27 +265,36 @@ export default function Bookings({
   activeCategory,
   setActiveCategory,
 }: BookingsProps) {
-  const [bookings, setBookings] = useState<BookingData[]>([]);
-  const [clientRequests, setClientRequests] = useState<BookingData[]>([]);
+  const { user } = useAuthStore();
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [clientRequests, setClientRequests] = useState<any[]>([]);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     try {
-      let initialBookings: BookingData[] = [];
+      let initialBookings: any[] = [];
       const localBookings = localStorage.getItem("hire_my_partner_bookings");
       if (localBookings) {
         initialBookings = JSON.parse(localBookings);
       } else {
-        initialBookings = MOCK_BOOKINGS;
+        if (user?.email === "john@example.com") {
+          initialBookings = MOCK_BOOKINGS.map(b => ({ ...b, userEmail: "john@example.com" }));
+        } else {
+          initialBookings = [];
+        }
       }
 
-      let initialRequests: BookingData[] = [];
+      let initialRequests: any[] = [];
       const localRequests = localStorage.getItem("hire_my_partner_requests");
       if (localRequests) {
         initialRequests = JSON.parse(localRequests);
       } else {
-        initialRequests = MOCK_CLIENT_REQUESTS;
+        if (user?.email === "sabrina@gmail.com") {
+          initialRequests = MOCK_CLIENT_REQUESTS.map(r => ({ ...r, companionEmail: "sabrina@gmail.com" }));
+        } else {
+          initialRequests = [];
+        }
       }
 
       // Check and auto-complete past bookings
@@ -301,32 +311,35 @@ export default function Bookings({
       });
 
       // Ensure there is at least one Completed booking for testing post-booking engagement
-      const hasCompleted = checkedBookings.some((b) => b.status === "Completed");
-      if (!hasCompleted) {
-        const testPartner = partners[0] || {
-          id: "1",
-          image: "/images/girl1.webp",
-          name: "Aarushi Kumari",
-          age: 24,
-          location: "Bengaluru, Karnataka",
-          rating: "4.9",
-          pricing: { twoHours: 5000 },
-          bio: "Elegant companion for premium dining and social events."
-        };
-        checkedBookings.push({
-          id: testPartner.id,
-          image: testPartner.image,
-          name: testPartner.name,
-          age: testPartner.age,
-          location: testPartner.location.split(",")[0].trim(),
-          rating: testPartner.rating,
-          date: "May 12, 2026",
-          time: "07:00 PM - 09:00 PM",
-          price: `₹${(testPartner.pricing?.twoHours || 5000).toLocaleString("en-IN")}`,
-          status: "Completed",
-          bio: testPartner.bio || "Had a great time visiting the local museums and vintage cafes.",
-        });
-        bookingsChanged = true;
+      if (user?.email === "john@example.com" && checkedBookings.length > 0) {
+        const hasCompleted = checkedBookings.some((b) => b.status === "Completed");
+        if (!hasCompleted) {
+          const testPartner = partners[0] || {
+            id: "1",
+            image: "/images/girl1.webp",
+            name: "Aarushi Kumari",
+            age: 24,
+            location: "Bengaluru, Karnataka",
+            rating: "4.9",
+            pricing: { twoHours: 5000 },
+            bio: "Elegant companion for premium dining and social events."
+          };
+          checkedBookings.push({
+            id: testPartner.id,
+            image: testPartner.image,
+            name: testPartner.name,
+            age: testPartner.age,
+            location: testPartner.location.split(",")[0].trim(),
+            rating: testPartner.rating,
+            date: "May 12, 2026",
+            time: "07:00 PM - 09:00 PM",
+            price: `₹${(testPartner.pricing?.twoHours || 5000).toLocaleString("en-IN")}`,
+            status: "Completed",
+            bio: testPartner.bio || "Had a great time visiting the local museums and vintage cafes.",
+            userEmail: "john@example.com"
+          });
+          bookingsChanged = true;
+        }
       }
 
       let requestsChanged = false;
@@ -353,15 +366,15 @@ export default function Bookings({
     } catch (error) {
       console.error("Error reading localStorage", error);
     }
-  }, []);
+  }, [user]);
 
-  const handleUpdateBookingStatus = (id: number | string, newStatus: BookingData["status"]) => {
+  const handleUpdateBookingStatus = (id: number | string, newStatus: any) => {
     const updated = bookings.map((b) => (b.id === id ? { ...b, status: newStatus } : b));
     setBookings(updated);
     localStorage.setItem("hire_my_partner_bookings", JSON.stringify(updated));
   };
 
-  const handleUpdateClientRequestStatus = (id: number | string, newStatus: BookingData["status"]) => {
+  const handleUpdateClientRequestStatus = (id: number | string, newStatus: any) => {
     const updated = clientRequests.map((r) => (r.id === id ? { ...r, status: newStatus } : r));
     setClientRequests(updated);
     localStorage.setItem("hire_my_partner_requests", JSON.stringify(updated));
@@ -370,7 +383,15 @@ export default function Bookings({
   const currentData =
     activeCategory === "hired_by_me" ? bookings : clientRequests;
 
-  const filteredBookings = currentData.filter((booking) => {
+  const userFilteredData = currentData.filter((b: any) => {
+    if (activeCategory === "hired_by_me") {
+      return b.userEmail === user?.email || (!b.userEmail && user?.email === "john@example.com");
+    } else {
+      return b.companionEmail === user?.email || (!b.companionEmail && user?.email === "sabrina@gmail.com");
+    }
+  });
+
+  const filteredBookings = userFilteredData.filter((booking) => {
     if (activeFilter === "All") return true;
     if (activeFilter === "Upcoming")
       return booking.status === "Pending" || booking.status === "Confirmed";

@@ -389,6 +389,13 @@ export default function DetailsForm() {
     gallery: [] as string[],
     videos: Array(3).fill(null) as (string | null)[],
   });
+  const [lastSubmittedFormData, setLastSubmittedFormData] = useState<any>(null);
+
+  const handleStartEdit = () => {
+    setLastSubmittedFormData(JSON.parse(JSON.stringify(formData)));
+    setView("form");
+  };
+
   const countryDropdownRef = useRef<HTMLDivElement>(null);
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const [partnerCountryOpen, setPartnerCountryOpen] = useState(false);
@@ -525,6 +532,7 @@ export default function DetailsForm() {
         if (parsed.submissionStatus === "success" || parsed.verificationStatus === "PENDING" || parsed.verificationStatus === "VERIFIED" || parsed.verificationStatus === "REJECTED") {
           setView("summary");
           setShowSuccessCard(false);
+          setLastSubmittedFormData(JSON.parse(JSON.stringify(loadedFormData)));
         } else if (parsed.verificationStatus === "NEEDS_REVISION") {
           setView("form");
         } else if (parsed.view === "kyc-schedule") {
@@ -742,6 +750,39 @@ export default function DetailsForm() {
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
+    // Check if any fields were modified if they have an active submission / verified profile
+    if ((verificationStatus === "VERIFIED" || verificationStatus === "PENDING" || verificationStatus === "NEEDS_REVISION" || verificationStatus === "REJECTED") && lastSubmittedFormData) {
+      const hasChanges = () => {
+        const fields = [
+          'photo', 'banner', 'fullName', 'gender', 'age', 'city', 'mobile',
+          'phoneCountryCode', 'email', 'bankName', 'bankAccountNumber',
+          'bankIfscCode', 'bankAccountHolderName', 'country', 'pincode',
+          'upiId', 'bio', 'hourlyRate', 'instagram', 'linkedin'
+        ];
+        
+        for (const field of fields) {
+          if (lastSubmittedFormData[field] !== (formData as any)[field]) return true;
+        }
+        
+        const arrayFields = ['addons', 'languages', 'tagsInput', 'interestsInput', 'availability', 'idProofs', 'gallery', 'videos'];
+        for (const field of arrayFields) {
+          const prevArr = lastSubmittedFormData[field] || [];
+          const currArr = (formData as any)[field] || [];
+          if (prevArr.length !== currArr.length) return true;
+          for (let i = 0; i < prevArr.length; i++) {
+            if (prevArr[i] !== currArr[i]) return true;
+          }
+        }
+        
+        return false;
+      };
+
+      if (!hasChanges()) {
+        toast.error("No changes detected. Please modify at least one field in the form before submitting for administrative review.");
+        return;
+      }
+    }
+
     setView("processing");
     setSubmissionStatus("pending");
 
@@ -751,6 +792,7 @@ export default function DetailsForm() {
     setSubmissionStatus("success");
     setVerificationStatus("PENDING");
     setVerificationNotes("");
+    setLastSubmittedFormData(JSON.parse(JSON.stringify(formData)));
     setShowSuccessCard(true);
     await new Promise((resolve) => setTimeout(resolve, 1500));
     setShowSuccessCard(false);
@@ -778,15 +820,20 @@ export default function DetailsForm() {
     const uniqueId = `${nameSlug}-${uniqueSuffix}`;
 
     // Find if the partner already exists in the approved list
-    const existingPartner = list.find((p: any) => 
-      p.name === formData.fullName || 
-      (p.id && (p.id === "2" || p.id === "sabrina-carpenter")) ||
-      (user?.id && String(p.id).includes(user.id))
-    );
+    const existingPartner = list.find((p: any) => {
+      if (p.email && (p.email === formData.email || p.email === user?.email)) return true;
+      if (uniqueSuffix && p.id && String(p.id).endsWith(`-${uniqueSuffix}`)) return true;
+      if (user?.email === "sabrina@gmail.com" && (p.id === "sabrina-carpenter" || p.id === "2")) return true;
+      if (p.name === formData.fullName) return true;
+      if (user?.id && (p.userId === user.id || String(p.id).includes(user.id))) return true;
+      return false;
+    });
 
     const newPartner = {
       ...existingPartner,
       id: existingPartner?.id || uniqueId,
+      userId: user?.id || existingPartner?.userId,
+      email: formData.email || user?.email || existingPartner?.email,
       name: formData.fullName,
       age: parseInt(formData.age) || 22,
       gender: formData.gender,
@@ -863,9 +910,46 @@ export default function DetailsForm() {
   };
 
   const handleDecline = () => {
-    setVerificationStatus("REJECTED");
-    setVerificationNotes("Your application does not meet our community standards.");
-    toast.error("Application Declined.");
+    const saved = localStorage.getItem("approved_partners");
+    const list = saved ? JSON.parse(saved) : [];
+    const uniqueSuffix = applicationId ? applicationId.replace("APP-", "") : "";
+    const existingPartner = list.find((p: any) => {
+      if (p.email && (p.email === formData.email || p.email === user?.email)) return true;
+      if (uniqueSuffix && p.id && String(p.id).endsWith(`-${uniqueSuffix}`)) return true;
+      if (user?.email === "sabrina@gmail.com" && (p.id === "sabrina-carpenter" || p.id === "2")) return true;
+      if (p.name === formData.fullName) return true;
+      if (user?.id && (p.userId === user.id || String(p.id).includes(user.id))) return true;
+      return false;
+    });
+
+    if (existingPartner) {
+      // Revert form data back to the existing live partner details!
+      setFormData({
+        ...formData,
+        fullName: existingPartner.name || formData.fullName,
+        age: String(existingPartner.age) || formData.age,
+        gender: existingPartner.gender || formData.gender,
+        city: existingPartner.location || formData.city,
+        bio: existingPartner.bio || formData.bio,
+        photo: existingPartner.image || formData.photo,
+        banner: existingPartner.banner || formData.banner,
+        languages: existingPartner.languages ? String(existingPartner.languages).split(",").map((s: string) => s.trim()).filter(Boolean) : formData.languages,
+        interestsInput: existingPartner.interests ? String(existingPartner.interests).split(",").map((s: string) => s.trim()).filter(Boolean) : formData.interestsInput,
+        tagsInput: existingPartner.tags ? existingPartner.tags.map((t: string) => t.replace("#", "").trim()).filter(Boolean) : formData.tagsInput,
+        hourlyRate: existingPartner.pricing?.oneHour ? String(existingPartner.pricing.oneHour) : formData.hourlyRate,
+        gallery: existingPartner.gallery ? existingPartner.gallery.map((g: any) => g.image).filter(Boolean) : formData.gallery,
+        videos: existingPartner.videos || formData.videos,
+      });
+
+      setVerificationStatus("VERIFIED");
+      setKycStatus("APPROVED");
+      setVerificationNotes("Your recent profile edits were declined. Reverted to previous verified profile.");
+      toast.info("Profile edits declined. Reverted to previous live details.");
+    } else {
+      setVerificationStatus("REJECTED");
+      setVerificationNotes("Your application does not meet our community standards.");
+      toast.error("Application Declined.");
+    }
   };
   const handleReset = () => {
     setVerificationStatus("DRAFT");
@@ -2219,7 +2303,7 @@ export default function DetailsForm() {
                     </div>
                     <div className="md:ml-auto pt-2">
                       <button
-                        onClick={() => setView("form")}
+                        onClick={handleStartEdit}
                         className="relative group overflow-hidden px-6 py-3 rounded-2xl bg-bg-secondary/40 backdrop-blur-xl border border-border-main hover:border-primary/50 text-text-main hover:text-white font-bold text-sm transition-all duration-500 shadow-md hover:shadow-primary/20 flex items-center gap-3 cursor-pointer active:scale-95 scale-90 md:scale-100"
                       >
                         <div className="absolute inset-0 bg-linear-to-r from-primary-dark/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
@@ -2278,7 +2362,7 @@ export default function DetailsForm() {
                   </div>
                   <div className="md:ml-auto">
                     <button
-                      onClick={() => setView("form")}
+                      onClick={handleStartEdit}
                       className="relative group overflow-hidden px-7 py-3.5 rounded-2xl bg-bg-secondary/40 backdrop-blur-xl border border-border-main hover:border-primary/50 text-text-main hover:text-white font-bold text-sm transition-all duration-500 shadow-md hover:shadow-primary/20 flex items-center gap-3 cursor-pointer active:scale-95 scale-90 md:scale-100"
                     >
                       <div className="absolute inset-0 bg-linear-to-r from-primary-dark/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
@@ -2311,7 +2395,7 @@ export default function DetailsForm() {
                       {verificationNotes || "The administrator has requested changes to your profile details."}
                     </p>
                     <button 
-                      onClick={() => setView("form")}
+                      onClick={handleStartEdit}
                       className="mt-2 text-xs font-bold text-amber-500 hover:underline flex items-center gap-1 group cursor-pointer"
                     >
                       Make Corrections <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
@@ -2892,16 +2976,16 @@ export default function DetailsForm() {
                         {/* 3. Approve and Make Live */}
                         <button
                           onClick={handleApprove}
-                          disabled={verificationStatus === "VERIFIED" || kycStatus !== "LINK_SHARED"}
+                          disabled={verificationStatus === "VERIFIED" || (kycStatus !== "LINK_SHARED" && kycStatus !== "APPROVED")}
                           className={`w-full font-bold text-xs py-3 px-4 rounded-xl border transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
                             verificationStatus === "VERIFIED"
                               ? "bg-green-500/10 border-green-500/20 text-green-500/50 cursor-not-allowed animate-none"
-                              : kycStatus !== "LINK_SHARED"
+                              : (kycStatus !== "LINK_SHARED" && kycStatus !== "APPROVED")
                                 ? "bg-white/5 border-white/10 text-text-muted cursor-not-allowed"
                                 : "bg-green-500 border-green-600 text-white hover:bg-green-600 shadow-[0_0_20px_rgba(34,197,94,0.2)] hover:scale-[1.02]"
                           }`}
                         >
-                          <CheckCircle2 size={14} /> {kycStatus === "APPROVED" || verificationStatus === "VERIFIED" ? "Approved & Live" : kycStatus === "LINK_SHARED" ? "Approve Partner Live (Post-Call)" : "Waiting for Call Link"}
+                          <CheckCircle2 size={14} /> {verificationStatus === "VERIFIED" ? "Approved & Live" : kycStatus === "APPROVED" ? "Approve Edited Information" : kycStatus === "LINK_SHARED" ? "Approve Partner Live (Post-Call)" : "Waiting for Call Link"}
                         </button>
                         
                         <div className="grid grid-cols-2 gap-3">

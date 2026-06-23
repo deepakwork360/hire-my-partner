@@ -323,17 +323,11 @@ export default function ChoosePayment({
             viewport={{ once: true }}
             className="flex flex-col items-center text-center mb-12 gap-4"
           >
-             <div className="flex items-center gap-3 bg-bg-secondary border border-border-main px-5 py-2 rounded-full backdrop-blur-md">
-              <Lock className="w-4 h-4 text-primary" />
-              <span className="text-primary/80 text-[10px] font-black uppercase tracking-[0.4em]">
-                Secure Checkout
-              </span>
-            </div>
 
             <h2
-              className={`${rochester.className} text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-wide py-4 px-4 leading-[1.2]`}
+              className={`${rochester.className} text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-wide px-4 leading-[1.2]`}
             >
-              Choose Payment Method
+              Choose <span className="text-primary">Payment Method</span>
             </h2>
 
             <p className="text-text-muted text-sm max-w-md leading-relaxed">

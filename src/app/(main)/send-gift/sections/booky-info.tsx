@@ -48,7 +48,7 @@ export default function BookyInfo({ partner, bookingDate, bookingTime }: BookyIn
 
   return (
     <section
-      className={`pt-32 pb-0 bg-bg-base relative overflow-hidden ${outfit.className}`}
+      className={`pt-18 pb-0 bg-bg-base relative overflow-hidden ${outfit.className}`}
     >
       {/* Cinematic Background Accents */}
       <div className="absolute top-0 right-[5%] w-[800px] h-[800px] bg-primary/5 rounded-full blur-[180px] pointer-events-none" />
@@ -63,15 +63,8 @@ export default function BookyInfo({ partner, bookingDate, bookingTime }: BookyIn
             viewport={{ once: true }}
             className="flex flex-col items-center gap-6"
           >
-            <div className="flex items-center gap-4 bg-bg-secondary border border-border-main px-5 py-2 rounded-full backdrop-blur-md mb-2">
-              <Ticket className="w-4 h-4 text-primary" />
-              <span className="text-primary/80 text-[10px] font-black uppercase tracking-[0.4em]">
-                Official Reservation
-              </span>
-            </div>
-
             <h1
-              className={`${rochester.className} text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-tight`}
+              className={`${rochester.className} text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-tight`}
             >
               Booking <span className="text-primary">Information</span>
             </h1>

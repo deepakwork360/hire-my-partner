@@ -1056,13 +1056,21 @@ function ProfileSettingsForm({ storageKey }: { storageKey: string }) {
         localStorage.setItem(storageKey, JSON.stringify(parsed));
 
         const nameToFind = parsed.formData.fullName;
+        const uniqueSuffix = parsed.applicationId ? parsed.applicationId.replace("APP-", "") : "";
         if (nameToFind) {
           const approvedStr = localStorage.getItem("approved_partners");
           const list = approvedStr ? JSON.parse(approvedStr) : [...mockPartnersList];
           
           let exists = false;
           let updatedList = list.map((p: any) => {
-            if (p.name === nameToFind || p.id === "sabrina-carpenter" || (user?.id && String(p.id) === String(user.id))) {
+            const isMatch =
+              (p.email && (p.email === parsed.formData.email || p.email === user?.email)) ||
+              (uniqueSuffix && p.id && String(p.id).endsWith(`-${uniqueSuffix}`)) ||
+              (user?.email === "sabrina@gmail.com" && (p.id === "sabrina-carpenter" || p.id === "2")) ||
+              p.name === nameToFind ||
+              (user?.id && (p.userId === user.id || String(p.id).includes(user.id)));
+
+            if (isMatch) {
               exists = true;
               return {
                 ...p,
@@ -1071,7 +1079,12 @@ function ProfileSettingsForm({ storageKey }: { storageKey: string }) {
                 bio: formData.bio,
                 pricing: {
                   ...p.pricing,
-                  oneHour: Number(formData.hourlyRate)
+                  oneHour: Number(formData.hourlyRate),
+                  twoHours: Number(formData.hourlyRate) * 1.8,
+                  threeHours: Number(formData.hourlyRate) * 2.5,
+                  fourHours: Number(formData.hourlyRate) * 3.2,
+                  fiveHours: Number(formData.hourlyRate) * 4.0,
+                  eightHours: Number(formData.hourlyRate) * 6.0,
                 },
                 languages: formData.languages,
                 interests: formData.interests,
@@ -1083,18 +1096,22 @@ function ProfileSettingsForm({ storageKey }: { storageKey: string }) {
           });
 
           if (!exists) {
+            const nameSlug = formData.fullName.toLowerCase().replace(/\s+/g, "-");
+            const newPartnerId = uniqueSuffix ? `${nameSlug}-${uniqueSuffix}` : (user?.id || "sabrina-carpenter");
             const newPartner = {
-              id: user?.id || "sabrina-carpenter",
+              id: newPartnerId,
+              userId: user?.id,
+              email: parsed.formData.email || user?.email,
               name: formData.fullName,
               location: formData.city,
               bio: formData.bio,
               pricing: {
                 oneHour: Number(formData.hourlyRate),
-                twoHours: Number(formData.hourlyRate) * 2,
-                threeHours: Number(formData.hourlyRate) * 3,
-                fourHours: Number(formData.hourlyRate) * 4,
-                fiveHours: Number(formData.hourlyRate) * 5,
-                eightHours: Number(formData.hourlyRate) * 8
+                twoHours: Number(formData.hourlyRate) * 1.8,
+                threeHours: Number(formData.hourlyRate) * 2.5,
+                fourHours: Number(formData.hourlyRate) * 3.2,
+                fiveHours: Number(formData.hourlyRate) * 4.0,
+                eightHours: Number(formData.hourlyRate) * 6.0,
               },
               languages: formData.languages,
               interests: formData.interests,
