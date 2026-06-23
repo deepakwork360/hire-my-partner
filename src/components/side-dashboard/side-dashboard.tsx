@@ -213,24 +213,27 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
             // Auto sync approved partner profile values to the logged-in User profile!
             const currentUser = useAuthStore.getState().user;
             const fd = parsed.formData;
+            
+            const normalizeVal = (val: any) => (val === undefined || val === null ? "" : String(val).trim());
+            
             const needsSync =
-              fd.fullName !== currentUser?.name ||
-              fd.gender !== currentUser?.gender ||
-              fd.age !== currentUser?.age ||
-              fd.country !== currentUser?.country ||
-              fd.city !== currentUser?.city ||
-              fd.mobile !== currentUser?.phone ||
-              fd.phoneCountryCode !== currentUser?.phone_country_code;
+              normalizeVal(fd.fullName) !== normalizeVal(currentUser?.name) ||
+              normalizeVal(fd.gender) !== normalizeVal(currentUser?.gender) ||
+              normalizeVal(fd.age) !== normalizeVal(currentUser?.age) ||
+              normalizeVal(fd.country) !== normalizeVal(currentUser?.country) ||
+              normalizeVal(fd.city) !== normalizeVal(currentUser?.city) ||
+              normalizeVal(fd.mobile) !== normalizeVal(currentUser?.phone) ||
+              normalizeVal(fd.phoneCountryCode) !== normalizeVal(currentUser?.phone_country_code);
 
             if (needsSync && currentUser) {
               updateUserProfile({
-                name: fd.fullName || currentUser.name,
-                gender: fd.gender || currentUser.gender,
-                age: fd.age || currentUser.age,
-                country: fd.country || currentUser.country,
-                city: fd.city || currentUser.city,
-                phone: fd.mobile || currentUser.phone,
-                phone_country_code: fd.phoneCountryCode || currentUser.phone_country_code,
+                name: fd.fullName || currentUser.name || "",
+                gender: fd.gender || currentUser.gender || "",
+                age: fd.age || currentUser.age || "",
+                country: fd.country || currentUser.country || "",
+                city: fd.city || currentUser.city || "",
+                phone: fd.mobile || currentUser.phone || "",
+                phone_country_code: fd.phoneCountryCode || currentUser.phone_country_code || "",
               });
             }
             return;

@@ -574,7 +574,7 @@ export default function DetailsForm() {
       setView("form");
     }
     setIsHydrated(true);
-  }, [user, storageKey]);
+  }, [storageKey]);
 
   // Persistence: Save on Change (Include lightweight Browser Object URLs)
   useEffect(() => {
