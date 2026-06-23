@@ -30,6 +30,19 @@ import Providers from "./providers";
 export const metadata: Metadata = {
   title: "Go Partner - Find Your Perfect Companion",
   description: "Connect with partners for any occasion. Premium companions, verified profiles.",
+
+  openGraph: {
+    title: "Go Partner - Find Your Perfect Companion",
+    description: "Connect with partners for any occasion. Premium companions, verified profiles.",
+    images: [
+      {
+        url: "/auth/cyango.png",
+        width: 1200,
+        height: 630,
+        alt: "Go Partner",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
