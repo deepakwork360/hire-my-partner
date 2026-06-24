@@ -9,10 +9,32 @@ function enrichPartnerWithDynamicReviews(partner: any): Partner {
   let reviews = partner.reviews || [];
   if (typeof window !== "undefined") {
     try {
-      const saved = localStorage.getItem(`partner_reviews_${partner.id}`);
-      if (saved) {
-        reviews = JSON.parse(saved);
+      const savedLegacy = localStorage.getItem(`partner_reviews_${partner.id}`);
+      let legacyReviews = [];
+      if (savedLegacy) {
+        legacyReviews = JSON.parse(savedLegacy);
       }
+      
+      const savedGlobal = localStorage.getItem("hire_my_partner_reviews");
+      let globalReviews = [];
+      if (savedGlobal) {
+        const globalList = JSON.parse(savedGlobal);
+        globalReviews = globalList.filter((r: any) => 
+          String(r.partnerId) === String(partner.id) && r.status === "APPROVED"
+        );
+      }
+      
+      const allReviewsMap = new Map();
+      (partner.reviews || []).forEach((r: any) => {
+        if (r && r.id) allReviewsMap.set(String(r.id), r);
+      });
+      legacyReviews.forEach((r: any) => {
+        if (r && r.id) allReviewsMap.set(String(r.id), r);
+      });
+      globalReviews.forEach((r: any) => {
+        if (r && r.id) allReviewsMap.set(String(r.id), r);
+      });
+      reviews = Array.from(allReviewsMap.values());
     } catch (e) {
       console.error("Failed to parse reviews for partner", partner.id, e);
     }
@@ -157,12 +179,29 @@ export const PartnerService = {
       // Simulate network latency for a realistic loading experience
       await delay(600);
       
-      const partner = mockPartners.find((p) => {
+      let partner = mockPartners.find((p) => {
         const rawIdMatch = String(p.id).toLowerCase() === decodedId;
         const nameSlug = p.name.toLowerCase().replace(/\s+/g, "-");
         const slugMatch = nameSlug === decodedId;
         return rawIdMatch || slugMatch;
       });
+
+      if (!partner && typeof window !== "undefined") {
+        try {
+          const saved = localStorage.getItem("approved_partners");
+          if (saved) {
+            const localList: Partner[] = JSON.parse(saved);
+            partner = localList.find((p) => {
+              const rawIdMatch = String(p.id).toLowerCase() === decodedId;
+              const nameSlug = p.name.toLowerCase().replace(/\s+/g, "-");
+              const slugMatch = nameSlug === decodedId;
+              return rawIdMatch || slugMatch;
+            });
+          }
+        } catch (e) {
+          console.error("Failed to query localStorage fallback in getPartnerById", e);
+        }
+      }
 
       if (!partner) {
         throw new Error("Partner not found");

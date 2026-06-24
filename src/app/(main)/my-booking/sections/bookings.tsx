@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -15,12 +15,15 @@ import {
   Check,
   Gift,
   Coins,
+  X,
+  Share,
 } from "lucide-react";
 import { Rochester, Outfit } from "next/font/google";
 import { partners } from "@/modules/partner/data/partners";
 import CategorySwitcher from "./category-switcher";
 import Loader from "@/components/loader/Loader";
 import { toast } from "@/components/ui/toastStore";
+import { useAuthStore } from "@/modules/auth/store";
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -44,6 +47,7 @@ interface BookingData {
   price: string;
   status: "Pending" | "Confirmed" | "Completed" | "Declined";
   bio: string;
+  reason?: string;
 }
 
 const MOCK_BOOKINGS: BookingData[] = [
@@ -122,11 +126,12 @@ const MOCK_CLIENT_REQUESTS: BookingData[] = [
     age: 35,
     location: "Bandra, Mumbai",
     rating: "4.5",
-    date: "July 1, 2025",
+    date: "June 24, 2026",
     time: "07:00 PM - 10:00 PM",
     price: "₹6,000",
     status: "Pending",
     bio: "Need a companion for a corporate dinner event. Professionalism is key.",
+    reason: "Looking for a companion to accompany me to a high-end corporate gala dinner.",
   },
   {
     id: 102,
@@ -135,11 +140,12 @@ const MOCK_CLIENT_REQUESTS: BookingData[] = [
     age: 28,
     location: "Gurgaon, Delhi",
     rating: "4.2",
-    date: "July 5, 2025",
+    date: "June 25, 2026",
     time: "01:00 PM - 04:00 PM",
     price: "₹4,500",
     status: "Confirmed",
     bio: "Looking to explore the local cafes and have a meaningful conversation.",
+    reason: "Visiting Gurgaon for a weekend and want to explore some nice specialty coffee shops.",
   },
   {
     id: 103,
@@ -148,12 +154,41 @@ const MOCK_CLIENT_REQUESTS: BookingData[] = [
     age: 40,
     location: "Indiranagar, Bangalore",
     rating: "4.8",
-    date: "May 20, 2025",
+    date: "May 20, 2026",
     time: "06:00 PM - 09:00 PM",
     price: "₹7,500",
     status: "Completed",
     bio: "Had a great session discussing tech trends and start-ups.",
+    reason: "Looking for a social companion for dynamic conversations around local tech scenes.",
   },
+  {
+    id: 104,
+    image: "/images/img8.webp",
+    name: "Vikram Singhania",
+    age: 45,
+    location: "Alipore, Kolkata",
+    rating: "4.9",
+    date: "June 28, 2026",
+    time: "08:00 PM - 11:00 PM",
+    price: "₹9,000",
+    status: "Pending",
+    bio: "Attending an art exhibition followed by premium wine tasting.",
+    reason: "Need a cultured companion to accompany me to the Alipore contemporary art gallery preview.",
+  },
+  {
+    id: 105,
+    image: "/images/img1.webp",
+    name: "Kabir Mehta",
+    age: 31,
+    location: "Colaba, Mumbai",
+    rating: "4.6",
+    date: "June 15, 2026",
+    time: "07:30 PM - 09:30 PM",
+    price: "₹5,000",
+    status: "Declined",
+    bio: "Looking for a jogging and workout buddy in Colaba.",
+    reason: "Requesting a running session around Marine Drive.",
+  }
 ];
 
 const findPartnerByNameOrId = (nameOrId: string | number): any => {
@@ -180,6 +215,18 @@ const findPartnerByNameOrId = (nameOrId: string | number): any => {
     String(p.id).toLowerCase() === target ||
     p.name.toLowerCase() === target
   ) || null;
+};
+
+const getGiftsAndTipsForPartner = (partnerId: string | number) => {
+  if (typeof window === "undefined") return [];
+  try {
+    const existing = localStorage.getItem("hire_my_partner_partner_earnings");
+    const earningsList = existing ? JSON.parse(existing) : [];
+    return earningsList.filter((txn: any) => String(txn.partnerId) === String(partnerId));
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
 };
 
 function parseBookingEndDateTime(dateStr: string, timeRangeStr: string): Date | null {
@@ -245,6 +292,17 @@ function parseBookingStartDateTime(dateStr: string, timeRangeStr: string): Date 
 
 function canCancelBooking(dateStr: string, timeRangeStr: string): boolean {
   const startDateTime = parseBookingStartDateTime(dateStr, timeRangeStr);
+  const endDateTime = parseBookingEndDateTime(dateStr, timeRangeStr);
+  
+  if (startDateTime && endDateTime) {
+    const durationMs = endDateTime.getTime() - startDateTime.getTime();
+    const durationMinutes = durationMs / (1000 * 60);
+    // If duration is 2 minutes or less (e.g. 1 minute for test session), allow cancellation anytime
+    if (durationMinutes > 0 && durationMinutes <= 2) {
+      return true;
+    }
+  }
+
   if (!startDateTime) return true;
   const now = new Date();
   const diffMs = startDateTime.getTime() - now.getTime();
@@ -267,6 +325,33 @@ export default function Bookings({
   const [bookings, setBookings] = useState<BookingData[]>([]);
   const [clientRequests, setClientRequests] = useState<BookingData[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [selectedBookingDetails, setSelectedBookingDetails] = useState<BookingData | null>(null);
+  const [reviewedBookingIds, setReviewedBookingIds] = useState<string[]>([]);
+  
+  const { user } = useAuthStore();
+
+  const getLoggedPartnerId = () => {
+    if (!user) return partners[0].id;
+    try {
+      const approvedStr = localStorage.getItem("approved_partners");
+      if (approvedStr) {
+        const list = JSON.parse(approvedStr);
+        const found = list.find((p: any) => 
+          (p.id && String(p.id).toLowerCase() === String(user.id).toLowerCase()) ||
+          (p.name && p.name.toLowerCase() === user.name.toLowerCase())
+        );
+        if (found) return found.id;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    const nameLower = user.name?.toLowerCase();
+    const matched = partners.find(p => 
+      p.name.toLowerCase() === nameLower ||
+      String(p.id).toLowerCase() === String(user.id).toLowerCase()
+    );
+    return matched ? matched.id : partners[0].id;
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -283,6 +368,10 @@ export default function Bookings({
       const localRequests = localStorage.getItem("hire_my_partner_requests");
       if (localRequests) {
         initialRequests = JSON.parse(localRequests);
+        if (initialRequests.length < MOCK_CLIENT_REQUESTS.length) {
+          initialRequests = MOCK_CLIENT_REQUESTS;
+          localStorage.setItem("hire_my_partner_requests", JSON.stringify(MOCK_CLIENT_REQUESTS));
+        }
       } else {
         initialRequests = MOCK_CLIENT_REQUESTS;
       }
@@ -324,7 +413,8 @@ export default function Bookings({
           time: "07:00 PM - 09:00 PM",
           price: `₹${(testPartner.pricing?.twoHours || 5000).toLocaleString("en-IN")}`,
           status: "Completed",
-          bio: testPartner.bio || "Had a great time visiting the local museums and vintage cafes.",
+          bio: testPartner.bio || "Elegant companion for premium dining and social events.",
+          reason: "Celebrating a corporate milestone dinner party.",
         });
         bookingsChanged = true;
       }
@@ -354,6 +444,74 @@ export default function Bookings({
       console.error("Error reading localStorage", error);
     }
   }, []);
+
+  useEffect(() => {
+    const handleReviewsUpdate = () => {
+      try {
+        const savedGlobal = localStorage.getItem("hire_my_partner_reviews");
+        if (savedGlobal) {
+          const globalList = JSON.parse(savedGlobal);
+          const reviewedIds = globalList
+            .filter((r: any) => r.bookingId && r.status !== "REJECTED")
+            .map((r: any) => String(r.bookingId));
+          setReviewedBookingIds(reviewedIds);
+        }
+      } catch (e) {
+        console.error("Failed to parse global reviews", e);
+      }
+    };
+    handleReviewsUpdate();
+    window.addEventListener("reviews_updated", handleReviewsUpdate);
+    return () => window.removeEventListener("reviews_updated", handleReviewsUpdate);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    const checkInterval = setInterval(() => {
+      // 1. Check bookings
+      setBookings((prevBookings) => {
+        let changed = false;
+        const updated = prevBookings.map((b) => {
+          if (b.status === "Confirmed") {
+            const endDate = parseBookingEndDateTime(b.date, b.time);
+            if (endDate && endDate.getTime() < Date.now()) {
+              changed = true;
+              return { ...b, status: "Completed" as const };
+            }
+          }
+          return b;
+        });
+
+        if (changed) {
+          localStorage.setItem("hire_my_partner_bookings", JSON.stringify(updated));
+        }
+        return updated;
+      });
+
+      // 2. Check client requests
+      setClientRequests((prevRequests) => {
+        let changed = false;
+        const updated = prevRequests.map((r) => {
+          if (r.status === "Confirmed") {
+            const endDate = parseBookingEndDateTime(r.date, r.time);
+            if (endDate && endDate.getTime() < Date.now()) {
+              changed = true;
+              return { ...r, status: "Completed" as const };
+            }
+          }
+          return r;
+        });
+
+        if (changed) {
+          localStorage.setItem("hire_my_partner_requests", JSON.stringify(updated));
+        }
+        return updated;
+      });
+    }, 5000);
+
+    return () => clearInterval(checkInterval);
+  }, [mounted]);
 
   const handleUpdateBookingStatus = (id: number | string, newStatus: BookingData["status"]) => {
     const updated = bookings.map((b) => (b.id === id ? { ...b, status: newStatus } : b));
@@ -422,7 +580,7 @@ export default function Bookings({
               <tr className="uppercase font-black text-[10px] xl:text-[11px] tracking-widest">
                 <th className="px-6 py-5.5">{activeCategory === "hired_by_me" ? "Companion" : "Client"}</th>
                 <th className="px-6 py-5.5">Date & Time</th>
-                <th className="px-6 py-5.5">About Session</th>
+                <th className="px-6 py-5.5">Reason for Booking</th>
                 <th className="px-6 py-5.5">Price</th>
                 <th className="px-6 py-5.5">Status</th>
                 <th className="px-6 py-5.5 text-right">Actions</th>
@@ -534,10 +692,10 @@ export default function Bookings({
                       </div>
                     </td>
 
-                    {/* 3. Session Bio */}
+                    {/* 3. Reason for Booking */}
                     <td className="px-6 py-5.5 max-w-[280px]">
                       <p className="text-xs text-text-muted/90 line-clamp-2 leading-relaxed text-left font-medium">
-                        {booking.bio}
+                        {booking.reason || booking.bio}
                       </p>
                     </td>
 
@@ -583,39 +741,50 @@ export default function Bookings({
                           </span>
                         ) : activeCategory === "hired_by_me" ? (
                           isCompleted ? (
-                            <div className="flex items-center justify-end gap-2">
+                            <div className="flex items-center justify-end gap-2 flex-wrap">
+                              {!reviewedBookingIds.includes(String(booking.id)) && (
+                                <Link href={`${href}?reviewBookingId=${booking.id}`}>
+                                  <div
+                                    className="px-3.5 py-2 bg-linear-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white shadow-md transition-all cursor-pointer"
+                                  >
+                                    <Share className="w-3.5 h-3.5 text-white" />
+                                    <span>Share Review</span>
+                                  </div>
+                                </Link>
+                              )}
+
                               <Link href={`/send-gift?partner=${partner?.id || booking.id}&booking=${booking.id}`}>
-                                <motion.div
-                                  whileHover={{ y: -2, scale: 1.03 }}
-                                  whileTap={{ scale: 0.97 }}
-                                  className="px-3.5 py-2 bg-linear-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white shadow-md hover:shadow-primary/30 transition-all cursor-pointer"
+                                <div
+                                  className="px-3.5 py-2 bg-linear-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white shadow-md transition-all cursor-pointer"
                                 >
                                   <Gift className="w-3.5 h-3.5" />
                                   <span>Send Gift</span>
-                                </motion.div>
+                                </div>
                               </Link>
                               
                               <Link href={`/send-tip?partner=${partner?.id || booking.id}&booking=${booking.id}`}>
-                                <motion.div
-                                  whileHover={{ y: -2, scale: 1.03 }}
-                                  whileTap={{ scale: 0.97 }}
-                                  className="px-3.5 py-2 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white shadow-md hover:shadow-emerald-500/30 transition-all cursor-pointer"
+                                <div
+                                  className="px-3.5 py-2 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white shadow-md transition-all cursor-pointer"
                                 >
                                   <Coins className="w-3.5 h-3.5" />
                                   <span>Send Tip</span>
-                                </motion.div>
+                                </div>
                               </Link>
 
                               <Link href={href}>
-                                <motion.div
-                                  whileHover={{ y: -1 }}
-                                  whileTap={{ scale: 0.98 }}
+                                <div
                                   className="px-3 py-2 bg-bg-secondary border border-border-main rounded-xl flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-widest text-text-muted hover:text-primary transition-all cursor-pointer"
                                   title="Book Again"
                                 >
                                   <Calendar className="w-3 h-3" />
                                   <span>Book Again</span>
-                                </motion.div>
+                                </div>
+                              </Link>
+
+                              <Link href={`/my-booking/${booking.id}`}>
+                                <div className="px-3 py-2 bg-bg-secondary border border-border-main rounded-xl flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-widest text-text-muted hover:text-primary transition-all cursor-pointer">
+                                  <span>View Details</span>
+                                </div>
                               </Link>
                             </div>
                           ) : (
@@ -677,7 +846,29 @@ export default function Bookings({
                         ) : (
                           // Client Requests ("Hired Me")
                           <>
-                            {requestStatus === "pending" && (
+                            {isCompleted ? (
+                              <div className="flex items-center justify-end gap-2 flex-wrap">
+                                <a href={`mailto:client-${booking.name.toLowerCase().replace(/[^a-z0-9]/g, "")}@email.com?subject=Session Completed`}>
+                                  <motion.div
+                                    whileHover={{ y: -2, scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    className="px-4 py-2 bg-linear-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-white shadow-md hover:shadow-primary/30 transition-all cursor-pointer"
+                                  >
+                                    <MessageCircle className="w-3.5 h-3.5" />
+                                    <span>Message</span>
+                                  </motion.div>
+                                </a>
+                                <Link href={`/my-booking/${booking.id}?role=partner`}>
+                                  <motion.div
+                                    whileHover={{ y: -1 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="px-3 py-2 bg-bg-secondary border border-border-main rounded-xl flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-widest text-text-muted hover:text-primary transition-all cursor-pointer"
+                                  >
+                                    <span>View Details</span>
+                                  </motion.div>
+                                </Link>
+                              </div>
+                            ) : requestStatus === "pending" ? (
                               <>
                                 <motion.button
                                   onClick={() => onUpdateStatus(booking.id, "Confirmed")}
@@ -698,8 +889,7 @@ export default function Bookings({
                                   <span>Reject</span>
                                 </motion.button>
                               </>
-                            )}
-                            {requestStatus === "accepted" && (
+                            ) : requestStatus === "accepted" ? (
                               <>
                                 <a href={`mailto:client-${booking.name.toLowerCase().replace(/[^a-z0-9]/g, "")}@email.com?subject=Session Approved`}>
                                   <motion.div
@@ -715,8 +905,7 @@ export default function Bookings({
                                   Accepted
                                 </span>
                               </>
-                            )}
-                            {requestStatus === "rejected" && (
+                            ) : (
                               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-500/60 pr-2">
                                 Declined
                               </span>
@@ -740,6 +929,230 @@ export default function Bookings({
           </div>
         )}
       </div>
+
+      {/* Detail Modal */}
+      <AnimatePresence>
+        {selectedBookingDetails && (() => {
+          const isHiredMe = activeCategory === "hired_me";
+          const p = findPartnerByNameOrId(selectedBookingDetails.name);
+          
+          let earnings = [];
+          if (isHiredMe) {
+            const myPartnerId = getLoggedPartnerId();
+            const allPartnerEarnings = getGiftsAndTipsForPartner(myPartnerId);
+            earnings = allPartnerEarnings.filter((txn: any) => 
+              txn.sender && txn.sender.toLowerCase() === selectedBookingDetails.name.toLowerCase()
+            );
+            if (earnings.length === 0 && selectedBookingDetails.name === "Arjun Kapoor") {
+              earnings = [
+                {
+                  id: "TXN-MOCK-1",
+                  type: "tip",
+                  sender: "Arjun Kapoor",
+                  amount: 1500,
+                  date: "Sunday, May 20, 2026",
+                  message: "Excellent session, thank you so much!",
+                },
+                {
+                  id: "TXN-MOCK-2",
+                  type: "gift",
+                  sender: "Arjun Kapoor",
+                  amount: 2500,
+                  giftTitle: "Luxury Bouquet",
+                  date: "Sunday, May 20, 2026",
+                  message: "A token of appreciation.",
+                }
+              ];
+            }
+          } else {
+            earnings = getGiftsAndTipsForPartner(p?.id || selectedBookingDetails.id);
+          }
+
+          const totalPaid = parseInt(selectedBookingDetails.price.replace(/[^\d]/g, ""), 10) || 0;
+          const basePrice = Math.round(totalPaid / 1.18);
+          const gstAmount = totalPaid - basePrice;
+
+          return (
+            <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedBookingDetails(null)}
+                className="absolute inset-0 bg-slate-950/60 backdrop-blur-md"
+              />
+
+              {/* Modal Content */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className={`relative w-full max-w-2xl bg-bg-base border border-border-main rounded-[36px] overflow-hidden shadow-2xl p-6 md:p-8 flex flex-col gap-6 ${outfit.className}`}
+              >
+                {/* Decorative glows */}
+                <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
+                <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
+
+                {/* Header */}
+                <div className="flex justify-between items-start z-10">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.25em] text-primary">Booking Receipt & Details</span>
+                    <h2 className="text-2xl font-black text-text-main mt-1">Booking #{selectedBookingDetails.id}</h2>
+                  </div>
+                  <button
+                    onClick={() => setSelectedBookingDetails(null)}
+                    className="cursor-pointer w-9 h-9 rounded-full bg-bg-secondary border border-border-main flex items-center justify-center text-text-main hover:bg-bg-card transition-all"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Body Scrollable wrapper */}
+                <div className="space-y-6 overflow-y-auto max-h-[60vh] pr-1 z-10">
+                  
+                  {/* 1. Client / Companion Details Card */}
+                  <div className="bg-bg-secondary border border-border-main rounded-2xl p-4 flex items-center gap-4 relative pt-6 md:pt-4">
+                    <span className="absolute top-2 right-4 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 bg-text-muted/10 text-text-muted rounded-md border border-border-main">
+                      {isHiredMe ? "Client Details" : "Companion Details"}
+                    </span>
+                    <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-border-main shrink-0">
+                      <Image
+                        src={selectedBookingDetails.image}
+                        alt={selectedBookingDetails.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-base font-black text-text-main truncate">{selectedBookingDetails.name}</h3>
+                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-primary/10 border border-primary/20 rounded-full text-primary">
+                          {selectedBookingDetails.age} Yrs
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                        <span className="flex items-center gap-1 text-text-muted text-xs font-semibold">
+                          <MapPin size={12} className="text-primary" /> {selectedBookingDetails.location}
+                        </span>
+                        <span className="flex items-center gap-1 text-text-muted text-xs font-semibold">
+                          <Star size={12} className="text-amber-400 fill-amber-400" /> {selectedBookingDetails.rating} Rating
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. Schedule details */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="bg-bg-secondary/40 border border-border-main/60 rounded-2xl p-4 flex items-center gap-3">
+                      <Calendar className="w-5 h-5 text-primary shrink-0" />
+                      <div>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-text-muted">Booking Date</p>
+                        <p className="text-text-main text-sm font-bold mt-0.5">{selectedBookingDetails.date}</p>
+                      </div>
+                    </div>
+                    <div className="bg-bg-secondary/40 border border-border-main/60 rounded-2xl p-4 flex items-center gap-3">
+                      <Clock className="w-5 h-5 text-primary shrink-0" />
+                      <div>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-text-muted">Time Slots</p>
+                        <p className="text-text-main text-sm font-bold mt-0.5">{selectedBookingDetails.time}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Pricing breakdown */}
+                  <div className="border border-border-main rounded-2xl p-5 bg-bg-secondary/20">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-text-main mb-3">Payment Breakdown</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm font-medium text-text-muted">
+                        <span>Base Price (excl. GST)</span>
+                        <span>₹{basePrice.toLocaleString("en-IN")}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm font-medium text-text-muted">
+                        <span>GST (18%)</span>
+                        <span>₹{gstAmount.toLocaleString("en-IN")}</span>
+                      </div>
+                      <div className="h-px bg-border-main my-2" />
+                      <div className="flex justify-between items-center text-base font-black text-text-main">
+                        <span>Total Amount Paid</span>
+                        <span className="text-primary">₹{totalPaid.toLocaleString("en-IN")}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 4. Tips & Gifts sent */}
+                  <div className="border border-border-main rounded-2xl p-5 bg-bg-secondary/20">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-text-main mb-3">
+                      {isHiredMe ? "Tips & Gifts Received" : "Tips & Gifts Given"}
+                    </h4>
+                    {earnings.length > 0 ? (
+                      <div className="space-y-3">
+                        {earnings.map((txn: any) => (
+                          <div key={txn.id} className="flex items-center justify-between bg-bg-card border border-border-main/55 p-3.5 rounded-xl">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                                txn.type === "tip" ? "bg-emerald-500/10" : "bg-primary/10"
+                              }`}>
+                                {txn.type === "tip" ? <Coins className="w-4 h-4 text-emerald-500" strokeWidth={2.5} /> : <Gift className="w-4 h-4 text-primary" />}
+                              </div>
+                              <div>
+                                <p className="text-xs font-black text-text-main">
+                                  {txn.type === "tip" 
+                                    ? (isHiredMe ? "Received Tip" : "Sent Tip")
+                                    : (isHiredMe 
+                                        ? `Received Gift: "${txn.giftTitle || 'Special Gift'}"`
+                                        : `Sent Gift: "${txn.giftTitle || 'Special Gift'}"`
+                                      )
+                                  }
+                                </p>
+                                {txn.message && (
+                                  <p className="text-[11px] text-text-muted italic mt-0.5">"{txn.message}"</p>
+                                )}
+                                <p className="text-[9px] text-text-muted/70 mt-1">{txn.date}</p>
+                              </div>
+                            </div>
+                            <span className={`text-sm font-black ${
+                              txn.type === "tip" ? "text-emerald-500" : "text-primary"
+                            }`}>
+                              ₹{txn.amount.toLocaleString("en-IN")}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-text-muted text-xs italic">
+                        {isHiredMe 
+                          ? "No tips or gifts received yet for this session."
+                          : "No tips or gifts sent yet for this booking."}
+                      </p>
+                    )}
+                  </div>
+
+                </div>
+
+                {/* Footer Actions */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-2 border-t border-border-main z-10">
+                  {/* Chat History - future work */}
+                  <button
+                    onClick={() => toast.success("Chat history is locked. Integrated communication channels coming soon!")}
+                    className="flex-1 cursor-pointer h-12 rounded-xl bg-bg-secondary hover:bg-bg-card border border-border-main text-text-main font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                  >
+                    <MessageCircle className="w-4 h-4 text-primary" />
+                    <span>Chat History</span>
+                  </button>
+                  <button
+                    onClick={() => setSelectedBookingDetails(null)}
+                    className="flex-1 cursor-pointer h-12 rounded-xl bg-text-main text-bg-base font-black text-xs uppercase tracking-[0.25em] flex items-center justify-center gap-2 hover:opacity-90 transition-all active:scale-[0.98]"
+                  >
+                    <span>Close Receipt</span>
+                  </button>
+                </div>
+
+              </motion.div>
+            </div>
+          );
+        })()}
+      </AnimatePresence>
     </div>
   );
 }

@@ -52,8 +52,9 @@ export function usePartner(id: string) {
 
   const fetchPartner = useCallback(async () => {
     if (!id) return;
-    // Only set loading to true if we don't have the partner data loaded yet
-    if (!partner) {
+    // Only set loading to true if we don't have the partner data loaded yet in initial load
+    const initialData = findPartnerSync(id);
+    if (!initialData) {
       setLoading(true);
     }
     setError(null);
@@ -65,7 +66,7 @@ export function usePartner(id: string) {
     } finally {
       setLoading(false);
     }
-  }, [id, partner]);
+  }, [id]);
 
   useEffect(() => {
     fetchPartner();

@@ -343,7 +343,7 @@ function PremiumDurationPicker({
   value,
   onChange,
   label,
-  options = [2, 3, 4, 5, 8, 10, 12, 24],
+  options = [0.01, 1, 2, 3, 4, 5, 8, 10, 12, 24],
 }: {
   value: number;
   onChange: (value: number) => void;
@@ -391,7 +391,7 @@ function PremiumDurationPicker({
                Duration
              </span>
              <span className="text-xs font-bold text-text-main">
-               {value} Hours
+               {value === 0.01 ? "1 Minute" : `${value} ${value === 1 ? "Hour" : "Hours"}`}
              </span>
           </div>
 
@@ -428,7 +428,7 @@ function PremiumDurationPicker({
                             : "text-text-muted hover:bg-bg-card hover:text-text-main"
                         }`}
                       >
-                        {opt} Hours
+                        {opt === 0.01 ? "1 Minute" : `${opt} ${opt === 1 ? "Hour" : "Hours"}`}
                       </button>
                     );
                   })}
@@ -535,7 +535,7 @@ export default function Availability({ partner }: AvailabilityProps) {
   };
 
   const hourlyRate = activePartner.pricing.oneHour;
-  const minHours = 2;
+  const minHours = 1;
 
   const calculateTotal = () => {
     return getDurationPrice(selectedDuration);
@@ -723,14 +723,14 @@ export default function Availability({ partner }: AvailabilityProps) {
                     <p className="text-text-muted text-[8px] font-black uppercase tracking-widest mb-1">
                       Min Booking
                     </p>
-                    <p className="text-text-main text-lg font-black">{minHours} Hours</p>
+                    <p className="text-text-main text-lg font-black">{minHours} {minHours === 1 ? "Hour" : "Hours"}</p>
                   </div>
                 </div>
 
                 {/* Live Summary */}
                 <div className="space-y-2.5 pt-2">
                   <div className="flex justify-between items-center text-xs font-semibold text-text-muted">
-                    <span>Base Rate ({selectedDuration} hrs)</span>
+                    <span>Base Rate ({selectedDuration === 0.01 ? "1 min" : `${selectedDuration} hrs`})</span>
                     <span className="text-text-main font-bold">₹{calculateTotal()}</span>
                   </div>
                 </div>
@@ -744,7 +744,7 @@ export default function Availability({ partner }: AvailabilityProps) {
                     <div className="text-xs font-bold text-text-main flex flex-col gap-1.5">
                       {selectedDate && <span className="flex items-center gap-1.5"><Clock size={12} className="text-primary" /> {selectedDate}</span>}
                       {selectedTime && <span className="flex items-center gap-1.5"><Clock size={12} className="text-primary" /> {selectedTime}</span>}
-                      {selectedDuration && <span className="flex items-center gap-1.5"><Clock size={12} className="text-primary" /> Duration: {selectedDuration} Hours</span>}
+                      {selectedDuration && <span className="flex items-center gap-1.5"><Clock size={12} className="text-primary" /> Duration: {selectedDuration === 0.01 ? "1 Minute" : `${selectedDuration} ${selectedDuration === 1 ? "Hour" : "Hours"}`}</span>}
                     </div>
                   </div>
                 )}

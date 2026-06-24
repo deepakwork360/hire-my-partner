@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Star, X, Eye, ArrowRight, Play, Volume2, VolumeX } from "lucide-react";
 import { toast } from "@/components/ui/toastStore";
 import LazyVideo from "@/components/common/lazy-video";
+import { useSearchParams } from "next/navigation";
+import { useAuthStore } from "@/modules/auth/store";
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -121,7 +123,14 @@ const ReviewCard = ({ review, onPlay, autoPlay = true }: { review: any; onPlay?:
               />
             </div>
             <div className="min-w-0 flex-1">
-              <h4 className="text-xs font-black text-white! truncate filter drop-shadow-sm" style={{ color: "white" }}>{review.name}</h4>
+              <div className="flex items-center gap-1">
+                <h4 className="text-xs font-black text-white! truncate filter drop-shadow-sm" style={{ color: "white" }}>{review.name}</h4>
+                {review.verified && (
+                  <span className="inline-flex items-center justify-center bg-emerald-500 text-white rounded-full p-0.5 text-[7px] leading-none shrink-0" title="Verified Booking">
+                    ✓
+                  </span>
+                )}
+              </div>
               <p className="text-[9px] font-bold text-white/60 uppercase tracking-wider truncate">{review.role}</p>
             </div>
             {/* Play Button Icon */}
@@ -152,7 +161,14 @@ const ReviewCard = ({ review, onPlay, autoPlay = true }: { review: any; onPlay?:
           />
         </div>
 
-        <h3 className="text-2xl font-bold text-text-main mb-3">{review.name}</h3>
+        <h3 className="text-2xl font-bold text-text-main mb-1.5 flex items-center justify-center gap-1.5">
+          <span>{review.name}</span>
+          {review.verified && (
+            <span className="inline-flex items-center justify-center bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-wider gap-0.5" title="Verified Booking">
+              <span>✓ Verified</span>
+            </span>
+          )}
+        </h3>
         <p className="text-text-muted italic text-sm leading-relaxed mb-6 grow flex items-center justify-center">
           &ldquo;{review.text}&rdquo;
         </p>
@@ -185,6 +201,10 @@ interface CompanionSayProps {
 }
 
 export default function CompanionSay({ reviews: passedReviews, partnerId, partnerName }: CompanionSayProps) {
+  const { user } = useAuthStore();
+  const searchParams = useSearchParams();
+  const reviewBookingIdParam = searchParams.get("reviewBookingId");
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
 
@@ -192,8 +212,33 @@ export default function CompanionSay({ reviews: passedReviews, partnerId, partne
   const [canWriteReview, setCanWriteReview] = useState(false);
 
   // Form states
-  const [newName, setNewName] = useState("");
+  const [newName, setNewName] = useState(user?.name || "");
   const [newRole, setNewRole] = useState<"User" | "Companion">("User");
+  const [isPartner, setIsPartner] = useState(false);
+
+  useEffect(() => {
+    if (user?.name) {
+      setNewName(user.name);
+    }
+    if (typeof window !== "undefined" && user?.email) {
+      const storageKey = `partnerApplication_${user.email.replace(/[^a-zA-Z0-9]/g, "_")}`;
+      const savedData = localStorage.getItem(storageKey);
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          if (parsed.verificationStatus === "VERIFIED") {
+            setIsPartner(true);
+            setNewRole("Companion");
+            return;
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+    setIsPartner(false);
+    setNewRole("User");
+  }, [user]);
   const [newRating, setNewRating] = useState(5);
   const [newText, setNewText] = useState("");
   const [hoverStar, setHoverStar] = useState(0);
@@ -202,45 +247,141 @@ export default function CompanionSay({ reviews: passedReviews, partnerId, partne
   const [activeVideoUrl, setActiveVideoUrl] = useState<string | null>(null);
   const [isVideoMuted, setIsVideoMuted] = useState(true);
 
+  const rejectedReviewInfo = useMemo(() => {
+    if (typeof window === "undefined" || !selectedBookingId) return null;
+    try {
+      const localReviews = localStorage.getItem("hire_my_partner_reviews");
+      if (localReviews) {
+        const parsed = JSON.parse(localReviews);
+        const found = parsed.find(
+          (r: any) => String(r.bookingId) === String(selectedBookingId) && r.status === "REJECTED"
+        );
+        if (found) {
+          return {
+            text: found.text,
+            reason: found.rejectionReason || "Does not comply with community guidelines."
+          };
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return null;
+  }, [selectedBookingId, isWriteModalOpen]);
+
+  // Eligibility checking and URL parameter extraction
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
         const localBookings = localStorage.getItem("hire_my_partner_bookings");
+        const localReviews = localStorage.getItem("hire_my_partner_reviews");
+        
+        let parsedBookings: any[] = [];
         if (localBookings) {
-          const parsedList: any[] = JSON.parse(localBookings);
-          const hasCompleted = parsedList.some((b: any) => {
-            const idMatch = String(b.id) === String(partnerId);
-            const nameMatch = b.name.toLowerCase() === partnerName?.toLowerCase();
-            return (idMatch || nameMatch) && b.status === "Completed";
-          });
-          setCanWriteReview(hasCompleted);
+          parsedBookings = JSON.parse(localBookings);
+        }
+        
+        let parsedReviews: any[] = [];
+        if (localReviews) {
+          parsedReviews = JSON.parse(localReviews);
+        }
+
+        // Find completed bookings for this partner
+        const completedBookings = parsedBookings.filter((b: any) => {
+          const idMatch = String(b.id) === String(partnerId);
+          const nameMatch = b.name.toLowerCase() === partnerName?.toLowerCase();
+          return (idMatch || nameMatch) && b.status === "Completed";
+        });
+
+        // Filter out completed bookings that already have reviews in the global list
+        const unreviewedCompletedBookings = completedBookings.filter((b: any) => {
+          return !parsedReviews.some((r: any) => String(r.bookingId) === String(b.id) && r.status !== "REJECTED");
+        });
+
+        const eligible = unreviewedCompletedBookings.length > 0;
+        setCanWriteReview(eligible);
+
+        // If there's a specific reviewBookingId in the query parameters:
+        if (reviewBookingIdParam) {
+          // Check if it's in the unreviewed completed bookings
+          const matchedBooking = unreviewedCompletedBookings.find(
+            (b: any) => String(b.id) === String(reviewBookingIdParam)
+          );
+          
+          if (matchedBooking) {
+            setSelectedBookingId(String(matchedBooking.id));
+            setIsWriteModalOpen(true);
+          } else {
+            // Check if it was already reviewed
+            const alreadyReviewed = parsedReviews.some(
+              (r: any) => String(r.bookingId) === String(reviewBookingIdParam) && r.status !== "REJECTED"
+            );
+            if (alreadyReviewed) {
+              toast.error("You have already reviewed this booking.");
+            } else {
+              toast.error("Invalid booking ID or this booking is not completed yet.");
+            }
+          }
+        } else if (eligible) {
+          // If no specific parameter, but the user is eligible, we can default to the first unreviewed completed booking
+          setSelectedBookingId(String(unreviewedCompletedBookings[0].id));
         }
       } catch (e) {
         console.error("Failed to check bookings for review permission", e);
       }
     }
-  }, [partnerId, partnerName]);
+  }, [partnerId, partnerName, reviewBookingIdParam]);
 
+  // Load reviews from mock partners and global approved review list
   useEffect(() => {
     if (typeof window !== "undefined" && partnerId) {
-      const saved = localStorage.getItem(`partner_reviews_${partnerId}`);
-      if (saved) {
+      const handleGlobalReviewsUpdate = () => {
         try {
-          setReviews(JSON.parse(saved));
-          return;
+          const savedGlobal = localStorage.getItem("hire_my_partner_reviews");
+          let globalApprovedList: any[] = [];
+          if (savedGlobal) {
+            const globalList = JSON.parse(savedGlobal);
+            globalApprovedList = globalList.filter((r: any) => 
+              String(r.partnerId) === String(partnerId) && r.status === "APPROVED"
+            );
+          }
+          
+          const savedLegacy = localStorage.getItem(`partner_reviews_${partnerId}`);
+          let legacyApprovedList: any[] = [];
+          if (savedLegacy) {
+            legacyApprovedList = JSON.parse(savedLegacy);
+          }
+
+          const allReviewsMap = new Map();
+          (passedReviews || []).forEach((r: any) => {
+            if (r && r.id) allReviewsMap.set(String(r.id), r);
+          });
+          legacyApprovedList.forEach((r: any) => {
+            if (r && r.id) allReviewsMap.set(String(r.id), r);
+          });
+          globalApprovedList.forEach((r: any) => {
+            if (r && r.id) allReviewsMap.set(String(r.id), r);
+          });
+
+          setReviews(Array.from(allReviewsMap.values()));
         } catch (e) {
-          console.error("Failed to parse reviews from localStorage", e);
+          console.error("Failed to parse reviews", e);
         }
-      }
+      };
+
+      handleGlobalReviewsUpdate();
+      window.addEventListener("reviews_updated", handleGlobalReviewsUpdate);
+      return () => window.removeEventListener("reviews_updated", handleGlobalReviewsUpdate);
+    } else {
+      setReviews(passedReviews || []);
     }
-    setReviews(passedReviews || []);
   }, [passedReviews, partnerId]);
 
   const handleReviewSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!canWriteReview) {
-      toast.error("You must complete a booking with this companion to write a review.");
+    if (!canWriteReview || !selectedBookingId) {
+      toast.error("You must have a completed, unreviewed booking with this companion to write a review.");
       return;
     }
 
@@ -251,33 +392,71 @@ export default function CompanionSay({ reviews: passedReviews, partnerId, partne
 
     const randomAvatar = avatarOptions[Math.floor(Math.random() * avatarOptions.length)];
     const newReview = {
-      id: Math.random().toString(36).substring(2, 9),
+      id: `REV-${Date.now()}`,
+      partnerId: String(partnerId),
+      partnerName: partnerName || "",
+      bookingId: selectedBookingId,
       name: newName,
       role: newRole,
       text: newText,
       image: randomAvatar,
       rating: newRating,
       videoUrl: videoPreviewUrl || undefined,
+      status: "PENDING",
+      verified: true,
+      date: new Date().toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
     };
 
-    const updatedReviews = [newReview, ...reviews];
-    setReviews(updatedReviews);
+    try {
+      const existingReviewsStr = localStorage.getItem("hire_my_partner_reviews");
+      const existingReviews = existingReviewsStr ? JSON.parse(existingReviewsStr) : [];
+      
+      const alreadyReviewed = existingReviews.some(
+        (r: any) => String(r.bookingId) === String(selectedBookingId) && r.status !== "REJECTED"
+      );
+      if (alreadyReviewed) {
+        toast.error("You have already reviewed this booking.");
+        return;
+      }
 
-    if (typeof window !== "undefined" && partnerId) {
-      localStorage.setItem(`partner_reviews_${partnerId}`, JSON.stringify(updatedReviews));
-      // Dispatch custom event to notify sibling components (like ProfileMain)
+      // Filter out any previous reviews for this booking (including rejected ones) to keep it clean
+      const filteredReviews = existingReviews.filter(
+        (r: any) => String(r.bookingId) !== String(selectedBookingId)
+      );
+      const updatedGlobalReviews = [newReview, ...filteredReviews];
+      localStorage.setItem("hire_my_partner_reviews", JSON.stringify(updatedGlobalReviews));
+      
       window.dispatchEvent(new Event("reviews_updated"));
-    }
-
-    if (videoPreviewUrl) {
-      toast.success("Review submitted! Your video review is pending admin verification. ₹100 credit will be added to your account upon approval.");
-    } else {
-      toast.success("Thank you for sharing your experience!");
+      
+      toast.success("Review submitted successfully! It is now pending admin approval.");
+      
+      // Update local permission check in real time
+      const localBookings = localStorage.getItem("hire_my_partner_bookings");
+      if (localBookings) {
+        const parsedBookings = JSON.parse(localBookings);
+        const completedBookings = parsedBookings.filter((b: any) => {
+          const idMatch = String(b.id) === String(partnerId);
+          const nameMatch = b.name.toLowerCase() === partnerName?.toLowerCase();
+          return (idMatch || nameMatch) && b.status === "Completed";
+        });
+        const unreviewedCompletedBookings = completedBookings.filter((b: any) => {
+          return !updatedGlobalReviews.some((r: any) => String(r.bookingId) === String(b.id) && r.status !== "REJECTED");
+        });
+        setCanWriteReview(unreviewedCompletedBookings.length > 0);
+      }
+    } catch (err) {
+      console.error("Failed to save review", err);
+      toast.error("Failed to submit review. Please try again.");
     }
 
     // Reset form & close modal
-    setNewName("");
-    setNewRole("User");
+    setNewName(user?.name || "");
+    setNewRole(isPartner ? "Companion" : "User");
     setNewRating(5);
     setNewText("");
     setVideoFile(null);
@@ -450,7 +629,7 @@ export default function CompanionSay({ reviews: passedReviews, partnerId, partne
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-bg-base/60 backdrop-blur-xl"
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-bg-base/60 backdrop-blur-xl"
             onClick={() => setIsModalOpen(false)}
           >
             <motion.div
@@ -501,7 +680,7 @@ export default function CompanionSay({ reviews: passedReviews, partnerId, partne
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-bg-base/60 backdrop-blur-xl"
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-bg-base/60 backdrop-blur-xl"
             onClick={() => setIsWriteModalOpen(false)}
           >
             <motion.div
@@ -514,7 +693,7 @@ export default function CompanionSay({ reviews: passedReviews, partnerId, partne
               {/* Modal Header */}
               <div className="flex items-center justify-between p-6 md:p-8 border-b border-border-main relative z-10 shrink-0">
                 <h3 className={`${rochester.className} text-3xl md:text-4xl text-text-main`}>
-                  Share Your Experience
+                  Share Your <span className="text-primary">Experience</span>
                 </h3>
                 <button
                   onClick={() => setIsWriteModalOpen(false)}
@@ -526,6 +705,23 @@ export default function CompanionSay({ reviews: passedReviews, partnerId, partne
 
               {/* Form Content */}
               <form onSubmit={handleReviewSubmit} className="p-6 md:p-8 space-y-6 overflow-y-auto max-h-[70vh]">
+                {rejectedReviewInfo && (
+                  <div className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-2xl text-xs font-bold leading-relaxed space-y-1.5">
+                    <p className="flex items-center gap-1.5 font-black uppercase text-[10px] tracking-wider text-rose-600 dark:text-rose-400">
+                      ⚠️ Previous Review Rejected by Moderation
+                    </p>
+                    <p className="text-text-main font-medium italic bg-bg-secondary p-3 rounded-xl border border-border-main text-[11px]">
+                      "{rejectedReviewInfo.text}"
+                    </p>
+                    <p className="text-[10px] text-rose-600 dark:text-rose-400 font-black uppercase tracking-wider">
+                      Reason: <span className="font-bold normal-case text-text-main">{rejectedReviewInfo.reason}</span>
+                    </p>
+                    <p className="text-[10px] text-text-muted mt-1 font-semibold">
+                      Please rewrite and submit your updated experience below.
+                    </p>
+                  </div>
+                )}
+
                 {/* Name */}
                 <div className="flex flex-col gap-2">
                   <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted ml-2">
@@ -534,10 +730,10 @@ export default function CompanionSay({ reviews: passedReviews, partnerId, partne
                   <input
                     type="text"
                     required
+                    readOnly
                     value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    placeholder="e.g. Rahul Sharma"
-                    className="w-full h-12 px-5 bg-bg-secondary border border-border-main rounded-2xl text-xs font-bold text-text-main focus:outline-none focus:border-primary/50 transition-all"
+                    placeholder="User Name"
+                    className="w-full h-12 px-5 bg-bg-secondary/40 border border-border-main rounded-2xl text-xs font-bold text-text-muted focus:outline-none cursor-not-allowed opacity-75 transition-all"
                   />
                 </div>
 
@@ -548,25 +744,25 @@ export default function CompanionSay({ reviews: passedReviews, partnerId, partne
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted ml-2">
                       Your Role
                     </label>
-                    <div className="grid grid-cols-2 gap-2 bg-bg-secondary p-1 rounded-2xl border border-border-main">
+                    <div className="grid grid-cols-2 gap-2 bg-bg-secondary/40 p-1 rounded-2xl border border-border-main opacity-75">
                       <button
                         type="button"
-                        onClick={() => setNewRole("User")}
-                        className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                        disabled
+                        className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-not-allowed ${
                           newRole === "User"
                             ? "bg-primary text-white"
-                            : "text-text-muted hover:text-text-main"
+                            : "text-text-muted"
                         }`}
                       >
                         User
                       </button>
                       <button
                         type="button"
-                        onClick={() => setNewRole("Companion")}
-                        className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                        disabled
+                        className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-not-allowed ${
                           newRole === "Companion"
                             ? "bg-primary text-white"
-                            : "text-text-muted hover:text-text-main"
+                            : "text-text-muted"
                         }`}
                       >
                         Companion
@@ -581,21 +777,19 @@ export default function CompanionSay({ reviews: passedReviews, partnerId, partne
                     </label>
                     <div 
                       className="flex items-center gap-1.5 h-12 px-5 bg-bg-secondary border border-border-main rounded-2xl"
-                      onMouseLeave={() => setHoverStar(0)}
                     >
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
                           key={star}
                           type="button"
                           onClick={() => setNewRating(star)}
-                          onMouseEnter={() => setHoverStar(star)}
                           className="focus:outline-none cursor-pointer transition-transform duration-200 active:scale-90"
                         >
                           <Star
                             className={`w-6 h-6 transition-all duration-150 ${
-                              star <= (hoverStar || newRating)
+                              star <= newRating
                                 ? "fill-amber-400 text-amber-400 filter drop-shadow-[0_0_5px_rgba(251,191,36,0.5)]"
-                                : "text-text-muted/40 hover:text-amber-400/60"
+                                : "text-text-muted/40"
                             }`}
                           />
                         </button>

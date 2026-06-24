@@ -51,21 +51,28 @@ const calculateEndTime = (startTimeStr: string, durationStr: string): string => 
   if (!match) return startTimeStr;
 
   let hour = parseInt(match[1], 10);
-  const minute = match[2];
+  let minute = parseInt(match[2], 10);
   const ampm = match[3].toUpperCase();
 
   if (ampm === "PM" && hour < 12) hour += 12;
   if (ampm === "AM" && hour === 12) hour = 0;
 
-  const durationHours = parseInt(durationStr, 10) || 2;
-  let newHour = (hour + durationHours) % 24;
+  const durationHours = (durationStr === "1 minute" || durationStr === "0.01") ? 0.01 : (parseFloat(durationStr) || 2);
+  const totalMinutesToAdd = Math.round(durationHours * 60);
+
+  const startTotalMinutes = hour * 60 + minute;
+  const endTotalMinutes = (startTotalMinutes + totalMinutesToAdd) % (24 * 60);
+
+  let newHour = Math.floor(endTotalMinutes / 60);
+  const newMinute = endTotalMinutes % 60;
 
   const newAmpm = newHour >= 12 ? "PM" : "AM";
   newHour = newHour % 12;
   newHour = newHour ? newHour : 12;
 
   const strHours = String(newHour).padStart(2, "0");
-  return `${strHours}:${minute} ${newAmpm}`;
+  const strMinutes = String(newMinute).padStart(2, "0");
+  return `${strHours}:${strMinutes} ${newAmpm}`;
 };
 
 let hasAuthorizedSession = false;
@@ -97,8 +104,8 @@ export default function ConfirmationCard() {
   const dateParam = searchParams.get("date") || "July 8, 2025 | 7:00 PM – 9:00 PM";
   const durationParam = searchParams.get("duration") || "2 hours";
   const addonsParam = searchParams.get("addons") || "";
-  const amountParam = searchParams.get("amount") || "1245";
-
+  const amountParam = searchParams.get("amount") || "0";
+  const reasonParam = searchParams.get("reason") || "";
 
   // Find partner from database
   const { partner: activePartner } = usePartner(partnerId);
@@ -154,6 +161,7 @@ export default function ConfirmationCard() {
           price: `₹${parsedAmount.toLocaleString("en-IN")}`,
           status: "Pending",
           bio: partner.bio.substring(0, 100) + "...",
+          reason: reasonParam,
         };
         
         localStorage.setItem(
@@ -164,7 +172,7 @@ export default function ConfirmationCard() {
     } catch (e) {
       console.error("Failed to persist booking in local storage", e);
     }
-  }, [bookingId, partner, dateLabel, timeStart, timeEnd, parsedAmount]);
+  }, [bookingId, partner, dateLabel, timeStart, timeEnd, parsedAmount, reasonParam]);
 
   if (isAuthorized === null) {
     return (

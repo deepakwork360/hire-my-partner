@@ -1157,7 +1157,7 @@ function ProfileSettingsForm({ storageKey }: { storageKey: string }) {
             type="text"
             value={formData.fullName}
             onChange={(e) => setFormData(p => ({ ...p, fullName: e.target.value }))}
-            placeholder="e.g. Sabrina Carpenter"
+            placeholder="e.g. Sabrina Carpentor"
             className={inputClassName()}
             required
           />

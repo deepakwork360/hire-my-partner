@@ -89,6 +89,7 @@ function PremiumTimePicker({
   placeholder = "Select Time",
   hasError = false,
   selectedDate = "",
+  isTestSession = false,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -96,6 +97,7 @@ function PremiumTimePicker({
   placeholder?: string;
   hasError?: boolean;
   selectedDate?: string;
+  isTestSession?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -181,7 +183,8 @@ function PremiumTimePicker({
     const targetDate = parseDateTime(selectedDate, timeStr);
     if (!targetDate) return false;
 
-    return (targetDate.getTime() - today.getTime()) >= 30 * 60 * 1000;
+    const buffer = isTestSession ? -5 * 60 * 1000 : 30 * 60 * 1000;
+    return (targetDate.getTime() - today.getTime()) >= buffer;
   };
 
   const handleApplyCustom = () => {
@@ -191,8 +194,9 @@ function PremiumTimePicker({
       const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
       if (selectedDate === todayStr) {
         const targetDate = parseDateTime(selectedDate, formattedCustom);
-        if (!targetDate || (targetDate.getTime() - today.getTime()) < 30 * 60 * 1000) {
-          toast.error("Time must be at least 30 minutes in the future from now.");
+        const buffer = isTestSession ? -5 * 60 * 1000 : 30 * 60 * 1000;
+        if (!targetDate || (targetDate.getTime() - today.getTime()) < buffer) {
+          toast.error(isTestSession ? "Time cannot be in the past." : "Time must be at least 30 minutes in the future from now.");
           return;
         }
       }
@@ -355,7 +359,7 @@ function PremiumTimePicker({
   );
 }
 
-const durationOptions = ["2 hours", "3 hours", "4 hours", "5 hours", "8 hours", "10 hours", "12 hours", "24 hours",];
+const durationOptions = ["1 minute", "1 hour", "2 hours", "3 hours", "4 hours", "5 hours", "8 hours", "10 hours", "12 hours", "24 hours",];
 
 const addOnOptions = [
   { id: "photoshoot", label: "Casual Photoshoot", price: 1500 },
@@ -401,8 +405,8 @@ export default function BookDetails() {
 
   const initialDurationParam = searchParams.get("duration");
   const initialDuration = initialDurationParam 
-    ? (initialDurationParam === "1" ? "1 hour" : `${initialDurationParam} hours`)
-    : "2 hours";
+    ? (initialDurationParam === "0.01" || initialDurationParam === "1 minute" ? "1 minute" : initialDurationParam === "1" ? "1 hour" : `${initialDurationParam} hours`)
+    : "1 minute";
 
   const dynamicDurationOptions = durationOptions.includes(initialDuration)
     ? durationOptions
@@ -435,7 +439,9 @@ export default function BookDetails() {
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     if (customDate === todayStr) {
       const targetDate = parseDateTime(customDate, customTime);
-      if (!targetDate || (targetDate.getTime() - today.getTime()) < 30 * 60 * 1000) {
+      const isTestSession = selectedDuration === "1 minute";
+      const buffer = isTestSession ? -5 * 60 * 1000 : 30 * 60 * 1000;
+      if (!targetDate || (targetDate.getTime() - today.getTime()) < buffer) {
         return false;
       }
     }
@@ -462,7 +468,7 @@ export default function BookDetails() {
 
 
   const getBasePrice = (duration: string, p: Partner) => {
-    const hours = parseInt(duration, 10) || 2;
+    const hours = duration === "1 minute" ? 0.01 : (parseFloat(duration) || 1);
     switch (hours) {
       case 2:
         return p.pricing.twoHours || (p.pricing.oneHour * 1.8);
@@ -506,8 +512,10 @@ export default function BookDetails() {
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     if (customDate === todayStr) {
       const targetDate = parseDateTime(customDate, customTime);
-      if (!targetDate || (targetDate.getTime() - today.getTime()) < 30 * 60 * 1000) {
-        toast.error("Please select a time at least 30 minutes in the future.");
+      const isTestSession = selectedDuration === "1 minute";
+      const buffer = isTestSession ? -5 * 60 * 1000 : 30 * 60 * 1000;
+      if (!targetDate || (targetDate.getTime() - today.getTime()) < buffer) {
+        toast.error(isTestSession ? "Please select a valid time." : "Please select a time at least 30 minutes in the future.");
         return;
       }
     }
@@ -520,7 +528,7 @@ export default function BookDetails() {
     if (typeof window !== "undefined") {
       sessionStorage.setItem("booking_in_progress", "true");
     }
-    const url = `/booking-confirmation?partner=${partner.id}&date=${encodeURIComponent(selectedDateTime)}&duration=${encodeURIComponent(selectedDuration)}&addons=${encodeURIComponent(selectedAddOnLabels.join(","))}&amount=${totalAmount}`;
+    const url = `/booking-confirmation?partner=${partner.id}&date=${encodeURIComponent(selectedDateTime)}&duration=${encodeURIComponent(selectedDuration === "1 minute" ? "0.01" : selectedDuration)}&addons=${encodeURIComponent(selectedAddOnLabels.join(","))}&amount=${totalAmount}&reason=${encodeURIComponent(notes)}`;
     router.push(url);
   };
 
@@ -579,7 +587,9 @@ export default function BookDetails() {
                           const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
                           if (val === todayStr) {
                             const targetDate = parseDateTime(val, customTime);
-                            if (!targetDate || (targetDate.getTime() - today.getTime()) < 30 * 60 * 1000) {
+                            const isTestSession = selectedDuration === "1 minute";
+                            const buffer = isTestSession ? -5 * 60 * 1000 : 30 * 60 * 1000;
+                            if (!targetDate || (targetDate.getTime() - today.getTime()) < buffer) {
                               const defaultTime = getThirtyMinutesAheadTime().formatted;
                               setCustomTime(defaultTime);
                               return;
@@ -603,6 +613,7 @@ export default function BookDetails() {
                     placeholder="Select Time"
                     selectedDate={customDate}
                     hasError={isTimeInvalid}
+                    isTestSession={selectedDuration === "1 minute"}
                   />
                 </div>
 

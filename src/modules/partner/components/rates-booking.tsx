@@ -45,7 +45,7 @@ export default function RatesBooking({ partner }: RatesBookingProps) {
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
 
   const hourlyRate = activePartner.pricing.oneHour;
-  const minHours = 2;
+  const minHours = 1;
 
   const handleToggle = (id: string) => {
     setSelectedAddOns((prev) =>
@@ -203,7 +203,7 @@ export default function RatesBooking({ partner }: RatesBookingProps) {
                    </div>
 
                    <Link
-                     href={`/checkout?partner=${activePartner.id}${selectedAddOns.length > 0 ? `&addons=${selectedAddOns.join(",")}` : ""}`}
+                     href={`/checkout?partner=${activePartner.id}&duration=${minHours}${selectedAddOns.length > 0 ? `&addons=${selectedAddOns.join(",")}` : ""}`}
                      className="group relative w-full h-12 bg-primary rounded-xl flex items-center justify-center gap-3 text-white text-[10px] font-black uppercase tracking-[0.3em] shadow-lg hover:-translate-y-1 transition-all overflow-hidden"
                    >
                      <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shine" />
