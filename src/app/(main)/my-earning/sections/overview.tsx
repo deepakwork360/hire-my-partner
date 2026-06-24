@@ -89,11 +89,11 @@ export default function Overview() {
         isDynamic: true,
         type: item.type,
       })),
-      ...(user?.email === "sabrina@gmail.com" ? rawEarningsData.map((item) => ({
+      ...rawEarningsData.map((item) => ({
         ...item,
         isDynamic: false,
         type: undefined,
-      })) : []),
+      })),
     ];
 
     // 1. Filter logic using string comparison (reliable for YYYY-MM-DD)

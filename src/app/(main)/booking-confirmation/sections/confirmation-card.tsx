@@ -10,7 +10,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { partners } from "@/modules/partner/data/partners";
 import { usePartner } from "@/modules/partner/hooks/usePartner";
 import { Partner } from "@/modules/partner/types/partner.types";
-import { useAuthStore } from "@/modules/auth/store";
 
 import {
   Check,
@@ -76,7 +75,6 @@ let hasAuthorizedSession = false;
 export default function ConfirmationCard() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useAuthStore();
 
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
@@ -156,7 +154,6 @@ export default function ConfirmationCard() {
           price: `₹${parsedAmount.toLocaleString("en-IN")}`,
           status: "Pending",
           bio: partner.bio.substring(0, 100) + "...",
-          userEmail: user?.email || "john@example.com",
         };
         
         localStorage.setItem(
@@ -167,7 +164,7 @@ export default function ConfirmationCard() {
     } catch (e) {
       console.error("Failed to persist booking in local storage", e);
     }
-  }, [bookingId, partner, dateLabel, timeStart, timeEnd, parsedAmount, user]);
+  }, [bookingId, partner, dateLabel, timeStart, timeEnd, parsedAmount]);
 
   if (isAuthorized === null) {
     return (
