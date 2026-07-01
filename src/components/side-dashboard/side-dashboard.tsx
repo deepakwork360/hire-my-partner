@@ -61,12 +61,12 @@ const themes: { id: Theme; label: string; color: string }[] = [
 ];
 
 export const moods = [
-  { id: "all", label: "All Vibes", emoji: "✨" },
-  { id: "romantic", label: "Romantic", emoji: "❤️" },
-  { id: "happy", label: "Happy/Friendly", emoji: "🌟" },
-  { id: "chilled", label: "Chilled", emoji: "🍹" },
-  { id: "adventurous", label: "Adventurous", emoji: "🏔️" },
-  { id: "serious", label: "Serious/Intellectual", emoji: "💼" },
+  { id: "happy", label: "Happy", emoji: "😄" },
+  { id: "romantic", label: "Romantic", emoji: "🥰" },
+  { id: "chilled", label: "Chilled", emoji: "😎" },
+  { id: "excited", label: "Excited", emoji: "🥳" },
+  { id: "angry", label: "Angry", emoji: "😠" },
+  { id: "sad", label: "Sad", emoji: "🥺" },
 ];
 
 const rochester = Rochester({ subsets: ["latin"], weight: ["400"] });
@@ -112,13 +112,6 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
       try {
         const loc = getUserLocation();
         setActiveLocationName(loc.city);
-        if (loc.useCustom) {
-          setUseCustomCoords(true);
-          setCustomLat(String(loc.lat));
-          setCustomLng(String(loc.lng));
-        } else {
-          setUseCustomCoords(false);
-        }
       } catch (e) {
         console.error(e);
       }
@@ -140,12 +133,11 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
   const [partnerPhoto, setPartnerPhoto] = useState("");
   const [showThemeSettings, setShowThemeSettings] = useState(false);
   const [activeMood, setActiveMood] = useState<string>("all");
+  const [activeMoodText, setActiveMoodText] = useState<string>("");
+  const [isEditingMoodText, setIsEditingMoodText] = useState<boolean>(false);
   const [showMoodSettings, setShowMoodSettings] = useState(false);
   const [showLocationSettings, setShowLocationSettings] = useState(false);
   const [activeLocationName, setActiveLocationName] = useState("Mumbai");
-  const [useCustomCoords, setUseCustomCoords] = useState(false);
-  const [customLat, setCustomLat] = useState("");
-  const [customLng, setCustomLng] = useState("");
   const [isLocating, setIsLocating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const storageKey = user && user.email ? `partnerApplication_${user.email.replace(/[^a-zA-Z0-9]/g, "_")}` : "partnerApplication";
@@ -264,8 +256,10 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
     };
     const handleMoodChange = () => {
       if (typeof window !== "undefined") {
-        const mood = localStorage.getItem("user_mood") || "all";
+        const mood = localStorage.getItem("user_mood") || "happy";
+        const moodText = localStorage.getItem("user_mood_text") || "";
         setActiveMood(mood);
+        setActiveMoodText(moodText);
       }
     };
 
@@ -359,20 +353,14 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
     toast.success("Profile photo updated successfully!");
   };
 
-  const presetCities = [
-    "Mumbai",
-    "Delhi/NCR",
-    "Bangalore",
-    "Dubai",
-    "Los Angeles",
-    "New York",
-    "Tokyo",
-    "Paris",
-    "London",
-    "Sydney",
-  ];
-
-  const handleUpdateLocation = (cityName: string, latVal?: number, lngVal?: number, useCustom?: boolean) => {
+  const handleUpdateLocation = (
+    cityName: string,
+    latVal?: number,
+    lngVal?: number,
+    useCustom?: boolean,
+    stateVal?: string,
+    countryVal?: string
+  ) => {
     try {
       let resolvedLat = latVal;
       let resolvedLng = lngVal;
@@ -383,21 +371,22 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
         resolvedLng = coords.lng;
       }
 
+      const justCityName = cityName.includes(",") ? cityName.split(",")[0].trim() : cityName;
+      const justCountryName = cityName.includes(",") ? cityName.split(",")[1].trim() : (countryVal || "India");
+
       // 1. Update active user browsing location
       setUserLocation({
         city: cityName,
         lat: resolvedLat,
         lng: resolvedLng,
-        useCustom
+        useCustom,
+        latitude: resolvedLat,
+        longitude: resolvedLng,
+        state: stateVal || justCityName,
+        country: justCountryName
       });
 
       setActiveLocationName(cityName);
-      if (useCustom) {
-        setCustomLat(String(resolvedLat));
-        setCustomLng(String(resolvedLng));
-      } else {
-        setUseCustomCoords(false);
-      }
 
       // 2. If it's a verified live partner, update their profile too!
       if (isLivePartner) {
@@ -405,10 +394,14 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
         if (savedApp) {
           const parsed = JSON.parse(savedApp);
           if (!parsed.formData) parsed.formData = {};
-          parsed.formData.city = cityName;
+          parsed.formData.city = justCityName;
           parsed.formData.location = cityName;
           parsed.formData.lat = resolvedLat;
           parsed.formData.lng = resolvedLng;
+          parsed.formData.latitude = resolvedLat;
+          parsed.formData.longitude = resolvedLng;
+          parsed.formData.state = stateVal || justCityName;
+          parsed.formData.country = justCountryName;
           localStorage.setItem(storageKey, JSON.stringify(parsed));
 
           // Also update approved_partners list
@@ -421,9 +414,13 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                 return { 
                   ...p, 
                   location: cityName, 
-                  city: cityName,
+                  city: justCityName,
                   lat: resolvedLat,
-                  lng: resolvedLng
+                  lng: resolvedLng,
+                  latitude: resolvedLat,
+                  longitude: resolvedLng,
+                  state: stateVal || justCityName,
+                  country: justCountryName
                 };
               }
               return p;
@@ -450,11 +447,36 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
 
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const lat = parseFloat(position.coords.latitude.toFixed(4));
         const lng = parseFloat(position.coords.longitude.toFixed(4));
-        setIsLocating(false);
-        handleUpdateLocation("GPS Location", lat, lng, true);
+        
+        try {
+          // Perform reverse geocoding via OpenStreetMap Nominatim API
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`, {
+            headers: {
+              "User-Agent": "hire-my-partner-app"
+            }
+          });
+          
+          if (!res.ok) throw new Error("Reverse geocode request failed");
+          
+          const data = await res.json();
+          const address = data.address || {};
+          
+          // Parse city, state, country
+          const city = address.city || address.town || address.village || address.suburb || "Delhi";
+          const state = address.state || address.region || "Delhi";
+          const country = address.country || "India";
+          
+          setIsLocating(false);
+          handleUpdateLocation(`${city}, ${country}`, lat, lng, false, state, country);
+        } catch (error) {
+          console.error("Reverse geocoding failed, using fallback:", error);
+          setIsLocating(false);
+          // Graceful fallback to Delhi, India with real coordinates
+          handleUpdateLocation("Delhi, India", lat, lng, false, "Delhi", "India");
+        }
       },
       (error) => {
         setIsLocating(false);
@@ -463,20 +485,6 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
       },
       { enableHighAccuracy: true, timeout: 8000 }
     );
-  };
-
-  const handleApplyCustomCoordinates = () => {
-    const lat = parseFloat(customLat);
-    const lng = parseFloat(customLng);
-    if (isNaN(lat) || isNaN(lng)) {
-      toast.error("Please enter valid latitude and longitude values.");
-      return;
-    }
-    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-      toast.error("Latitude must be between -90 and 90. Longitude must be between -180 and 180.");
-      return;
-    }
-    handleUpdateLocation("Custom Position", lat, lng, true);
   };
 
   const handleLogout = () => {
@@ -488,6 +496,34 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
     setShowLogoutConfirm(false);
     setIsOpen(false);
     router.push("/");
+  };
+
+  const saveMoodText = (text: string) => {
+    localStorage.setItem("user_mood_text", text);
+    setActiveMoodText(text);
+    
+    if (typeof window !== "undefined") {
+      try {
+        const savedTexts = JSON.parse(localStorage.getItem("partner_mood_texts") || "{}");
+        const pName = user?.name;
+        if (pName) {
+          savedTexts[pName] = text;
+          
+          const approvedStr = localStorage.getItem("approved_partners");
+          if (approvedStr) {
+            const list = JSON.parse(approvedStr);
+            const found = list.find((p: any) => p.name === pName);
+            if (found) {
+              savedTexts[String(found.id)] = text;
+            }
+          }
+        }
+        localStorage.setItem("partner_mood_texts", JSON.stringify(savedTexts));
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    window.dispatchEvent(new Event("user_mood_changed"));
   };
 
   if (!mounted) return null;
@@ -611,6 +647,110 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                 className="flex-1 overflow-y-auto pr-1 flex flex-col gap-6 sidebar-scroll-container"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
               >
+                {/* MY MOOD/VIBE SECTION */}
+                {isAuthenticated && (
+                  <div>
+                    <h4 className="text-[10px] font-bold uppercase tracking-[0.15em] text-text-muted/70 mb-2.5 px-1">
+                      Set Your Mood
+                    </h4>
+                    <div className="bg-bg-secondary/20 border border-border-main/30 rounded-xl p-3.5 flex flex-col gap-3">
+                      <div className="flex items-center justify-center gap-2.5 flex-wrap">
+                        {moods.map((m) => {
+                          const isSelected = activeMood === m.id;
+                          return (
+                            <button
+                              key={m.id}
+                              onClick={() => {
+                                localStorage.setItem("user_mood", m.id);
+                                setActiveMood(m.id);
+                                
+                                if (typeof window !== "undefined") {
+                                  try {
+                                    const savedMoods = JSON.parse(localStorage.getItem("partner_moods") || "{}");
+                                    const pName = user?.name;
+                                    if (pName) {
+                                      savedMoods[pName] = m.id;
+                                      
+                                      const approvedStr = localStorage.getItem("approved_partners");
+                                      if (approvedStr) {
+                                        const list = JSON.parse(approvedStr);
+                                        const found = list.find((p: any) => p.name === pName);
+                                        if (found) {
+                                          savedMoods[String(found.id)] = m.id;
+                                        }
+                                      }
+                                    }
+                                    localStorage.setItem("partner_moods", JSON.stringify(savedMoods));
+                                  } catch (err) {
+                                    console.error(err);
+                                  }
+                                }
+
+                                window.dispatchEvent(new Event("user_mood_changed"));
+                                toast.success(`Mood set to ${m.label} ${m.emoji}`);
+                              }}
+                              className={`w-8.5 h-8.5 rounded-full flex items-center justify-center text-lg transition-all duration-200 border cursor-pointer hover:scale-110 active:scale-95 ${
+                                isSelected
+                                  ? "bg-primary border-primary shadow-md shadow-primary/20 scale-105"
+                                  : "bg-bg-secondary border-border-main hover:border-primary/30"
+                              }`}
+                              title={m.label}
+                            >
+                              {m.emoji}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Custom status message with pencil icon */}
+                      <div className="w-full flex flex-col items-center gap-1.5 pt-2.5 border-t border-border-main/20">
+                        {isEditingMoodText ? (
+                          <div className="flex items-center gap-1.5 w-full">
+                            <input
+                              type="text"
+                              value={activeMoodText}
+                              onChange={(e) => setActiveMoodText(e.target.value)}
+                              placeholder="Describe your vibe/status..."
+                              maxLength={60}
+                              className="flex-1 text-xs bg-bg-secondary border border-border-main rounded-lg px-2.5 py-1.5 text-text-main outline-hidden focus:border-primary/50"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  saveMoodText(activeMoodText);
+                                  setIsEditingMoodText(false);
+                                }
+                              }}
+                              autoFocus
+                            />
+                            <button
+                              onClick={() => {
+                                saveMoodText(activeMoodText);
+                                setIsEditingMoodText(false);
+                              }}
+                              className="p-1.5 bg-primary rounded-lg text-white hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center shrink-0"
+                              title="Save Status"
+                            >
+                              <Check size={12} strokeWidth={3} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between w-full px-1">
+                            <span className="text-[11px] text-text-muted italic truncate max-w-[210px]">
+                              {activeMoodText ? `"${activeMoodText}"` : "Add status description..."}
+                            </span>
+                            <button
+                              onClick={() => setIsEditingMoodText(true)}
+                              className="p-1 text-text-muted hover:text-primary transition-colors cursor-pointer shrink-0 flex items-center justify-center"
+                              title="Edit Status Message"
+                            >
+                              <Pencil size={11} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* EXPLORE SECTION */}
                 <div>
                   <h4 className="text-[10px] font-bold uppercase tracking-[0.15em] text-text-muted/70 mb-2 px-1">
@@ -690,6 +830,8 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                     </div>
                   </div>
                 )}
+
+
 
                 {/* SETTINGS & SUPPORT */}
                 <div>
@@ -802,97 +944,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                       )}
                     </AnimatePresence>
 
-                    {/* Collapsible Mood/Vibe Trigger */}
-                    <button
-                      onClick={() => setShowMoodSettings(!showMoodSettings)}
-                      className={`w-full cursor-pointer flex items-center justify-between px-4 py-3.5 rounded-xl border-l-2 transition-all duration-200 group ${
-                        showMoodSettings
-                          ? "bg-primary/10 border-primary text-primary font-bold"
-                          : "bg-transparent border-transparent text-text-muted hover:bg-bg-secondary/60 hover:text-text-main"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3.5">
-                        <Sparkles size={18} className={showMoodSettings ? "text-primary" : "text-text-muted group-hover:text-text-main group-hover:scale-105 transition-transform"} />
-                        <span className="text-sm font-semibold tracking-wide flex items-center gap-1.5 text-left">
-                          <span>Set Mood</span>
-                          <span className="text-xs font-black px-1.5 py-0.5 rounded bg-primary/25 text-primary">
-                            {moods.find(m => m.id === activeMood)?.emoji || "✨"}
-                          </span>
-                        </span>
-                      </div>
-                      {showMoodSettings ? (
-                        <ChevronDown size={14} className="text-primary rotate-180 transition-transform duration-200" />
-                      ) : (
-                        <ChevronRight size={14} className="text-text-muted/40 group-hover:text-text-main transition-colors" />
-                      )}
-                    </button>
 
-                    {/* Collapsed Mood Panel */}
-                    <AnimatePresence>
-                      {showMoodSettings && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="overflow-hidden bg-bg-secondary/20 border border-border-main/30 rounded-xl px-4 py-3.5 flex flex-col gap-3 mt-1"
-                        >
-                          <span className="text-[10px] font-black uppercase tracking-widest text-text-muted text-left block">
-                            How are you feeling today?
-                          </span>
-                          
-                          <div className="grid grid-cols-2 gap-2">
-                            {moods.map((m) => {
-                              const isSelected = activeMood === m.id;
-                              return (
-                                <button
-                                  key={m.id}
-                                  onClick={() => {
-                                    localStorage.setItem("user_mood", m.id);
-                                    setActiveMood(m.id);
-                                    
-                                    // Save to partner_moods map in localStorage
-                                    if (typeof window !== "undefined") {
-                                      try {
-                                        const savedMoods = JSON.parse(localStorage.getItem("partner_moods") || "{}");
-                                        const pName = user?.name;
-                                        if (pName) {
-                                          savedMoods[pName] = m.id;
-                                          
-                                          // Attempt to map using approved_partners list
-                                          const approvedStr = localStorage.getItem("approved_partners");
-                                          if (approvedStr) {
-                                            const list = JSON.parse(approvedStr);
-                                            const found = list.find((p: any) => p.name === pName);
-                                            if (found) {
-                                              savedMoods[String(found.id)] = m.id;
-                                            }
-                                          }
-                                        }
-                                        localStorage.setItem("partner_moods", JSON.stringify(savedMoods));
-                                      } catch (err) {
-                                        console.error(err);
-                                      }
-                                    }
-
-                                    window.dispatchEvent(new Event("user_mood_changed"));
-                                    toast.success(`Mood set to ${m.label} ${m.emoji}`);
-                                  }}
-                                  className={`px-3 py-2.5 rounded-xl border text-[11px] font-bold transition-all duration-200 cursor-pointer flex items-center gap-2 text-left ${
-                                    isSelected
-                                      ? "bg-primary text-white border-primary shadow-md shadow-primary/10"
-                                      : "bg-bg-card border-border-main/40 text-text-muted hover:border-primary/30 hover:text-text-main"
-                                  }`}
-                                >
-                                  <span className="text-sm shrink-0">{m.emoji}</span>
-                                  <span className="truncate">{m.label}</span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
  
                     {/* Collapsible Location Trigger */}
                     <button
@@ -929,36 +981,8 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                           transition={{ duration: 0.2 }}
                           className="overflow-hidden bg-bg-secondary/20 border border-border-main/30 rounded-xl px-4 py-3.5 flex flex-col gap-3 mt-1"
                         >
-                          <span className="text-[10px] font-black uppercase tracking-widest text-text-muted text-left block">
-                            {isLivePartner 
-                              ? "Where are you serving from?" 
-                              : "Filter partners by distance from:"}
-                          </span>
-                          
-                          {/* City selection grid */}
-                          <div className="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto pr-1 custom-scrollbar">
-                            {presetCities.map((city) => {
-                              const isSelected = activeLocationName === city && !useCustomCoords;
-                              return (
-                                <button
-                                  key={city}
-                                  type="button"
-                                  onClick={() => handleUpdateLocation(city)}
-                                  className={`px-3 py-2 rounded-lg border text-[11px] font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 text-left ${
-                                    isSelected
-                                      ? "bg-primary text-white border-primary shadow-sm"
-                                      : "bg-bg-card border-border-main/40 text-text-muted hover:border-primary/30 hover:text-text-main"
-                                  }`}
-                                >
-                                  <MapPin size={10} className={isSelected ? "text-white" : "text-text-muted"} />
-                                  <span className="truncate">{city}</span>
-                                </button>
-                              );
-                            })}
-                          </div>
- 
                           {/* Geolocation Trigger */}
-                          <div className="pt-2 border-t border-border-main/30">
+                          <div className="w-full">
                             <button
                               type="button"
                               onClick={handleUseGPSLocation}
@@ -972,63 +996,11 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                               <div className="flex items-center gap-2.5">
                                 <Locate size={14} className={isLocating ? "animate-pulse text-primary" : ""} />
                                 <span>
-                                  {isLocating ? "Locating via GPS..." : "Use My GPS Location"}
+                                  {isLocating ? "Locating via GPS..." : "Use My Current Location"}
                                 </span>
                               </div>
                               {isLocating && <Sparkles size={10} className="text-primary animate-pulse shrink-0" />}
                             </button>
-                          </div>
- 
-                          {/* Custom Coordinates Toggle */}
-                          <div className="pt-2 border-t border-border-main/30 flex flex-col gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setUseCustomCoords(!useCustomCoords)}
-                              className={`w-full cursor-pointer flex items-center justify-between p-2 rounded-lg border text-[11px] font-bold transition-all ${
-                                useCustomCoords
-                                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                                  : "bg-bg-card border-border-main/40 text-text-muted"
-                              }`}
-                            >
-                              <span>Custom Coordinates</span>
-                              <ChevronDown size={12} className={`transition-transform duration-200 ${useCustomCoords ? "rotate-180" : ""}`} />
-                            </button>
- 
-                            {useCustomCoords && (
-                              <div className="flex flex-col gap-2 p-2 bg-bg-card border border-border-main/40 rounded-lg">
-                                <div className="flex gap-2">
-                                  <div className="flex-1 flex flex-col gap-1">
-                                    <span className="text-[9px] font-black uppercase text-text-muted text-left">Lat</span>
-                                    <input
-                                      type="number"
-                                      step="0.0001"
-                                      placeholder="19.0760"
-                                      value={customLat}
-                                      onChange={(e) => setCustomLat(e.target.value)}
-                                      className="w-full text-xs bg-bg-base border border-border-main/60 rounded px-2 py-1 outline-none text-text-main focus:border-primary/50"
-                                    />
-                                  </div>
-                                  <div className="flex-1 flex flex-col gap-1">
-                                    <span className="text-[9px] font-black uppercase text-text-muted text-left">Lng</span>
-                                    <input
-                                      type="number"
-                                      step="0.0001"
-                                      placeholder="72.8777"
-                                      value={customLng}
-                                      onChange={(e) => setCustomLng(e.target.value)}
-                                      className="w-full text-xs bg-bg-base border border-border-main/60 rounded px-2 py-1 outline-none text-text-main focus:border-primary/50"
-                                    />
-                                  </div>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={handleApplyCustomCoordinates}
-                                  className="w-full cursor-pointer py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider rounded transition-all shadow-sm"
-                                >
-                                  Apply Coordinates
-                                </button>
-                              </div>
-                            )}
                           </div>
                         </motion.div>
                       )}

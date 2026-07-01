@@ -20,12 +20,12 @@ const outfit = Outfit({
 });
 
 const moods = [
-  { id: "all", label: "All Vibes", emoji: "✨" },
-  { id: "romantic", label: "Romantic", emoji: "❤️" },
-  { id: "happy", label: "Happy", emoji: "🌟" },
-  { id: "chilled", label: "Chilled", emoji: "🍹" },
-  { id: "adventurous", label: "Adventurous", emoji: "🏔️" },
-  { id: "serious", label: "Serious", emoji: "💼" },
+  { id: "happy", label: "Happy", emoji: "😄" },
+  { id: "romantic", label: "Romantic", emoji: "🥰" },
+  { id: "chilled", label: "Chilled", emoji: "😎" },
+  { id: "excited", label: "Excited", emoji: "🥳" },
+  { id: "angry", label: "Angry", emoji: "😠" },
+  { id: "sad", label: "Sad", emoji: "🥺" },
 ];
 
 interface ProfileMainProps {
@@ -36,6 +36,7 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const { appearance } = useTheme();
   const [currentMoodId, setCurrentMoodId] = useState<string>("");
+  const [currentMoodText, setCurrentMoodText] = useState<string>("");
   
   const defaultProfile = {
     id: "1",
@@ -168,6 +169,16 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
           } else {
             setCurrentMoodId("");
           }
+
+          // Load text status too
+          const savedTextsStr = localStorage.getItem("partner_mood_texts");
+          if (savedTextsStr) {
+            const savedTexts = JSON.parse(savedTextsStr);
+            const text = savedTexts[profileData.id] || savedTexts[profileData.name] || "";
+            setCurrentMoodText(text);
+          } else {
+            setCurrentMoodText("");
+          }
         } catch (e) {
           console.error(e);
         }
@@ -283,7 +294,14 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
                     <span className="hidden sm:inline text-text-muted/45 font-light">|</span>
                     <span className="text-text-main text-[10px] font-black uppercase tracking-widest bg-linear-to-br from-primary/10 to-accent/10 px-3 py-0.5 rounded-lg border border-primary/30 flex items-center gap-1 shadow-sm shrink-0">
                       <span className="text-xs shrink-0 leading-none">{currentMoodInfo.emoji}</span>
-                      <span>Mood: {currentMoodInfo.label}</span>
+                      <span>
+                        Mood: {currentMoodInfo.label}
+                        {currentMoodText && (
+                          <span className="normal-case italic text-text-muted ml-1 font-semibold">
+                            &nbsp;- "{currentMoodText}"
+                          </span>
+                        )}
+                      </span>
                     </span>
                   </>
                 )}

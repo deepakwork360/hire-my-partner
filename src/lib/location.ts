@@ -3,6 +3,10 @@ export interface UserLocation {
   lat: number;
   lng: number;
   useCustom?: boolean;
+  latitude?: number;
+  longitude?: number;
+  state?: string;
+  country?: string;
 }
 
 export function getDeterministicCoordinates(str: string): { lat: number; lng: number } {
