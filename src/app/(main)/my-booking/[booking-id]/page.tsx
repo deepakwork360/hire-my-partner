@@ -24,7 +24,9 @@ import {
   CheckCircle2, 
   FileText, 
   ArrowRight,
-  TrendingUp
+  TrendingUp,
+  Radio,
+  X
 } from "lucide-react";
 import { toast } from "@/components/ui/toastStore";
 import { motion, AnimatePresence } from "framer-motion";
@@ -45,6 +47,33 @@ interface BookingData {
   bio?: string;
   reason?: string;
 }
+
+const journeyTimeline = [
+  {
+    location: "Connaught Place",
+    label: "Meeting Point",
+    arrival: "7:05 PM",
+    departure: "8:10 PM",
+    timeSpent: "1h 05m",
+    distance: "Starting Point",
+  },
+  {
+    location: "Cafe Delhi Heights",
+    label: "Stop #2",
+    arrival: "8:15 PM",
+    departure: "9:20 PM",
+    timeSpent: "1h 05m",
+    distance: "2.1 KM",
+  },
+  {
+    location: "India Gate",
+    label: "Stop #3",
+    arrival: "9:35 PM",
+    departure: "10:10 PM",
+    timeSpent: "35m",
+    distance: "3.4 KM",
+  },
+];
 
 const findPartnerByNameOrId = (nameOrId: string | number): any => {
   if (!nameOrId) return null;
@@ -71,6 +100,184 @@ const findPartnerByNameOrId = (nameOrId: string | number): any => {
     p.name.toLowerCase() === target
   ) || null;
 };
+
+// ── Time & Date Parsers ──────────────────────────────────────────────────────
+
+function parseBookingEndDateTime(dateStr: string, timeRangeStr: string): Date | null {
+  try {
+    const start = parseBookingStartDateTime(dateStr, timeRangeStr);
+    const parts = timeRangeStr.split(/\s*[-–]\s*/);
+    const endTimeStr = parts.length === 2 ? parts[1].trim() : parts[0].trim();
+    
+    let targetDateStr = dateStr;
+    if (dateStr.includes(" - ")) {
+      targetDateStr = dateStr.split(" - ")[1].trim();
+    }
+    
+    let year = 0, month = 0, day = 0;
+    if (targetDateStr.includes("-")) {
+      const dParts = targetDateStr.split("-");
+      year = parseInt(dParts[0], 10);
+      month = parseInt(dParts[1], 10) - 1;
+      day = parseInt(dParts[2], 10);
+    } else {
+      const parsedDate = new Date(targetDateStr);
+      if (isNaN(parsedDate.getTime())) return null;
+      year = parsedDate.getFullYear();
+      month = parsedDate.getMonth();
+      day = parsedDate.getDate();
+    }
+
+    const timeMatch = endTimeStr.match(/(\d+)[:.](\d+)\s*(AM|PM)/i);
+    let res: Date | null = null;
+    if (!timeMatch) {
+      const timeMatch24 = endTimeStr.match(/(\d+)[:.](\d+)/);
+      if (timeMatch24) {
+        const hours = parseInt(timeMatch24[1], 10);
+        const minutes = parseInt(timeMatch24[2], 10);
+        res = new Date(year, month, day, hours, minutes, 0, 0);
+      }
+    } else {
+      let hours = parseInt(timeMatch[1], 10);
+      const minutes = parseInt(timeMatch[2], 10);
+      const ampm = timeMatch[3].toUpperCase();
+
+      if (ampm === "PM" && hours < 12) hours += 12;
+      if (ampm === "AM" && hours === 12) hours = 0;
+
+      res = new Date(year, month, day, hours, minutes, 0, 0);
+    }
+
+    if (res && !isNaN(res.getTime())) {
+      if (start && res.getTime() < start.getTime()) {
+        res.setDate(res.getDate() + 1);
+      }
+      return res;
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function parseBookingStartDateTime(dateStr: string, timeRangeStr: string): Date | null {
+  try {
+    const parts = timeRangeStr.split(/\s*[-–]\s*/);
+    const startTimeStr = parts[0].trim();
+    
+    let targetDateStr = dateStr;
+    if (dateStr.includes(" - ")) {
+      targetDateStr = dateStr.split(" - ")[0].trim();
+    }
+    
+    let year = 0, month = 0, day = 0;
+    if (targetDateStr.includes("-")) {
+      const dParts = targetDateStr.split("-");
+      year = parseInt(dParts[0], 10);
+      month = parseInt(dParts[1], 10) - 1;
+      day = parseInt(dParts[2], 10);
+    } else {
+      const parsedDate = new Date(targetDateStr);
+      if (isNaN(parsedDate.getTime())) return null;
+      year = parsedDate.getFullYear();
+      month = parsedDate.getMonth();
+      day = parsedDate.getDate();
+    }
+    
+    const timeMatch = startTimeStr.match(/(\d+)[:.](\d+)\s*(AM|PM)/i);
+    if (!timeMatch) {
+      const timeMatch24 = startTimeStr.match(/(\d+)[:.](\d+)/);
+      if (timeMatch24) {
+        const hours = parseInt(timeMatch24[1], 10);
+        const minutes = parseInt(timeMatch24[2], 10);
+        const res = new Date(year, month, day, hours, minutes, 0, 0);
+        return isNaN(res.getTime()) ? null : res;
+      }
+      return null;
+    }
+    
+    let hours = parseInt(timeMatch[1], 10);
+    const minutes = parseInt(timeMatch[2], 10);
+    const ampm = timeMatch[3].toUpperCase();
+    
+    if (ampm === "PM" && hours < 12) hours += 12;
+    if (ampm === "AM" && hours === 12) hours = 0;
+    
+    const res = new Date(year, month, day, hours, minutes, 0, 0);
+    return isNaN(res.getTime()) ? null : res;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Extends a booking time and returns the updated { date: string, time: string }
+function extendBookingDateTime(
+  dateStr: string,
+  timeRangeStr: string,
+  hoursToAdd: number
+): { date: string; time: string } {
+  try {
+    const start = parseBookingStartDateTime(dateStr, timeRangeStr);
+    const end = parseBookingEndDateTime(dateStr, timeRangeStr);
+    if (!start || !end) return { date: dateStr, time: timeRangeStr };
+
+    const parts = timeRangeStr.split(/\s*[-–]\s*/);
+    const startTimeStr = parts[0].trim();
+    const endTimeStr = parts[1].trim();
+
+    // Check if AM/PM was used in the original end time
+    const useAmpm = /[a-z]/i.test(endTimeStr);
+
+    // Calculate new end date by adding hours
+    const addedMs = Math.round(hoursToAdd * 60 * 60 * 1000);
+    const newEnd = new Date(end.getTime() + addedMs);
+
+    // Format new time string
+    const hours = newEnd.getHours();
+    const minutes = newEnd.getMinutes();
+    let newEndTimeStr = "";
+    if (useAmpm) {
+      const ampm = hours >= 12 ? "PM" : "AM";
+      let h12 = hours % 12;
+      h12 = h12 ? h12 : 12;
+      newEndTimeStr = `${String(h12).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${ampm}`;
+    } else {
+      newEndTimeStr = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+    }
+    const newTime = `${startTimeStr} - ${newEndTimeStr}`;
+
+    // Get the start base date string
+    let startDateStr = dateStr;
+    if (dateStr.includes(" - ")) {
+      startDateStr = dateStr.split(" - ")[0].trim();
+    }
+
+    // Format start and end date strings to compare
+    const formatSingleDate = (d: Date, template: string) => {
+      if (template.includes("-")) {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      }
+      return d.toLocaleDateString("en-IN", { day: 'numeric', month: 'long', year: 'numeric' });
+    };
+
+    const formattedStart = formatSingleDate(start, startDateStr);
+    const formattedEnd = formatSingleDate(newEnd, startDateStr);
+
+    let newDate = startDateStr;
+    if (formattedStart !== formattedEnd) {
+      newDate = `${formattedStart} - ${formattedEnd}`;
+    } else {
+      newDate = formattedStart;
+    }
+
+    return { date: newDate, time: newTime };
+  } catch (e) {
+    return { date: dateStr, time: timeRangeStr };
+  }
+}
 
 const getGiftsAndTipsForPartner = (partnerId: string | number) => {
   if (typeof window === "undefined") return [];
@@ -121,11 +328,20 @@ export default function BookingDetailsPage({
   const { user } = useAuthStore();
 
   const [booking, setBooking] = useState<BookingData | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "tracking" | "timeline" | "payments" | "extensions" | "tips-gifts">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "tracking" | "timeline" | "payments" | "extensions" | "tips-gifts" | "chat-history">("overview");
   const [extensions, setExtensions] = useState<any[]>([]);
   const [tipsGifts, setTipsGifts] = useState<any[]>([]);
   const [isExtending, setIsExtending] = useState(false);
   const [extendHours, setExtendHours] = useState(1);
+
+  const totalExtended = extensions.reduce((sum: number, ext: any) => sum + (ext.hours || 0), 0);
+  const maxAllowedExtension = Math.max(0, 24 - totalExtended);
+
+  useEffect(() => {
+    if (extendHours > maxAllowedExtension && maxAllowedExtension > 0) {
+      setExtendHours(maxAllowedExtension);
+    }
+  }, [maxAllowedExtension]);
 
   // Load booking and associated records
   useEffect(() => {
@@ -156,6 +372,26 @@ export default function BookingDetailsPage({
       return;
     }
 
+    if (foundBooking.status === "Pending") {
+      const startDate = parseBookingStartDateTime(foundBooking.date, foundBooking.time);
+      if (startDate && startDate.getTime() < Date.now()) {
+        foundBooking = { ...foundBooking, status: "Declined" };
+        
+        // Save back to both lists to keep synced!
+        const localB = localStorage.getItem("hire_my_partner_bookings");
+        if (localB) {
+          const list = JSON.parse(localB).map((b: any) => String(b.id) === String(bookingId) ? { ...b, status: "Declined" as const } : b);
+          localStorage.setItem("hire_my_partner_bookings", JSON.stringify(list));
+        }
+        const localR = localStorage.getItem("hire_my_partner_requests");
+        if (localR) {
+          const list = JSON.parse(localR).map((r: any) => String(r.id) === String(bookingId) ? { ...r, status: "Declined" as const } : r);
+          localStorage.setItem("hire_my_partner_requests", JSON.stringify(list));
+        }
+        window.dispatchEvent(new Event("bookings_updated"));
+      }
+    }
+
     setBooking(foundBooking);
 
     // 3. Load extensions for this booking
@@ -183,10 +419,13 @@ export default function BookingDetailsPage({
     }
     
     let earnings = getGiftsAndTipsForPartner(partnerId);
-    // Filter transactions sent by the user for this booking name
+    // Filter transactions sent by the user for this booking name, or by matching bookingId, or if sent by "You"
     earnings = earnings.filter((txn: any) => 
-      txn.sender && txn.sender.toLowerCase() === foundBooking?.name.toLowerCase() ||
-      txn.bookingId && String(txn.bookingId) === String(bookingId)
+      (txn.bookingId && String(txn.bookingId) === String(bookingId)) ||
+      (txn.sender && (
+        txn.sender.toLowerCase() === foundBooking?.name.toLowerCase() ||
+        txn.sender.toLowerCase() === "you"
+      ))
     );
 
     if (earnings.length === 0 && foundBooking.name === "Arjun Kapoor") {
@@ -227,8 +466,20 @@ export default function BookingDetailsPage({
   const basePrice = Math.round(totalPaid / 1.18);
   const gstAmount = totalPaid - basePrice;
 
+  const start = parseBookingStartDateTime(booking.date, booking.time);
+  const end = parseBookingEndDateTime(booking.date, booking.time);
+  let isTest = false;
+  if (start && end) {
+    const durMins = (end.getTime() - start.getTime()) / (60 * 1000);
+    isTest = durMins <= 5;
+  }
+
   // Extension action handler
   const handleRequestExtension = () => {
+    if (extendHours > maxAllowedExtension) {
+      toast.error("Extension limit reached.");
+      return;
+    }
     setIsExtending(true);
     const extPrice = extendHours * (p?.pricing?.oneHour || 2500);
     const newExt = {
@@ -243,23 +494,74 @@ export default function BookingDetailsPage({
     setExtensions(updatedExts);
     localStorage.setItem(`booking_extensions_${bookingId}`, JSON.stringify(updatedExts));
 
-    // Update pricing in booking
-    const updatedPrice = `₹${(totalPaid + extPrice).toLocaleString("en-IN")}`;
+    let updatedTime = booking.time;
+    let updatedDate = booking.date;
+
     const localBookings = localStorage.getItem("hire_my_partner_bookings");
     if (localBookings) {
       const list: BookingData[] = JSON.parse(localBookings);
       const updatedList = list.map(b => {
         if (String(b.id) === String(bookingId)) {
-          return { ...b, price: updatedPrice };
+          const start = parseBookingStartDateTime(b.date, b.time);
+          const end = parseBookingEndDateTime(b.date, b.time);
+          let isTest = false;
+          if (start && end) {
+            const durMins = (end.getTime() - start.getTime()) / (60 * 1000);
+            isTest = durMins <= 5;
+          }
+          const unitsToAdd = isTest ? extendHours / 60 : extendHours;
+          const { date: newDate, time: newTime } = extendBookingDateTime(b.date, b.time, unitsToAdd);
+          updatedTime = newTime;
+          updatedDate = newDate;
+
+          const updatedPrice = `₹${(totalPaid + extPrice).toLocaleString("en-IN")}`;
+          return { ...b, price: updatedPrice, time: newTime, date: newDate };
         }
         return b;
       });
       localStorage.setItem("hire_my_partner_bookings", JSON.stringify(updatedList));
     }
+
+    const localRequests = localStorage.getItem("hire_my_partner_requests");
+    if (localRequests) {
+      const list: BookingData[] = JSON.parse(localRequests);
+      const updatedList = list.map(b => {
+        if (String(b.id) === String(bookingId)) {
+          const start = parseBookingStartDateTime(b.date, b.time);
+          const end = parseBookingEndDateTime(b.date, b.time);
+          let isTest = false;
+          if (start && end) {
+            const durMins = (end.getTime() - start.getTime()) / (60 * 1000);
+            isTest = durMins <= 5;
+          }
+          const unitsToAdd = isTest ? extendHours / 60 : extendHours;
+          const { date: newDate, time: newTime } = extendBookingDateTime(b.date, b.time, unitsToAdd);
+          updatedTime = newTime;
+          updatedDate = newDate;
+
+          const updatedPrice = `₹${(totalPaid + extPrice).toLocaleString("en-IN")}`;
+          return { ...b, price: updatedPrice, time: newTime, date: newDate };
+        }
+        return b;
+      });
+      localStorage.setItem("hire_my_partner_requests", JSON.stringify(updatedList));
+    }
+
+    window.dispatchEvent(new Event("bookings_updated"));
     
-    setBooking(prev => prev ? { ...prev, price: updatedPrice } : null);
+    const updatedPrice = `₹${(totalPaid + extPrice).toLocaleString("en-IN")}`;
+    setBooking(prev => prev ? { ...prev, price: updatedPrice, time: updatedTime, date: updatedDate } : null);
     
-    toast.success(`Extension of +${extendHours} hour(s) has been approved!`);
+    // Check if it's a test session to display correct minutes/hours toast
+    let isTest = false;
+    const start = parseBookingStartDateTime(booking.date, booking.time);
+    const end = parseBookingEndDateTime(booking.date, booking.time);
+    if (start && end) {
+      const durMins = (end.getTime() - start.getTime()) / (60 * 1000);
+      isTest = durMins <= 5;
+    }
+    
+    toast.success(isTest ? `Extension of +${extendHours} minute(s) has been approved!` : `Extension of +${extendHours} hour(s) has been approved!`);
     setIsExtending(false);
   };
 
@@ -333,7 +635,7 @@ export default function BookingDetailsPage({
           </div>
 
         {/* Tab switcher */}
-        <div className="flex flex-wrap gap-2 border-b border-border-main pb-4 mb-8">
+        <div className="flex overflow-x-auto md:flex-wrap gap-2 border-b border-border-main pb-4 mb-8 scrollbar-none snap-x snap-mandatory">
           {[
             { id: "overview", label: "Booking Overview", icon: FileText },
             { id: "tracking", label: "GPS Tracking", icon: Map },
@@ -341,6 +643,7 @@ export default function BookingDetailsPage({
             { id: "payments", label: "Payment History", icon: CreditCard },
             { id: "extensions", label: "Extensions", icon: PlusCircle },
             { id: "tips-gifts", label: "Tips & Gifts", icon: Coins },
+            { id: "chat-history", label: "Chat History", icon: MessageCircle },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -348,7 +651,7 @@ export default function BookingDetailsPage({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer border ${
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer border shrink-0 snap-start ${
                   active
                     ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
                     : "bg-bg-secondary border-border-main text-text-muted hover:text-text-main"
@@ -436,10 +739,10 @@ export default function BookingDetailsPage({
                         
                         {extensions.length > 0 && (
                           <div className="space-y-2 pt-2 border-t border-border-main/50">
-                            <span className="text-[9px] font-black text-text-muted uppercase tracking-wider block">Extension Fees</span>
+                             <span className="text-[9px] font-black text-text-muted uppercase tracking-wider block">Extension Fees</span>
                             {extensions.map((ext) => (
                               <div key={ext.id} className="flex justify-between items-center text-xs text-text-muted">
-                                <span>+{ext.hours} Hour(s) extension</span>
+                                <span>+{ext.hours} {isTest ? "Minute(s)" : "Hour(s)"} extension</span>
                                 <span>₹{ext.amount.toLocaleString("en-IN")}</span>
                               </div>
                             ))}
@@ -453,6 +756,8 @@ export default function BookingDetailsPage({
                         </div>
                       </div>
                     </div>
+
+
                   </div>
                 </div>
               )}
@@ -559,6 +864,317 @@ export default function BookingDetailsPage({
                       </div>
                     </div>
                   </div>
+
+                  {/* Live Tracking */}
+<div className="mt-6 bg-bg-secondary border border-border-main rounded-3xl p-6 md:p-8">
+  <div className="flex items-center justify-between mb-6">
+    <div>
+      <h3 className="text-sm font-black flex items-center gap-2 uppercase tracking-wider text-primary">
+        <Radio className="text-red-600 animate-pulse  " /> Live Tracking Details
+      </h3>
+      <p className="text-xs text-text-muted mt-1">
+        Complete route history and travel checkpoints
+      </p>
+    </div>
+
+    <div className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase">
+      Active Route
+    </div>
+  </div>
+
+  {/* Summary Cards */}
+  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="bg-bg-base border border-border-main rounded-2xl p-4">
+      <p className="text-[10px] text-text-muted uppercase">Distance</p>
+      <p className="text-lg font-black text-text-main mt-1">12.4 KM</p>
+    </div>
+
+    <div className="bg-bg-base border border-border-main rounded-2xl p-4">
+      <p className="text-[10px] text-text-muted uppercase">Duration</p>
+      <p className="text-lg font-black text-text-main mt-1">32 Min</p>
+    </div>
+
+    <div className="bg-bg-base border border-border-main rounded-2xl p-4">
+      <p className="text-[10px] text-text-muted uppercase">Checkpoints</p>
+      <p className="text-lg font-black text-text-main mt-1">7</p>
+    </div>
+
+    <div className="bg-bg-base border border-border-main rounded-2xl p-4">
+      <p className="text-[10px] text-text-muted uppercase">Avg Speed</p>
+      <p className="text-lg font-black text-text-main mt-1">24 km/h</p>
+    </div>
+  </div>
+
+  {/* Route Timeline */}
+  <div>
+    <h4 className="text-xs font-black uppercase tracking-wider text-text-main mb-4">
+      Route Checkpoints
+    </h4>
+
+    <div className="space-y-4 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-border-main">
+      {[
+        {
+          area: "Bandra West",
+          status: "Journey Started",
+          time: "18:30 PM",
+        },
+        {
+          area: "Linking Road",
+          status: "Passed Checkpoint",
+          time: "18:42 PM",
+        },
+        {
+          area: "Khar West",
+          status: "Passed Checkpoint",
+          time: "18:51 PM",
+        },
+        {
+          area: "Santacruz",
+          status: "Traffic Delay Detected",
+          time: "19:02 PM",
+        },
+        {
+          area: "Juhu Circle",
+          status: "Current Location",
+          time: "19:05 PM",
+        },
+      ].map((item, index) => (
+        <div
+          key={index}
+          className="flex items-start gap-4 relative"
+        >
+          <div className="w-8 h-8 rounded-full bg-red-100 border border-primary/20 flex items-center justify-center shrink-0 z-10 bg-bg-secondary">
+            <MapPin className="w-4 h-4 text-red-500" />
+          </div>
+
+          <div className="flex-1">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-black text-text-main">
+                  {item.area}
+                </p>
+                <p className="text-xs text-text-muted mt-1">
+                  {item.status}
+                </p>
+              </div>
+
+              <span className="text-[10px] text-text-muted">
+                {item.time}
+              </span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+
+{/* ==========================================================
+    DATE JOURNEY DETAILS
+    STATIC UI (DYNAMIC IMPLEMENTATION LATER)
+
+    Future Logic:
+    - Start tracking when both users enable Live Sharing.
+    - Continue tracking after meetup.
+    - Save all visited locations.
+    - Record:
+      • Arrival Time
+      • Departure Time
+      • Time Spent
+      • Distance Between Locations
+    - Companion Status:
+      Together (0-100m)
+      Nearby (100-400m)
+      Separated (400m+)
+    - Auto stop tracking if distance > 400m for 5+ mins.
+========================================================== */}
+
+<div className="mt-6 bg-bg-secondary border border-border-main rounded-3xl p-6 md:p-8">
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+    <div>
+      <h3 className="text-sm font-black uppercase tracking-wider text-primary">
+        Date Journey Details
+      </h3>
+      <p className="text-xs text-text-muted mt-1">
+        Complete timeline of locations visited during the date.
+      </p>
+    </div>
+
+    <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+      <span className="text-[10px] font-black uppercase tracking-wider text-emerald-500">
+        Together
+      </span>
+    </div>
+  </div>
+
+  {/* Journey Summary */}
+  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="bg-bg-base border border-border-main rounded-2xl p-4">
+      <p className="text-[10px] uppercase text-text-muted">
+        Started
+      </p>
+      <p className="text-sm font-black text-text-main mt-1">
+        18:30 PM
+      </p>
+    </div>
+
+    <div className="bg-bg-base border border-border-main rounded-2xl p-4">
+      <p className="text-[10px] uppercase text-text-muted">
+        Duration
+      </p>
+      <p className="text-sm font-black text-text-main mt-1">
+        3h 40m
+      </p>
+    </div>
+
+    <div className="bg-bg-base border border-border-main rounded-2xl p-4">
+      <p className="text-[10px] uppercase text-text-muted">
+        Places Visited
+      </p>
+      <p className="text-sm font-black text-text-main mt-1">
+        4
+      </p>
+    </div>
+
+    <div className="bg-bg-base border border-border-main rounded-2xl p-4">
+      <p className="text-[10px] uppercase text-text-muted">
+        Distance Together
+      </p>
+      <p className="text-sm font-black text-text-main mt-1">
+        7.8 KM
+      </p>
+    </div>
+  </div>
+
+  {/* Companion Status */}
+  <div className="bg-bg-base border border-border-main rounded-2xl p-5 mb-8">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-xs font-black uppercase tracking-wider text-text-main">
+          Companion Status
+        </p>
+        <p className="text-[11px] text-text-muted mt-1">
+          Both users are currently together.
+        </p>
+      </div>
+
+      <div className="text-right">
+        <p className="text-lg font-black text-primary">
+          38m
+        </p>
+        <p className="text-[10px] uppercase text-text-muted">
+          Distance Apart
+        </p>
+      </div>
+    </div>
+  </div>
+
+  {/* Journey Timeline */}
+  <div>
+  <h4 className="text-xs font-black uppercase tracking-wider text-primary mb-6">
+    Journey Timeline
+  </h4>
+
+  <div className="relative space-y-6 before:absolute before:left-4 before:top-2 before:bottom-2 before:w-px before:bg-border-main">
+
+    {journeyTimeline.map((stop, index) => (
+      <div key={index} className="relative flex gap-4">
+        
+        <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 z-10 bg-bg-secondary">
+          <MapPin className="w-4 h-4 text-primary" />
+        </div>
+
+        <div className="flex-1 bg-bg-base border border-border-main rounded-2xl p-4">
+
+          <div className="flex justify-between items-start mb-3">
+            <div>
+              <h5 className="text-sm font-black text-text-main">
+                {stop.location}
+              </h5>
+
+              <p className="text-[11px] text-primary">
+                {stop.label}
+              </p>
+            </div>
+
+            <span className="text-[10px] text-text-muted uppercase">
+              Stop #{index + 1}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p className="text-[10px] text-text-muted uppercase">
+                Arrival
+              </p>
+              <p className="text-xs font-bold text-text-main">
+                {stop.arrival}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-[10px] text-text-muted uppercase">
+                Departure
+              </p>
+              <p className="text-xs font-bold text-text-main">
+                {stop.departure}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-[10px] text-text-muted uppercase">
+                Time Spent
+              </p>
+              <p className="text-xs font-bold text-text-main">
+                {stop.timeSpent}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-[10px] text-text-muted uppercase">
+                Distance
+              </p>
+              <p className="text-xs font-bold text-text-main">
+                {stop.distance}
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    ))}
+
+    {/* Final Location Card */}
+    <div className="relative flex gap-4">
+      <div className="w-8 h-8 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0 z-10 bg-bg-secondary">
+        🏁
+      </div>
+
+      <div className="flex-1 bg-bg-base border border-border-main rounded-2xl p-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h5 className="text-sm font-black text-text-main">
+              Final Shared Location
+            </h5>
+
+            <p className="text-[11px] text-text-muted mt-1">
+              Tracking will stop once users remain 400m+ apart.
+            </p>
+          </div>
+
+          <span className="text-[10px] uppercase tracking-wider text-red-400 font-black">
+            End Point
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>  
+
                 </div>
               )}
 
@@ -635,7 +1251,7 @@ export default function BookingDetailsPage({
                           </div>
                         </div>
 
-                        <div className="flex gap-8">
+                        <div className="flex flex-wrap gap-4 sm:gap-8">
                           <div>
                             <span className="text-[9px] font-black text-text-muted uppercase tracking-wider">Method</span>
                             <p className="text-xs font-bold text-text-main mt-0.5">UPI / Net Banking</p>
@@ -651,7 +1267,7 @@ export default function BookingDetailsPage({
                         <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[9px] font-black text-emerald-500 uppercase tracking-widest">
                           Successful
                         </span>
-                        <div className="text-right mt-4 md:mt-0">
+                        <div className="text-left md:text-right mt-4 md:mt-0">
                           <span className="text-[10px] font-black text-text-muted block">Amount Paid</span>
                           <span className="text-xl font-black text-text-main mt-0.5">₹{basePrice.toLocaleString("en-IN")}</span>
                         </div>
@@ -672,7 +1288,7 @@ export default function BookingDetailsPage({
                                   <PlusCircle className="w-5 h-5" />
                                 </div>
                                 <div>
-                                  <p className="text-sm font-black text-text-main">+{ext.hours} Hour Session Extension</p>
+                                  <p className="text-sm font-black text-text-main">+{ext.hours} {isTest ? "Minute" : "Hour"} Session Extension</p>
                                   <p className="text-[10px] text-text-muted mt-0.5">Transaction Ref: TXN-{ext.id}</p>
                                 </div>
                               </div>
@@ -682,7 +1298,7 @@ export default function BookingDetailsPage({
                               <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[9px] font-black text-emerald-500 uppercase tracking-widest">
                                 Approved & Paid
                               </span>
-                              <div className="text-right">
+                              <div className="text-left md:text-right mt-4 md:mt-0">
                                 <span className="text-[10px] font-black text-text-muted block">Amount Paid</span>
                                 <span className="text-lg font-black text-text-main mt-0.5">₹{ext.amount.toLocaleString("en-IN")}</span>
                               </div>
@@ -702,39 +1318,47 @@ export default function BookingDetailsPage({
                   {booking.status === "Confirmed" && (
                     <div className="border border-border-main rounded-2xl p-5 md:p-6 bg-primary/5">
                       <h3 className="text-sm font-black uppercase tracking-wider text-primary mb-3">Extend Session</h3>
-                      <p className="text-xs text-text-muted mb-6 leading-relaxed">
-                        Need more time with your companion? Request an extension directly. Hourly rates apply: <span className="text-text-main font-bold">₹{(p?.pricing?.oneHour || 2500).toLocaleString("en-IN")}/hour</span>.
-                      </p>
+                      {maxAllowedExtension <= 0 ? (
+                        <p className="text-xs text-rose-500 font-bold text-center leading-relaxed py-2">
+                          You have reached the maximum extension limit of 24 {isTest ? "minute(s)" : "hour(s)"} for this session.
+                        </p>
+                      ) : (
+                        <>
+                          <p className="text-xs text-text-muted mb-6 leading-relaxed">
+                            Need more time with your companion? Request an extension directly. Hourly rates apply: <span className="text-text-main font-bold">₹{(p?.pricing?.oneHour || 2500).toLocaleString("en-IN")}/hour</span>.
+                          </p>
 
-                      <div className="flex flex-col sm:flex-row items-center gap-4">
-                        <div className="flex items-center gap-3 bg-bg-base border border-border-main rounded-xl p-2 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => setExtendHours(h => Math.max(1, h - 1))}
-                            className="w-8 h-8 rounded-lg bg-bg-secondary hover:bg-bg-card flex items-center justify-center text-text-main font-black cursor-pointer"
-                          >
-                            -
-                          </button>
-                          <span className="text-sm font-black px-4 text-text-main">{extendHours} Hour(s)</span>
-                          <button
-                            type="button"
-                            onClick={() => setExtendHours(h => Math.min(8, h + 1))}
-                            className="w-8 h-8 rounded-lg bg-bg-secondary hover:bg-bg-card flex items-center justify-center text-text-main font-black cursor-pointer"
-                          >
-                            +
-                          </button>
-                        </div>
+                          <div className="flex flex-col sm:flex-row items-center gap-4">
+                            <div className="flex items-center gap-3 bg-bg-base border border-border-main rounded-xl p-2 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => setExtendHours(h => Math.max(1, h - 1))}
+                                className="w-8 h-8 rounded-lg bg-bg-secondary hover:bg-bg-card flex items-center justify-center text-text-main font-black cursor-pointer"
+                              >
+                                -
+                              </button>
+                              <span className="text-sm font-black px-4 text-text-main">{extendHours} {isTest ? "Minute(s)" : "Hour(s)"}</span>
+                              <button
+                                type="button"
+                                onClick={() => setExtendHours(h => Math.min(maxAllowedExtension, h + 1))}
+                                className="w-8 h-8 rounded-lg bg-bg-secondary hover:bg-bg-card flex items-center justify-center text-text-main font-black cursor-pointer"
+                              >
+                                +
+                              </button>
+                            </div>
 
-                        <button
-                          type="button"
-                          disabled={isExtending}
-                          onClick={handleRequestExtension}
-                          className="w-full sm:w-auto px-6 h-12 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-lg shadow-primary/20"
-                        >
-                          <PlusCircle className="w-4 h-4" />
-                          Confirm Extension (₹{(extendHours * (p?.pricing?.oneHour || 2500)).toLocaleString("en-IN")})
-                        </button>
-                      </div>
+                            <button
+                              type="button"
+                              disabled={isExtending}
+                              onClick={handleRequestExtension}
+                              className="w-full sm:w-auto px-6 h-12 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-lg shadow-primary/20"
+                            >
+                              <PlusCircle className="w-4 h-4" />
+                              Confirm Extension (₹{(extendHours * (p?.pricing?.oneHour || 2500)).toLocaleString("en-IN")})
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
 
@@ -750,7 +1374,7 @@ export default function BookingDetailsPage({
                                 <CheckCircle2 className="w-5 h-5" />
                               </div>
                               <div>
-                                <p className="text-sm font-black text-text-main">+{ext.hours} Hour Session Extension</p>
+                                <p className="text-sm font-black text-text-main">+{ext.hours} {isTest ? "Minute" : "Hour"} Session Extension</p>
                                 <p className="text-[10px] text-text-muted mt-0.5">Status: Approved • Date: {ext.date}</p>
                               </div>
                             </div>
@@ -801,16 +1425,16 @@ export default function BookingDetailsPage({
                   {tipsGifts.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {tipsGifts.map((txn: any) => (
-                        <div key={txn.id} className="bg-bg-base border border-border-main p-5 rounded-2xl flex flex-col justify-between gap-4">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-center gap-3">
+                        <div key={txn.id} className="bg-bg-base border border-border-main p-5 rounded-2xl flex flex-col justify-between gap-4 min-w-0">
+                          <div className="flex items-start justify-between gap-3 min-w-0">
+                            <div className="flex items-center gap-3 min-w-0">
                               <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                                 txn.type === "tip" ? "bg-emerald-500/10" : "bg-primary/10"
                               }`}>
                                 {txn.type === "tip" ? <Coins className="w-5 h-5 text-emerald-500" /> : <Gift className="w-5 h-5 text-primary" />}
                               </div>
-                              <div>
-                                <p className="text-xs font-black text-text-main">
+                              <div className="min-w-0">
+                                <p className="text-xs font-black text-text-main break-words">
                                   {txn.type === "tip" 
                                     ? "Session Gratuity (Tip)"
                                     : `Gift: "${txn.giftTitle || 'Special Gift'}"`
@@ -819,7 +1443,7 @@ export default function BookingDetailsPage({
                                 <p className="text-[10px] text-text-muted mt-0.5">{txn.date}</p>
                               </div>
                             </div>
-                            <span className={`text-base font-black ${
+                            <span className={`text-base font-black shrink-0 ${
                               txn.type === "tip" ? "text-emerald-500" : "text-primary"
                             }`}>
                               ₹{txn.amount.toLocaleString("en-IN")}
@@ -827,9 +1451,9 @@ export default function BookingDetailsPage({
                           </div>
 
                           {txn.message && (
-                            <div className="bg-bg-secondary/40 border border-border-main/50 p-3 rounded-xl">
+                            <div className="bg-bg-secondary/40 border border-border-main/50 p-3 rounded-xl min-w-0">
                               <span className="text-[8px] font-black text-text-muted uppercase tracking-widest block mb-1">Attached Message</span>
-                              <p className="text-xs text-text-main italic font-medium">"{txn.message}"</p>
+                              <p className="text-xs text-text-main italic font-medium break-words whitespace-pre-wrap">"{txn.message}"</p>
                             </div>
                           )}
                         </div>
@@ -840,10 +1464,44 @@ export default function BookingDetailsPage({
                   )}
                 </div>
               )}
+
+              {activeTab === "chat-history" && (
+                <div className="bg-bg-secondary border border-border-main rounded-3xl p-6 md:p-8 max-w-xl mx-auto shadow-xl">
+                  <div className="mb-6">
+                    <h3 className="text-lg font-black uppercase tracking-wider text-primary">Communication</h3>
+                    <div className="h-px bg-border-main my-4" />
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center py-2 border-b border-border-main/40">
+                      <span className="text-xs text-text-muted font-bold">Messages Exchanged</span>
+                      <span className="text-sm font-black text-text-main">128</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-border-main/40">
+                      <span className="text-xs text-text-muted font-bold">First Message</span>
+                      <span className="text-sm font-black text-text-main">14 Jun, 6:32 PM</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 pb-2">
+                      <span className="text-xs text-text-muted font-bold">Last Message</span>
+                      <span className="text-sm font-black text-text-main">14 Jun, 10:45 PM</span>
+                    </div>
+                    
+                    <div className="pt-4">
+                      <Link
+                        href={`/my-booking/${bookingId}/chat${isHiredMe ? "?role=partner" : ""}`}
+                        className="w-full py-4 rounded-xl bg-primary hover:bg-primary-dark text-white text-xs font-black uppercase tracking-widest transition-all cursor-pointer text-center block shadow-lg shadow-primary/20"
+                      >
+                        View Full Conversation →
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
         </div>
       </div>
+
       <Footer />
     </div>
   </div>

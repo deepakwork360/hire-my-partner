@@ -65,6 +65,138 @@ function parseDateTime(dateStr: string, timeStr: string): Date | null {
   return new Date(year, month - 1, day, hours, minutes);
 }
 
+function parseBookingEndDateTime(dateStr: string, timeRangeStr: string): Date | null {
+  try {
+    const start = parseBookingStartDateTime(dateStr, timeRangeStr);
+    const parts = timeRangeStr.split(/\s*[-–]\s*/);
+    const endTimeStr = parts.length === 2 ? parts[1].trim() : parts[0].trim();
+    
+    let targetDateStr = dateStr;
+    if (dateStr.includes(" - ")) {
+      targetDateStr = dateStr.split(" - ")[1].trim();
+    }
+    
+    let year = 0, month = 0, day = 0;
+    if (targetDateStr.includes("-")) {
+      const dParts = targetDateStr.split("-");
+      year = parseInt(dParts[0], 10);
+      month = parseInt(dParts[1], 10) - 1;
+      day = parseInt(dParts[2], 10);
+    } else {
+      const parsedDate = new Date(targetDateStr);
+      if (isNaN(parsedDate.getTime())) return null;
+      year = parsedDate.getFullYear();
+      month = parsedDate.getMonth();
+      day = parsedDate.getDate();
+    }
+
+    const timeMatch = endTimeStr.match(/(\d+)[:.](\d+)\s*(AM|PM)/i);
+    let res: Date | null = null;
+    if (!timeMatch) {
+      const timeMatch24 = endTimeStr.match(/(\d+)[:.](\d+)/);
+      if (timeMatch24) {
+        const hours = parseInt(timeMatch24[1], 10);
+        const minutes = parseInt(timeMatch24[2], 10);
+        res = new Date(year, month, day, hours, minutes, 0, 0);
+      }
+    } else {
+      let hours = parseInt(timeMatch[1], 10);
+      const minutes = parseInt(timeMatch[2], 10);
+      const ampm = timeMatch[3].toUpperCase();
+
+      if (ampm === "PM" && hours < 12) hours += 12;
+      if (ampm === "AM" && hours === 12) hours = 0;
+
+      res = new Date(year, month, day, hours, minutes, 0, 0);
+    }
+
+    if (res && !isNaN(res.getTime())) {
+      if (start && res.getTime() < start.getTime()) {
+        res.setDate(res.getDate() + 1);
+      }
+      return res;
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function parseBookingStartDateTime(dateStr: string, timeRangeStr: string): Date | null {
+  try {
+    const parts = timeRangeStr.split(/\s*[-–]\s*/);
+    const startTimeStr = parts[0].trim();
+    
+    let targetDateStr = dateStr;
+    if (dateStr.includes(" - ")) {
+      targetDateStr = dateStr.split(" - ")[0].trim();
+    }
+    
+    let year = 0, month = 0, day = 0;
+    if (targetDateStr.includes("-")) {
+      const dParts = targetDateStr.split("-");
+      year = parseInt(dParts[0], 10);
+      month = parseInt(dParts[1], 10) - 1;
+      day = parseInt(dParts[2], 10);
+    } else {
+      const parsedDate = new Date(targetDateStr);
+      if (isNaN(parsedDate.getTime())) return null;
+      year = parsedDate.getFullYear();
+      month = parsedDate.getMonth();
+      day = parsedDate.getDate();
+    }
+    
+    const timeMatch = startTimeStr.match(/(\d+)[:.](\d+)\s*(AM|PM)/i);
+    if (!timeMatch) {
+      const timeMatch24 = startTimeStr.match(/(\d+)[:.](\d+)/);
+      if (timeMatch24) {
+        const hours = parseInt(timeMatch24[1], 10);
+        const minutes = parseInt(timeMatch24[2], 10);
+        const res = new Date(year, month, day, hours, minutes, 0, 0);
+        return isNaN(res.getTime()) ? null : res;
+      }
+      return null;
+    }
+    
+    let hours = parseInt(timeMatch[1], 10);
+    const minutes = parseInt(timeMatch[2], 10);
+    const ampm = timeMatch[3].toUpperCase();
+    
+    if (ampm === "PM" && hours < 12) hours += 12;
+    if (ampm === "AM" && hours === 12) hours = 0;
+    
+    const res = new Date(year, month, day, hours, minutes, 0, 0);
+    return isNaN(res.getTime()) ? null : res;
+  } catch (e) {
+    return null;
+  }
+}
+
+function hasActiveRunningBooking(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const localBookings = localStorage.getItem("hire_my_partner_bookings");
+    if (!localBookings) return false;
+    const bookings = JSON.parse(localBookings);
+    const now = Date.now();
+    for (const b of bookings) {
+      if (b.status === "Confirmed") {
+        const start = parseBookingStartDateTime(b.date, b.time);
+        const end = parseBookingEndDateTime(b.date, b.time);
+        if (start && end) {
+          const isRunning = start.getTime() <= now && now < end.getTime();
+          if (isRunning) {
+            return true;
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error(e);
+  }
+  return false;
+}
+
 export const getThirtyMinutesAheadTime = () => {
   const date = new Date(Date.now() + 40 * 60 * 1000);
   let hours = date.getHours();
@@ -378,6 +510,11 @@ export default function BookDetails() {
 
   useEffect(() => {
     const rawPartnerId = searchParams.get("partner");
+    if (hasActiveRunningBooking()) {
+      toast.error("You already have an active session running. You can only book one companion at a time.");
+      router.replace("/my-booking");
+      return;
+    }
     if (!initialDate || !initialTime || !rawPartnerId) {
       if (rawPartnerId) {
         toast.error("Please select a booking schedule first.");
@@ -496,6 +633,12 @@ export default function BookDetails() {
 
   const handleBookingSubmit = (e: React.MouseEvent) => {
     e.preventDefault();
+
+    if (hasActiveRunningBooking()) {
+      toast.error("You already have an active session running. You can only book one companion at a time and cannot book another companion until your current session ends.");
+      return;
+    }
+
     setShowErrors(true);
 
     if (!customDate) {
@@ -528,7 +671,9 @@ export default function BookDetails() {
     if (typeof window !== "undefined") {
       sessionStorage.setItem("booking_in_progress", "true");
     }
-    const url = `/booking-confirmation?partner=${partner.id}&date=${encodeURIComponent(selectedDateTime)}&duration=${encodeURIComponent(selectedDuration === "1 minute" ? "0.01" : selectedDuration)}&addons=${encodeURIComponent(selectedAddOnLabels.join(","))}&amount=${totalAmount}&reason=${encodeURIComponent(notes)}`;
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const bookingId = `BK-2026-${String(partner.id).padStart(2, "0")}-${randomSuffix}`;
+    const url = `/booking-confirmation?partner=${partner.id}&bookingId=${bookingId}&date=${encodeURIComponent(selectedDateTime)}&duration=${encodeURIComponent(selectedDuration === "1 minute" ? "0.01" : selectedDuration)}&addons=${encodeURIComponent(selectedAddOnLabels.join(","))}&amount=${totalAmount}&reason=${encodeURIComponent(notes)}`;
     router.push(url);
   };
 

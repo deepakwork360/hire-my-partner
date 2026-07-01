@@ -138,6 +138,7 @@ export default function ChoosePayment({
           message: formData.message,
           isVirtual: true,
           partnerId: formData.partnerId,
+          bookingId: formData.bookingId,
         };
 
         const existing = localStorage.getItem("hire_my_partner_partner_earnings");
@@ -314,16 +315,15 @@ export default function ChoosePayment({
       </AnimatePresence>
 
       {/* ── Main Section ── */}
-      <section className={`bg-bg-base py-20 px-4 md:px-8 ${outfit.className}`}>
-        <div className="max-w-3xl mx-auto">
+      <section className={`bg-bg-base py-6 px-4 md:px-8 ${outfit.className}`}>
+        <div className="max-w-2xl mx-auto">
           {/* Header */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="flex flex-col items-center text-center mb-12 gap-4"
+            className="flex flex-col items-center text-center mb-6 gap-1.5"
           >
-
             <h2
               className={`${rochester.className} text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-wide px-4 leading-[1.2]`}
             >
@@ -337,45 +337,45 @@ export default function ChoosePayment({
           </motion.div>
 
           {/* Saved Payment Cards */}
-          <div className="flex flex-col gap-4 mb-4">
+          <div className="flex flex-col gap-3 mb-3">
             {savedMethods.map((method, i) => {
               const Icon = method.icon;
               const isSelected = selectedMethod === method.id;
               return (
                 <motion.div
                   key={method.id}
-                  initial={{ opacity: 0, x: -20 }}
+                  initial={{ opacity: 0, x: -15 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
+                  transition={{ delay: i * 0.05 }}
                   onClick={() => handleSelect(method.id)}
                    className={`
-                    relative cursor-pointer rounded-[28px] border p-6 flex items-center gap-5
+                    relative cursor-pointer rounded-[20px] border p-4 flex items-center gap-4
                     transition-all duration-300 group overflow-hidden
                     ${isSelected
-                      ? "bg-primary/10 border-primary/40 shadow-2xl shadow-primary/10 ring-2 ring-offset-2 ring-offset-bg-base ring-primary"
+                      ? "bg-primary/10 border-primary/40 shadow-lg shadow-primary/5 ring-1 ring-primary"
                       : "bg-bg-card border-border-main hover:border-primary/30 hover:bg-bg-secondary"
                     }
                   `}
                 >
                    <div
-                    className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all ${
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all ${
                       isSelected
-                        ? "bg-primary shadow-lg shadow-primary/30"
+                        ? "bg-primary shadow-md shadow-primary/25"
                         : "bg-bg-secondary border border-border-main group-hover:border-primary/30"
                     }`}
                   >
-                    <Icon size={22} className={isSelected ? "text-white" : "text-text-muted"} />
+                    <Icon size={18} className={isSelected ? "text-white" : "text-text-muted"} />
                   </div>
 
                   <div className="flex-1">
-                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-text-main font-black text-base">{method.label}</span>
-                      <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 bg-bg-secondary border border-border-main rounded-full text-text-muted">
+                     <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-text-main font-black text-sm">{method.label}</span>
+                      <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 bg-bg-secondary border border-border-main rounded-full text-text-muted">
                         {method.badge}
                       </span>
                     </div>
-                    <p className="text-text-muted text-sm font-medium">{method.detail}</p>
+                    <p className="text-text-muted text-xs font-medium">{method.detail}</p>
                   </div>
 
                   <AnimatePresence mode="wait">
@@ -385,13 +385,13 @@ export default function ChoosePayment({
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         exit={{ scale: 0 }}
-                        className="w-8 h-8 bg-primary rounded-full flex items-center justify-center shrink-0"
+                        className="w-6 h-6 bg-primary rounded-full flex items-center justify-center shrink-0"
                       >
-                        <Check size={16} className="text-white" strokeWidth={3} />
+                        <Check size={12} className="text-white" strokeWidth={3} />
                       </motion.div>
                     ) : (
                       <motion.div key="chevron" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
-                        <ChevronRight size={20} className="text-text-muted group-hover:text-white transition-colors" />
+                        <ChevronRight size={16} className="text-text-muted group-hover:text-white transition-colors" />
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -402,85 +402,85 @@ export default function ChoosePayment({
 
           {/* Add New Payment */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: -15 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.1 }}
             onClick={handleAddNew}
             className={`
-              relative cursor-pointer rounded-[28px] border-2 border-dashed p-6 flex items-center gap-5
-              transition-all duration-300 group mb-12
+              relative cursor-pointer rounded-[20px] border border-dashed p-4 flex items-center gap-4
+              transition-all duration-300 group mb-6
               ${addingNew
                 ? "border-primary/50 bg-primary/5"
                 : "border-border-main hover:border-primary/30 hover:bg-bg-secondary"
               }
             `}
           >
-             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all ${addingNew ? "bg-primary" : "bg-bg-secondary border border-border-main"}`}>
-              <Plus size={22} className={addingNew ? "text-white" : "text-text-muted"} />
+             <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all ${addingNew ? "bg-primary" : "bg-bg-secondary border border-border-main"}`}>
+              <Plus size={18} className={addingNew ? "text-white" : "text-text-muted"} />
             </div>
             <div className="flex-1">
-              <span className="text-text-main font-black text-base">Add New Payment Method</span>
-              <p className="text-text-muted text-sm font-medium mt-0.5">UPI, Credit / Debit Card, Net Banking</p>
+              <span className="text-text-main font-black text-sm">Add New Payment Method</span>
+              <p className="text-text-muted text-xs font-medium mt-0.5">UPI, Credit / Debit Card, Net Banking</p>
             </div>
-            <ChevronRight size={20} className="text-text-muted group-hover:text-white transition-colors shrink-0" />
+            <ChevronRight size={16} className="text-text-muted group-hover:text-white transition-colors shrink-0" />
           </motion.div>
 
           {/* Order Summary */}
           <AnimatePresence>
             {selectedMethod && (
               <motion.div
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 12 }}
-                className="mb-8 rounded-[32px] bg-bg-card border border-border-main overflow-hidden"
+                exit={{ opacity: 0, y: 10 }}
+                className="mb-5 rounded-[20px] bg-bg-card border border-border-main overflow-hidden"
               >
-                <div className="p-6 md:p-8 flex flex-col gap-4">
-                  <h3 className="text-text-main font-black text-base uppercase tracking-widest mb-2">
+                <div className="p-4 md:p-5 flex flex-col gap-3">
+                  <h3 className="text-text-main font-black text-xs uppercase tracking-widest mb-1">
                     Order Summary
                   </h3>
 
-                  <div className="flex items-center gap-4 py-3 border-b border-border-main">
-                    <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                      <User size={15} className="text-primary" />
+                  <div className="flex items-center gap-3 py-2 border-b border-border-main">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <User size={13} className="text-primary" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">Recipient</p>
-                      <p className="text-text-main font-bold text-sm">{formData.recipientName}</p>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-text-muted">Recipient</p>
+                      <p className="text-text-main font-bold text-xs">{formData.recipientName}</p>
                     </div>
-                    <p className="text-text-muted text-xs font-bold">{formData.bookingDate} · {formData.bookingTime}</p>
+                    <p className="text-text-muted text-[10px] font-bold">{formData.bookingDate} · {formData.bookingTime}</p>
                   </div>
 
-                  <div className="flex items-center gap-4 py-3 border-b border-border-main">
-                    <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
-                      <Gift size={15} className="text-emerald-500" />
+                  <div className="flex items-center gap-3 py-2 border-b border-border-main">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+                      <Gift size={13} className="text-emerald-500" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">Tip Amount</p>
-                      <p className="text-text-main font-bold text-sm">{tipDisplay || "—"}</p>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-text-muted">Tip Amount</p>
+                      <p className="text-text-main font-bold text-xs">{tipDisplay || "—"}</p>
                     </div>
-                    <p className="text-emerald-500 font-black text-base">{tipDisplay || "₹0"}</p>
+                    <p className="text-emerald-500 font-black text-sm">{tipDisplay || "₹0"}</p>
                   </div>
 
                   {formData.message && (
-                    <div className="flex items-start gap-4 py-3 border-b border-border-main">
-                      <div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                        <MessageCircleHeart size={15} className="text-violet-400" />
+                    <div className="flex items-start gap-3 py-2 border-b border-border-main">
+                      <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <MessageCircleHeart size={13} className="text-violet-400" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-1">Message</p>
-                        <p className="text-text-main text-sm font-medium leading-relaxed italic">"{formData.message}"</p>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-text-muted mb-0.5">Message</p>
+                        <p className="text-text-main text-xs font-medium leading-relaxed italic">"{formData.message}"</p>
                       </div>
                     </div>
                   )}
 
-                   <div className="flex items-center gap-4 pt-1">
-                    <div className="w-9 h-9 rounded-xl bg-bg-secondary border border-border-main flex items-center justify-center shrink-0">
-                      <ShieldCheck size={15} className="text-primary" />
+                   <div className="flex items-center gap-3 pt-1">
+                    <div className="w-8 h-8 rounded-lg bg-bg-secondary border border-border-main flex items-center justify-center shrink-0">
+                      <ShieldCheck size={13} className="text-primary" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">Paying via</p>
-                      <p className="text-text-main font-bold text-sm capitalize">
+                      <p className="text-[9px] font-black uppercase tracking-widest text-text-muted">Paying via</p>
+                      <p className="text-text-main font-bold text-xs capitalize">
                         {selectedMethod === "upi"
                           ? "Saved UPI (rahul****@okicici)"
                           : selectedMethod === "card"
@@ -496,15 +496,15 @@ export default function ChoosePayment({
 
           {/* Send Tip Button */}
           <motion.button
-            whileHover={canSubmit ? { scale: 1.02, y: -2 } : {}}
-            whileTap={canSubmit ? { scale: 0.98 } : {}}
+            whileHover={canSubmit ? { scale: 1.01, y: -1 } : {}}
+            whileTap={canSubmit ? { scale: 0.99 } : {}}
             onClick={handleSubmit}
             disabled={!canSubmit}
             className={`
-              w-full h-14 rounded-2xl font-black tracking-[0.35em] uppercase text-[10px]
+              w-full h-12 rounded-xl font-black tracking-[0.35em] uppercase text-[9px]
               flex items-center justify-center gap-3 transition-all duration-500 relative overflow-hidden
               ${canSubmit
-                ? "bg-linear-to-r from-primary to-primary-dark text-white shadow-2xl shadow-primary/30 cursor-pointer"
+                ? "bg-linear-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/20 cursor-pointer"
                 : "bg-bg-secondary border border-border-main text-text-muted cursor-not-allowed"
               }
             `}
@@ -513,16 +513,16 @@ export default function ChoosePayment({
               <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_2.5s_infinite]" />
             )}
             <span className="relative z-10 flex items-center gap-3">
-              <Zap size={16} className={canSubmit ? "fill-white" : ""} />
+              <Zap size={14} className={canSubmit ? "fill-white" : ""} />
               Send Tip
               {tipDisplay ? ` · ${tipDisplay}` : ""}
             </span>
           </motion.button>
 
           {/* Security note */}
-          <div className="flex items-center justify-center gap-2 mt-6">
-            <Lock size={13} className="text-text-muted" />
-            <p className="text-text-muted text-xs font-medium">
+          <div className="flex items-center justify-center gap-2 mt-4">
+            <Lock size={11} className="text-text-muted" />
+            <p className="text-text-muted text-[10px] font-medium">
               256-bit SSL encrypted · Safe & secure payment
             </p>
           </div>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Coins, Heart, Star, Sparkles, CheckCircle2 } from "lucide-react";
+import { Coins, Heart, Star, Sparkles, CheckCircle2, type LucideIcon } from "lucide-react";
 import { Outfit, Rochester } from "next/font/google";
 
 const outfit = Outfit({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
@@ -12,11 +12,18 @@ type ProportionProps = {
   onTipChange: (amount: number | null, label: string, custom: string) => void;
 };
 
-const TIP_OPTIONS = [
-  { amount: 200, label: "Warm Thank You", icon: Heart },
-  { amount: 500, label: "Great Session", icon: Star },
-  { amount: 1000, label: "Exceptional Service", icon: Coins },
-  { amount: 2000, label: "Amazing Companion", icon: Sparkles },
+type TipOption = {
+  amount: number;
+  label: string;
+  icon: string | LucideIcon;
+  color: "rose" | "amber" | "emerald" | "violet";
+};
+
+const TIP_OPTIONS: TipOption[] = [
+  { amount: 200, label: "Warm Thank You", icon: "/icons/heart.png", color: "rose" },
+  { amount: 500, label: "Great Session", icon: "/icons/star.png", color: "amber" },
+  { amount: 1000, label: "Exceptional Service", icon: "/icons/shield.png", color: "emerald" },
+  { amount: 2000, label: "Amazing Companion", icon: "/icons/fire.png", color: "violet" },
 ];
 
 const MIN_CUSTOM_TIP = 250;
@@ -27,12 +34,14 @@ export default function ChooseTip({ onTipChange }: ProportionProps) {
   const [customValue, setCustomValue] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isApplied, setIsApplied] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const handleSelect = (amount: number, label: string) => {
     setSelected(amount);
     setCustomValue("");
     setError(null);
     setIsApplied(false);
+    setIsVerifying(false);
     onTipChange(amount, label, "");
   };
 
@@ -50,195 +59,231 @@ export default function ChooseTip({ onTipChange }: ProportionProps) {
     }
 
     if (amount < MIN_CUSTOM_TIP) {
-      setError(`Minimum custom tip is ₹${MIN_CUSTOM_TIP}`);
+      setError(`Min. ₹${MIN_CUSTOM_TIP}`);
     } else if (amount > MAX_CUSTOM_TIP) {
-      setError(`Maximum custom tip is ₹${MAX_CUSTOM_TIP.toLocaleString()}`);
+      setError(`Max. ₹${MAX_CUSTOM_TIP.toLocaleString()}`);
     } else {
       setError(null);
     }
-
-    onTipChange(amount || 0, "Custom Tip", val);
   };
 
-  const handleApply = () => {
-    if (!error && customValue) {
+  const handleApplyCustom = () => {
+    if (error || !customValue) return;
+    setIsVerifying(true);
+    setTimeout(() => {
+      setIsVerifying(false);
       setIsApplied(true);
-      // Small timeout to reset the applied state visual if needed, 
-      // or keep it until next change
-    }
+      const amount = parseFloat(customValue);
+      onTipChange(amount, "Custom Tip", customValue);
+    }, 700);
   };
 
   return (
-    <div className={`max-w-[1600px] mx-auto px-4 md:px-8 xl:px-12 py-12 ${outfit.className}`}>
-      <div className="space-y-10">
+    <div className={`max-w-[1400px] mx-auto px-4 md:px-6 py-6 ${outfit.className}`}>
+      <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-1.5 text-center">
           <motion.h2
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
                       className={`${rochester.className} text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-linear-to-r from-text-main via-primary to-text-main tracking-tight`}
-                    >
-                      Choose{" "}
-                      <span className={`${rochester.className} text-primary`}>
-                        Tip Amount
-                      </span>
-                    </motion.h2>
+          >
+            Choose{" "}
+            <span className={`${rochester.className} text-primary`}>
+              Tip Amount
+            </span>
+          </motion.h2>
           <p className="text-text-muted text-sm font-medium tracking-wide">Select a preset amount or enter a custom value below</p>
         </div>
 
-        {/* Preset Options */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Preset & Custom Options Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {TIP_OPTIONS.map((option, idx) => {
             const Icon = option.icon;
             const isSelected = selected === option.amount;
 
+            const colors = {
+              rose: {
+                bg: "bg-rose-500/5 hover:bg-rose-500/10 hover:border-rose-500/30",
+                selectedBg: "bg-linear-to-br from-rose-500 to-rose-600 border-rose-500 text-white shadow-lg shadow-rose-500/20",
+                iconBg: "bg-rose-500/10 text-rose-500",
+                iconSelectedBg: "bg-white/20 text-white",
+                textColor: "text-rose-500",
+              },
+              amber: {
+                bg: "bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/30",
+                selectedBg: "bg-linear-to-br from-amber-500 to-amber-600 border-amber-500 text-white shadow-lg shadow-amber-500/20",
+                iconBg: "bg-amber-500/10 text-amber-500",
+                iconSelectedBg: "bg-white/20 text-white",
+                textColor: "text-amber-500",
+              },
+              emerald: {
+                bg: "bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/30",
+                selectedBg: "bg-linear-to-br from-emerald-500 to-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-500/20",
+                iconBg: "bg-emerald-500/10 text-emerald-500",
+                iconSelectedBg: "bg-white/20 text-white",
+                textColor: "text-emerald-500",
+              },
+              violet: {
+                bg: "bg-violet-500/5 hover:bg-violet-500/10 hover:border-violet-500/30",
+                selectedBg: "bg-linear-to-br from-violet-500 to-violet-600 border-violet-500 text-white shadow-lg shadow-violet-500/20",
+                iconBg: "bg-violet-500/10 text-violet-500",
+                iconSelectedBg: "bg-white/20 text-white",
+                textColor: "text-violet-500",
+              },
+            }[option.color || "rose"];
+
             return (
               <motion.button
                 key={option.amount}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
+                transition={{ delay: idx * 0.05 }}
                 onClick={() => handleSelect(option.amount, option.label)}
-                className={`relative cursor-pointer p-8 rounded-[32px] border transition-all flex flex-col items-center gap-4 text-center group ${
+                className={`relative cursor-pointer p-5 rounded-[24px] border transition-all flex flex-col items-center justify-center gap-3 text-center min-h-[160px] group ${
                   isSelected 
-                  ? "bg-primary/10 border-primary shadow-2xl shadow-primary/10" 
-                  : "bg-bg-card border-border-main hover:bg-bg-secondary hover:border-primary/30"
+                  ? colors.selectedBg
+                  : `bg-bg-card border-border-main ${colors.bg}`
                 }`}
               >
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 ${
-                  isSelected ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-bg-secondary text-text-muted"
-                }`}>
-                  <Icon size={28} />
+                <div className="flex items-center justify-center transition-transform group-hover:scale-110">
+                  {typeof Icon === "string" ? (
+                    <img src={Icon} alt={option.label} className="w-15 h-15 object-contain" />
+                  ) : (
+                    <Icon size={34} className={isSelected ? "text-white" : colors.textColor} />
+                  )}
                 </div>
                 
-                <div className="space-y-1">
-                  <p className={`text-xl font-black ${isSelected ? "text-primary" : "text-text-main"}`}>₹{option.amount}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-text-muted">{option.label}</p>
+                <div className="space-y-0.5">
+                  <p className={`text-lg font-black ${isSelected ? "text-white" : colors.textColor}`}>₹{option.amount}</p>
+                  <p className={`text-[9px] font-bold uppercase tracking-wider ${isSelected ? "text-white/80" : "text-text-muted"}`}>{option.label}</p>
                 </div>
 
                 {isSelected && (
                   <motion.div 
                     layoutId="selected-tip"
-                    className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-primary flex items-center justify-center border-4 border-bg-base"
+                    className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-white flex items-center justify-center border-2 border-primary shadow-sm"
                   >
-                    <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                   </motion.div>
                 )}
               </motion.button>
             );
           })}
-        </div>
 
-        {/* Custom Input */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="relative rounded-[40px] p-px bg-border-main/50 overflow-hidden group shadow-2xl shadow-black/5"
-        >
-          <div className="bg-bg-card rounded-[39px] p-8 md:p-12 relative overflow-hidden border border-border-main">
-            {/* Ambient Background Glows */}
-            <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 rounded-full blur-[120px] pointer-events-none group-hover:bg-primary/15 transition-colors duration-700" />
-            <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
-            
-            <div className="flex flex-col lg:flex-row items-center gap-10 relative z-10">
-              <div className="flex-1 space-y-4 text-center lg:text-left">
-                <div className="flex items-center justify-center lg:justify-start gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Coins className="w-4 h-4 text-primary" />
+          {/* Custom Card Option */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className={`relative p-5 rounded-[24px] border transition-all flex flex-col justify-between gap-3 min-h-[160px] ${
+              isApplied
+                ? "bg-linear-to-br from-primary to-primary-dark border-primary text-white shadow-lg shadow-primary/20"
+                : customValue && !error
+                  ? "bg-primary/5 border-primary/50 shadow-md"
+                  : "bg-bg-card border-border-main hover:border-primary/30"
+            }`}
+          >
+            <AnimatePresence mode="wait">
+              {isApplied ? (
+                // SUCCESS STATE
+                <motion.div
+                  key="applied-state"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="flex-1 flex flex-col justify-between"
+                >
+                  <div className="space-y-1">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-white/70 block">Custom Tip Lock</span>
+                    <p className="text-xl font-black !text-white leading-tight">₹{parseFloat(customValue).toLocaleString("en-IN")}</p>
+                    <p className="text-[9px] font-medium text-white/80">Applied to booking checkout.</p>
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/60">Premium Feature</span>
-                </div>
-                <h3 className="text-text-main text-2xl md:text-3xl font-black uppercase tracking-wider leading-tight">
-                  Enter Custom <br className="hidden md:block" /> Tip Amount
-                </h3>
-                <p className="text-text-muted text-sm max-w-sm mx-auto lg:mx-0 font-medium leading-relaxed">
-                  Every contribution is valued. Enter a specific amount that reflects your appreciation.
-                </p>
-              </div>
-
-              <div className="w-full lg:w-[450px] relative group">
-                {/* Input Container */}
-                <div className="relative flex items-center gap-3">
-                  <div className="relative flex-1">
-                    <span className="absolute left-8 top-1/2 -translate-y-1/2 text-3xl font-black text-primary drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] select-none">
-                      ₹
-                    </span>
-                     <input 
-                      type="number" 
-                      value={customValue}
-                      onChange={(e) => handleCustomChange(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !error && customValue) {
-                          handleApply();
-                          (e.target as HTMLInputElement).blur();
-                        }
-                      }}
-                      placeholder="0"
-                      className={`w-full h-24 pl-16 pr-8 bg-bg-secondary border rounded-3xl text-text-main text-4xl font-black focus:outline-none transition-all placeholder:text-text-muted/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
-                        error 
-                        ? "border-red-500/50 focus:border-red-500/80 focus:bg-red-500/5" 
-                        : "border-border-main focus:border-primary/40 focus:bg-primary/5"
-                      }`}
-                    />
-                    
-                    {/* Premium Focus Border Overlay */}
-                    <div className={`absolute inset-0 rounded-3xl border scale-[1.03] opacity-0 group-focus-within:opacity-100 group-focus-within:scale-100 transition-all duration-500 pointer-events-none ${
-                      error ? "border-red-500/20" : "border-primary/20"
-                    }`} />
-                  </div>
-
-                  {/* Confirm Button */}
-                  <motion.button
-                    onClick={handleApply}
-                    whileHover={!error && customValue ? { scale: 1.05 } : {}}
-                    whileTap={!error && customValue ? { scale: 0.95 } : {}}
-                    disabled={!!error || !customValue}
-                    className={`h-16 cursor-pointer px-8 rounded-3xl font-black uppercase tracking-widest text-[10px] transition-all flex flex-col items-center justify-center gap-1 min-w-[110px] ${
-                      isApplied
-                      ? "bg-emerald-500 text-white shadow-[0_10px_30px_rgba(16,185,129,0.3)]"
-                      : !error && customValue
-                      ? "bg-primary text-white shadow-[0_10px_30px_rgba(var(--primary-rgb),0.3)]"
-                      : "bg-bg-secondary text-text-muted cursor-not-allowed border border-border-main"
-                    }`}
-                  >
-                    <CheckCircle2 size={16} className={isApplied ? "scale-110" : ""} />
-                    <span>{isApplied ? "Applied" : "Apply"}</span>
-                  </motion.button>
                   
-                  {/* Subtle Glow beneath input */}
-                  <div className={`absolute -inset-2 blur-2xl rounded-[40px] opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none ${
-                    error ? "bg-red-500/5" : "bg-primary/5"
-                  }`} />
-                </div>
-
-                {/* Validation Error Message */}
-                <AnimatePresence>
-                  {error && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="text-red-400 text-[10px] font-black uppercase tracking-widest mt-3 ml-2 drop-shadow-[0_0_10px_rgba(239,68,68,0.2)]"
+                  <div className="pt-2 border-t border-white/20 flex items-center justify-between">
+                    <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-wider text-white">
+                      <CheckCircle2 size={10} className="fill-white text-primary" />
+                      <span>Ready</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setIsApplied(false);
+                        onTipChange(null, "Custom Tip", "");
+                      }}
+                      className="text-[9px] font-black uppercase tracking-widest text-white underline underline-offset-2 hover:text-white/85 cursor-pointer bg-transparent border-none"
                     >
-                      {error}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-
-                {/* Quick Add Suggestion */}
-                <div className="mt-4 flex items-center justify-between px-2">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">Secure Payment</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[9px] font-bold text-emerald-500/80 uppercase tracking-widest">System Online</span>
+                      Edit
+                    </button>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+                </motion.div>
+              ) : isVerifying ? (
+                // LOADING STATE
+                <motion.div
+                  key="verifying-state"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex-1 flex flex-col items-center justify-center gap-3 py-4"
+                >
+                  <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                  <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">Submitting...</span>
+                </motion.div>
+              ) : (
+                // INPUT STATE
+                <motion.div
+                  key="input-state"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex-1 flex flex-col justify-between"
+                >
+                  <div className="space-y-2">
+                    <span className="text-[9px] font-black uppercase tracking-wider text-text-muted block">Custom Amount</span>
+                    <div className="relative flex items-center">
+                      <span className="absolute left-3 text-base font-black text-primary">₹</span>
+                      <input
+                        type="number"
+                        value={customValue}
+                        disabled={isVerifying}
+                        onChange={(e) => handleCustomChange(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !error && customValue) {
+                            handleApplyCustom();
+                            (e.target as HTMLInputElement).blur();
+                          }
+                        }}
+                        placeholder="250+"
+                        className={`w-full h-11 pl-7 pr-2 bg-bg-secondary/50 border rounded-xl text-text-main text-sm font-black focus:outline-none transition-all placeholder:text-text-muted/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
+                          error ? "border-red-500/50 focus:border-red-500/80" : "border-border-main focus:border-primary/40"
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-border-main/20 flex items-center justify-between gap-2 min-h-[30px]">
+                    {error ? (
+                      <span className="text-red-400 text-[8px] font-black uppercase tracking-wider leading-tight">{error}</span>
+                    ) : customValue ? (
+                      <button
+                        onClick={handleApplyCustom}
+                        className="w-full py-1.5 bg-primary hover:bg-primary-dark text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer shadow-md shadow-primary/10 flex items-center justify-center gap-1 border-none"
+                      >
+                        Submit
+                      </button>
+                    ) : (
+                      <>
+                        <span className="text-text-muted text-[8px] font-bold uppercase tracking-wider">Min. ₹250</span>
+                        <span className="text-[7px] text-text-muted/60 font-black uppercase tracking-widest">Secure</span>
+                      </>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

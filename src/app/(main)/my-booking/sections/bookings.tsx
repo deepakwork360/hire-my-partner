@@ -231,15 +231,56 @@ const getGiftsAndTipsForPartner = (partnerId: string | number) => {
 
 function parseBookingEndDateTime(dateStr: string, timeRangeStr: string): Date | null {
   try {
+    const start = parseBookingStartDateTime(dateStr, timeRangeStr);
     const parts = timeRangeStr.split(/\s*[-–]\s*/);
     const endTimeStr = parts.length === 2 ? parts[1].trim() : parts[0].trim();
-    const sanitizedTime = endTimeStr.replace(/\s+/g, ' ');
-    const combinedStr = `${dateStr} ${sanitizedTime}`;
-    const parsedDate = new Date(combinedStr);
-    if (isNaN(parsedDate.getTime())) {
-      return null;
+    
+    let targetDateStr = dateStr;
+    if (dateStr.includes(" - ")) {
+      targetDateStr = dateStr.split(" - ")[1].trim();
     }
-    return parsedDate;
+    
+    let year = 0, month = 0, day = 0;
+    if (targetDateStr.includes("-")) {
+      const dParts = targetDateStr.split("-");
+      year = parseInt(dParts[0], 10);
+      month = parseInt(dParts[1], 10) - 1;
+      day = parseInt(dParts[2], 10);
+    } else {
+      const parsedDate = new Date(targetDateStr);
+      if (isNaN(parsedDate.getTime())) return null;
+      year = parsedDate.getFullYear();
+      month = parsedDate.getMonth();
+      day = parsedDate.getDate();
+    }
+
+    const timeMatch = endTimeStr.match(/(\d+)[:.](\d+)\s*(AM|PM)/i);
+    let res: Date | null = null;
+    if (!timeMatch) {
+      const timeMatch24 = endTimeStr.match(/(\d+)[:.](\d+)/);
+      if (timeMatch24) {
+        const hours = parseInt(timeMatch24[1], 10);
+        const minutes = parseInt(timeMatch24[2], 10);
+        res = new Date(year, month, day, hours, minutes, 0, 0);
+      }
+    } else {
+      let hours = parseInt(timeMatch[1], 10);
+      const minutes = parseInt(timeMatch[2], 10);
+      const ampm = timeMatch[3].toUpperCase();
+
+      if (ampm === "PM" && hours < 12) hours += 12;
+      if (ampm === "AM" && hours === 12) hours = 0;
+
+      res = new Date(year, month, day, hours, minutes, 0, 0);
+    }
+
+    if (res && !isNaN(res.getTime())) {
+      if (start && res.getTime() < start.getTime()) {
+        res.setDate(res.getDate() + 1);
+      }
+      return res;
+    }
+    return null;
   } catch (e) {
     return null;
   }
@@ -250,14 +291,19 @@ function parseBookingStartDateTime(dateStr: string, timeRangeStr: string): Date 
     const parts = timeRangeStr.split(/\s*[-–]\s*/);
     const startTimeStr = parts[0].trim();
     
+    let targetDateStr = dateStr;
+    if (dateStr.includes(" - ")) {
+      targetDateStr = dateStr.split(" - ")[0].trim();
+    }
+    
     let year = 0, month = 0, day = 0;
-    if (dateStr.includes("-")) {
-      const dParts = dateStr.split("-");
+    if (targetDateStr.includes("-")) {
+      const dParts = targetDateStr.split("-");
       year = parseInt(dParts[0], 10);
       month = parseInt(dParts[1], 10) - 1;
       day = parseInt(dParts[2], 10);
     } else {
-      const parsedDate = new Date(dateStr);
+      const parsedDate = new Date(targetDateStr);
       if (isNaN(parsedDate.getTime())) return null;
       year = parsedDate.getFullYear();
       month = parsedDate.getMonth();
@@ -385,6 +431,12 @@ export default function Bookings({
             bookingsChanged = true;
             return { ...b, status: "Completed" as const };
           }
+        } else if (b.status === "Pending") {
+          const startDate = parseBookingStartDateTime(b.date, b.time);
+          if (startDate && startDate.getTime() < Date.now()) {
+            bookingsChanged = true;
+            return { ...b, status: "Declined" as const };
+          }
         }
         return b;
       });
@@ -427,6 +479,12 @@ export default function Bookings({
             requestsChanged = true;
             return { ...r, status: "Completed" as const };
           }
+        } else if (r.status === "Pending") {
+          const startDate = parseBookingStartDateTime(r.date, r.time);
+          if (startDate && startDate.getTime() < Date.now()) {
+            requestsChanged = true;
+            return { ...r, status: "Declined" as const };
+          }
         }
         return r;
       });
@@ -466,63 +524,188 @@ export default function Bookings({
   }, []);
 
   useEffect(() => {
+    const handleBookingsUpdate = () => {
+      try {
+        const localBookings = localStorage.getItem("hire_my_partner_bookings");
+        if (localBookings) {
+          setBookings(JSON.parse(localBookings));
+        }
+      } catch (e) {
+        console.error("Failed to parse bookings on event", e);
+      }
+    };
+    window.addEventListener("bookings_updated", handleBookingsUpdate);
+    return () => window.removeEventListener("bookings_updated", handleBookingsUpdate);
+  }, []);
+
+  useEffect(() => {
     if (!mounted) return;
 
     const checkInterval = setInterval(() => {
-      // 1. Check bookings
-      setBookings((prevBookings) => {
-        let changed = false;
-        const updated = prevBookings.map((b) => {
-          if (b.status === "Confirmed") {
-            const endDate = parseBookingEndDateTime(b.date, b.time);
-            if (endDate && endDate.getTime() < Date.now()) {
-              changed = true;
-              return { ...b, status: "Completed" as const };
+      // 1. Check bookings directly from localStorage to prevent stale state issues
+      try {
+        const localBookings = localStorage.getItem("hire_my_partner_bookings");
+        if (localBookings) {
+          const parsedBookings = JSON.parse(localBookings);
+          let changed = false;
+          const updated = parsedBookings.map((b: any) => {
+            if (b.status === "Confirmed") {
+              const endDate = parseBookingEndDateTime(b.date, b.time);
+              if (endDate && endDate.getTime() < Date.now()) {
+                changed = true;
+                return { ...b, status: "Completed" as const };
+              }
+            } else if (b.status === "Pending") {
+              const startDate = parseBookingStartDateTime(b.date, b.time);
+              if (startDate && startDate.getTime() < Date.now()) {
+                changed = true;
+                return { ...b, status: "Declined" as const };
+              }
             }
+            return b;
+          });
+
+          if (changed) {
+            localStorage.setItem("hire_my_partner_bookings", JSON.stringify(updated));
+            setBookings(updated);
+            window.dispatchEvent(new Event("bookings_updated"));
           }
-          return b;
-        });
-
-        if (changed) {
-          localStorage.setItem("hire_my_partner_bookings", JSON.stringify(updated));
         }
-        return updated;
-      });
+      } catch (e) {
+        console.error("Error checking bookings in interval", e);
+      }
 
-      // 2. Check client requests
-      setClientRequests((prevRequests) => {
-        let changed = false;
-        const updated = prevRequests.map((r) => {
-          if (r.status === "Confirmed") {
-            const endDate = parseBookingEndDateTime(r.date, r.time);
-            if (endDate && endDate.getTime() < Date.now()) {
-              changed = true;
-              return { ...r, status: "Completed" as const };
+      // 2. Check client requests directly from localStorage
+      try {
+        const localRequests = localStorage.getItem("hire_my_partner_requests");
+        if (localRequests) {
+          const parsedRequests = JSON.parse(localRequests);
+          let changed = false;
+          const updated = parsedRequests.map((r: any) => {
+            if (r.status === "Confirmed") {
+              const endDate = parseBookingEndDateTime(r.date, r.time);
+              if (endDate && endDate.getTime() < Date.now()) {
+                changed = true;
+                return { ...r, status: "Completed" as const };
+              }
+            } else if (r.status === "Pending") {
+              const startDate = parseBookingStartDateTime(r.date, r.time);
+              if (startDate && startDate.getTime() < Date.now()) {
+                changed = true;
+                return { ...r, status: "Declined" as const };
+              }
             }
-          }
-          return r;
-        });
+            return r;
+          });
 
-        if (changed) {
-          localStorage.setItem("hire_my_partner_requests", JSON.stringify(updated));
+          if (changed) {
+            localStorage.setItem("hire_my_partner_requests", JSON.stringify(updated));
+            setClientRequests(updated);
+            window.dispatchEvent(new Event("bookings_updated"));
+          }
         }
-        return updated;
-      });
+      } catch (e) {
+        console.error("Error checking requests in interval", e);
+      }
     }, 5000);
 
     return () => clearInterval(checkInterval);
   }, [mounted]);
 
   const handleUpdateBookingStatus = (id: number | string, newStatus: BookingData["status"]) => {
-    const updated = bookings.map((b) => (b.id === id ? { ...b, status: newStatus } : b));
+    const updated = bookings.map((b) => {
+      if (b.id === id) {
+        let updatedBooking = { ...b, status: newStatus };
+        if (newStatus === "Confirmed") {
+          const start = parseBookingStartDateTime(b.date, b.time);
+          const end = parseBookingEndDateTime(b.date, b.time);
+          if (start && end) {
+            const durationMs = end.getTime() - start.getTime();
+            const durationMins = durationMs / (60 * 1000);
+            const isTestSession = durationMins <= 5;
+            const hasExpired = end.getTime() <= Date.now();
+
+            if (isTestSession || hasExpired) {
+              const newStart = new Date(Date.now() + 10 * 1000); // starts in 10 seconds
+              const newEnd = new Date(newStart.getTime() + durationMs);
+              
+              const formatTimeStr = (d: Date) => {
+                let hrs = d.getHours();
+                const mins = d.getMinutes();
+                const ampm = hrs >= 12 ? "PM" : "AM";
+                hrs = hrs % 12;
+                hrs = hrs ? hrs : 12;
+                return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')} ${ampm}`;
+              };
+              
+              const formatYearMonthDay = (d: Date) => {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+              };
+
+              updatedBooking.date = formatYearMonthDay(newStart);
+              updatedBooking.time = `${formatTimeStr(newStart)} - ${formatTimeStr(newEnd)}`;
+            }
+          }
+        }
+        return updatedBooking;
+      }
+      return b;
+    });
     setBookings(updated);
     localStorage.setItem("hire_my_partner_bookings", JSON.stringify(updated));
+
+    // Propagate to partner requests
+    try {
+      const localRequests = localStorage.getItem("hire_my_partner_requests");
+      if (localRequests) {
+        const requestsList = JSON.parse(localRequests);
+        const updatedRequests = requestsList.map((r: any) => {
+          if (r.id === id) {
+            const matchedBooking = updated.find(b => b.id === id);
+            if (matchedBooking) {
+              return {
+                ...r,
+                status: newStatus,
+                date: matchedBooking.date,
+                time: matchedBooking.time,
+                price: matchedBooking.price
+              };
+            }
+          }
+          return r;
+        });
+        localStorage.setItem("hire_my_partner_requests", JSON.stringify(updatedRequests));
+        setClientRequests(updatedRequests);
+      }
+    } catch (e) {
+      console.error("Failed to propagate booking status to requests", e);
+    }
+
+    window.dispatchEvent(new Event("bookings_updated"));
   };
 
   const handleUpdateClientRequestStatus = (id: number | string, newStatus: BookingData["status"]) => {
     const updated = clientRequests.map((r) => (r.id === id ? { ...r, status: newStatus } : r));
     setClientRequests(updated);
     localStorage.setItem("hire_my_partner_requests", JSON.stringify(updated));
+
+    // Propagate to client bookings
+    try {
+      const localBookings = localStorage.getItem("hire_my_partner_bookings");
+      if (localBookings) {
+        const bookingsList = JSON.parse(localBookings);
+        const updatedBookings = bookingsList.map((b: any) => b.id === id ? { ...b, status: newStatus } : b);
+        localStorage.setItem("hire_my_partner_bookings", JSON.stringify(updatedBookings));
+        setBookings(updatedBookings);
+      }
+    } catch (e) {
+      console.error("Failed to propagate request status to bookings", e);
+    }
+
+    window.dispatchEvent(new Event("bookings_updated"));
   };
 
   const currentData =
@@ -573,8 +756,8 @@ export default function Bookings({
           </div>
         </div>
 
-        {/* Tabular/Table Area */}
-        <div className="relative overflow-x-auto rounded-[24px] border border-border-main overflow-hidden shadow-xl shadow-black/5 custom-scrollbar">
+        {/* Tabular/Table Area - Desktop View */}
+        <div className="hidden sm:block relative overflow-x-auto rounded-[24px] border border-border-main overflow-hidden shadow-xl shadow-black/5 custom-scrollbar">
           <table className="w-full text-left min-w-[950px] border-collapse">
             <thead className="bg-linear-to-r from-primary-dark via-primary to-accent text-white">
               <tr className="uppercase font-black text-[10px] xl:text-[11px] tracking-widest">
@@ -919,6 +1102,303 @@ export default function Bookings({
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Tabular/Table Area - Mobile View Card List */}
+        <div className="block sm:hidden space-y-6">
+          {filteredBookings.map((booking, idx) => {
+            const isPaid = booking.status === "Confirmed" || booking.status === "Completed";
+            const isCompleted = booking.status === "Completed";
+            const isDeclined = booking.status === "Declined";
+            
+            const requestStatus =
+              booking.status === "Pending"
+                ? "pending"
+                : (booking.status === "Confirmed" || booking.status === "Completed")
+                  ? "accepted"
+                  : "rejected";
+
+            const partner = findPartnerByNameOrId(booking.id) || findPartnerByNameOrId(booking.name);
+            const href = partner
+              ? `/partners/${partner.name.toLowerCase().replace(/\s+/g, "-")}`
+              : `/partners/${booking.id}`;
+
+            const onUpdateStatus = activeCategory === "hired_by_me"
+              ? handleUpdateBookingStatus
+              : handleUpdateClientRequestStatus;
+
+            const allowedToCancel = canCancelBooking(booking.date, booking.time);
+            
+            const handleCancelAction = () => {
+              if (!allowedToCancel) {
+                toast.error("Sessions can only be cancelled at least 20 minutes before starting time.");
+                return;
+              }
+              onUpdateStatus(booking.id, "Declined");
+              toast.success("Booking cancelled successfully.");
+            };
+
+            return (
+              <motion.div
+                key={`mobile-${activeCategory}-${booking.id}`}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.04 }}
+                className="bg-bg-secondary border border-border-main rounded-3xl p-5 space-y-4 shadow-md"
+              >
+                {/* 1. Companion / Client Info & Status */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    {activeCategory === "hired_by_me" ? (
+                      <Link href={href} className="relative w-12 h-12 rounded-2xl overflow-hidden border border-border-main shrink-0">
+                        <Image
+                          src={booking.image}
+                          alt={booking.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </Link>
+                    ) : (
+                      <div className="relative w-12 h-12 rounded-2xl overflow-hidden border border-border-main shrink-0">
+                        <Image
+                          src={booking.image}
+                          alt={booking.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex flex-col text-left">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {activeCategory === "hired_by_me" ? (
+                          <Link href={href} className="text-sm font-bold text-text-main hover:text-primary transition-colors uppercase tracking-tight">
+                            {booking.name}
+                          </Link>
+                        ) : (
+                          <span className="text-sm font-bold text-text-main uppercase tracking-tight">
+                            {booking.name}
+                          </span>
+                        )}
+                        <span className="text-xs text-text-muted">({booking.age})</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1 text-[11px] text-text-muted font-medium flex-wrap">
+                        <span className="flex items-center gap-1">
+                          <MapPin size={11} className="text-primary/60" />
+                          {booking.location}
+                        </span>
+                        <span className="w-1 h-1 bg-border-main rounded-full" />
+                        <span className="flex items-center gap-0.5 text-amber-500 font-bold">
+                          <Star size={11} className="fill-amber-500" />
+                          {booking.rating}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`inline-flex px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest items-center gap-1.5 shrink-0 ${
+                      isDeclined
+                        ? "bg-rose-500/10 border-rose-500/20 text-rose-500"
+                        : isCompleted
+                          ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
+                          : booking.status === "Pending"
+                            ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
+                            : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
+                    }`}
+                  >
+                    {booking.status}
+                  </div>
+                </div>
+
+                {/* 2. Date & Time & Price */}
+                <div className="grid grid-cols-2 gap-4 bg-bg-base/40 border border-border-main/50 rounded-2xl p-3.5">
+                  <div className="flex flex-col gap-1 text-left">
+                    <span className="text-[9px] uppercase tracking-wider text-text-muted font-bold">Schedule</span>
+                    <div className="flex items-center gap-1 text-xs text-text-main font-semibold flex-wrap">
+                      <Calendar size={12} className="text-primary/70 shrink-0" />
+                      <span>{booking.date}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-[10px] text-text-muted italic flex-wrap">
+                      <Clock size={12} className="text-primary/50 shrink-0" />
+                      <span>{booking.time}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-end justify-center text-right">
+                    <span className="text-[9px] uppercase tracking-wider text-text-muted font-bold">Session Fee</span>
+                    <span className="text-sm font-black text-text-main">{booking.price}</span>
+                    <span className={`text-[9px] font-black uppercase tracking-wider ${
+                      isPaid ? "text-emerald-500" : "text-amber-500"
+                    }`}>
+                      {isPaid ? "Paid" : "Pending Payment"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 3. Reason for Booking */}
+                {(booking.reason || booking.bio) && (
+                  <div className="text-left bg-bg-base/20 rounded-2xl p-3 border border-border-main/30">
+                    <span className="text-[9px] uppercase tracking-wider text-text-muted font-bold block mb-1">Booking Request Details</span>
+                    <p className="text-xs text-text-muted/90 leading-relaxed font-medium">
+                      {booking.reason || booking.bio}
+                    </p>
+                  </div>
+                )}
+
+                {/* 4. Actions */}
+                <div className="pt-2 border-t border-border-main/30 flex items-center justify-end gap-2 flex-wrap">
+                  {isDeclined ? (
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-500/60 pr-2">
+                      Declined
+                    </span>
+                  ) : activeCategory === "hired_by_me" ? (
+                    isCompleted ? (
+                      <div className="flex items-center gap-2 flex-wrap w-full justify-end">
+                        {!reviewedBookingIds.includes(String(booking.id)) && (
+                          <Link href={`${href}?reviewBookingId=${booking.id}`} className="flex-1 min-w-[120px]">
+                            <div className="px-3.5 py-2.5 bg-linear-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-md transition-all cursor-pointer">
+                              <Share className="w-3.5 h-3.5 text-white" />
+                              <span>Share Review</span>
+                            </div>
+                          </Link>
+                        )}
+
+                        <Link href={`/send-gift?partner=${partner?.id || booking.id}&booking=${booking.id}`} className="flex-1 min-w-[100px]">
+                          <div className="px-3.5 py-2.5 bg-linear-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-md transition-all cursor-pointer">
+                            <Gift className="w-3.5 h-3.5" />
+                            <span>Gift</span>
+                          </div>
+                        </Link>
+                        
+                        <Link href={`/send-tip?partner=${partner?.id || booking.id}&booking=${booking.id}`} className="flex-1 min-w-[100px]">
+                          <div className="px-3.5 py-2.5 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-md transition-all cursor-pointer">
+                            <Coins className="w-3.5 h-3.5" />
+                            <span>Tip</span>
+                          </div>
+                        </Link>
+
+                        <Link href={`/my-booking/${booking.id}`} className="flex-1 min-w-[120px]">
+                          <div className="px-3.5 py-2.5 bg-bg-base border border-border-main rounded-xl flex items-center justify-center gap-1 text-[10px] font-black uppercase tracking-widest text-text-main hover:text-primary transition-all cursor-pointer">
+                            <span>Details</span>
+                          </div>
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 flex-wrap w-full justify-end">
+                        {!isPaid ? (
+                          <>
+                            <button
+                              onClick={() => onUpdateStatus(booking.id, "Confirmed")}
+                              className="flex-1 min-w-[110px] px-4 py-2.5 bg-linear-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-md hover:shadow-primary/30 transition-all cursor-pointer"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Pay Now</span>
+                            </button>
+                            <button
+                              onClick={handleCancelAction}
+                              disabled={!allowedToCancel}
+                              className={`flex-1 min-w-[100px] px-3 py-2.5 border rounded-xl flex items-center justify-center gap-1 text-[10px] font-black uppercase tracking-widest transition-all ${
+                                allowedToCancel
+                                  ? "bg-bg-base border-border-main text-text-muted hover:text-rose-500 cursor-pointer"
+                                  : "bg-bg-base/40 border-border-main/50 text-text-muted/40 cursor-not-allowed opacity-50"
+                              }`}
+                            >
+                              <XCircle className="w-3 h-3" />
+                              <span>Cancel</span>
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <a href={`mailto:${booking.name.toLowerCase().replace(/[^a-z0-9]/g, "")}@email.com?subject=Coordinating Session`} className="flex-1 min-w-[110px]">
+                              <div className="w-full py-2.5 bg-linear-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-md hover:shadow-primary/30 transition-all cursor-pointer">
+                                <MessageCircle className="w-3.5 h-3.5" />
+                                <span>Message</span>
+                              </div>
+                            </a>
+                            <button
+                              onClick={handleCancelAction}
+                              disabled={!allowedToCancel}
+                              className={`flex-1 min-w-[100px] px-3 py-2.5 border rounded-xl flex items-center justify-center gap-1 text-[10px] font-black uppercase tracking-widest transition-all ${
+                                allowedToCancel
+                                  ? "bg-bg-base border-border-main text-text-muted hover:text-rose-500 cursor-pointer"
+                                  : "bg-bg-base/40 border-border-main/50 text-text-muted/40 cursor-not-allowed opacity-50"
+                              }`}
+                            >
+                              <XCircle className="w-3 h-3" />
+                              <span>Cancel</span>
+                            </button>
+                          </>
+                        )}
+                        <Link href={`/my-booking/${booking.id}`} className="flex-1 min-w-[120px]">
+                          <div className="px-3.5 py-2.5 bg-bg-base border border-border-main rounded-xl flex items-center justify-center gap-1 text-[10px] font-black uppercase tracking-widest text-text-main hover:text-primary transition-all cursor-pointer">
+                            <span>Details</span>
+                          </div>
+                        </Link>
+                      </div>
+                    )
+                  ) : (
+                    // Client Requests ("Hired Me")
+                    <div className="flex items-center gap-2 flex-wrap w-full justify-end">
+                      {isCompleted ? (
+                        <>
+                          <a href={`mailto:client-${booking.name.toLowerCase().replace(/[^a-z0-9]/g, "")}@email.com?subject=Session Completed`} className="flex-1 min-w-[110px]">
+                            <div className="w-full py-2.5 bg-linear-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-md hover:shadow-primary/30 transition-all cursor-pointer">
+                              <MessageCircle className="w-3.5 h-3.5" />
+                              <span>Message</span>
+                            </div>
+                          </a>
+                          <Link href={`/my-booking/${booking.id}?role=partner`} className="flex-1 min-w-[120px]">
+                            <div className="px-3 py-2.5 bg-bg-base border border-border-main rounded-xl flex items-center justify-center gap-1 text-[10px] font-black uppercase tracking-widest text-text-muted hover:text-primary transition-all cursor-pointer">
+                              <span>Details</span>
+                            </div>
+                          </Link>
+                        </>
+                      ) : requestStatus === "pending" ? (
+                        <>
+                          <button
+                            onClick={() => onUpdateStatus(booking.id, "Confirmed")}
+                            className="flex-1 min-w-[110px] px-4 py-2.5 bg-linear-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-md hover:shadow-primary/30 transition-all cursor-pointer"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Accept</span>
+                          </button>
+                          <button
+                            onClick={() => onUpdateStatus(booking.id, "Declined")}
+                            className="flex-1 min-w-[100px] px-3 py-2.5 bg-bg-base border border-border-main rounded-xl flex items-center justify-center gap-1 text-[10px] font-black uppercase tracking-widest text-rose-500 transition-all cursor-pointer"
+                          >
+                            <XCircle className="w-3 h-3" />
+                            <span>Reject</span>
+                          </button>
+                        </>
+                      ) : requestStatus === "accepted" ? (
+                        <>
+                          <a href={`mailto:client-${booking.name.toLowerCase().replace(/[^a-z0-9]/g, "")}@email.com?subject=Session Approved`} className="flex-1 min-w-[110px]">
+                            <div className="w-full py-2.5 bg-linear-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-white shadow-md hover:shadow-primary/30 transition-all cursor-pointer">
+                              <MessageCircle className="w-3.5 h-3.5" />
+                              <span>Message</span>
+                            </div>
+                          </a>
+                          <span className="px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[10px] font-black text-emerald-500 uppercase tracking-widest">
+                            Accepted
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-500/60 pr-2">
+                          Declined
+                        </span>
+                      )}
+                      <Link href={`/my-booking/${booking.id}?role=partner`} className="flex-1 min-w-[120px]">
+                        <div className="px-3 py-2.5 bg-bg-base border border-border-main rounded-xl flex items-center justify-center gap-1 text-[10px] font-black uppercase tracking-widest text-text-muted hover:text-primary transition-all cursor-pointer">
+                          <span>Details</span>
+                        </div>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
 
         {filteredBookings.length === 0 && (

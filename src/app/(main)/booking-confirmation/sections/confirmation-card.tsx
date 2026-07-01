@@ -10,6 +10,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { partners } from "@/modules/partner/data/partners";
 import { usePartner } from "@/modules/partner/hooks/usePartner";
 import { Partner } from "@/modules/partner/types/partner.types";
+import { useAuthStore } from "@/modules/auth/store";
 
 import {
   Check,
@@ -75,6 +76,27 @@ const calculateEndTime = (startTimeStr: string, durationStr: string): string => 
   return `${strHours}:${strMinutes} ${newAmpm}`;
 };
 
+const formatDateString = (dateStr: string) => {
+  if (!dateStr) return "July 8, 2025";
+  if (dateStr.includes("-")) {
+    const parts = dateStr.split("-");
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      const d = new Date(year, month, day);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        });
+      }
+    }
+  }
+  return dateStr;
+};
+
 let hasAuthorizedSession = false;
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -137,13 +159,17 @@ export default function ConfirmationCard() {
   // Parse amount
   const parsedAmount = parseInt(amountParam, 10) || 0;
 
-  const hash = (partner.name.length + dateParam.length + amountParam.length) % 10000;
-  const bookingId = `BK-2026-${String(partner.id).padStart(2, "0")}${String(hash).padStart(4, "0")}`;
+  const bookingIdParam = searchParams.get("bookingId");
+  const fallbackHash = (partner.name.length + dateParam.length + amountParam.length) % 10000;
+  const bookingId = bookingIdParam || `BK-2026-${String(partner.id).padStart(2, "0")}${String(fallbackHash).padStart(4, "0")}`;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     try {
+      const displayDate = formatDateString(dateLabel);
+
+      // 1. Save to Client Bookings
       const existing = localStorage.getItem("hire_my_partner_bookings");
       const bookingsList = existing ? JSON.parse(existing) : [];
 
@@ -156,10 +182,10 @@ export default function ConfirmationCard() {
           age: partner.age,
           location: partner.location.split(",")[0].trim(),
           rating: partner.rating,
-          date: dateLabel || "July 8, 2025",
+          date: displayDate,
           time: `${timeStart} - ${timeEnd}`,
           price: `₹${parsedAmount.toLocaleString("en-IN")}`,
-          status: "Pending",
+          status: "Pending" as const,
           bio: partner.bio.substring(0, 100) + "...",
           reason: reasonParam,
         };
@@ -167,6 +193,33 @@ export default function ConfirmationCard() {
         localStorage.setItem(
           "hire_my_partner_bookings",
           JSON.stringify([newBooking, ...bookingsList])
+        );
+      }
+
+      // 2. Save to Partner Requests
+      const existingReqs = localStorage.getItem("hire_my_partner_requests");
+      const reqsList = existingReqs ? JSON.parse(existingReqs) : [];
+      const reqExists = reqsList.some((r: any) => r.id === bookingId);
+      if (!reqExists) {
+        const currentUser = useAuthStore.getState().user;
+        const newRequest = {
+          id: bookingId,
+          image: currentUser?.avatar || "/images/img4.webp",
+          name: currentUser?.name || "Client Guest",
+          age: parseInt(currentUser?.age || "28", 10),
+          location: currentUser?.city || "Bandra, Mumbai",
+          rating: "4.5",
+          date: displayDate,
+          time: `${timeStart} - ${timeEnd}`,
+          price: `₹${parsedAmount.toLocaleString("en-IN")}`,
+          status: "Pending" as const,
+          bio: reasonParam || "Request details from client.",
+          reason: reasonParam || "Request details from client.",
+        };
+        
+        localStorage.setItem(
+          "hire_my_partner_requests",
+          JSON.stringify([newRequest, ...reqsList])
         );
       }
     } catch (e) {

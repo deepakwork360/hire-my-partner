@@ -13,6 +13,7 @@ import { partners } from "@/modules/partner/data/partners";
 export type TipFormData = {
   recipientName: string;
   partnerId: string | number;
+  bookingId?: string | number;
   bookingDate: string;
   bookingTime: string;
   selectedTipAmount: number | null;
@@ -57,6 +58,7 @@ function SendTipContent() {
   const [formData, setFormData] = useState<TipFormData>({
     recipientName: "Aarushi Kumari",
     partnerId: "1",
+    bookingId: "",
     bookingDate: "April 14, 2024",
     bookingTime: "07:00 PM - 09:00 PM",
     selectedTipAmount: null,
@@ -101,6 +103,7 @@ function SendTipContent() {
       ...prev,
       recipientName: currentPartner?.name || "Aarushi Kumari",
       partnerId: currentPartner?.id || "1",
+      bookingId: bookingIdParam,
       bookingDate: date,
       bookingTime: time,
     }));
@@ -114,6 +117,7 @@ function SendTipContent() {
     setFormData({
       recipientName: partner?.name || "Aarushi Kumari",
       partnerId: partner?.id || "1",
+      bookingId: bookingIdParam,
       bookingDate: formData.bookingDate,
       bookingTime: formData.bookingTime,
       selectedTipAmount: null,

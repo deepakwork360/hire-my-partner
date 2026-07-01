@@ -48,13 +48,164 @@ function parseDateTime(dateStr: string, timeStr: string): Date | null {
   }
 
   return new Date(year, month - 1, day, hours, minutes);
-}export const getThirtyMinutesAheadTime = () => {
+}
+
+function parseBookingEndDateTime(dateStr: string, timeRangeStr: string): Date | null {
+  try {
+    const start = parseBookingStartDateTime(dateStr, timeRangeStr);
+    const parts = timeRangeStr.split(/\s*[-–]\s*/);
+    const endTimeStr = parts.length === 2 ? parts[1].trim() : parts[0].trim();
+    
+    let targetDateStr = dateStr;
+    if (dateStr.includes(" - ")) {
+      targetDateStr = dateStr.split(" - ")[1].trim();
+    }
+    
+    let year = 0, month = 0, day = 0;
+    if (targetDateStr.includes("-")) {
+      const dParts = targetDateStr.split("-");
+      year = parseInt(dParts[0], 10);
+      month = parseInt(dParts[1], 10) - 1;
+      day = parseInt(dParts[2], 10);
+    } else {
+      const parsedDate = new Date(targetDateStr);
+      if (isNaN(parsedDate.getTime())) return null;
+      year = parsedDate.getFullYear();
+      month = parsedDate.getMonth();
+      day = parsedDate.getDate();
+    }
+
+    const timeMatch = endTimeStr.match(/(\d+)[:.](\d+)\s*(AM|PM)/i);
+    let res: Date | null = null;
+    if (!timeMatch) {
+      const timeMatch24 = endTimeStr.match(/(\d+)[:.](\d+)/);
+      if (timeMatch24) {
+        const hours = parseInt(timeMatch24[1], 10);
+        const minutes = parseInt(timeMatch24[2], 10);
+        res = new Date(year, month, day, hours, minutes, 0, 0);
+      }
+    } else {
+      let hours = parseInt(timeMatch[1], 10);
+      const minutes = parseInt(timeMatch[2], 10);
+      const ampm = timeMatch[3].toUpperCase();
+
+      if (ampm === "PM" && hours < 12) hours += 12;
+      if (ampm === "AM" && hours === 12) hours = 0;
+
+      res = new Date(year, month, day, hours, minutes, 0, 0);
+    }
+
+    if (res && !isNaN(res.getTime())) {
+      if (start && res.getTime() < start.getTime()) {
+        res.setDate(res.getDate() + 1);
+      }
+      return res;
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function parseBookingStartDateTime(dateStr: string, timeRangeStr: string): Date | null {
+  try {
+    const parts = timeRangeStr.split(/\s*[-–]\s*/);
+    const startTimeStr = parts[0].trim();
+    
+    let targetDateStr = dateStr;
+    if (dateStr.includes(" - ")) {
+      targetDateStr = dateStr.split(" - ")[0].trim();
+    }
+    
+    let year = 0, month = 0, day = 0;
+    if (targetDateStr.includes("-")) {
+      const dParts = targetDateStr.split("-");
+      year = parseInt(dParts[0], 10);
+      month = parseInt(dParts[1], 10) - 1;
+      day = parseInt(dParts[2], 10);
+    } else {
+      const parsedDate = new Date(targetDateStr);
+      if (isNaN(parsedDate.getTime())) return null;
+      year = parsedDate.getFullYear();
+      month = parsedDate.getMonth();
+      day = parsedDate.getDate();
+    }
+    
+    const timeMatch = startTimeStr.match(/(\d+)[:.](\d+)\s*(AM|PM)/i);
+    if (!timeMatch) {
+      const timeMatch24 = startTimeStr.match(/(\d+)[:.](\d+)/);
+      if (timeMatch24) {
+        const hours = parseInt(timeMatch24[1], 10);
+        const minutes = parseInt(timeMatch24[2], 10);
+        const res = new Date(year, month, day, hours, minutes, 0, 0);
+        return isNaN(res.getTime()) ? null : res;
+      }
+      return null;
+    }
+    
+    let hours = parseInt(timeMatch[1], 10);
+    const minutes = parseInt(timeMatch[2], 10);
+    const ampm = timeMatch[3].toUpperCase();
+    
+    if (ampm === "PM" && hours < 12) hours += 12;
+    if (ampm === "AM" && hours === 12) hours = 0;
+    
+    const res = new Date(year, month, day, hours, minutes, 0, 0);
+    return isNaN(res.getTime()) ? null : res;
+  } catch (e) {
+    return null;
+  }
+}
+
+function hasActiveRunningBooking(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const localBookings = localStorage.getItem("hire_my_partner_bookings");
+    if (!localBookings) return false;
+    const bookings = JSON.parse(localBookings);
+    const now = Date.now();
+    for (const b of bookings) {
+      if (b.status === "Confirmed") {
+        const start = parseBookingStartDateTime(b.date, b.time);
+        const end = parseBookingEndDateTime(b.date, b.time);
+        if (start && end) {
+          const isRunning = start.getTime() <= now && now < end.getTime();
+          if (isRunning) {
+            return true;
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error(e);
+  }
+  return false;
+}
+
+export const getThirtyMinutesAheadTime = () => {
   const date = new Date(Date.now() + 40 * 60 * 1000);
   let hours = date.getHours();
   const minutes = date.getMinutes();
   const ampm = hours >= 12 ? 'PM' : 'AM';
   hours = hours % 12;
   hours = hours ? hours : 12; // the hour '0' should be '12'
+  const strHours = String(hours).padStart(2, '0');
+  const strMinutes = String(minutes).padStart(2, '0');
+  return {
+    formatted: `${strHours}:${strMinutes} ${ampm}`,
+    hour: strHours,
+    minute: strMinutes,
+    ampm
+  };
+};
+
+export const getImmediateTime = () => {
+  const date = new Date(Date.now() + 2 * 60 * 1000);
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
   const strHours = String(hours).padStart(2, '0');
   const strMinutes = String(minutes).padStart(2, '0');
   return {
@@ -72,6 +223,7 @@ function PremiumTimePicker({
   placeholder = "Select Time",
   hasError = false,
   selectedDate = "",
+  selectedDuration = 2,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -79,6 +231,7 @@ function PremiumTimePicker({
   placeholder?: string;
   hasError?: boolean;
   selectedDate?: string;
+  selectedDuration?: number;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -163,8 +316,9 @@ function PremiumTimePicker({
     const targetDate = parseDateTime(selectedDate, timeStr);
     if (!targetDate) return false;
 
-    // targetDate must be at least 30 minutes in the future from now
-    return (targetDate.getTime() - today.getTime()) >= 30 * 60 * 1000;
+    const isTestSession = selectedDuration === 0.01;
+    const buffer = isTestSession ? -5 * 60 * 1000 : 30 * 60 * 1000;
+    return (targetDate.getTime() - today.getTime()) >= buffer;
   };
 
   const handleApplyCustom = () => {
@@ -174,8 +328,10 @@ function PremiumTimePicker({
       const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
       if (selectedDate === todayStr) {
         const targetDate = parseDateTime(selectedDate, formattedCustom);
-        if (!targetDate || (targetDate.getTime() - today.getTime()) < 30 * 60 * 1000) {
-          toast.error("Time must be at least 30 minutes in the future from now.");
+        const isTestSession = selectedDuration === 0.01;
+        const buffer = isTestSession ? -5 * 60 * 1000 : 30 * 60 * 1000;
+        if (!targetDate || (targetDate.getTime() - today.getTime()) < buffer) {
+          toast.error(isTestSession ? "Selected time is invalid." : "Time must be at least 30 minutes in the future from now.");
           return;
         }
       }
@@ -462,6 +618,7 @@ export default function Availability({ partner }: AvailabilityProps) {
 
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
+  const [selectedDuration, setSelectedDuration] = useState<number>(2);
   const [showErrors, setShowErrors] = useState<boolean>(false);
   const [minDate, setMinDate] = useState<Date | undefined>(undefined);
 
@@ -475,19 +632,22 @@ export default function Availability({ partner }: AvailabilityProps) {
       const today = new Date();
       const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
       if (selectedDate === todayStr) {
+        const isTestSession = selectedDuration === 0.01;
+        const buffer = isTestSession ? -5 * 60 * 1000 : 30 * 60 * 1000;
+        const defaultTime = isTestSession ? getImmediateTime().formatted : getThirtyMinutesAheadTime().formatted;
+
         if (selectedTime) {
           const targetDate = parseDateTime(selectedDate, selectedTime);
-          if (!targetDate || (targetDate.getTime() - today.getTime()) < 30 * 60 * 1000) {
-            setSelectedTime(getThirtyMinutesAheadTime().formatted);
-            toast.info("Time adjusted: Applied the default booking time for today.");
+          if (!targetDate || (targetDate.getTime() - today.getTime()) < buffer) {
+            setSelectedTime(defaultTime);
+            toast.info(isTestSession ? "Time adjusted for testing session." : "Time adjusted: Applied the default booking time for today.");
           }
         } else {
-          setSelectedTime(getThirtyMinutesAheadTime().formatted);
+          setSelectedTime(defaultTime);
         }
       }
     }
-  }, [selectedDate, selectedTime]);
-  const [selectedDuration, setSelectedDuration] = useState<number>(2);
+  }, [selectedDate, selectedTime, selectedDuration]);
 
   // Load pending booking if it exists for this partner
   useEffect(() => {
@@ -542,6 +702,11 @@ export default function Availability({ partner }: AvailabilityProps) {
   };
 
   const handleBookingSubmit = () => {
+    if (hasActiveRunningBooking()) {
+      toast.error("You already have an active session running. You can only book one companion at a time and cannot book another companion until your current session ends.");
+      return;
+    }
+
     if (!isAuthenticated) {
       toast.error("Please login first to book a companion.");
       
@@ -584,8 +749,10 @@ export default function Availability({ partner }: AvailabilityProps) {
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     if (selectedDate === todayStr) {
       const targetDate = parseDateTime(selectedDate, selectedTime);
-      if (!targetDate || (targetDate.getTime() - today.getTime()) < 30 * 60 * 1000) {
-        toast.error("Please select a time at least 30 minutes in the future from now.");
+      const isTestSession = selectedDuration === 0.01;
+      const buffer = isTestSession ? -5 * 60 * 1000 : 30 * 60 * 1000;
+      if (!targetDate || (targetDate.getTime() - today.getTime()) < buffer) {
+        toast.error(isTestSession ? "Please select a valid time." : "Please select a time at least 30 minutes in the future from now.");
         return;
       }
     }
@@ -645,10 +812,12 @@ export default function Availability({ partner }: AvailabilityProps) {
                         setShowErrors(false);
                         const today = new Date();
                         const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                        const isTestSession = selectedDuration === 0.01;
+                        const defaultTime = isTestSession ? getImmediateTime().formatted : getThirtyMinutesAheadTime().formatted;
                         if (val === todayStr) {
-                          setSelectedTime(getThirtyMinutesAheadTime().formatted);
+                          setSelectedTime(defaultTime);
                         } else if (!selectedTime) {
-                          setSelectedTime(getThirtyMinutesAheadTime().formatted);
+                          setSelectedTime(defaultTime);
                         }
                       }
                     }}
@@ -667,6 +836,7 @@ export default function Availability({ partner }: AvailabilityProps) {
                     placeholder="Select Time"
                     hasError={showErrors && !selectedTime}
                     selectedDate={selectedDate}
+                    selectedDuration={selectedDuration}
                   />
                   <PremiumDurationPicker
                     value={selectedDuration}

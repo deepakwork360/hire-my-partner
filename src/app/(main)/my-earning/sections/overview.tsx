@@ -236,7 +236,8 @@ export default function Overview() {
         </AnimatePresence>
 
         {/* Table Container */}
-        <div className="relative overflow-x-auto rounded-2xl border border-border-main shadow-xl shadow-black/5">
+        {/* Desktop Table View */}
+        <div className="hidden sm:block relative overflow-x-auto rounded-2xl border border-border-main shadow-xl shadow-black/5">
            <table className="w-full text-left">
               <thead className="bg-linear-to-r from-primary-dark via-primary to-accent text-white shadow-lg">
                  <tr>
@@ -279,15 +280,53 @@ export default function Overview() {
                  </AnimatePresence>
               </tbody>
            </table>
-           
-           {items.length === 0 && (
-             <div className="py-20 text-center flex flex-col items-center gap-3">
-                <Filter size={32} className="text-text-muted" />
-                <p className="text-text-muted text-xs font-bold uppercase tracking-widest">No earnings found for this range</p>
-                <button onClick={resetFilters} className="cursor-pointer text-primary text-[10px] font-black uppercase underline underline-offset-4 decoration-primary/30">Reset Filters</button>
-             </div>
-           )}
         </div>
+
+        {/* Mobile View */}
+        <div className="block sm:hidden space-y-4">
+          <AnimatePresence mode="popLayout">
+            {items.map((row, idx) => (
+              <motion.div
+                key={`mobile-earning-${row.id}`}
+                layout
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                className="bg-bg-secondary/40 border border-border-main rounded-[24px] p-5 space-y-3 shadow-md"
+              >
+                {/* Header: Date and Badge */}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="inline-flex px-3 py-1 rounded-full bg-linear-to-r from-primary/10 to-accent/5 border border-primary/10 text-text-main text-xs font-semibold">
+                    {row.date}
+                  </div>
+                  {row.isDynamic && (
+                    <span className="px-2.5 py-1 rounded-md bg-primary/20 text-primary border border-primary/30 text-[9px] uppercase font-black tracking-widest shrink-0">
+                      {row.type}
+                    </span>
+                  )}
+                </div>
+
+                {/* Footer: Time & Amount */}
+                <div className="flex justify-between items-center pt-1">
+                  <div className="inline-flex px-3 py-1 rounded-full bg-bg-card border border-border-main text-text-muted text-xs font-medium italic">
+                    {row.time}
+                  </div>
+                  <div className="text-right">
+                    <span className="text-text-main text-base font-black">₹{row.amount.toLocaleString()}</span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+        
+        {items.length === 0 && (
+          <div className="py-20 text-center flex flex-col items-center gap-3">
+             <Filter size={32} className="text-text-muted" />
+             <p className="text-text-muted text-xs font-bold uppercase tracking-widest">No earnings found for this range</p>
+             <button onClick={resetFilters} className="cursor-pointer text-primary text-[10px] font-black uppercase underline underline-offset-4 decoration-primary/30">Reset Filters</button>
+          </div>
+        )}
       </motion.div>
     </div>
   );

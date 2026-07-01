@@ -69,31 +69,6 @@ export default function BookyInfo({ partner, bookingDate, bookingTime }: BookyIn
           </motion.div>
         </div>
 
-        {/* ULTRA-PREMIUM REDESIGNED BUTTON */}
-        <div className="mb-16">
-          <Link href="/my-booking">
-            <motion.button
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              className="group cursor-pointer relative flex items-center gap-4 px-10 py-4 rounded-full font-black tracking-[0.2em] uppercase text-[10px] transition-all duration-500"
-            >
-              {/* Dynamic Background Architecture */}
-              <div className="absolute inset-0 bg-bg-card border-2 border-primary/30 group-hover:border-primary shadow-2xl shadow-primary/10 rounded-full transition-all duration-500" />
-              
-              {/* Internal Accent Glow */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-primary/5 blur-xl transition-opacity duration-500" />
-
-              {/* Content */}
-              <div className="relative z-10 flex items-center gap-3 text-text-main group-hover:text-primary transition-all duration-500">
-                <div className="w-10 h-10 rounded-full bg-bg-secondary border border-border-main flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-lg">
-                   <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-                </div>
-                <span className="tracking-widest">Back to booking</span>
-              </div>
-            </motion.button>
-          </Link>
-        </div>
-
         {/* ULTRA-PREMIUM CONCIERGE TICKET */}
         <motion.div
           onMouseEnter={() => setIsHovered(true)}

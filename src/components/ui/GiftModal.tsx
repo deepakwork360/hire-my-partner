@@ -23,6 +23,7 @@ interface GiftModalProps {
   onClose: () => void;
   recipientName: string;
   partnerId: string | number;
+  bookingId?: string | number;
   selectedGift: {
     image: string;
     title: string;
@@ -37,6 +38,7 @@ export default function GiftModal({
   onClose,
   recipientName,
   partnerId,
+  bookingId,
   selectedGift,
 }: GiftModalProps) {
   const router = useRouter();
@@ -135,17 +137,16 @@ export default function GiftModal({
           message: message,
           isVirtual: giftType === "virtual",
           partnerId: partnerId,
+          bookingId: bookingId,
           shippingAddress: giftType === "physical" ? getRegisteredAddress() : null,
         };
 
-        if (giftType === "virtual") {
-          const existing = localStorage.getItem("hire_my_partner_partner_earnings");
-          const earningsList = existing ? JSON.parse(existing) : [];
-          localStorage.setItem(
-            "hire_my_partner_partner_earnings",
-            JSON.stringify([transaction, ...earningsList])
-          );
-        }
+        const existing = localStorage.getItem("hire_my_partner_partner_earnings");
+        const earningsList = existing ? JSON.parse(existing) : [];
+        localStorage.setItem(
+          "hire_my_partner_partner_earnings",
+          JSON.stringify([transaction, ...earningsList])
+        );
       } catch (e) {
         console.error("Failed to save transaction", e);
       }

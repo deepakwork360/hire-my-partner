@@ -40,8 +40,8 @@ export default function RecentPaid() {
            </p>
         </div>
 
-        {/* Desktop Table */}
-        <div className="relative overflow-x-auto rounded-[24px] border border-border-main overflow-hidden shadow-xl shadow-black/5">
+        {/* Desktop Table View */}
+        <div className="hidden sm:block relative overflow-x-auto rounded-[24px] border border-border-main overflow-hidden shadow-xl shadow-black/5">
            <table className="w-full text-left min-w-[700px]">
               <thead className="bg-linear-to-r from-primary-dark via-primary to-accent text-white">
                  <tr className="uppercase font-black text-[10px] xl:text-[11px] tracking-widest">
@@ -100,6 +100,67 @@ export default function RecentPaid() {
                  ))}
               </tbody>
            </table>
+        </div>
+
+        {/* Mobile View */}
+        <div className="block sm:hidden space-y-4">
+          {recentBookings.map((row, idx) => (
+            <motion.div
+              key={`mobile-paid-${row.id}`}
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.05 }}
+              className="bg-bg-secondary/40 border border-border-main rounded-[24px] p-5 space-y-4 shadow-md"
+            >
+              {/* Header: User Info & Event Badge */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="relative w-10 h-10 rounded-full overflow-hidden border border-border-main shrink-0">
+                    <Image src={row.img} alt={row.user} fill className="object-cover" />
+                  </div>
+                  <span className="text-text-main text-sm font-bold uppercase tracking-tight">{row.user}</span>
+                </div>
+                
+                <span className="px-3 py-1.5 bg-linear-to-r from-primary-dark to-accent rounded-lg text-white text-[9px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 shrink-0">
+                  {row.event}
+                </span>
+              </div>
+
+              {/* Schedule Details */}
+              <div className="grid grid-cols-2 gap-4 bg-bg-base/40 border border-border-main/50 rounded-2xl p-3">
+                <div className="flex flex-col gap-0.5 text-left">
+                  <span className="text-[8px] uppercase tracking-wider text-text-muted font-bold">Date</span>
+                  <div className="flex items-center gap-1.5 text-xs text-text-main font-semibold flex-wrap">
+                    <Calendar size={12} className="text-primary/70 shrink-0" />
+                    <span>{row.date}</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-0.5 text-left">
+                  <span className="text-[8px] uppercase tracking-wider text-text-muted font-bold">Time</span>
+                  <div className="flex items-center gap-1.5 text-xs text-text-main font-semibold flex-wrap">
+                    <Clock size={12} className="text-primary/70 shrink-0" />
+                    <span>{row.time}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Amount & Tip */}
+              <div className="flex justify-between items-center pt-2 border-t border-border-main/30">
+                <span className="text-xs font-bold text-text-muted">Total Earned</span>
+                <div className="flex flex-col items-end">
+                  <span className="text-text-main text-base font-black">₹{row.amount.toLocaleString()}</span>
+                  {row.tip > 0 && (
+                    <div className="flex items-center gap-1 text-emerald-500 font-bold text-[10px] uppercase tracking-tighter">
+                      <Sparkles size={8} className="fill-emerald-500" />
+                      <span>+ ₹{row.tip} Tip</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </motion.div>
     </div>

@@ -102,6 +102,7 @@ function ChooseGiftContent() {
         onClose={() => setIsModalOpen(false)}
         recipientName={partner?.name || "Aarushi Kumari"}
         partnerId={partner?.id || "1"}
+        bookingId={bookingId}
         selectedGift={selectedGift}
       />
     </>

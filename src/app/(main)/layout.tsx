@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/modules/auth/store";
 import SideDashboard from "@/components/side-dashboard/side-dashboard";
+import ActiveMeetingWidget from "@/components/ActiveMeetingWidget/ActiveMeetingWidget";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -61,6 +62,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <Navbar />
       {showGlobalDashboard && <SideDashboard />}
       <main className="flex-1">{children}</main>
+      <ActiveMeetingWidget />
     </>
   );
 }
