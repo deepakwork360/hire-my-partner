@@ -1505,12 +1505,15 @@ function NotificationsForm() {
             setPrefs(prev => ({ ...prev, [key]: !prev[key] }));
             setError("");
           }}
-          className={`relative shrink-0 w-11 h-6 rounded-full transition-colors duration-300 focus:outline-none cursor-pointer ${enabled ? "bg-primary" : "bg-bg-secondary border border-border-main/30"
+          className={`relative shrink-0 w-10 h-6 rounded-full transition-colors duration-300 focus:outline-none cursor-pointer ${enabled ? "bg-primary" : "bg-bg-card border border-border-main"
             }`}
         >
           <motion.div
-            animate={{ x: enabled ? 22 : 2 }}
-            className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-md"
+            layout
+            className="w-4 h-4 rounded-full bg-white shadow-md absolute top-[3px]"
+            style={{
+              left: enabled ? "21px" : "3px"
+            }}
           />
         </button>
       </div>

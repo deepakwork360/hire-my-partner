@@ -22,10 +22,34 @@ function VerifyOtpForm() {
   const router = useRouter();
   const emailOrPhone = searchParams.get("emailOrPhone") || "";
   const type = (searchParams.get("type") as any) || "register";
-  const sendVia = (searchParams.get("send_via") as any) || "phone";
-  const phoneNo = searchParams.get("phone_no") || "";
-  const phoneCountryCode = searchParams.get("phone_country_code") || "";
-  const email = searchParams.get("email") || "";
+  
+  // Parse emailOrPhone if the specific query parameters are not present
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailOrPhone);
+  const sendVia = (searchParams.get("send_via") as any) || (isEmail ? "email" : "phone");
+  
+  let phoneNo = searchParams.get("phone_no") || "";
+  let phoneCountryCode = searchParams.get("phone_country_code") || "";
+  let email = searchParams.get("email") || "";
+  
+  if (!phoneNo && !email && emailOrPhone) {
+    if (isEmail) {
+      email = emailOrPhone;
+    } else {
+      const cleanPhone = emailOrPhone.replace(/\s+/g, '');
+      if (cleanPhone.startsWith('+')) {
+        if (cleanPhone.startsWith('+91')) {
+          phoneCountryCode = '+91';
+          phoneNo = cleanPhone.slice(3);
+        } else {
+          phoneCountryCode = cleanPhone.slice(0, 3);
+          phoneNo = cleanPhone.slice(3);
+        }
+      } else {
+        phoneCountryCode = '+91';
+        phoneNo = cleanPhone;
+      }
+    }
+  }
   
   const { activeTheme } = useTheme();
     

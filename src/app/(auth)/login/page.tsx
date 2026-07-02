@@ -242,6 +242,14 @@ function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (loginMode === "password") {
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailOrPhone);
+      if (!isEmail) {
+        toast.error("Password login is only supported with Email. For Phone, please use OTP Login.");
+        return;
+      }
+    }
+
     const validation = loginSchema.safeParse(formData);
     if (!validation.success) {
       toast.error(validation.error.issues[0].message);
@@ -369,7 +377,7 @@ function LoginForm() {
               <input
                 type="text"
                 name="emailOrPhone"
-                placeholder="Enter Email or Phone"
+                placeholder={loginMode === "password" ? "Enter Email Address" : "Enter Email or Phone"}
                 value={formData.emailOrPhone}
                 onChange={handleChange}
                 className="w-full bg-bg-base text-text-main text-sm rounded-xl pl-12 pr-5 py-3.5 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all placeholder:text-text-muted/45"

@@ -122,7 +122,7 @@ export const authRealApi = {
   verifyOtp: async (data: VerifyOtpPayload): Promise<AuthResponse> => {
     const { data: responseData } = await api.post('/auth/verify-otp', data);
     
-    const token = responseData.data?.token || "";
+    const token = responseData.token || responseData.data?.token || responseData.data?.access_token || "";
     
     if (data.type === 'reset-password' || data.type === 'forget' || !token) {
       return {
@@ -232,6 +232,7 @@ export const authRealApi = {
       phone_country_code: phoneNo ? phoneCountryCode : undefined,
       email: email || undefined,
       otp: data.otp,
+      token: data.otp,
       password: data.newPassword,
       password_confirmation: data.newPassword
     });

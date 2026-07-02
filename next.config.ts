@@ -39,6 +39,16 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    const backendUrl = process.env.BACKEND_API_URL || "https://mypartneradmin.blackbullsolution.com/api";
+    return [
+      {
+        source: "/api-proxy/:path*",
+        destination: `${backendUrl}/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
+

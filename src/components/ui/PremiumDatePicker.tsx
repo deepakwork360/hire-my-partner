@@ -122,6 +122,7 @@ export default function PremiumDatePicker({
       days.push(
         <motion.button
           key={day}
+          type="button"
           whileHover={isDisabled ? undefined : { scale: 1.1 }}
           whileTap={isDisabled ? undefined : { scale: 0.95 }}
           onClick={(e) => {
@@ -164,12 +165,12 @@ export default function PremiumDatePicker({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-full cursor-pointer h-14 pl-5 pr-12 rounded-2xl text-left transition-all duration-300 flex items-center gap-4 group/btn border bg-bg-base shadow-sm ${
+          className={`w-full cursor-pointer min-h-[58px] py-4 pl-5 pr-12 rounded-2xl text-left transition-all duration-300 flex items-center gap-4 group/btn border border-solid shadow-sm select-none outline-none focus:outline-none focus-visible:outline-none active:outline-none focus:ring-4 ${
             hasError
-              ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] bg-red-500/5"
+              ? "bg-red-500/5 border-red-500 focus:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]"
               : isOpen
-              ? "border-primary/50 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)]"
-              : "border-border-main hover:border-primary/30"
+              ? "bg-bg-base border-primary/60 ring-primary/20"
+              : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:border-primary/60 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] focus:border-primary/60 focus:ring-primary/20"
           }`}
         >
           <CalendarIcon 
@@ -177,16 +178,9 @@ export default function PremiumDatePicker({
             className={`transition-colors duration-300 ${isOpen || value ? "text-primary" : "text-text-muted group-hover/btn:text-primary"}`} 
           />
           
-          <div className="flex flex-col">
-              {value && (
-                <span className={`text-[10px] font-black uppercase tracking-widest leading-none mb-0.5 text-primary/60`}>
-                  {placeholder}
-                </span>
-              )}
-             <span className={`text-xs font-bold ${value ? "text-text-main" : "text-text-muted"}`}>
-               {value ? selectedDate?.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : placeholder}
-             </span>
-          </div>
+          <span className={`text-sm font-medium tracking-wide ${value ? "text-text-main" : "text-text-muted"}`}>
+            {value ? selectedDate?.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : placeholder}
+          </span>
 
           {value && isOpen && (
             <div 
@@ -217,7 +211,8 @@ export default function PremiumDatePicker({
             >
               {/* Calendar Header */}
               <div className="flex items-center justify-between mb-4 px-1">
-                <button 
+                 <button 
+                  type="button"
                   onClick={handlePrevMonth}
                   disabled={!canGoPrev}
                   className={`p-2 rounded-xl text-text-muted transition-all ${
@@ -229,16 +224,33 @@ export default function PremiumDatePicker({
                   <ChevronLeft size={16} />
                 </button>
                 
-                <div className="text-center">
-                   <p className="text-xs font-black uppercase tracking-widest text-text-main">
-                     {monthNames[viewDate.getMonth()]}
-                   </p>
-                   <p className="text-[10px] font-bold text-primary/60">
-                     {viewDate.getFullYear()}
-                   </p>
+                <div className="text-center flex flex-col items-center">
+                  <select
+                    value={viewDate.getMonth()}
+                    onChange={(e) => setViewDate(new Date(viewDate.getFullYear(), parseInt(e.target.value), 1))}
+                    className="bg-transparent text-xs font-black uppercase tracking-widest text-text-main text-center border-none outline-none focus:ring-0 cursor-pointer appearance-none px-1"
+                  >
+                    {monthNames.map((name, idx) => (
+                      <option key={idx} value={idx} className="bg-bg-secondary text-text-main">
+                        {name}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={viewDate.getFullYear()}
+                    onChange={(e) => setViewDate(new Date(parseInt(e.target.value), viewDate.getMonth(), 1))}
+                    className="bg-transparent text-[10px] font-bold text-primary/60 text-center border-none outline-none focus:ring-0 cursor-pointer appearance-none px-1"
+                  >
+                    {Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - 80 + i).map((yr) => (
+                      <option key={yr} value={yr} className="bg-bg-secondary text-text-main">
+                        {yr}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <button 
+                  type="button"
                   onClick={handleNextMonth}
                   className="p-2 hover:bg-bg-card rounded-xl text-text-muted hover:text-text-main transition-all cursor-pointer"
                 >

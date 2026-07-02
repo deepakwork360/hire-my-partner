@@ -25,9 +25,23 @@ import {
 } from "lucide-react";
 import PremiumButton from "@/components/ui/PremiumButton";
 import DiscoveryButton from "@/components/ui/DiscoveryButton";
+import PremiumDatePicker from "@/components/ui/PremiumDatePicker";
 import { toast } from "@/components/ui/toastStore";
 import Loader from "@/components/loader/Loader";
 import { useAuthStore } from "@/modules/auth/store";
+import { z } from "zod";
+
+import ProgressBar from "../components/ProgressBar";
+import StepIndicator from "../components/StepIndicator";
+import StepNavigation from "../components/StepNavigation";
+import BasicInfoStep from "../components/BasicInfoStep";
+import LocationStep from "../components/LocationStep";
+import ProfileStep from "../components/ProfileStep";
+import MediaStep from "../components/MediaStep";
+import PricingStep from "../components/PricingStep";
+import BankStep from "../components/BankStep";
+import KycStep from "../components/KycStep";
+import ReviewStep from "../components/ReviewStep";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -326,6 +340,20 @@ const getCroppedImg = (image: HTMLImageElement, crop: Crop): Promise<string> => 
   });
 };
 
+const calculateAge = (dobString: string): string => {
+  if (!dobString) return "";
+  const today = new Date();
+  const birthDate = new Date(dobString);
+  if (isNaN(birthDate.getTime())) return "";
+  
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age >= 0 ? String(age) : "";
+};
+
 export default function DetailsForm() {
   const { user, updateUserProfile } = useAuthStore();
   const storageKey = user && user.email ? `partnerApplication_${user.email.replace(/[^a-zA-Z0-9]/g, "_")}` : "partnerApplication";
@@ -362,8 +390,10 @@ export default function DetailsForm() {
     banner: null as string | null,
     fullName: "",
     gender: "Select Gender",
+    dob: "",
     age: "",
     city: "",
+    state: "",
     mobile: "",
     phoneCountryCode: "+91",
     email: "",
@@ -371,6 +401,11 @@ export default function DetailsForm() {
     bankAccountNumber: "",
     bankIfscCode: "",
     bankAccountHolderName: "",
+    branchName: "",
+    currency: "",
+    iban: "",
+    swiftCode: "",
+    routingNumber: "",
     country: "",
     pincode: "",
     upiId: "",
@@ -390,9 +425,12 @@ export default function DetailsForm() {
     videos: Array(3).fill(null) as (string | null)[],
   });
   const [lastSubmittedFormData, setLastSubmittedFormData] = useState<any>(null);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleStartEdit = () => {
     setLastSubmittedFormData(JSON.parse(JSON.stringify(formData)));
+    setCurrentStep(1);
     setView("form");
   };
 
@@ -527,7 +565,10 @@ export default function DetailsForm() {
         setKycStatus(parsed.kycStatus || "NOT_SCHEDULED");
         setKycDate(parsed.kycDate || "");
         setKycSlot(parsed.kycSlot || "");
-        setZoomLink(parsed.zoomLink || "");        
+        setSelectedKycDate(parsed.kycDate || "");
+        setSelectedKycSlot(parsed.kycSlot || "");
+        setZoomLink(parsed.zoomLink || "");
+        setCurrentStep(Math.min(parsed.currentStep || 1, 5));
         // If they already submitted successfully or are pending review/verified, show summary
         if (parsed.submissionStatus === "success" || parsed.verificationStatus === "PENDING" || parsed.verificationStatus === "VERIFIED" || parsed.verificationStatus === "REJECTED") {
           setView("summary");
@@ -549,8 +590,10 @@ export default function DetailsForm() {
         banner: null,
         fullName: "",
         gender: "Select Gender",
+        dob: "",
         age: "",
         city: "",
+        state: "",
         mobile: "",
         phoneCountryCode: "+91",
         email: "",
@@ -558,6 +601,11 @@ export default function DetailsForm() {
         bankAccountNumber: "",
         bankIfscCode: "",
         bankAccountHolderName: "",
+        branchName: "",
+        currency: "",
+        iban: "",
+        swiftCode: "",
+        routingNumber: "",
         country: "",
         pincode: "",
         upiId: "",
@@ -600,11 +648,12 @@ export default function DetailsForm() {
           kycDate,
           kycSlot,
           zoomLink,
+          currentStep,
         }),
       );
       window.dispatchEvent(new Event("partnerStatusChange"));
     }
-  }, [formData, submissionStatus, view, verificationStatus, verificationNotes, kycStatus, kycDate, kycSlot, zoomLink, isHydrated, storageKey, applicationId]);
+  }, [formData, submissionStatus, view, verificationStatus, verificationNotes, kycStatus, kycDate, kycSlot, zoomLink, isHydrated, storageKey, applicationId, currentStep]);
 
 
   // Auto-Scroll on View Change
@@ -650,12 +699,12 @@ export default function DetailsForm() {
       scrollTo(basicInfoRef);
       return false;
     }
-    if (!formData.age) {
-      toast.error("Please enter your age.");
+    if (!formData.dob) {
+      toast.error("Please enter your date of birth.");
       scrollTo(basicInfoRef);
       return false;
     }
-    if (parseInt(formData.age) < 18) {
+    if (!formData.age || parseInt(formData.age) < 18) {
       toast.error("You must be 18 years or older to become a partner.");
       scrollTo(basicInfoRef);
       return false;
@@ -747,16 +796,117 @@ export default function DetailsForm() {
 
 
 
+  const validateStep = (stepNum: number): boolean => {
+    setShowErrors(true);
+    try {
+      if (stepNum === 1) {
+        const step1Schema = z.object({
+          fullName: z.string().min(1, "Please enter your full name."),
+          gender: z.string().refine((g) => g !== "Select Gender" && g !== "", {
+            message: "Please select your gender.",
+          }),
+          dob: z.string().min(1, "Please enter your date of birth."),
+          age: z.string().min(1, "You must be 18 years or older to become a partner.").refine((age) => {
+            const parsedAge = parseInt(age, 10);
+            return !isNaN(parsedAge) && parsedAge >= 18;
+          }, "You must be 18 years or older to become a partner."),
+          email: z.string().min(1, "Please enter your email address.").email("Please enter a valid email address."),
+          mobile: z.string().min(1, "Please enter your mobile number."),
+          country: z.string().min(1, "Please select your country.").refine((c) => c !== "Select Country" && c !== "", {
+            message: "Please select your country.",
+          }),
+          state: z.string().min(1, "Please select your state.").refine((s) => s !== "Select State" && s !== "", {
+            message: "Please select your state.",
+          }),
+          city: z.string().min(1, "Please select your city.").refine((c) => c !== "Select City" && c !== "", {
+            message: "Please select your city.",
+          }),
+          pincode: z.string().min(1, "Please enter your pincode."),
+          bio: z.string().min(1, "Please write a bio about yourself."),
+          hourlyRate: z.string().min(1, "Please enter your hourly rate."),
+        });
+        step1Schema.parse(formData);
+      } else if (stepNum === 2) {
+        const filledGallery = formData.gallery.filter(Boolean).length;
+        if (filledGallery < 3) {
+          throw new Error("Please upload at least 3 photos to your gallery.");
+        }
+      } else if (stepNum === 3) {
+        const step3Schema = z.object({
+          bankAccountHolderName: z.string().min(1, "Please enter bank account holder name."),
+          bankName: z.string().min(1, "Please enter your bank name."),
+          branchName: z.string().min(1, "Please enter your branch name."),
+          bankAccountNumber: z.string().min(1, "Please enter your bank account number."),
+          currency: z.string().min(1, "Please select your currency.").refine((c) => c !== "Select Currency" && c !== "", {
+            message: "Please select your currency.",
+          }),
+          bankIfscCode: z.string().min(1, "Please enter bank IFSC code."),
+          upiId: z.string().optional(),
+          iban: z.string().optional(),
+          swiftCode: z.string().optional(),
+          routingNumber: z.string().optional(),
+        });
+        step3Schema.parse(formData);
+      } else if (stepNum === 4) {
+        if (!formData.idProofs[0] || !formData.idProofs[1] || !formData.idProofs[2] || !formData.idProofs[3]) {
+          throw new Error("Please upload Aadhaar Front, Aadhaar Back, PAN Card Front, and PAN Card Back.");
+        }
+        if (!selectedKycDate || !selectedKycSlot) {
+          throw new Error("Please select both date and time slot for your KYC Call.");
+        }
+      } else if (stepNum === 5) {
+        const step5Schema = z.object({
+          termsAgreed: z.boolean().refine((val) => val === true, {
+            message: "You must agree to the terms and conditions.",
+          }),
+        });
+        step5Schema.parse(formData);
+      }
+      setErrors({});
+      setShowErrors(false);
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const fieldErrors: Record<string, string> = {};
+        error.issues.forEach((issue) => {
+          if (issue.path[0]) {
+            fieldErrors[issue.path[0].toString()] = issue.message;
+          }
+        });
+        setErrors(fieldErrors);
+        toast.error(error.issues[0].message);
+      } else if (error instanceof Error) {
+        const fieldErrors: Record<string, string> = {};
+        if (error.message.includes("at least 3 photos")) {
+          fieldErrors.gallery = error.message;
+        } else if (error.message.includes("upload Aadhaar")) {
+          fieldErrors.idProofs = error.message;
+        } else if (error.message.includes("KYC Call")) {
+          fieldErrors.kycSlot = error.message;
+        }
+        setErrors(fieldErrors);
+        toast.error(error.message);
+      }
+      return false;
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+    // Validate steps 1 to 5 in sequence
+    for (let i = 1; i <= 5; i++) {
+      if (!validateStep(i)) {
+        setCurrentStep(i);
+        return;
+      }
+    }
 
     // Check if any fields were modified if they have an active submission / verified profile
     if ((verificationStatus === "VERIFIED" || verificationStatus === "PENDING" || verificationStatus === "NEEDS_REVISION" || verificationStatus === "REJECTED") && lastSubmittedFormData) {
       const hasChanges = () => {
         const fields = [
-          'photo', 'banner', 'fullName', 'gender', 'age', 'city', 'mobile',
+          'photo', 'banner', 'fullName', 'gender', 'dob', 'age', 'city', 'state', 'mobile',
           'phoneCountryCode', 'email', 'bankName', 'bankAccountNumber',
-          'bankIfscCode', 'bankAccountHolderName', 'country', 'pincode',
+          'bankIfscCode', 'bankAccountHolderName', 'branchName', 'currency', 'iban', 'swiftCode', 'routingNumber', 'country', 'pincode',
           'upiId', 'bio', 'hourlyRate', 'instagram', 'linkedin'
         ];
         
@@ -792,16 +942,12 @@ export default function DetailsForm() {
     setSubmissionStatus("success");
     setVerificationStatus("PENDING");
     setVerificationNotes("");
+    setKycStatus("SCHEDULED");
     setLastSubmittedFormData(JSON.parse(JSON.stringify(formData)));
     setShowSuccessCard(true);
     await new Promise((resolve) => setTimeout(resolve, 1500));
     setShowSuccessCard(false);
-
-    if (kycStatus === "NOT_SCHEDULED") {
-      setView("kyc-schedule");
-    } else {
-      setView("summary");
-    }
+    setView("summary");
   };
 
 
@@ -903,6 +1049,7 @@ export default function DetailsForm() {
     }
     setVerificationStatus("NEEDS_REVISION");
     setVerificationNotes(notes);
+    setCurrentStep(1);
     setView("form");
     setShowRevisionForm(false);
     setRevisionText("");
@@ -955,6 +1102,9 @@ export default function DetailsForm() {
     setVerificationStatus("DRAFT");
     setVerificationNotes("");
     setSubmissionStatus("pending");
+    setSelectedKycDate("");
+    setSelectedKycSlot("");
+    setCurrentStep(1);
     setView("form");
     setKycStatus("NOT_SCHEDULED");
     setKycDate("");
@@ -965,8 +1115,10 @@ export default function DetailsForm() {
       banner: null,
       fullName: "",
       gender: "Select Gender",
+      dob: "",
       age: "",
       city: "",
+      state: "",
       mobile: "",
       phoneCountryCode: "+91",
       email: "",
@@ -974,6 +1126,11 @@ export default function DetailsForm() {
       bankAccountNumber: "",
       bankIfscCode: "",
       bankAccountHolderName: "",
+      branchName: "",
+      currency: "",
+      iban: "",
+      swiftCode: "",
+      routingNumber: "",
       country: "",
       pincode: "",
       upiId: "",
@@ -1089,7 +1246,7 @@ export default function DetailsForm() {
     <section
       id="join"
       ref={sectionRef}
-      className={`pt-16 md:pt-24 pb-20 md:pb-40 bg-bg-base min-h-screen relative ${outfit.className}`}
+      className={`pt-16 md:pt-16 pb-20 md:pb-16 bg-bg-base min-h-screen relative ${outfit.className}`}
     >
       <div className="max-w-5xl mx-auto px-4 md:px-8 relative z-10 w-full">
         <AnimatePresence mode="wait">
@@ -1106,911 +1263,143 @@ export default function DetailsForm() {
               <div className="absolute -top-60 -right-60 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
               <div className="absolute -bottom-60 -left-60 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[120px] pointer-events-none" />
 
-              <div className="text-center mb-16 mt-4 relative z-10">
+              <div className="text-center mb-10 relative z-10">
                 <h2
-                  className={`${rochester.className} text-5xl md:text-7xl text-text-main tracking-wide py-8 leading-[1.4]`}
+                  className={`${rochester.className} text-5xl md:text-7xl text-text-main tracking-wide leading-[1.4]`}
                 >
-                  Your Details{" "}
+                  Become a{" "}
                   <span className="inline-block text-transparent bg-clip-text bg-linear-to-r from-primary-dark to-accent px-4">
-                    Form
+                    Partner
                   </span>
                 </h2>
-                <div className="w-24 h-1 bg-linear-to-r from-transparent via-primary to-transparent mx-auto mt-6 opacity-30" />
+                {/* <div className="w-24 h-1 bg-linear-to-r from-transparent via-primary to-transparent mx-auto mt-4 opacity-30" /> */}
               </div>
 
-              {/* Revision Required Alert Banner */}
-              {verificationStatus === "NEEDS_REVISION" && (
-                <motion.div 
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mb-14 p-6 md:p-8 bg-red-500/10 border border-red-500/30 rounded-3xl flex flex-col md:flex-row items-start gap-4 relative overflow-hidden shadow-lg z-10"
-                >
-                  <div className="absolute top-0 left-0 w-1.5 h-full bg-red-500" />
-                  <AlertCircle className="w-7 h-7 text-red-500 shrink-0 mt-0.5" />
-                  <div className="space-y-1.5 flex-1">
-                    <h4 className="text-red-500 text-[11px] font-black uppercase tracking-widest leading-none">
-                      Revision Required from Admin
-                    </h4>
-                    <p className="text-text-main text-sm font-semibold leading-relaxed">
-                      {verificationNotes || "Please review and correct the marked fields below before resubmitting."}
-                    </p>
-                  </div>
-                </motion.div>
-              )}
+              {/* Progress and Step Indicators */}
+              <div className="mb-12 space-y-6 relative z-10">
+                <ProgressBar currentStep={currentStep} totalSteps={5} />
+                <StepIndicator
+                  currentStep={currentStep}
+                  totalSteps={5}
+                  stepNames={[
+                    "Basic Details",
+                    "Media",
+                    "Bank Details",
+                    "KYC",
+                    "Review"
+                  ]}
+                />
+              </div>
 
-              <form
-                className="space-y-12 relative z-10"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSubmit();
-                }}
-              >
-                {/* Banner & Photo Upload Section */}
-                <div className="space-y-6 mb-10" ref={basicInfoRef}>
-                  <div className="relative w-full h-44 sm:h-56 md:h-64 rounded-3xl overflow-hidden border-2 border-dashed border-primary/30 bg-bg-secondary/40 backdrop-blur-xl hover:border-primary/60 transition-all duration-500 group/banner">
-                    {formData.banner ? (
-                      <div className="w-full h-full relative">
-                        <img
-                          src={formData.banner}
-                          alt="Profile Banner"
-                          className="w-full h-full object-cover transition-transform duration-1000 group-hover/banner:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-black/20 group-hover/banner:bg-black/35 transition-colors" />
-                        <button
-                          type="button"
-                          onClick={() => setFormData({ ...formData, banner: null })}
-                          className="absolute cursor-pointer top-4 right-4 w-10 h-10 bg-accent rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white/20 z-20 hover:scale-110 transition-all duration-300"
-                          title="Remove Banner"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-                      </div>
-                    ) : (
-                      <label className="w-full h-full flex flex-col items-center justify-center gap-3 cursor-pointer group/add transition-all duration-500 hover:bg-primary/5">
-                        <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center transition-all duration-700 group-hover/add:scale-110">
-                          <Camera className="w-6 h-6 text-primary" />
-                        </div>
-                        <span className="text-[10px] font-black uppercase tracking-[0.25em] text-text-muted group-hover/add:text-primary">
-                          Upload Profile Banner
-                        </span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.addEventListener("load", () => {
-                                setTempImageSrc(reader.result as string);
-                                setCropType("banner");
-                                setCropModalOpen(true);
-                              });
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                        />
-                      </label>
-                    )}
-                  </div>
-
-                  {/* Profile Photo Overlapping */}
-                  <div className="flex justify-center -mt-20 md:-mt-24 relative z-20">
-                    <div className={`relative w-32 h-32 md:w-40 md:h-40 rounded-full border-[4px] border-bg-base border-dashed flex items-center justify-center bg-bg-base shrink-0 group transition-all duration-500 ${showErrors && !formData.photo ? "border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.2)] animate-pulse" : "border-primary/50 hover:border-primary"}`}>
-                      {!formData.photo && (
-                        <input
-                          type="file"
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.addEventListener("load", () => {
-                                setTempImageSrc(reader.result as string);
-                                setCropType("photo");
-                                setCropModalOpen(true);
-                              });
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                        />
-                      )}
-
-                      <div className="w-[90%] h-[90%] rounded-full bg-linear-to-b from-primary/10 to-accent/5 flex items-center justify-center overflow-hidden relative hover:from-primary/20 hover:to-accent/15 transition-all shadow-[inset_0_0_30px_rgba(var(--primary-rgb),0.2)] group-hover:scale-105 duration-500">
-                        {formData.photo ? (
-                          <img
-                            src={formData.photo}
-                            alt="Profile"
-                            className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700"
-                          />
-                        ) : (
-                          <Camera className="w-8 h-8 text-primary/80 group-hover:text-primary group-hover:scale-110 transition-all duration-500" />
-                        )}
-                      </div>
-
-                      {/* Plus Badge */}
-                      {!formData.photo && (
-                        <div className="absolute -bottom-1 -right-1 w-9 h-9 bg-linear-to-r from-primary-dark to-accent rounded-full flex items-center justify-center text-white shadow-[0_0_20px_rgba(var(--primary-rgb),0.5)] border-4 border-bg-base z-10 transform group-hover:scale-110 transition-transform duration-500 pointer-events-none">
-                          <Plus className="w-3.5 h-3.5" />
-                        </div>
-                      )}
-
-                      {/* Remove Image Badge */}
-                      {formData.photo && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setFormData({ ...formData, photo: null })
-                          }
-                          className="absolute cursor-pointer top-0 right-0 w-9 h-9 bg-accent rounded-full flex items-center justify-center text-white shadow-[0_0_20px_rgba(var(--primary-rgb),0.5)] border-4 border-bg-base z-20 hover:scale-110 transition-all duration-300"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Basic Info Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                  <InputWrapper className="col-span-1 md:col-span-2">
-                    <input
-                      type="text"
-                      placeholder="Full Name"
-                      className={getInputClass(showErrors && !formData.fullName)}
-                      value={formData.fullName}
-                      onChange={(e) =>
-                        setFormData({ ...formData, fullName: e.target.value })
-                      }
-                    />
-                  </InputWrapper>
- 
-                  <InputWrapper>
-                    <div className="relative">
-                      <div className={`flex rounded-2xl overflow-hidden transition-all duration-300 border focus-within:ring-4 focus-within:ring-primary/20 ${showErrors && formData.gender === "Select Gender" ? "bg-red-500/5 border-red-500 focus-within:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]" : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:border-primary/60 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] focus-within:bg-bg-base dark:focus-within:bg-bg-base focus-within:border-primary"}`}>
-                        <button
-                          type="button"
-                          onClick={() => setIsGenderOpen(!isGenderOpen)}
-                          className="cursor-pointer flex-1 p-4 md:p-5 text-left text-text-main focus:outline-none min-h-[60px] flex items-center font-medium tracking-wide"
-                        >
-                          {formData.gender === "Select Gender" ? (
-                            <span className="text-text-muted">Gender</span>
-                          ) : (
-                            formData.gender
-                          )}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setIsGenderOpen(!isGenderOpen)}
-                          className="cursor-pointer w-16 bg-linear-to-br from-primary-dark to-accent flex items-center justify-center text-white shrink-0 hover:from-primary hover:to-accent/80 transition-colors shadow-inner"
-                        >
-                          <ChevronDown
-                            className={`w-5 h-5 transition-transform duration-500 ${isGenderOpen ? "rotate-180" : ""}`}
-                          />
-                        </button>
-                      </div>
-                      <AnimatePresence>
-                        {isGenderOpen && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 10, scale: 0.98 }}
-                            className="absolute  z-50 top-full mt-3 left-0 w-full bg-bg-base border border-border-main rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden backdrop-blur-xl"
-                          >
-                            {genders.map((g) => (
-                              <button
-                                key={g}
-                                type="button"
-                                onClick={() => {
-                                  setFormData({ ...formData, gender: g });
-                                  setIsGenderOpen(false);
-                                }}
-                                className="w-full cursor-pointer p-4 md:p-5 text-left text-text-main hover:bg-primary/20 hover:text-text-main transition-colors font-medium border-b border-border-main last:border-0 hover:pl-6 duration-300"
-                              >
-                                {g}
-                              </button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </InputWrapper>
- 
-                  <InputWrapper>
-                    <div className={`flex rounded-2xl overflow-hidden transition-all duration-300 border min-h-[60px] focus-within:ring-4 focus-within:ring-primary/20 ${showErrors && (!formData.age || parseInt(formData.age) < 18) ? "bg-red-500/5 border-red-500 focus-within:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]" : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:border-primary/60 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] focus-within:bg-bg-base dark:focus-within:bg-bg-base focus-within:border-primary"}`}>
-                      <input
-                        type="number"
-                        placeholder="Age"
-                        className="flex-1 bg-transparent p-4 md:p-5 text-text-main placeholder:text-text-muted focus:outline-none font-medium tracking-wide"
-                        value={formData.age}
-                        onChange={(e) =>
-                          setFormData({ ...formData, age: e.target.value })
-                        }
-                      />
-                      <div className="flex flex-col w-12 border-l border-border-main">
-                        <button
-                          type="button"
-                          onClick={() => handleAgeChange(true)}
-                          className="flex-1 cursor-pointer bg-primary/10 hover:bg-primary/30 text-primary flex items-center justify-center transition-colors border-b border-border-main"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAgeChange(false)}
-                          className="flex-1 cursor-pointer bg-primary/10 hover:bg-primary/30 text-primary flex items-center justify-center transition-colors"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </InputWrapper>
- 
-                  <InputWrapper>
-                    <input
-                      type="email"
-                      placeholder="Email Address"
-                      className={getInputClass(showErrors && !formData.email)}
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                    />
-                  </InputWrapper>
-
-                  {/* Phone Country Code & Number */}
-                  <div className="flex gap-4 col-span-1">
-                    <div className="w-[105px] shrink-0 relative" ref={countryDropdownRef}>
-                      <button
-                        type="button"
-                        onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                        className={`${getInputClass(showErrors && !formData.phoneCountryCode)} flex items-center justify-between gap-1 whitespace-nowrap cursor-pointer pl-3 pr-2`}
-                      >
-                        <span className="flex items-center gap-1.5">
-                          <img
-                            src={`https://flagcdn.com/w40/${(countries.find(c => c.code === formData.phoneCountryCode)?.iso || "in")}.png`}
-                            alt="Flag"
-                            className="w-5 h-3.5 object-cover rounded-[2px] shrink-0"
-                          />
-                          <span>{formData.phoneCountryCode}</span>
-                        </span>
-                        <ChevronDown className={`w-3.5 h-3.5 text-text-muted transition-transform duration-300 shrink-0 ${isCountryDropdownOpen ? "rotate-180" : ""}`} />
-                      </button>
-
-                      <AnimatePresence>
-                        {isCountryDropdownOpen && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 5, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                            className="absolute z-50 left-0 top-full mt-2 w-56 max-h-60 overflow-y-auto bg-bg-base border border-border-main rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.3)] backdrop-blur-xl custom-scrollbar flex flex-col"
-                          >
-                            {countries.map((c) => (
-                              <button
-                                key={c.code}
-                                type="button"
-                                onClick={() => {
-                                  setFormData({ ...formData, phoneCountryCode: c.code });
-                                  setIsCountryDropdownOpen(false);
-                                }}
-                                className={`w-full cursor-pointer flex items-center gap-3 px-4 py-2.5 text-left text-text-main hover:bg-primary/15 transition-colors text-sm font-medium ${c.code === formData.phoneCountryCode ? "bg-primary/10 text-primary" : ""}`}
-                              >
-                                <img
-                                  src={`https://flagcdn.com/w40/${c.iso}.png`}
-                                  alt={c.name}
-                                  className="w-5 h-3.5 object-cover rounded-[2px] shrink-0"
-                                />
-                                <span className="text-xs font-semibold">{c.code} ({c.name})</span>
-                              </button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    <div className="flex-1">
-                      <InputWrapper>
-                        <input
-                          type="tel"
-                          placeholder="Mobile Number"
-                          className={getInputClass(showErrors && !formData.mobile)}
-                          value={formData.mobile}
-                          onChange={(e) =>
-                            setFormData({ ...formData, mobile: e.target.value })
-                          }
-                        />
-                      </InputWrapper>
-                    </div>
-                  </div>
-
-                  <InputWrapper>
-                    <div className="relative group">
-                      <div className={`absolute left-5 top-1/2 -translate-y-1/2 font-bold text-lg transition-colors ${showErrors && !formData.hourlyRate ? "text-red-500" : "text-text-muted group-focus-within:text-primary"}`}>
-                        ₹
-                      </div>
-                      <input
-                        type="number"
-                        placeholder="Hourly Rate"
-                        className={`${getInputClass(showErrors && !formData.hourlyRate)} pl-14 md:pl-14`}
-                        value={formData.hourlyRate}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            hourlyRate: e.target.value,
-                          })
-                        }
+              {/* Step Content */}
+              <div className="mt-8 relative z-10 min-h-[300px]">
+                {currentStep === 1 && (
+                  <div className="space-y-12">
+                    <div className="space-y-4">
+                      <h3 className="text-xl font-semibold text-text-main">Personal Information</h3>
+                      <BasicInfoStep
+                        formData={formData}
+                        onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
+                        showErrors={showErrors}
+                        errors={errors}
                       />
                     </div>
-                  </InputWrapper>
-                </div>
-
-                {/* Location & Payment Details */}
-                <div>
-                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
-                  <SectionTitle>Location & Payment Details</SectionTitle>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                    <InputWrapper>
-                      <button
-                        type="button"
-                        onClick={() => setPartnerCountryOpen(!partnerCountryOpen)}
-                        className={`${getInputClass(showErrors && (!formData.country || formData.country === "Select Country" || formData.country === ""))} flex items-center justify-between cursor-pointer`}
-                      >
-                        <span className={!formData.country || formData.country === "Select Country" || formData.country === "" ? "text-text-muted" : "text-text-main"}>
-                          {formData.country || "Select Country"}
-                        </span>
-                        <ChevronDown className={`w-5 h-5 text-text-muted transition-transform duration-300 ${partnerCountryOpen ? "rotate-180" : ""}`} />
-                      </button>
-
-                      <AnimatePresence>
-                        {partnerCountryOpen && (
-                          <>
-                            <div 
-                              className="fixed inset-0 z-40 cursor-default" 
-                              onClick={() => setPartnerCountryOpen(false)}
-                            />
-                            <motion.div
-                              initial={{ opacity: 0, y: 5, scale: 0.95 }}
-                              animate={{ opacity: 1, y: 0, scale: 1 }}
-                              exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                              className="absolute z-50 left-0 right-0 mt-2 max-h-60 overflow-y-auto bg-bg-base border border-border-main rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.3)] backdrop-blur-xl custom-scrollbar flex flex-col"
-                            >
-                              {Object.keys(countryCitiesMap).map((cName) => (
-                                <button
-                                  key={cName}
-                                  type="button"
-                                  onClick={() => {
-                                    setFormData({ ...formData, country: cName, city: "Select City" });
-                                    setPartnerCountryOpen(false);
-                                  }}
-                                  className={`w-full cursor-pointer p-4 text-left text-text-main hover:bg-primary/20 hover:text-text-main transition-colors font-medium border-b border-border-main last:border-0 hover:pl-6 duration-300 ${
-                                    formData.country === cName ? "bg-primary/10 text-primary" : ""
-                                  }`}
-                                >
-                                  {cName}
-                                </button>
-                              ))}
-                            </motion.div>
-                          </>
-                        )}
-                      </AnimatePresence>
-                    </InputWrapper>
-
-                    <InputWrapper>
-                      <button
-                        type="button"
-                        disabled={!formData.country || formData.country === "Select Country" || formData.country === ""}
-                        onClick={() => setPartnerCityOpen(!partnerCityOpen)}
-                        className={`${getInputClass(showErrors && (!formData.city || formData.city === "Select City" || formData.city === ""))} flex items-center justify-between ${
-                          (!formData.country || formData.country === "Select Country" || formData.country === "") ? "opacity-55 cursor-not-allowed" : "cursor-pointer"
-                        }`}
-                      >
-                        <span className={!formData.city || formData.city === "Select City" || formData.city === "" ? "text-text-muted" : "text-text-main"}>
-                          {formData.city || "Select City"}
-                        </span>
-                        <ChevronDown className={`w-5 h-5 text-text-muted transition-transform duration-300 ${partnerCityOpen ? "rotate-180" : ""}`} />
-                      </button>
-
-                      <AnimatePresence>
-                        {partnerCityOpen && formData.country && formData.country !== "Select Country" && formData.country !== "" && (
-                          <>
-                            <div 
-                              className="fixed inset-0 z-40 cursor-default" 
-                              onClick={() => setPartnerCityOpen(false)}
-                            />
-                            <motion.div
-                              initial={{ opacity: 0, y: 5, scale: 0.95 }}
-                              animate={{ opacity: 1, y: 0, scale: 1 }}
-                              exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                              className="absolute z-50 left-0 right-0 mt-2 max-h-60 overflow-y-auto bg-bg-base border border-border-main rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.3)] backdrop-blur-xl custom-scrollbar flex flex-col"
-                            >
-                              {(countryCitiesMap[formData.country] || []).map((cName) => (
-                                <button
-                                  key={cName}
-                                  type="button"
-                                  onClick={() => {
-                                    setFormData({ ...formData, city: cName });
-                                    setPartnerCityOpen(false);
-                                  }}
-                                  className={`w-full cursor-pointer p-4 text-left text-text-main hover:bg-primary/20 hover:text-text-main transition-colors font-medium border-b border-border-main last:border-0 hover:pl-6 duration-300 ${
-                                    formData.city === cName ? "bg-primary/10 text-primary" : ""
-                                  }`}
-                                >
-                                  {cName}
-                                </button>
-                              ))}
-                            </motion.div>
-                          </>
-                        )}
-                      </AnimatePresence>
-                    </InputWrapper>
-
-                    <InputWrapper>
-                      <input
-                        type="text"
-                        placeholder="Pincode"
-                        className={getInputClass(showErrors && !formData.pincode)}
-                        value={formData.pincode}
-                        onChange={(e) =>
-                          setFormData({ ...formData, pincode: e.target.value })
-                        }
+                    <div className="border-t border-border-main/50 pt-10 space-y-4">
+                      <h3 className="text-xl font-semibold text-text-main">Location Details</h3>
+                      <LocationStep
+                        formData={formData}
+                        onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
+                        showErrors={showErrors}
+                        errors={errors}
                       />
-                    </InputWrapper>
-
-                    <InputWrapper>
-                      <input
-                        type="text"
-                        placeholder="UPI ID"
-                        className={getInputClass(showErrors && !formData.upiId)}
-                        value={formData.upiId}
-                        onChange={(e) =>
-                          setFormData({ ...formData, upiId: e.target.value })
-                        }
+                    </div>
+                    <div className="border-t border-border-main/50 pt-10 space-y-4">
+                      <h3 className="text-xl font-semibold text-text-main">Professional Profile</h3>
+                      <ProfileStep
+                        formData={formData}
+                        onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
+                        showErrors={showErrors}
+                        errors={errors}
                       />
-                    </InputWrapper>
+                    </div>
+                    <div className="border-t border-border-main/50 pt-10 space-y-4">
+                      <h3 className="text-xl font-semibold text-text-main">Pricing Details</h3>
+                      <PricingStep
+                        formData={formData}
+                        onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
+                        showErrors={showErrors}
+                        errors={errors}
+                      />
+                    </div>
                   </div>
-                </div>
-
-                {/* Bank Account Details */}
-                <div>
-                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
-                  <SectionTitle>Bank Account Details</SectionTitle>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                    <InputWrapper className="col-span-1 md:col-span-2">
-                      <input
-                        type="text"
-                        placeholder="Account Holder Name"
-                        className={getInputClass(showErrors && !formData.bankAccountHolderName)}
-                        value={formData.bankAccountHolderName}
-                        onChange={(e) =>
-                          setFormData({ ...formData, bankAccountHolderName: e.target.value })
-                        }
-                      />
-                    </InputWrapper>
-
-                    <InputWrapper>
-                      <input
-                        type="text"
-                        placeholder="Bank Name"
-                        className={getInputClass(showErrors && !formData.bankName)}
-                        value={formData.bankName}
-                        onChange={(e) =>
-                          setFormData({ ...formData, bankName: e.target.value })
-                        }
-                      />
-                    </InputWrapper>
-
-                    <InputWrapper>
-                      <input
-                        type="text"
-                        placeholder="Account Number"
-                        className={getInputClass(showErrors && !formData.bankAccountNumber)}
-                        value={formData.bankAccountNumber}
-                        onChange={(e) =>
-                          setFormData({ ...formData, bankAccountNumber: e.target.value })
-                        }
-                      />
-                    </InputWrapper>
-
-                    <InputWrapper className="col-span-1 md:col-span-2">
-                      <input
-                        type="text"
-                        placeholder="IFSC Code"
-                        className={getInputClass(showErrors && !formData.bankIfscCode)}
-                        value={formData.bankIfscCode}
-                        onChange={(e) =>
-                          setFormData({ ...formData, bankIfscCode: e.target.value })
-                        }
-                      />
-                    </InputWrapper>
-                  </div>
-                </div>
-
-                {/* Languages Spoken */}
-                <div>
-                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
-                  <SectionTitle>Languages</SectionTitle>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-5">
-                    {["English", "Hindi", "Bengali", "Tamil", "Telugu", "Marathi", "Gujarati", "Kannada", "Malayalam", "Punjabi", "Urdu", "Odia", "Spanish", "French", "German", "Arabic"].map((item, idx) => {
-                      const isCore = idx < 4;
-                      if (!isCore && !showAllLanguages) return null;
-                      return (
-                        <CheckboxItem
-                          key={item}
-                          label={item}
-                          checked={formData.languages.includes(item)}
-                          onChange={() => toggleArrayItem("languages", item)}
-                        />
-                      );
-                    })}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowAllLanguages(!showAllLanguages)}
-                    className="w-full cursor-pointer bg-bg-secondary border border-border-main border-dashed rounded-2xl p-5 text-text-muted hover:text-primary hover:border-primary hover:bg-primary/10 transition-all duration-300 flex items-center justify-center gap-2 font-medium group"
-                  >
-                    {showAllLanguages ? (
-                      <>
-                        <ChevronUp className="w-5 h-5 text-primary group-hover:scale-125 transition-transform duration-300" />{" "}
-                        See Less Languages
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="w-5 h-5 text-primary group-hover:scale-125 transition-transform duration-300" />{" "}
-                        See More Languages
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {/* Short Bio */}
-                <div ref={bioRef}>
-                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
-                  <SectionTitle>Short Bio</SectionTitle>
-                  <div className="space-y-6">
-                    <InputWrapper>
-                      <textarea
-                        placeholder="I'm outgoing, love events and respectful company..."
-                        rows={4}
-                        className={getInputClass(showErrors && !formData.bio)}
-                        value={formData.bio}
-                        onChange={(e) =>
-                          setFormData({ ...formData, bio: e.target.value })
-                        }
-                      />
-                    </InputWrapper>
-                  </div>
-                </div>
-                {/* Tags & Interests */}
-                <div>
-                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
-                  <SectionTitle>Tags & Interests (Optional)</SectionTitle>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InputWrapper>
-                      <label className="text-xs font-bold text-text-muted uppercase tracking-widest block mb-2 ml-1">
-                        Tags
-                      </label>
-                      <TagInput
-                        tags={formData.tagsInput}
-                        onChange={(tags) => setFormData({ ...formData, tagsInput: tags })}
-                        placeholder="e.g. Friendly, Traveler, Foodie (Enter or comma to add)"
-                      />
-                    </InputWrapper>
-
-                    <InputWrapper>
-                      <label className="text-xs font-bold text-text-muted uppercase tracking-widest block mb-2 ml-1">
-                        Interests
-                      </label>
-                      <TagInput
-                        tags={formData.interestsInput}
-                        onChange={(interests) => setFormData({ ...formData, interestsInput: interests })}
-                        placeholder="e.g. Cooking, Photography, Music (Enter or comma to add)"
-                      />
-                    </InputWrapper>
-                  </div>
-                </div>
-
-                {/* Gallery Upload */}
-                <div ref={galleryRef}>
-                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
-                  <SectionTitle>
-                    Partner Gallery{" "}
-                    <span className="text-text-muted text-sm font-normal ml-2 tracking-normal italic">
-                      (Min 3 photos)
-                    </span>
-                  </SectionTitle>
-                  
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-6">
-                    {/* Render existing gallery images */}
-                    {formData.gallery.filter(Boolean).map((photo, index) => (
-                      <motion.div
-                        key={index}
-                        className="relative aspect-square rounded-[32px] overflow-hidden border-2 border-white/5 bg-bg-secondary/40 backdrop-blur-xl hover:border-primary/40 hover:shadow-primary/20 transition-all duration-700 group shadow-2xl"
-                      >
-                        <div className="w-full h-full group/photo relative">
-                          <img
-                            src={photo}
-                            alt={`Gallery ${index + 1}`}
-                            className="w-full h-full object-cover group-hover/photo:scale-110 transition-transform duration-1000"
-                          />
-                          <div className="absolute inset-0 bg-black/20 group-hover/photo:bg-black/40 transition-colors duration-500" />
-                          <button
-                            type="button"
-                            onClick={() => removeGalleryPhoto(index)}
-                            className="absolute cursor-pointer top-3 right-3 w-10 h-10 bg-accent/90 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shadow-lg border-2 border-white/20 z-10 transition-all duration-300 hover:bg-accent hover:scale-110 hover:-rotate-12"
-                            title="Remove photo"
-                          >
-                            <X className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </motion.div>
-                    ))}
-
-                    {/* Add Photo Slot (always available for unlimited uploads) */}
-                    <motion.div
-                      className={`relative aspect-square rounded-[32px] overflow-hidden border-2 border-dashed transition-all duration-700 group shadow-2xl ${
-                        showErrors && formData.gallery.length < 3 
-                          ? "border-red-500/50 bg-red-500/5 animate-pulse" 
-                          : "border-primary/30 bg-bg-secondary/20 hover:border-primary hover:bg-primary/5"
-                      }`}
-                    >
-                      <label className="w-full h-full flex flex-col items-center justify-center gap-3 cursor-pointer group/add transition-all duration-500">
-                        <div className="w-14 h-14 rounded-[20px] bg-primary/10 border border-primary/20 flex items-center justify-center transition-all duration-700 group-hover/add:rotate-90 group-hover/add:scale-110">
-                          <Plus className="w-6 h-6 text-primary group-hover/add:text-accent" />
-                        </div>
-                        <div className="flex flex-col items-center gap-1">
-                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted group-hover/add:text-primary">
-                            Add Photos
-                          </span>
-                          {formData.gallery.length < 3 && (
-                            <span className="text-[8px] font-bold text-red-500 uppercase tracking-wider">
-                              {3 - formData.gallery.length} more required
-                            </span>
-                          )}
-                        </div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          className="hidden"
-                          onChange={handleGalleryUpload}
-                        />
-                        {/* Hover Effect Light */}
-                        <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover/add:opacity-100 transition-opacity duration-700" />
-                      </label>
-                    </motion.div>
-                  </div>
-                </div>
-
-                {/* Video Portfolio */}
-                <div>
-                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
-                  <SectionTitle>
-                    Video Introductions
-                    <span className="text-text-muted text-sm font-normal ml-2 tracking-normal italic">
-                      (Optional - Upload up to 3 premium video portfolios or intros)
-                    </span>
-                  </SectionTitle>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {formData.videos.map((video, index) => {
-                      const videoTypes = [
-                        { title: "Introduction Reel", desc: "Personal greeting & introduction" },
-                        { title: "Portfolio Vibe", desc: "Showcase hobbies, style & vibe" },
-                        { title: "Q&A Session", desc: "Answers to common questions" }
-                      ];
-                      const currentType = videoTypes[index] || { title: `Video ${index + 1}`, desc: "Optional video clip" };
-
-                      return (
-                        <motion.div
-                          key={index}
-                          className="relative aspect-video rounded-[32px] overflow-hidden border-2 transition-all duration-700 group shadow-2xl border-white/5 bg-bg-secondary/40 backdrop-blur-xl hover:border-primary/40"
-                        >
-                          {video ? (
-                            <div className="w-full h-full group/video relative bg-black">
-                              <video
-                                src={video}
-                                className="w-full h-full object-cover"
-                                preload="metadata"
-                                muted
-                                playsInline
-                                onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.pause();
-                                  e.currentTarget.currentTime = 0;
-                                }}
-                              />
-                              <div className="absolute inset-x-0 bottom-0 bg-black/60 backdrop-blur-xs p-4 flex items-center justify-between opacity-100 group-hover/video:opacity-0 transition-opacity duration-300 pointer-events-none">
-                                <span className="text-white text-xs font-bold">{currentType.title}</span>
-                                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white">
-                                  <Video className="w-4 h-4" />
-                                </div>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => removeVideo(index)}
-                                className="absolute cursor-pointer top-3 right-3 w-10 h-10 bg-accent/90 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shadow-lg border-2 border-white/20 z-10 transition-all duration-300 hover:bg-accent hover:scale-110 hover:-rotate-12"
-                                title="Remove video"
-                              >
-                                <X className="w-5 h-5" />
-                              </button>
-                            </div>
-                          ) : (
-                            <label className="w-full h-full flex flex-col items-center justify-center gap-3 cursor-pointer group/add transition-all duration-500 hover:bg-primary/5 min-h-[160px] p-4 text-center">
-                              <div className="w-14 h-14 rounded-[20px] flex items-center justify-center transition-all duration-700 group-hover/add:rotate-90 group-hover/add:scale-110 bg-primary/10 border border-primary/20">
-                                <Video className="w-6 h-6 text-primary group-hover/add:text-accent" />
-                              </div>
-                              <div className="flex flex-col items-center gap-1">
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-main group-hover/add:text-primary">
-                                  {currentType.title}
-                                </span>
-                                <span className="text-[9px] text-text-muted/70 block mt-0.5 max-w-[200px] mx-auto font-medium">
-                                  {currentType.desc}
-                                </span>
-                                <span className="text-[8px] text-primary/80 font-bold uppercase tracking-wider mt-1">Max size: 15MB</span>
-                              </div>
-                              <input
-                                type="file"
-                                accept="video/*"
-                                className="hidden"
-                                onChange={(e) => handleVideoUpload(index, e)}
-                              />
-                              {/* Hover Effect Light */}
-                              <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover/add:opacity-100 transition-opacity duration-700" />
-                            </label>
-                          )}
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* terms and condition agreement  */}
-                <div ref={termsRef}>
-                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
-                  <div className={`bg-white/2 border p-6 rounded-2xl flex items-start md:items-center gap-4 transition-all duration-500 ${showErrors && !formData.termsAgreed ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] bg-red-500/5" : "border-border-main"}`}>
-                    <label className="flex items-center gap-4 w-fit cursor-pointer group">
-                      <div
-                        className={`w-6 h-6 shrink-0 rounded flex items-center justify-center border-2 transition-all duration-300 ${formData.termsAgreed ? "bg-primary border-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" : showErrors && !formData.termsAgreed ? "border-red-500" : "border-border-main group-hover:border-primary"}`}
-                      >
-                        {formData.termsAgreed && (
-                          <Check className="w-4 h-4 text-white stroke-3" />
-                        )}
-                      </div>
-                      <span className={`text-sm md:text-base font-medium select-none transition-colors ${showErrors && !formData.termsAgreed ? "text-red-500" : "text-text-main group-hover:text-text-main"}`}>
-                        I confirm that I agree to the{" "}
-                        <span className="text-primary hover:text-primary/80 underline underline-offset-4">
-                          Terms
-                        </span>{" "}
-                        and{" "}
-                        <span className="text-primary hover:text-primary/80 underline underline-offset-4">
-                          Booking Guidelines
-                        </span>
-                      </span>
-                      <input
-                        type="checkbox"
-                        className="hidden"
-                        checked={formData.termsAgreed}
-                        onChange={() =>
-                          setFormData({
-                            ...formData,
-                            termsAgreed: !formData.termsAgreed,
-                          })
-                        }
-                      />
-                    </label>
-                  </div>
-                </div>
-
-                {/* Government ID Proof */}
-                <div ref={docsRef}>
-                  <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent mb-8" />
-                  <SectionTitle>Verification Documents</SectionTitle>
-                  <p className="text-text-muted text-sm mb-5 max-w-2xl">
-                    Please upload clear pictures of your Aadhaar Card (Front,
-                    Back) and PAN Card (Front, Back) for verification purposes.
-                  </p>
-
-                  <div className="bg-bg-secondary border border-border-main p-4 md:p-10 rounded-3xl grid grid-cols-2 md:flex md:flex-wrap gap-4 md:gap-6 justify-center md:justify-start items-center relative overflow-hidden shadow-sm">
-                    {/* Subtle background gradient inside the tray */}
-                    <div className="absolute inset-0 bg-linear-to-r from-primary/5 to-transparent pointer-events-none" />
-
-                    {[0, 1, 2, 3].map((index) => {
-                      const isRequired = true;
-                      const hasError = showErrors && isRequired && !formData.idProofs[index];
-
-                      const getLabel = (idx: number) => {
-                        switch (idx) {
-                          case 0:
-                            return "Aadhaar Front";
-                          case 1:
-                            return "Aadhaar Back";
-                          case 2:
-                            return "PAN Front";
-                          default:
-                            return "PAN Back";
-                        }
-                      };
-
-                      return (
-                        <motion.div
-                          key={index}
-                          animate={hasError ? { 
-                            boxShadow: ["0 0 20px rgba(239,68,68,0.1)", "0 0 30px rgba(239,68,68,0.3)", "0 0 20px rgba(239,68,68,0.1)"] 
-                          } : {}}
-                          transition={{ duration: 3, repeat: Infinity }}
-                          className={`relative w-full h-24 sm:h-28 md:w-36 md:h-28 border-2 border-dashed transition-all duration-500 flex items-center justify-center cursor-pointer overflow-hidden rounded-2xl group shadow-sm ${
-                            hasError 
-                              ? "border-red-500 bg-red-500/5" 
-                              : "border-border-main bg-bg-card hover:border-primary hover:bg-bg-secondary hover:shadow-[0_0_25px_rgba(var(--primary-rgb),0.15)]"
-                          }`}
-                        >
-                          {formData.idProofs[index] ? (
-                            <div className="relative w-full h-full group/id">
-                              <img
-                                src={formData.idProofs[index]!}
-                                alt={getLabel(index)}
-                                className="w-full h-full object-cover group-hover/id:scale-105 transition-transform duration-500"
-                              />
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  const newProofs = [...formData.idProofs];
-                                  newProofs[index] = null;
-                                  setFormData({
-                                    ...formData,
-                                    idProofs: newProofs,
-                                  });
-                                }}
-                                className="absolute cursor-pointer top-2 right-2 w-8 h-8 bg-accent/90 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white/20 z-20 transition-all duration-300 hover:bg-accent hover:scale-110"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="flex flex-col items-center gap-2">
-                                <Plus className={`w-8 h-8 group-hover:scale-125 transition-all duration-300 ${hasError ? "text-red-500" : "text-text-muted group-hover:text-primary"}`} />
-                                <div className="flex flex-col items-center gap-1 text-center px-1">
-                                  <span className={`text-[8px] font-black uppercase tracking-[0.1em] ${hasError ? "text-red-500" : "text-text-muted group-hover:text-primary"}`}>
-                                    {getLabel(index)}
-                                  </span>
-                                  {isRequired && !formData.idProofs[index] && (
-                                    <motion.div 
-                                      animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
-                                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                                      className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)] mx-auto" 
-                                    />
-                                  )}
-                                </div>
-                              </div>
-                              <input
-                                type="file"
-                                className="absolute inset-0 opacity-0 cursor-pointer"
-                                accept="image/*"
-                                onChange={(e) => handleIdUpload(index, e)}
-                              />
-                            </>
-                          )}
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Submit Button */}
-                <div className="pt-10 flex justify-center">
-                  <PremiumButton
-                    label="Submit Application"
-                    size="xl"
-                    variant="primary"
-                    icon={<ArrowRight className="w-6 h-6" />}
-                    className="w-full cursor-pointer"
+                )}
+                {currentStep === 2 && (
+                  <MediaStep
+                    formData={formData}
+                    onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
+                    showErrors={showErrors}
+                    onImageFileSelect={(file, type) => {
+                      const reader = new FileReader();
+                      reader.addEventListener("load", () => {
+                        setTempImageSrc(reader.result as string);
+                        setCropType(type);
+                        setCropModalOpen(true);
+                      });
+                      reader.readAsDataURL(file);
+                    }}
+                    onGalleryUpload={handleGalleryUpload}
+                    onRemoveGalleryPhoto={removeGalleryPhoto}
+                    onVideoUpload={handleVideoUpload}
+                    onRemoveVideo={removeVideo}
+                    errors={errors}
                   />
-                </div>
-              </form>
+                )}
+                {currentStep === 3 && (
+                  <BankStep
+                    formData={formData}
+                    onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
+                    showErrors={showErrors}
+                    errors={errors}
+                  />
+                )}
+                {currentStep === 4 && (
+                  <KycStep
+                    formData={formData}
+                    onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
+                    showErrors={showErrors}
+                    selectedKycDate={selectedKycDate}
+                    onKycDateChange={(date) => setSelectedKycDate(date)}
+                    selectedKycSlot={selectedKycSlot}
+                    onKycSlotChange={(slot) => setSelectedKycSlot(slot)}
+                    handleIdUpload={handleIdUpload}
+                    errors={errors}
+                  />
+                )}
+                {currentStep === 5 && (
+                  <ReviewStep
+                    formData={formData}
+                    selectedKycDate={selectedKycDate}
+                    selectedKycSlot={selectedKycSlot}
+                    showErrors={showErrors}
+                    onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
+                    errors={errors}
+                  />
+                )}
+              </div>
+
+              {/* Navigation Controls */}
+              <StepNavigation
+                currentStep={currentStep}
+                totalSteps={5}
+                onPrev={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
+                onNext={() => {
+                  if (validateStep(currentStep)) {
+                    setCurrentStep((prev) => Math.min(5, prev + 1));
+                  }
+                }}
+                onSubmit={handleSubmit}
+                isSubmitting={submissionStatus === "pending" && (view as string) === "processing"}
+              />
             </motion.div>
           )}
 
@@ -2738,7 +2127,7 @@ export default function DetailsForm() {
                 <div className="lg:col-span-2 space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <SummaryItem label="Gender" value={formData.gender} />
-                    <SummaryItem label="Age" value={formData.age} />
+                    <SummaryItem label="Age" value={formData.age ? `${formData.age} (${formData.dob || 'N/A'})` : "N/A"} />
                     <SummaryItem label="Location" value={formData.city} />
                     <SummaryItem
                       label="Hourly Rate"
@@ -2757,7 +2146,7 @@ export default function DetailsForm() {
                   </div>
 
                   <div className="space-y-4">
-                    <SectionTitle>Short Bio</SectionTitle>
+                    <SectionTitle>Bio</SectionTitle>
                     <div className="bg-bg-secondary border border-border-main p-8 rounded-3xl text-text-main leading-relaxed font-medium">
                       {formData.bio}
                     </div>
@@ -2807,7 +2196,7 @@ export default function DetailsForm() {
                             />
                             <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                               <span className="text-[10px] font-black text-white uppercase tracking-widest bg-primary/80 px-3 py-1 rounded-full backdrop-blur-md">
-                                {i === 0 ? "ID Front" : i === 1 ? "ID Back" : "Selfie"}
+                                {i === 0 ? "Adhaar Front" : i === 1 ? "Adhaar Back" : i === 2 ? "Pan Front" : "Pan Back"}
                               </span>
                             </div>
                           </motion.div>
@@ -2836,13 +2225,7 @@ export default function DetailsForm() {
                         <span className="text-text-muted font-medium">ID Back Uploaded</span>
                         <CheckCircle2 size={16} className="text-green-500" />
                       </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-text-muted font-medium">Selfie Verified</span>
-                        <CheckCircle2
-                          size={16}
-                          className={`${formData.idProofs[2] ? "text-green-500" : "text-text-muted"}`}
-                        />
-                      </div>
+                      
                     </div>
 
                     <div className="mt-10 p-4 bg-bg-card rounded-2xl border border-border-main">

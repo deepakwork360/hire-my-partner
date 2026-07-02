@@ -146,7 +146,7 @@ export default function Navbar() {
                   ? "bg-linear-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/25 border-none"
                   : isScrolled
                     ? "text-text-main font-bold hover:text-primary"
-                    : "text-white/90 hover:text-primary"
+                    : "text-primary hover:text-primary"
                 }`}
             >
               <span className="relative z-10">{item.label}</span>

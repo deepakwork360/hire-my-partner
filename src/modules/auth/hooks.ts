@@ -106,6 +106,14 @@ export const useVerifyOtp = () => {
   const handleVerify = async (data: VerifyOtpPayload) => {
     setIsLoading(true);
     try {
+      if (data.type === 'forget' || data.type === 'reset-password') {
+        // Skip calling verifyOtp API so the OTP is not consumed/deleted.
+        // Redirect directly to the reset-password page where both OTP and password will be submitted.
+        toast.info('Redirecting to reset password...');
+        router.push(`/reset-password?emailOrPhone=${encodeURIComponent(data.emailOrPhone)}&otp=${data.otp}`);
+        return;
+      }
+
       const response = await authApi.verifyOtp(data);
       if (data.type === 'register') {
         toast.success('Verification successful! Please log in.');
@@ -114,17 +122,10 @@ export const useVerifyOtp = () => {
       } else if (response && response.token) {
         setAuth(response);
         toast.success('Verification successful!');
-        if (data.type === 'login') {
-          router.push('/become-a-partner'); // Redirect to become-a-partner page on login verification
-        } else {
-          router.push('/become-a-partner'); // Redirect to become-a-partner page on registration verification
-        }
+        router.push('/become-a-partner');
       } else {
         toast.info('OTP Verified successfully.');
-        // some flows don't log you in directly, e.g. reset password
-        if (data.type === 'reset-password' || data.type === 'forget') {
-          router.push(`/reset-password?emailOrPhone=${encodeURIComponent(data.emailOrPhone)}&otp=${data.otp}`);
-        }
+        router.push(`/reset-password?emailOrPhone=${encodeURIComponent(data.emailOrPhone)}&otp=${data.otp}`);
       }
     } catch (error) {
       toast.error(getErrorMsg(error));
