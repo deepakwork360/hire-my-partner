@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Camera, Plus, X, Video as VideoIcon, Sparkles, Info } from "lucide-react";
+import { Camera, Plus, X, Video as VideoIcon, Sparkles, Info, Ban } from "lucide-react";
 
 interface MediaStepProps {
   formData: any;
@@ -286,7 +286,7 @@ export default function MediaStep({
       <div className="p-6 rounded-[28px] border border-primary/20 bg-primary/5 dark:bg-primary/5 backdrop-blur-xl relative overflow-hidden group">
         <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
         <h3 className="text-sm font-black uppercase tracking-wider text-primary mb-3 flex items-center gap-2">
-          <Sparkles className="w-5 h-5 animate-pulse" /> Media Upload Guidelines (Avoid Rejection)
+          <Sparkles className="w-5 h-5 animate-pulse text-accent" /> Media Upload Guidelines (Avoid Rejection) <Ban className="w-5 h-5 animate-pulse text-red-600" />
         </h3>
         <p className="text-xs text-text-muted leading-relaxed mb-4">
           To ensure your partner profile is approved quickly by our moderation team, please follow these visual guidelines carefully:
@@ -298,7 +298,7 @@ export default function MediaStep({
               <div>
                 <strong className="text-text-main block mb-0.5">Profile Photo</strong>
                 <span className="text-text-muted/80 leading-relaxed block">
-                  Well-lit, high-resolution portrait. Face must be fully visible and centered. Avoid sunglasses, hats, masks, or extreme filters.
+                  Well-lit, high-resolution portrait. Face must be fully visible and centered. Avoid hats, masks, or extreme filters.
                 </span>
               </div>
             </div>

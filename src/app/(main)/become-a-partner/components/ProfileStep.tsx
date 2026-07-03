@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { ChevronDown, ChevronUp, X } from "lucide-react";
+import { ChevronDown, ChevronUp, X, Search } from "lucide-react";
 
 // Reusable components matching original structure
 const InputWrapper = ({
@@ -13,10 +13,12 @@ const InputWrapper = ({
   className?: string;
 }) => <div className={`w-full relative group ${className}`}>{children}</div>;
 
-const getInputClass = (hasError = false) =>
+const getInputClass = (hasError = false, isValid = false) =>
   `w-full border rounded-2xl p-4 md:p-5 text-text-main placeholder:text-text-muted transition-all duration-300 shadow-sm font-medium tracking-wide outline-none focus:outline-none focus:ring-4 ${
     hasError
       ? "bg-red-500/5 border-red-500 focus:border-red-500 focus:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]"
+      : isValid
+      ? "bg-emerald-500/5 border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500/10 shadow-[0_0_12px_rgba(16,185,129,0.08)]"
       : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:border-primary/60 focus:border-primary focus:ring-primary/20"
   }`;
 
@@ -155,11 +157,22 @@ const TagInput = ({ tags, onChange, placeholder }: TagInputProps) => {
   );
 };
 
+interface LanguageOption {
+  id: number;
+  family?: string;
+  name: string;
+  native_name?: string;
+  code?: string;
+  code3?: string;
+  status?: string;
+}
+
 interface ProfileStepProps {
   formData: any;
   onChange: (data: any) => void;
   showErrors: boolean;
   errors?: Record<string, string>;
+  languagesList?: LanguageOption[];
 }
 
 export default function ProfileStep({
@@ -167,19 +180,39 @@ export default function ProfileStep({
   onChange,
   showErrors,
   errors,
+  languagesList = [],
 }: ProfileStepProps) {
   const [showAllLanguages, setShowAllLanguages] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const languagesList = [
-    "English", "Hindi", "Bengali", "Tamil", "Telugu", "Marathi", "Gujarati", "Kannada",
-    "Malayalam", "Punjabi", "Urdu", "Odia", "Spanish", "French", "German", "Arabic"
+  const fallbackList: LanguageOption[] = [
+    { id: 1, name: "English" }, { id: 2, name: "Hindi" }, { id: 3, name: "Bengali" }, { id: 4, name: "Tamil" },
+    { id: 5, name: "Telugu" }, { id: 6, name: "Marathi" }, { id: 7, name: "Gujarati" }, { id: 8, name: "Kannada" },
+    { id: 9, name: "Malayalam" }, { id: 10, name: "Punjabi" }, { id: 11, name: "Urdu" }, { id: 12, name: "Odia" },
+    { id: 13, name: "Spanish" }, { id: 14, name: "French" }, { id: 15, name: "German" }, { id: 16, name: "Arabic" }
   ];
 
-  const toggleLanguage = (lang: string) => {
+  const options = languagesList && languagesList.length > 0 ? languagesList : fallbackList;
+
+  const filteredOptions = options.filter(item => 
+    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (item.native_name && item.native_name.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const displayedOptions = searchQuery 
+    ? filteredOptions 
+    : (showAllLanguages ? options : options.slice(0, 4));
+
+  const toggleLanguage = (item: LanguageOption) => {
     const current = formData.languages || [];
-    const updated = current.includes(lang)
-      ? current.filter((l: string) => l !== lang)
-      : [...current, lang];
+    const isChecked = current.includes(item.id) || current.includes(item.name);
+    
+    let updated;
+    if (isChecked) {
+      updated = current.filter((val: any) => val !== item.id && val !== item.name);
+    } else {
+      updated = [...current, item.id];
+    }
     onChange({ languages: updated });
   };
 
@@ -187,40 +220,61 @@ export default function ProfileStep({
     <div className="space-y-8">
       {/* Languages Spoken */}
       <div className="space-y-4">
-        <label className="text-xs font-black uppercase tracking-widest text-text-muted ml-1">
-          Languages Spoken
-        </label>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-          {languagesList.map((item, idx) => {
-            const isCore = idx < 4;
-            if (!isCore && !showAllLanguages) return null;
-            return (
-              <CheckboxItem
-                key={item}
-                label={item}
-                checked={(formData.languages || []).includes(item)}
-                onChange={() => toggleLanguage(item)}
-              />
-            );
-          })}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <label className="text-xs font-black uppercase tracking-widest text-text-muted ml-1">
+            Languages Spoken
+          </label>
+          <div className="relative w-full sm:w-64">
+            <Search className="w-4 h-4 text-text-muted absolute left-4 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search languages..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 text-xs bg-bg-secondary/40 border border-border-main rounded-2xl text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary/50 transition-colors"
+            />
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowAllLanguages(!showAllLanguages)}
-          className="w-full cursor-pointer bg-bg-secondary border border-border-main border-dashed rounded-2xl p-5 text-text-muted hover:text-primary hover:border-primary hover:bg-primary/10 transition-all duration-300 flex items-center justify-center gap-2 font-medium group"
-        >
-          {showAllLanguages ? (
-            <>
-              <ChevronUp className="w-5 h-5 text-primary group-hover:scale-125 transition-transform duration-300" />
-              See Less Languages
-            </>
-          ) : (
-            <>
-              <ChevronDown className="w-5 h-5 text-primary group-hover:scale-125 transition-transform duration-300" />
-              See More Languages
-            </>
-          )}
-        </button>
+
+        {displayedOptions.length === 0 ? (
+          <div className="text-center p-8 bg-bg-secondary/20 border border-border-main border-dashed rounded-2xl text-text-muted text-xs font-semibold">
+            No languages found matching "{searchQuery}"
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            {displayedOptions.map((item) => {
+              const isChecked = (formData.languages || []).includes(item.id) || (formData.languages || []).includes(item.name);
+              return (
+                <CheckboxItem
+                  key={item.id}
+                  label={item.name}
+                  checked={isChecked}
+                  onChange={() => toggleLanguage(item)}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {!searchQuery && (
+          <button
+            type="button"
+            onClick={() => setShowAllLanguages(!showAllLanguages)}
+            className="w-full cursor-pointer bg-bg-secondary border border-border-main border-dashed rounded-2xl p-5 text-text-muted hover:text-primary hover:border-primary hover:bg-primary/10 transition-all duration-300 flex items-center justify-center gap-2 font-medium group"
+          >
+            {showAllLanguages ? (
+              <>
+                <ChevronUp className="w-5 h-5 text-primary group-hover:scale-125 transition-transform duration-300" />
+                See Less Languages
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-5 h-5 text-primary group-hover:scale-125 transition-transform duration-300" />
+                See More Languages
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Short Bio */}
@@ -229,13 +283,22 @@ export default function ProfileStep({
           Short Bio
         </label>
         <InputWrapper>
-          <textarea
-            placeholder="I'm outgoing, love events and respectful company..."
-            rows={4}
-            className={getInputClass(showErrors && !!errors?.bio)}
-            value={formData.bio || ""}
-            onChange={(e) => onChange({ bio: e.target.value })}
-          />
+          <div className="relative">
+            <textarea
+              placeholder="I'm outgoing, love events and respectful company..."
+              rows={4}
+              className={`${getInputClass(showErrors && !!errors?.bio, showErrors && !errors?.bio && (formData.bio || "").length >= 50 && (formData.bio || "").length <= 450)} pr-20`}
+              value={formData.bio || ""}
+              onChange={(e) => onChange({ bio: e.target.value })}
+            />
+            <span className={`absolute right-4 bottom-3 text-[10px] font-bold ${
+              (formData.bio || "").length < 50 || (formData.bio || "").length > 450
+                ? "text-text-muted/60"
+                : "text-emerald-500"
+            }`}>
+              {(formData.bio || "").length} / 450 (min 50)
+            </span>
+          </div>
           {showErrors && errors?.bio && (
             <p className="text-red-500 text-xs mt-1.5 ml-2 font-semibold">
               {errors.bio}
@@ -245,7 +308,7 @@ export default function ProfileStep({
       </div>
 
       {/* Tags & Interests */}
-      <div className="space-y-6">
+      {/* <div className="space-y-6">
         <label className="text-xs font-black uppercase tracking-widest text-text-muted ml-1">
           Tags & Interests (Optional)
         </label>
@@ -272,7 +335,7 @@ export default function ProfileStep({
             />
           </InputWrapper>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

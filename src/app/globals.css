@@ -92,7 +92,7 @@ body {
   @apply bg-bg-base text-text-main antialiased transition-colors duration-300;
 }
 
-/* Browser Autofill Theme Integration */
+/* Browser Autofill Theme Integration (Default Dark Mode) */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 
@@ -102,11 +102,62 @@ textarea:-webkit-autofill:hover,
 textarea:-webkit-autofill:focus,
 select:-webkit-autofill,
 select:-webkit-autofill:hover,
-select:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px rgb(var(--bg-secondary)) inset !important;
-  -webkit-text-fill-color: rgb(var(--text-main)) !important;
-  caret-color: rgb(var(--text-main)) !important;
-  transition: background-color 5000s ease-in-out 0s;
+select:-webkit-autofill:focus,
+input:autofill,
+input:autofill:hover,
+input:autofill:focus,
+input:autofill:active,
+textarea:autofill,
+textarea:autofill:hover,
+textarea:autofill:focus,
+select:autofill,
+select:autofill:hover,
+select:autofill:focus,
+input:-internal-autofill-selected,
+input:-internal-autofill-previewed,
+textarea:-internal-autofill-selected,
+textarea:-internal-autofill-previewed,
+select:-internal-autofill-selected,
+select:-internal-autofill-previewed {
+  -webkit-box-shadow: 0 0 0 1000px #0c0c0c inset !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  color: #f8fafc !important;
+  caret-color: #f8fafc !important;
+  transition: background-color 5000000s ease-in-out 0s, box-shadow 5000000s ease-in-out 0s !important;
+}
+
+/* Browser Autofill Theme Integration (Light Mode Override) */
+[data-appearance='light'] input:-webkit-autofill,
+[data-appearance='light'] input:-webkit-autofill:hover, 
+[data-appearance='light'] input:-webkit-autofill:focus, 
+[data-appearance='light'] input:-webkit-autofill:active,
+[data-appearance='light'] textarea:-webkit-autofill,
+[data-appearance='light'] textarea:-webkit-autofill:hover,
+[data-appearance='light'] textarea:-webkit-autofill:focus,
+[data-appearance='light'] select:-webkit-autofill,
+[data-appearance='light'] select:-webkit-autofill:hover,
+[data-appearance='light'] select:-webkit-autofill:focus,
+[data-appearance='light'] input:autofill,
+[data-appearance='light'] input:autofill:hover,
+[data-appearance='light'] input:autofill:focus,
+[data-appearance='light'] input:autofill:active,
+[data-appearance='light'] textarea:autofill,
+[data-appearance='light'] textarea:autofill:hover,
+[data-appearance='light'] textarea:autofill:focus,
+[data-appearance='light'] select:autofill,
+[data-appearance='light'] select:autofill:hover,
+[data-appearance='light'] select:autofill:focus,
+[data-appearance='light'] input:-internal-autofill-selected,
+[data-appearance='light'] input:-internal-autofill-previewed,
+[data-appearance='light'] textarea:-internal-autofill-selected,
+[data-appearance='light'] textarea:-internal-autofill-previewed,
+[data-appearance='light'] select:-internal-autofill-selected,
+[data-appearance='light'] select:-internal-autofill-previewed {
+  -webkit-box-shadow: 0 0 0 1000px #f9fafb inset !important;
+  -webkit-text-fill-color: #0f172a !important;
+  color: #0f172a !important;
+  caret-color: #0f172a !important;
+  transition: background-color 5000000s ease-in-out 0s, box-shadow 5000000s ease-in-out 0s !important;
 }
 
 h1,
@@ -668,4 +719,74 @@ textarea.borderless-textarea:focus {
   border-style: none !important;
   box-shadow: none !important;
   outline: none !important;
+}
+
+/* ── GLOBAL INPUT ERROR OVERRIDES ── */
+html[data-appearance] input.border-red-500,
+html[data-appearance] textarea.border-red-500,
+html[data-appearance] select.border-red-500,
+html[data-appearance] button.border-red-500,
+html input.border-red-500,
+html textarea.border-red-500,
+html select.border-red-500,
+html button.border-red-500,
+.border-red-500,
+.border-red-500:hover {
+  border-color: rgb(239, 68, 68) !important;
+}
+
+html[data-appearance] .bg-red-500\/5,
+html .bg-red-500\/5,
+.bg-red-500\/5,
+.bg-red-500\/5:hover {
+  background-color: rgba(239, 68, 68, 0.05) !important;
+}
+
+html[data-appearance] input.border-red-500:focus,
+html[data-appearance] textarea.border-red-500:focus,
+html[data-appearance] select.border-red-500:focus,
+html[data-appearance] button.border-red-500:focus,
+html[data-appearance] div.border-red-500:focus-within,
+input.border-red-500:focus,
+textarea.border-red-500:focus,
+select.border-red-500:focus,
+button.border-red-500:focus,
+div.border-red-500:focus-within {
+  border-color: rgb(239, 68, 68) !important;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15) !important;
+}
+
+/* ── GLOBAL INPUT SUCCESS OVERRIDES ── */
+html[data-appearance] input.border-emerald-500,
+html[data-appearance] textarea.border-emerald-500,
+html[data-appearance] select.border-emerald-500,
+html[data-appearance] button.border-emerald-500,
+html input.border-emerald-500,
+html textarea.border-emerald-500,
+html select.border-emerald-500,
+html button.border-emerald-500,
+.border-emerald-500,
+.border-emerald-500:hover {
+  border-color: rgb(16, 185, 129) !important;
+}
+
+html[data-appearance] .bg-emerald-500\/5,
+html .bg-emerald-500\/5,
+.bg-emerald-500\/5,
+.bg-emerald-500\/5:hover {
+  background-color: rgba(16, 185, 129, 0.05) !important;
+}
+
+html[data-appearance] input.border-emerald-500:focus,
+html[data-appearance] textarea.border-emerald-500:focus,
+html[data-appearance] select.border-emerald-500:focus,
+html[data-appearance] button.border-emerald-500:focus,
+html[data-appearance] div.border-emerald-500:focus-within,
+input.border-emerald-500:focus,
+textarea.border-emerald-500:focus,
+select.border-emerald-500:focus,
+button.border-emerald-500:focus,
+div.border-emerald-500:focus-within {
+  border-color: rgb(16, 185, 129) !important;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15) !important;
 }

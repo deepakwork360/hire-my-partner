@@ -8,6 +8,7 @@ import {
   UserRound, 
   Heart, 
   Star,
+  Bookmark,
   ChevronRight, 
   LayoutDashboard,
   X,
@@ -88,20 +89,30 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
   const { activeTheme, setTheme, isPreferenceSet, resetToRotation, appearance, toggleAppearance } = useTheme();
 
   const [mounted, setMounted] = useState(false);
-  const [favouriteCompanions, setFavouriteCompanions] = useState<any[]>([]);
+  const [bookmarkedCompanions, setBookmarkedCompanions] = useState<any[]>([]);
 
   // Crop States for Avatar Upload
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadFavourites = () => {
+    const loadBookmarks = () => {
       try {
-        const favs = localStorage.getItem("favourite_partners");
-        if (favs) {
-          setFavouriteCompanions(JSON.parse(favs));
+        let bookmarksStr = localStorage.getItem("bookmarked_partners");
+        
+        // Graceful migration from old key
+        if (!bookmarksStr) {
+          const oldFavs = localStorage.getItem("favourite_partners");
+          if (oldFavs) {
+            localStorage.setItem("bookmarked_partners", oldFavs);
+            bookmarksStr = oldFavs;
+          }
+        }
+
+        if (bookmarksStr) {
+          setBookmarkedCompanions(JSON.parse(bookmarksStr));
         } else {
-          setFavouriteCompanions([]);
+          setBookmarkedCompanions([]);
         }
       } catch (e) {
         console.error(e);
@@ -117,15 +128,17 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
       }
     };
 
-    loadFavourites();
+    loadBookmarks();
     loadLocation();
-    window.addEventListener("favourites_changed", loadFavourites);
+    window.addEventListener("bookmarks_changed", loadBookmarks);
+    window.addEventListener("favourites_changed", loadBookmarks); // Backwards compatibility
     window.addEventListener("user_location_updated", loadLocation);
-    window.addEventListener("storage", loadFavourites);
+    window.addEventListener("storage", loadBookmarks);
     return () => {
-      window.removeEventListener("favourites_changed", loadFavourites);
+      window.removeEventListener("bookmarks_changed", loadBookmarks);
+      window.removeEventListener("favourites_changed", loadBookmarks);
       window.removeEventListener("user_location_updated", loadLocation);
-      window.removeEventListener("storage", loadFavourites);
+      window.removeEventListener("storage", loadBookmarks);
     };
   }, []);
 
@@ -785,23 +798,23 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                   </div>
                 )}
 
-                {/* FAVOURITES SECTION */}
+                {/* BOOKMARKS SECTION */}
                 {isAuthenticated && (
                   <div>
                     <h4 className="text-[10px] font-bold uppercase tracking-[0.15em] text-text-muted/70 mb-2 px-1 flex items-center justify-between">
-                      <span>Favourites</span>
-                      {favouriteCompanions.length > 0 && (
+                      <span>Bookmarks</span>
+                      {bookmarkedCompanions.length > 0 && (
                         <span className="text-[9px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-black">
-                          {favouriteCompanions.length}
+                          {bookmarkedCompanions.length}
                         </span>
                       )}
                     </h4>
                     <div className="flex flex-col gap-1.5">
-                      {renderMenuItem("/favourites", "My Favourites", Star)}
+                      {renderMenuItem("/favourites", "Bookmarks", Bookmark)}
                       
-                      {favouriteCompanions.length > 0 && (
+                      {bookmarkedCompanions.length > 0 && (
                         <div className="mt-1 px-1.5 py-1 flex flex-col gap-2 border-t border-border-main/20 pt-2.5">
-                          {favouriteCompanions.slice(0, 4).map((comp) => (
+                          {bookmarkedCompanions.slice(0, 4).map((comp) => (
                             <Link
                               key={comp.id}
                               href={`/partners/${comp.id}`}
@@ -816,13 +829,13 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                               <span className="text-xs font-semibold truncate">{comp.name}</span>
                             </Link>
                           ))}
-                          {favouriteCompanions.length > 4 && (
+                          {bookmarkedCompanions.length > 4 && (
                             <Link
                               href="/favourites"
                               onClick={() => setIsOpen(false)}
                               className="text-[9px] font-black uppercase tracking-widest text-primary hover:text-primary-dark transition-colors pl-9.5 mt-0.5"
                             >
-                              + View all {favouriteCompanions.length}
+                              + View all {bookmarkedCompanions.length}
                             </Link>
                           )}
                         </div>

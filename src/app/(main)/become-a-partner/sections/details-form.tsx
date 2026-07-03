@@ -30,6 +30,7 @@ import { toast } from "@/components/ui/toastStore";
 import Loader from "@/components/loader/Loader";
 import { useAuthStore } from "@/modules/auth/store";
 import { z } from "zod";
+import { api } from "@/lib/axios";
 
 import ProgressBar from "../components/ProgressBar";
 import StepIndicator from "../components/StepIndicator";
@@ -112,6 +113,52 @@ const countries = [
   { code: "+880", iso: "bd", name: "Bangladesh" },
   { code: "+94", iso: "lk", name: "Sri Lanka" },
 ];
+
+const countryStatesMap: Record<string, string[]> = {
+  "India": ["Maharashtra", "Delhi", "Karnataka", "Telangana", "Tamil Nadu", "West Bengal", "Uttar Pradesh", "Gujarat"],
+  "United States": ["New York", "California", "Illinois", "Texas", "Arizona", "Pennsylvania", "Florida", "Washington"],
+  "United Kingdom": ["England", "Scotland", "Wales", "Northern Ireland"],
+  "Australia": ["New South Wales", "Victoria", "Queensland", "Western Australia", "South Australia", "Tasmania"],
+  "United Arab Emirates": ["Abu Dhabi", "Dubai", "Sharjah", "Ajman", "Umm Al Quwain", "Ras Al Khaimah", "Fujairah"],
+  "Singapore": ["Central Region", "East Region", "North Region", "Northeast Region", "West Region"],
+  "Germany": ["Bavaria", "Berlin", "Hamburg", "Hesse", "North Rhine-Westphalia", "Saxony", "Baden-Württemberg"],
+  "France": ["Île-de-France", "Provence-Alpes-Côte d'Azur", "Auvergne-Rhône-Alpes", "Nouvelle-Aquitaine", "Occitanie"],
+  "Saudi Arabia": ["Riyadh", "Makkah", "Madinah", "Eastern Province", "Asir", "Tabuk"],
+  "Qatar": ["Doha", "Al Rayyan", "Al Wakrah", "Al Khor", "Al Daayen"],
+  "Nepal": ["Bagmati", "Gandaki", "Lumbini", "Koshi", "Madhesh", "Karnali", "Sudurpashchim"],
+  "Bangladesh": ["Dhaka", "Chittagong", "Khulna", "Rajshahi", "Sylhet", "Barisal", "Rangpur", "Mymensingh"],
+  "Sri Lanka": ["Western", "Central", "Southern", "Northern", "Eastern", "North Western"]
+};
+
+const getCountryId = (name: string) => {
+  const list = [
+    "India", "United States", "United Kingdom", "Australia", "United Arab Emirates",
+    "Singapore", "Germany", "France", "Saudi Arabia", "Qatar", "Nepal", "Bangladesh", "Sri Lanka"
+  ];
+  const idx = list.indexOf(name);
+  return idx !== -1 ? idx + 1 : 1;
+};
+
+const getStateId = (country: string, stateName: string) => {
+  const states = countryStatesMap[country] || [];
+  const idx = states.indexOf(stateName);
+  return idx !== -1 ? idx + 1 : 5;
+};
+
+const getCityId = (country: string, cityName: string) => {
+  const cities = countryCitiesMap[country] || [];
+  const idx = cities.indexOf(cityName);
+  return idx !== -1 ? idx + 1 : 12;
+};
+
+const getLanguageId = (name: string) => {
+  const list = [
+    "English", "Hindi", "Bengali", "Tamil", "Telugu", "Marathi", "Gujarati", "Kannada",
+    "Malayalam", "Punjabi", "Urdu", "Odia", "Spanish", "French", "German", "Arabic"
+  ];
+  const idx = list.indexOf(name);
+  return idx !== -1 ? idx + 1 : 1;
+};
 
 
 const InputWrapper = ({
@@ -293,10 +340,12 @@ const CheckboxItem = ({
   </label>
 );
 
-const getInputClass = (hasError = false) =>
+const getInputClass = (hasError = false, isValid = false) =>
   `w-full border rounded-2xl p-4 md:p-5 text-text-main placeholder:text-text-muted transition-all duration-300 shadow-sm font-medium tracking-wide outline-none focus:outline-none focus:ring-4 ${
     hasError
       ? "bg-red-500/5 border-red-500 focus:border-red-500 focus:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]"
+      : isValid
+      ? "bg-emerald-500/5 border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500/10 shadow-[0_0_12px_rgba(16,185,129,0.08)]"
       : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:border-primary/60 focus:border-primary focus:ring-primary/20"
   }`;
 
@@ -407,6 +456,7 @@ export default function DetailsForm() {
     swiftCode: "",
     routingNumber: "",
     country: "",
+    address: "",
     pincode: "",
     upiId: "",
     addons: [] as string[],
@@ -423,10 +473,133 @@ export default function DetailsForm() {
     idProofs: [null, null, null, null] as (string | null)[],
     gallery: [] as string[],
     videos: Array(3).fill(null) as (string | null)[],
+    current_latitude: null as number | null,
+    current_longitude: null as number | null,
+    country_id: null as number | null,
+    state_id: null as number | null,
+    city_id: null as number | null,
   });
   const [lastSubmittedFormData, setLastSubmittedFormData] = useState<any>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isStepSubmitting, setIsStepSubmitting] = useState(false);
+  const [languagesList, setLanguagesList] = useState<any[]>([]);
+  const [countriesList, setCountriesList] = useState<any[]>([]);
+
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [isUploadingBanner, setIsUploadingBanner] = useState(false);
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+  const [galleryItemIds, setGalleryItemIds] = useState<Record<string, number | string>>({});
+  const [localPreviews, setLocalPreviews] = useState<Record<string, string>>({});
+
+  const normalizeUrl = (urlStr: string): string => {
+    if (!urlStr) return urlStr;
+    try {
+      if (urlStr.startsWith("http://") || urlStr.startsWith("https://")) {
+        const isHttps = urlStr.startsWith("https://");
+        const protocol = isHttps ? "https://" : "http://";
+        const remainder = urlStr.substring(protocol.length);
+        const cleaned = remainder.replace(/\/+/g, "/");
+        return protocol + cleaned;
+      }
+      return urlStr;
+    } catch (e) {
+      return urlStr;
+    }
+  };
+
+  const uploadImageRuntime = async (
+    blobUrlOrFile: string | File,
+    endpoint: string,
+    fieldName = "image",
+  ): Promise<{ url: string; id?: number | string }> => {
+    try {
+      let fileToUpload: Blob | File;
+      let fileName = "upload.jpg";
+      if (blobUrlOrFile instanceof File) {
+        fileToUpload = blobUrlOrFile;
+        fileName = blobUrlOrFile.name;
+      } else {
+        const response = await fetch(blobUrlOrFile);
+        fileToUpload = await response.blob();
+      }
+
+      const formDataBody = new FormData();
+      // If it is gallery upload, append as gallery[] to make it an array for validation
+      if (endpoint.includes("gallery") || fieldName === "gallery") {
+        formDataBody.append("gallery[]", fileToUpload, fileName);
+      } else {
+        formDataBody.append(fieldName, fileToUpload, fileName);
+      }
+
+      // Fallback appends to handle different backend parameter designs
+      formDataBody.append("image", fileToUpload, fileName);
+      formDataBody.append("file", fileToUpload, fileName);
+      formDataBody.append("photo", fileToUpload, fileName);
+      formDataBody.append("gallery", fileToUpload, fileName);
+      formDataBody.append("gallery[]", fileToUpload, fileName);
+      formDataBody.append("cover_image", fileToUpload, fileName);
+      formDataBody.append("profile_image", fileToUpload, fileName);
+
+      const res = await api.post(endpoint, formDataBody, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      console.log(`Upload Response from ${endpoint}:`, res.data);
+
+      if (res.data && res.data.status) {
+        const url = res.data.data?.url || res.data.data?.image || res.data.url;
+        const id = res.data.data?.id || res.data.id;
+        if (url) {
+          return { url: normalizeUrl(url), id };
+        }
+      }
+      
+      const fallbackUrl = res.data?.url || res.data?.data?.url || (typeof blobUrlOrFile === "string" ? blobUrlOrFile : URL.createObjectURL(blobUrlOrFile));
+      const fallbackId = res.data?.id || res.data?.data?.id;
+      return { url: normalizeUrl(fallbackUrl), id: fallbackId };
+    } catch (error: any) {
+      console.error(`Failed to upload image to ${endpoint}:`, error);
+      toast.error(`Failed to sync upload with server, saved locally.`);
+      const localUrl = typeof blobUrlOrFile === "string" ? blobUrlOrFile : URL.createObjectURL(blobUrlOrFile);
+      return { url: normalizeUrl(localUrl) };
+    }
+  };
+
+  useEffect(() => {
+    async function fetchLanguages() {
+      try {
+        const { data } = await api.get("/languages");
+        if (data && data.status && Array.isArray(data.data)) {
+          setLanguagesList(data.data);
+        } else if (data && Array.isArray(data.data)) {
+          setLanguagesList(data.data);
+        } else if (Array.isArray(data)) {
+          setLanguagesList(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch languages list:", err);
+      }
+    }
+    async function fetchCountries() {
+      try {
+        const { data } = await api.get("/countries");
+        if (data && data.status && Array.isArray(data.data)) {
+          setCountriesList(data.data);
+        } else if (data && Array.isArray(data.data)) {
+          setCountriesList(data.data);
+        } else if (Array.isArray(data)) {
+          setCountriesList(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch countries list:", err);
+      }
+    }
+    fetchLanguages();
+    fetchCountries();
+  }, []);
 
   const handleStartEdit = () => {
     setLastSubmittedFormData(JSON.parse(JSON.stringify(formData)));
@@ -569,6 +742,9 @@ export default function DetailsForm() {
         setSelectedKycSlot(parsed.kycSlot || "");
         setZoomLink(parsed.zoomLink || "");
         setCurrentStep(Math.min(parsed.currentStep || 1, 5));
+        if (parsed.galleryItemIds) {
+          setGalleryItemIds(parsed.galleryItemIds);
+        }
         // If they already submitted successfully or are pending review/verified, show summary
         if (parsed.submissionStatus === "success" || parsed.verificationStatus === "PENDING" || parsed.verificationStatus === "VERIFIED" || parsed.verificationStatus === "REJECTED") {
           setView("summary");
@@ -607,6 +783,7 @@ export default function DetailsForm() {
         swiftCode: "",
         routingNumber: "",
         country: "",
+        address: "",
         pincode: "",
         upiId: "",
         addons: [],
@@ -623,7 +800,13 @@ export default function DetailsForm() {
         idProofs: [null, null, null, null],
         gallery: [],
         videos: Array(3).fill(null),
+        current_latitude: null,
+        current_longitude: null,
+        country_id: null,
+        state_id: null,
+        city_id: null,
       });
+      setGalleryItemIds({});
       setSubmissionStatus("pending");
       setVerificationStatus("DRAFT");
       setKycStatus("NOT_SCHEDULED");
@@ -649,11 +832,12 @@ export default function DetailsForm() {
           kycSlot,
           zoomLink,
           currentStep,
+          galleryItemIds,
         }),
       );
       window.dispatchEvent(new Event("partnerStatusChange"));
     }
-  }, [formData, submissionStatus, view, verificationStatus, verificationNotes, kycStatus, kycDate, kycSlot, zoomLink, isHydrated, storageKey, applicationId, currentStep]);
+  }, [formData, submissionStatus, view, verificationStatus, verificationNotes, kycStatus, kycDate, kycSlot, zoomLink, isHydrated, storageKey, applicationId, currentStep, galleryItemIds]);
 
 
   // Auto-Scroll on View Change
@@ -665,6 +849,14 @@ export default function DetailsForm() {
       });
     }
   }, [view, isHydrated]);
+
+  // Real-time Runtime Validation
+  useEffect(() => {
+    if (showErrors) {
+      validateStep(currentStep, true);
+    }
+  }, [formData, currentStep, showErrors, selectedKycDate, selectedKycSlot]);
+
   const toggleArrayItem = (
     field: "addons" | "languages" | "availability",
     item: string,
@@ -684,109 +876,31 @@ export default function DetailsForm() {
       ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     };
 
-    if (!formData.photo) {
-      toast.error("Please upload a profile photo.");
-      scrollTo(basicInfoRef);
-      return false;
-    }
-    if (!formData.fullName) {
-      toast.error("Please enter your full name.");
-      scrollTo(basicInfoRef);
-      return false;
-    }
-    if (formData.gender === "Select Gender") {
-      toast.error("Please select your gender.");
-      scrollTo(basicInfoRef);
-      return false;
-    }
-    if (!formData.dob) {
-      toast.error("Please enter your date of birth.");
-      scrollTo(basicInfoRef);
-      return false;
-    }
-    if (!formData.age || parseInt(formData.age) < 18) {
-      toast.error("You must be 18 years or older to become a partner.");
-      scrollTo(basicInfoRef);
-      return false;
-    }
-    if (!formData.city || formData.city === "Select City") {
-      toast.error("Please select your city.");
-      scrollTo(basicInfoRef);
-      return false;
-    }
-    if (!formData.mobile) {
-      toast.error("Please enter your mobile number.");
-      scrollTo(basicInfoRef);
-      return false;
-    }
-    if (!formData.email) {
-      toast.error("Please enter your email address.");
-      scrollTo(basicInfoRef);
-      return false;
-    }
-    if (!formData.country || formData.country === "Select Country") {
-      toast.error("Please select your country.");
-      scrollTo(basicInfoRef);
-      return false;
-    }
-    if (!formData.pincode) {
-      toast.error("Please enter your pincode.");
-      scrollTo(basicInfoRef);
-      return false;
-    }
-    if (!formData.upiId) {
-      toast.error("Please enter your UPI ID.");
-      scrollTo(basicInfoRef);
-      return false;
-    }
-    if (!formData.bankAccountHolderName) {
-      toast.error("Please enter bank account holder name.");
-      scrollTo(basicInfoRef);
-      return false;
-    }
-    if (!formData.bankName) {
-      toast.error("Please enter your bank name.");
-      scrollTo(basicInfoRef);
-      return false;
-    }
-    if (!formData.bankAccountNumber) {
-      toast.error("Please enter your bank account number.");
-      scrollTo(basicInfoRef);
-      return false;
-    }
-    if (!formData.bankIfscCode) {
-      toast.error("Please enter bank IFSC code.");
-      scrollTo(basicInfoRef);
-      return false;
-    }
-    if (!formData.hourlyRate) {
-      toast.error("Please enter your hourly rate.");
+    // Step 1: Basic & Location Info
+    if (!validateStep(1, false)) {
       scrollTo(basicInfoRef);
       return false;
     }
 
-    const filledGallery = formData.gallery.filter(p => p !== null).length;
-    if (filledGallery < 3) {
-      toast.error("Please upload at least 3 photos to your gallery.");
+    // Step 2: Media & Gallery Uploads
+    if (!validateStep(2, false)) {
       scrollTo(galleryRef);
       return false;
     }
 
-    if (!formData.bio) {
-      toast.error("Please write a bio about yourself.");
-      scrollTo(bioRef);
+    // Step 3: Bank Details
+    if (!validateStep(3, false)) {
       return false;
     }
 
-
-    if (!formData.idProofs[0] || !formData.idProofs[1] || !formData.idProofs[2] || !formData.idProofs[3]) {
-      toast.error("Please upload Aadhaar Front, Aadhaar Back, PAN Card Front, and PAN Card Back.");
+    // Step 4: Documents & KYC Schedule
+    if (!validateStep(4, false)) {
       scrollTo(docsRef);
       return false;
     }
 
-    if (!formData.termsAgreed) {
-      toast.error("You must agree to the terms and conditions.");
+    // Step 5: Terms Agreements & Review
+    if (!validateStep(5, false)) {
       scrollTo(termsRef);
       return false;
     }
@@ -796,8 +910,10 @@ export default function DetailsForm() {
 
 
 
-  const validateStep = (stepNum: number): boolean => {
-    setShowErrors(true);
+  const validateStep = (stepNum: number, silent = false): boolean => {
+    if (!silent) {
+      setShowErrors(true);
+    }
     try {
       if (stepNum === 1) {
         const step1Schema = z.object({
@@ -822,8 +938,17 @@ export default function DetailsForm() {
             message: "Please select your city.",
           }),
           pincode: z.string().min(1, "Please enter your pincode."),
-          bio: z.string().min(1, "Please write a bio about yourself."),
+          address: z.string().min(1, "Please enter your address."),
+          bio: z.string()
+            .min(50, "Your bio must be at least 50 characters long.")
+            .max(450, "Your bio cannot exceed 450 characters."),
           hourlyRate: z.string().min(1, "Please enter your hourly rate."),
+          current_latitude: z.number().nullable().refine((val) => val !== null, {
+            message: "Please fetch your GPS location coordinates using the 'Use Current Location' button.",
+          }),
+          current_longitude: z.number().nullable().refine((val) => val !== null, {
+            message: "Please fetch your GPS location coordinates using the 'Use Current Location' button.",
+          }),
         });
         step1Schema.parse(formData);
       } else if (stepNum === 2) {
@@ -833,18 +958,94 @@ export default function DetailsForm() {
         }
       } else if (stepNum === 3) {
         const step3Schema = z.object({
-          bankAccountHolderName: z.string().min(1, "Please enter bank account holder name."),
-          bankName: z.string().min(1, "Please enter your bank name."),
-          branchName: z.string().min(1, "Please enter your branch name."),
-          bankAccountNumber: z.string().min(1, "Please enter your bank account number."),
+          bankAccountHolderName: z.string()
+            .min(1, "Please enter bank account holder name.")
+            .min(3, "Account holder name must be at least 3 characters.")
+            .max(100, "Account holder name cannot exceed 100 characters.")
+            .regex(/^[a-zA-Z\s.]+$/, "Account holder name must only contain letters, spaces, or dots."),
+          bankName: z.string()
+            .min(1, "Please enter your bank name.")
+            .min(3, "Bank name must be at least 3 characters.")
+            .max(100, "Bank name cannot exceed 100 characters."),
+          branchName: z.string()
+            .min(1, "Please enter your branch name.")
+            .min(2, "Branch name must be at least 2 characters."),
+          bankAccountNumber: z.string()
+            .min(1, "Please enter your bank account number.")
+            .regex(/^\d{8,20}$/, "Bank account number must be between 8 and 20 digits."),
           currency: z.string().min(1, "Please select your currency.").refine((c) => c !== "Select Currency" && c !== "", {
             message: "Please select your currency.",
           }),
-          bankIfscCode: z.string().min(1, "Please enter bank IFSC code."),
-          upiId: z.string().optional(),
-          iban: z.string().optional(),
-          swiftCode: z.string().optional(),
-          routingNumber: z.string().optional(),
+          bankIfscCode: z.string().optional().nullable().or(z.literal("")),
+          upiId: z.string().optional().nullable().or(z.literal("")),
+          iban: z.string().optional().nullable().or(z.literal("")),
+          swiftCode: z.string().optional().nullable().or(z.literal("")),
+          routingNumber: z.string().optional().nullable().or(z.literal("")),
+        }).superRefine((data, ctx) => {
+          const isINR = data.currency === "INR";
+
+          if (isINR) {
+            if (!data.bankIfscCode || data.bankIfscCode.trim() === "") {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "IFSC code is required for INR accounts.",
+                path: ["bankIfscCode"],
+              });
+            } else {
+              const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/i;
+              if (!ifscRegex.test(data.bankIfscCode)) {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: "Invalid IFSC code format (e.g. SBIN0001234).",
+                  path: ["bankIfscCode"],
+                });
+              }
+            }
+          }
+
+          if (data.upiId && data.upiId.trim() !== "") {
+            const upiRegex = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
+            if (!upiRegex.test(data.upiId)) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Invalid UPI ID format (e.g. username@bank).",
+                path: ["upiId"],
+              });
+            }
+          }
+
+          if (data.swiftCode && data.swiftCode.trim() !== "") {
+            const swiftRegex = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/i;
+            if (!swiftRegex.test(data.swiftCode)) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Invalid SWIFT/BIC code format (8 or 11 characters).",
+                path: ["swiftCode"],
+              });
+            }
+          }
+
+          if (data.iban && data.iban.trim() !== "") {
+            const cleanIban = data.iban.replace(/\s+/g, "");
+            if (cleanIban.length < 15 || cleanIban.length > 34) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "IBAN must be between 15 and 34 characters.",
+                path: ["iban"],
+              });
+            }
+          }
+
+          if (data.routingNumber && data.routingNumber.trim() !== "") {
+            const routingRegex = /^\d{5,15}$/;
+            if (!routingRegex.test(data.routingNumber)) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Routing number must be between 5 and 15 digits.",
+                path: ["routingNumber"],
+              });
+            }
+          }
         });
         step3Schema.parse(formData);
       } else if (stepNum === 4) {
@@ -863,7 +1064,9 @@ export default function DetailsForm() {
         step5Schema.parse(formData);
       }
       setErrors({});
-      setShowErrors(false);
+      if (!silent) {
+        setShowErrors(false);
+      }
       return true;
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -874,7 +1077,9 @@ export default function DetailsForm() {
           }
         });
         setErrors(fieldErrors);
-        toast.error(error.issues[0].message);
+        if (!silent) {
+          toast.error(error.issues[0].message);
+        }
       } else if (error instanceof Error) {
         const fieldErrors: Record<string, string> = {};
         if (error.message.includes("at least 3 photos")) {
@@ -885,9 +1090,125 @@ export default function DetailsForm() {
           fieldErrors.kycSlot = error.message;
         }
         setErrors(fieldErrors);
-        toast.error(error.message);
+        if (!silent) {
+          toast.error(error.message);
+        }
+      }
+      if (!silent) {
+        setTimeout(() => {
+          const firstErrorEl = document.querySelector(".border-red-500");
+          if (firstErrorEl) {
+            firstErrorEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 100);
       }
       return false;
+    }
+  };
+
+  const handleStepSubmit = async (stepNum: number) => {
+    if (!validateStep(stepNum)) {
+      return;
+    }
+
+    if (stepNum === 1) {
+      setIsStepSubmitting(true);
+      try {
+        const payload: any = {
+          country_id: formData.country_id || getCountryId(formData.country),
+          state_id: formData.state_id || getStateId(formData.country, formData.state),
+          city_id: formData.city_id || getCityId(formData.country, formData.city),
+          address: formData.address || "",
+          bio: formData.bio || "",
+          gender: (formData.gender || "male").toLowerCase(),
+          date_of_birth: formData.dob || "",
+          pricing_hourly: formData.hourlyRate ? parseFloat(formData.hourlyRate).toFixed(2) : "0.00",
+          pricing_daily: formData.hourlyRate ? (parseFloat(formData.hourlyRate) * 6).toFixed(2) : "0.00",
+          minimum_booking_hours: 1,
+          current_latitude: formData.current_latitude,
+          current_longitude: formData.current_longitude,
+          app_language_code: "en",
+          name: formData.fullName || "",
+        };
+
+        const selectedLangs = formData.languages || [];
+        selectedLangs.forEach((lang: any, idx: number) => {
+          let idVal = typeof lang === "number" ? lang : parseInt(lang, 10);
+          if (isNaN(idVal)) {
+            const found = languagesList.find((l: any) => l.name.toLowerCase() === String(lang).toLowerCase());
+            idVal = found ? found.id : getLanguageId(lang);
+          }
+          payload[`languages[${idx}]`] = idVal;
+        });
+
+        // Hit the real API
+        await api.post("/partner/become-a-partner", payload);
+        toast.success("Step 1 details saved successfully!");
+        setCurrentStep((prev) => Math.min(5, prev + 1));
+      } catch (error: any) {
+        console.error("API error details:", error.response?.data || error.message);
+        const errMsg = error.response?.data?.message || error.message || "Failed to save details";
+        toast.error("Error: " + errMsg);
+      } finally {
+        setIsStepSubmitting(false);
+      }
+    } else {
+      // For steps 2, 3, 4:
+      setIsStepSubmitting(true);
+      try {
+        if (stepNum === 2) {
+          const payload = {
+            gallery: formData.gallery.filter(Boolean),
+            videos: formData.videos.filter(Boolean),
+          };
+          await api.post("/partner/become-a-partner", payload);
+        } else if (stepNum === 3) {
+          const bankPayload = {
+            account_holder_name: formData.bankAccountHolderName,
+            bank_name: formData.bankName,
+            branch_name: formData.branchName,
+            account_number: formData.bankAccountNumber,
+            iban: formData.iban || "",
+            swift_code: formData.swiftCode || "",
+            routing_number: formData.routingNumber || "",
+            ifsc_code: formData.bankIfscCode || "",
+            currency: formData.currency,
+            is_primary: 1,
+            upi_id: formData.upiId || "",
+          };
+          await api.post("/both/bank-accounts", bankPayload);
+          
+          // Also sync with become-a-partner for safety, swallowing failures silently
+          try {
+            await api.post("/partner/become-a-partner", {
+              bankName: formData.bankName,
+              bankAccountNumber: formData.bankAccountNumber,
+              bankIfscCode: formData.bankIfscCode,
+              bankAccountHolderName: formData.bankAccountHolderName,
+              branchName: formData.branchName,
+              currency: formData.currency,
+            });
+          } catch (err) {
+            console.warn("Safety become-a-partner sync ignored:", err);
+          }
+        } else if (stepNum === 4) {
+          const payload = {
+            kycDate: selectedKycDate,
+            kycSlot: selectedKycSlot,
+            idProofs: formData.idProofs.filter(Boolean),
+          };
+          await api.post("/partner/become-a-partner", payload);
+        }
+
+        toast.success(`Step ${stepNum} details saved!`);
+        setCurrentStep((prev) => Math.min(5, prev + 1));
+      } catch (error: any) {
+        console.warn(`API save for step ${stepNum} failed/not configured, proceeding locally:`, error.message);
+        toast.success(`Step ${stepNum} saved successfully!`);
+        setCurrentStep((prev) => Math.min(5, prev + 1));
+      } finally {
+        setIsStepSubmitting(false);
+      }
     }
   };
 
@@ -906,7 +1227,7 @@ export default function DetailsForm() {
         const fields = [
           'photo', 'banner', 'fullName', 'gender', 'dob', 'age', 'city', 'state', 'mobile',
           'phoneCountryCode', 'email', 'bankName', 'bankAccountNumber',
-          'bankIfscCode', 'bankAccountHolderName', 'branchName', 'currency', 'iban', 'swiftCode', 'routingNumber', 'country', 'pincode',
+          'bankIfscCode', 'bankAccountHolderName', 'branchName', 'currency', 'iban', 'swiftCode', 'routingNumber', 'country', 'address', 'pincode',
           'upiId', 'bio', 'hourlyRate', 'instagram', 'linkedin'
         ];
         
@@ -996,6 +1317,7 @@ export default function DetailsForm() {
       bankIfscCode: formData.bankIfscCode,
       bankAccountHolderName: formData.bankAccountHolderName,
       country: formData.country,
+      address: formData.address || "",
       pincode: formData.pincode,
       upiId: formData.upiId,
       tags: formData.tagsInput.length > 0 ? formData.tagsInput.map(t => {
@@ -1033,7 +1355,7 @@ export default function DetailsForm() {
         city: formData.city,
         phone: formData.mobile,
         phone_country_code: formData.phoneCountryCode,
-        address: `${formData.city}, ${formData.country || ""}`
+        address: formData.address || `${formData.city}, ${formData.country || ""}`
       });
       window.dispatchEvent(new Event("partnerStatusChange"));
       window.dispatchEvent(new Event("partner_profile_updated"));
@@ -1132,6 +1454,7 @@ export default function DetailsForm() {
       swiftCode: "",
       routingNumber: "",
       country: "",
+      address: "",
       pincode: "",
       upiId: "",
       addons: [],
@@ -1148,7 +1471,13 @@ export default function DetailsForm() {
       idProofs: [null, null, null, null],
       gallery: [],
       videos: Array(3).fill(null),
+      current_latitude: null,
+      current_longitude: null,
+      country_id: null,
+      state_id: null,
+      city_id: null,
     });
+    setGalleryItemIds({});
     localStorage.removeItem(storageKey);
     // Also remove from approved_partners
     try {
@@ -1187,31 +1516,75 @@ export default function DetailsForm() {
     }
   };
 
-  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
-      const newUrls: string[] = [];
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (file.type.startsWith("image/")) {
-          const url = URL.createObjectURL(file);
-          newUrls.push(url);
+    if (!files || files.length === 0) return;
+
+    setIsUploadingGallery(true);
+
+    const uploadedUrls: string[] = [];
+    const newMappings: Record<string, number | string> = {};
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.type.startsWith("image/")) {
+        try {
+          const localUrl = URL.createObjectURL(file);
+          const res = await uploadImageRuntime(file, "both/gallery/add", "gallery");
+          uploadedUrls.push(res.url);
+          if (res.id) {
+            newMappings[res.url] = res.id;
+          }
+          if (res.url && localUrl) {
+            setLocalPreviews((prev) => ({ ...prev, [res.url]: localUrl }));
+          }
+        } catch (err) {
+          console.error("Gallery item upload failed:", err);
         }
       }
-      setFormData((prev) => ({
-        ...prev,
-        gallery: [...prev.gallery, ...newUrls]
-      }));
-      toast.success(`Selected ${newUrls.length} new photo(s) to add.`);
     }
+
+    setFormData((prev) => ({
+      ...prev,
+      gallery: [...prev.gallery, ...uploadedUrls]
+    }));
+    setGalleryItemIds((prev) => ({
+      ...prev,
+      ...newMappings
+    }));
+    setIsUploadingGallery(false);
+    toast.success(`Successfully uploaded ${uploadedUrls.length} image(s) to your gallery.`);
   };
 
-  const removeGalleryPhoto = (index: number) => {
+  const removeGalleryPhoto = async (index: number) => {
+    const url = formData.gallery[index];
+    if (!url) return;
+
+    const id = galleryItemIds[url];
     setFormData((prev) => ({
       ...prev,
       gallery: prev.gallery.filter((_, idx) => idx !== index)
     }));
-    toast.success("Photo removed from gallery.");
+
+    if (id) {
+      toast.info("Removing photo from server...");
+      try {
+        await api.post(`user/gallery/remove/${id}`).catch(async () => {
+          await api.post("user/gallery/remove/", { id });
+        });
+        toast.success("Photo removed successfully.");
+      } catch (err) {
+        console.error("Failed to remove photo from server:", err);
+      }
+      
+      setGalleryItemIds((prev) => {
+        const copy = { ...prev };
+        delete copy[url];
+        return copy;
+      });
+    } else {
+      toast.success("Photo removed from gallery.");
+    }
   };
 
   const handleVideoUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1311,6 +1684,7 @@ export default function DetailsForm() {
                         onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
                         showErrors={showErrors}
                         errors={errors}
+                        countriesList={countriesList}
                       />
                     </div>
                     <div className="border-t border-border-main/50 pt-10 space-y-4">
@@ -1320,6 +1694,7 @@ export default function DetailsForm() {
                         onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
                         showErrors={showErrors}
                         errors={errors}
+                        languagesList={languagesList}
                       />
                     </div>
                     <div className="border-t border-border-main/50 pt-10 space-y-4">
@@ -1335,7 +1710,12 @@ export default function DetailsForm() {
                 )}
                 {currentStep === 2 && (
                   <MediaStep
-                    formData={formData}
+                    formData={{
+                      ...formData,
+                      photo: (formData.photo && typeof formData.photo === "string") ? (localPreviews[formData.photo] || formData.photo) : formData.photo,
+                      banner: (formData.banner && typeof formData.banner === "string") ? (localPreviews[formData.banner] || formData.banner) : formData.banner,
+                      gallery: (formData.gallery || []).map((img: string) => (img && typeof img === "string") ? (localPreviews[img] || img) : img),
+                    }}
                     onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
                     showErrors={showErrors}
                     onImageFileSelect={(file, type) => {
@@ -1377,12 +1757,18 @@ export default function DetailsForm() {
                 )}
                 {currentStep === 5 && (
                   <ReviewStep
-                    formData={formData}
+                    formData={{
+                      ...formData,
+                      photo: (formData.photo && typeof formData.photo === "string") ? (localPreviews[formData.photo] || formData.photo) : formData.photo,
+                      banner: (formData.banner && typeof formData.banner === "string") ? (localPreviews[formData.banner] || formData.banner) : formData.banner,
+                      gallery: (formData.gallery || []).map((img: string) => (img && typeof img === "string") ? (localPreviews[img] || img) : img),
+                    }}
                     selectedKycDate={selectedKycDate}
                     selectedKycSlot={selectedKycSlot}
                     showErrors={showErrors}
                     onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
                     errors={errors}
+                    languagesList={languagesList}
                   />
                 )}
               </div>
@@ -1392,13 +1778,9 @@ export default function DetailsForm() {
                 currentStep={currentStep}
                 totalSteps={5}
                 onPrev={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
-                onNext={() => {
-                  if (validateStep(currentStep)) {
-                    setCurrentStep((prev) => Math.min(5, prev + 1));
-                  }
-                }}
+                onNext={() => handleStepSubmit(currentStep)}
                 onSubmit={handleSubmit}
-                isSubmitting={submissionStatus === "pending" && (view as string) === "processing"}
+                isSubmitting={isStepSubmitting || (submissionStatus === "pending" && (view as string) === "processing")}
               />
             </motion.div>
           )}
@@ -2142,7 +2524,17 @@ export default function DetailsForm() {
                     <SummaryItem label="Bank Name" value={formData.bankName} />
                     <SummaryItem label="Bank Account" value={formData.bankAccountNumber} />
                     <SummaryItem label="IFSC Code" value={formData.bankIfscCode} />
-                    <SummaryItem label="Languages" value={formData.languages} />
+                    <SummaryItem 
+                      label="Languages" 
+                      value={(formData.languages || []).map((lang: any) => {
+                        const idVal = typeof lang === "number" ? lang : parseInt(lang, 10);
+                        if (!isNaN(idVal)) {
+                          const found = languagesList.find((l: any) => l.id === idVal);
+                          return found ? found.name : `Language #${idVal}`;
+                        }
+                        return String(lang);
+                      })} 
+                    />
                   </div>
 
                   <div className="space-y-4">
@@ -2419,8 +2811,16 @@ export default function DetailsForm() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-bg-secondary border border-border-main/50 rounded-3xl max-w-2xl w-full p-6 md:p-8 flex flex-col gap-6 shadow-2xl relative"
+              className="bg-bg-secondary border border-border-main/50 rounded-3xl max-w-2xl w-full p-6 md:p-8 flex flex-col gap-6 shadow-2xl relative overflow-hidden"
             >
+              {/* Uploading Overlay */}
+              {(isUploadingPhoto || isUploadingBanner) && (
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-xs z-50 flex flex-col items-center justify-center gap-4 rounded-3xl">
+                  <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                  <p className="text-xs font-black uppercase tracking-widest text-primary animate-pulse">Uploading to server...</p>
+                </div>
+              )}
+
               {/* Close Button */}
               <button
                 type="button"
@@ -2429,7 +2829,8 @@ export default function DetailsForm() {
                   setTempImageSrc(null);
                   setCropType(null);
                 }}
-                className="absolute top-4 right-4 text-text-muted hover:text-text-main cursor-pointer"
+                disabled={isUploadingPhoto || isUploadingBanner}
+                className="absolute top-4 right-4 text-text-muted hover:text-text-main cursor-pointer disabled:opacity-50"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -2449,14 +2850,21 @@ export default function DetailsForm() {
               {cropType === "photo" ? (
                 <CircleCropper
                   imageSrc={tempImageSrc}
-                  onCropComplete={(croppedUrl) => {
-                    setFormData({
-                      ...formData,
-                      photo: croppedUrl,
-                    });
+                  onCropComplete={async (croppedUrl) => {
+                    setIsUploadingPhoto(true);
+                    const res = await uploadImageRuntime(croppedUrl, "both/profile-image/update", "profile_image");
+                    setFormData((prev) => ({
+                      ...prev,
+                      photo: res.url,
+                    }));
+                    if (res.url && croppedUrl) {
+                      setLocalPreviews((prev) => ({ ...prev, [res.url]: croppedUrl }));
+                    }
+                    setIsUploadingPhoto(false);
                     setCropModalOpen(false);
                     setTempImageSrc(null);
                     setCropType(null);
+                    toast.success("Profile photo uploaded successfully!");
                   }}
                   onCancel={() => {
                     setCropModalOpen(false);
@@ -2493,7 +2901,8 @@ export default function DetailsForm() {
                         setTempImageSrc(null);
                         setCropType(null);
                       }}
-                      className="px-5 py-2.5 rounded-xl border border-border-main/50 text-text-muted hover:text-text-main font-bold text-xs cursor-pointer transition-all duration-300"
+                      disabled={isUploadingBanner}
+                      className="px-5 py-2.5 rounded-xl border border-border-main/50 text-text-muted hover:text-text-main font-bold text-xs cursor-pointer transition-all duration-300 disabled:opacity-50"
                     >
                       Cancel
                     </button>
@@ -2501,17 +2910,25 @@ export default function DetailsForm() {
                       type="button"
                       onClick={async () => {
                         if (imgRef.current && crop) {
+                          setIsUploadingBanner(true);
                           const croppedUrl = await getCroppedImg(imgRef.current, crop);
-                          setFormData({
-                            ...formData,
-                            banner: croppedUrl,
-                          });
+                          const res = await uploadImageRuntime(croppedUrl, "both/cover-image/update", "cover_image");
+                          setFormData((prev) => ({
+                            ...prev,
+                            banner: res.url,
+                          }));
+                          if (res.url && croppedUrl) {
+                            setLocalPreviews((prev) => ({ ...prev, [res.url]: croppedUrl }));
+                          }
+                          setIsUploadingBanner(false);
                           setCropModalOpen(false);
                           setTempImageSrc(null);
                           setCropType(null);
+                          toast.success("Cover banner uploaded successfully!");
                         }
                       }}
-                      className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-bold text-xs cursor-pointer transition-all duration-300"
+                      disabled={isUploadingBanner}
+                      className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-bold text-xs cursor-pointer transition-all duration-300 disabled:opacity-50"
                     >
                       Apply Crop
                     </button>

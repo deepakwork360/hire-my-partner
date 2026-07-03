@@ -14,10 +14,12 @@ const InputWrapper = ({
   className?: string;
 }) => <div className={`w-full relative group ${className}`}>{children}</div>;
 
-const getInputClass = (hasError = false) =>
+const getInputClass = (hasError = false, isValid = false) =>
   `w-full border rounded-2xl p-4 md:p-5 text-text-main placeholder:text-text-muted transition-all duration-300 shadow-sm font-medium tracking-wide outline-none focus:outline-none focus:ring-4 ${
     hasError
       ? "bg-red-500/5 border-red-500 focus:border-red-500 focus:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]"
+      : isValid
+      ? "bg-emerald-500/5 border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500/10 shadow-[0_0_12px_rgba(16,185,129,0.08)]"
       : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:border-primary/60 focus:border-primary focus:ring-primary/20"
   }`;
 
@@ -68,7 +70,7 @@ export default function BasicInfoStep({
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const countryDropdownRef = useRef<HTMLDivElement>(null);
 
-  const genders = ["Male", "Female", "Other", "Prefer not to say"];
+  const genders = ["Male", "Female", "Other"];
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -93,7 +95,7 @@ export default function BasicInfoStep({
           <input
             type="text"
             placeholder="Full Name"
-            className={getInputClass(showErrors && !!errors?.fullName)}
+            className={getInputClass(showErrors && !!errors?.fullName, showErrors && !errors?.fullName && !!formData.fullName)}
             value={formData.fullName}
             onChange={(e) => onChange({ fullName: e.target.value })}
           />
@@ -107,7 +109,7 @@ export default function BasicInfoStep({
         {/* Gender Selection */}
         <InputWrapper>
           <div className="relative">
-            <div className={`flex rounded-2xl overflow-hidden transition-all duration-300 border focus-within:ring-4 focus-within:ring-primary/20 ${showErrors && errors?.gender ? "bg-red-500/5 border-red-500 focus-within:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]" : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:border-primary/60 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] focus-within:bg-bg-base dark:focus-within:bg-bg-base focus-within:border-primary"}`}>
+            <div className={`flex rounded-2xl overflow-hidden transition-all duration-300 border focus-within:ring-4 focus-within:ring-primary/20 ${showErrors && errors?.gender ? "bg-red-500/5 border-red-500 focus-within:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]" : showErrors && !errors?.gender && formData.gender !== "Select Gender" && formData.gender !== "" ? "bg-emerald-500/5 border-emerald-500 focus-within:ring-emerald-500/10 shadow-[0_0_12px_rgba(16,185,129,0.08)]" : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:border-primary/60 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] focus-within:bg-bg-base dark:focus-within:bg-bg-base focus-within:border-primary"}`}>
               <button
                 type="button"
                 onClick={() => setIsGenderOpen(!isGenderOpen)}
@@ -172,6 +174,7 @@ export default function BasicInfoStep({
               }}
               placeholder="Date of Birth"
               hasError={showErrors && (!!errors?.dob || !!errors?.age)}
+              isValid={showErrors && !errors?.dob && !errors?.age && !!formData.dob}
             />
             {formData.age && (
               <span className="absolute right-12 top-1/2 -translate-y-1/2 text-xs font-bold text-primary pointer-events-none">
@@ -191,7 +194,7 @@ export default function BasicInfoStep({
           <input
             type="email"
             placeholder="Email Address"
-            className={getInputClass(showErrors && !!errors?.email)}
+            className={getInputClass(showErrors && !!errors?.email, showErrors && !errors?.email && !!formData.email)}
             value={formData.email}
             onChange={(e) => onChange({ email: e.target.value })}
           />
@@ -209,7 +212,7 @@ export default function BasicInfoStep({
               <button
                 type="button"
                 onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                className={`${getInputClass(showErrors && !!errors?.mobile)} flex items-center justify-between gap-1 whitespace-nowrap cursor-pointer pl-3 pr-2`}
+                className={`${getInputClass(showErrors && !!errors?.mobile, showErrors && !errors?.mobile && !!formData.mobile)} flex items-center justify-between gap-1 whitespace-nowrap cursor-pointer pl-3 pr-2`}
               >
                 <span className="flex items-center gap-1.5">
                   <img
@@ -258,7 +261,7 @@ export default function BasicInfoStep({
                 <input
                   type="tel"
                   placeholder="Mobile Number"
-                  className={getInputClass(showErrors && !!errors?.mobile)}
+                  className={getInputClass(showErrors && !!errors?.mobile, showErrors && !errors?.mobile && !!formData.mobile)}
                   value={formData.mobile}
                   onChange={(e) => onChange({ mobile: e.target.value })}
                 />

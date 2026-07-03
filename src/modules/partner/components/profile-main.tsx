@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Rochester, Outfit } from "next/font/google";
-import { MapPin, Star, ShieldCheck, Map, Heart, X, UserPlus, UserCheck, Users } from "lucide-react";
+import { MapPin, Star, Bookmark, ShieldCheck, Map, Heart, X, UserPlus, UserCheck, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/context/ThemeContext";
 import { toast } from "@/components/ui/toastStore";
@@ -87,17 +87,27 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
     }
   };
 
-  // Favourites State
-  const [isFavorited, setIsFavorited] = useState(false);
+  // Bookmarks State
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
-        const favs = localStorage.getItem("favourite_partners");
-        if (favs) {
-          const favList = JSON.parse(favs);
+        let bookmarksStr = localStorage.getItem("bookmarked_partners");
+        
+        // Graceful migration
+        if (!bookmarksStr) {
+          const oldFavs = localStorage.getItem("favourite_partners");
+          if (oldFavs) {
+            localStorage.setItem("bookmarked_partners", oldFavs);
+            bookmarksStr = oldFavs;
+          }
+        }
+
+        if (bookmarksStr) {
+          const favList = JSON.parse(bookmarksStr);
           if (Array.isArray(favList)) {
-            setIsFavorited(favList.some((p: any) => String(p.id) === String(profileData.id)));
+            setIsBookmarked(favList.some((p: any) => String(p.id) === String(profileData.id)));
           }
         }
       } catch (e) {
@@ -106,14 +116,20 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
     }
   }, [profileData.id]);
 
-  const handleFavouriteToggle = () => {
-    const nextState = !isFavorited;
-    setIsFavorited(nextState);
+  const handleBookmarkToggle = () => {
+    const nextState = !isBookmarked;
+    setIsBookmarked(nextState);
     
     if (typeof window !== "undefined") {
       try {
-        const favs = localStorage.getItem("favourite_partners");
-        let favList = favs ? JSON.parse(favs) : [];
+        let bookmarksStr = localStorage.getItem("bookmarked_partners");
+        
+        // Migration fallback
+        if (!bookmarksStr) {
+          bookmarksStr = localStorage.getItem("favourite_partners") || "[]";
+        }
+        
+        let favList = bookmarksStr ? JSON.parse(bookmarksStr) : [];
         if (!Array.isArray(favList)) favList = [];
         
         if (nextState) {
@@ -135,7 +151,11 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
           favList = favList.filter((p: any) => String(p.id) !== String(profileData.id));
         }
         
+        localStorage.setItem("bookmarked_partners", JSON.stringify(favList));
+        // Keep both keys in sync during the action
         localStorage.setItem("favourite_partners", JSON.stringify(favList));
+
+        window.dispatchEvent(new Event("bookmarks_changed"));
         window.dispatchEvent(new Event("favourites_changed"));
       } catch (e) {
         console.error(e);
@@ -336,13 +356,16 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
             </button>
             
             <button 
-              onClick={handleFavouriteToggle}
-              className="p-3 w-12 h-12 bg-bg-secondary border border-border-main rounded-xl hover:bg-bg-card hover:border-primary/30 transition-all shadow-sm flex items-center justify-center shrink-0 cursor-pointer"
-              title={isFavorited ? "Remove from Favourites" : "Add to Favourites"}
+              onClick={handleBookmarkToggle}
+              className="cursor-pointer shrink-0 transition-all active:scale-95 flex items-center justify-center p-0 bg-transparent border-none outline-none"
+              title={isBookmarked ? "Remove Bookmark" : "Bookmark"}
             >
-              <Star 
-                size={16} 
-                className={`transition-all duration-300 ${isFavorited ? "fill-amber-400 text-amber-400 scale-110" : "text-text-main"}`} 
+              <img 
+                src={isBookmarked ? "/icons/bookmark4.png" : "/icons/bookmark3.png"} 
+                alt="Bookmark" 
+                className={`w-12 h-12 object-contain transition-all duration-300 ${
+                  isBookmarked ? "scale-115 drop-shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]" : "opacity-90 hover:opacity-100"
+                }`}
               />
             </button>
           </div>
@@ -353,8 +376,8 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
           {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="group flex items-center gap-3 p-4 bg-bg-secondary border border-border-main rounded-[20px] hover:bg-bg-card transition-all shadow-sm">
-              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary shrink-0">
-                <MapPin size={18} />
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                <Image src="/icons/pin.png" alt="location" width={35} height={35} className="object-contain" />
               </div>
               <div>
                 <p className="text-text-muted text-[7px] font-black uppercase tracking-widest">Location</p>
@@ -363,8 +386,8 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
             </div>
 
             <div className="group flex items-center gap-3 p-4 bg-bg-secondary border border-border-main rounded-[20px] hover:bg-bg-card transition-all shadow-sm">
-              <div className="w-10 h-10 bg-amber-400/10 rounded-xl flex items-center justify-center text-amber-400 shrink-0">
-                <Star size={18} className="fill-amber-400" />
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                <Image src="/icons/star1.png" alt="rating" width={35} height={35} className="object-contain" />
               </div>
               <div>
                 <p className="text-text-muted text-[7px] font-black uppercase tracking-widest">Rating Score</p>
@@ -373,8 +396,8 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
             </div>
 
             <div className="group flex items-center gap-3 p-4 bg-bg-secondary border border-border-main rounded-[20px] hover:bg-bg-card transition-all shadow-sm">
-              <div className="w-10 h-10 bg-blue-400/10 rounded-xl flex items-center justify-center text-blue-400 shrink-0">
-                <Map size={18} />
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                <Image src="/icons/location.png" alt="distance" width={35} height={35} className="object-contain" />
               </div>
               <div>
                 <p className="text-text-muted text-[7px] font-black uppercase tracking-widest">Distance</p>

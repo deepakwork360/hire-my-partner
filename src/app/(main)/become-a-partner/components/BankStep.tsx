@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
+import { api } from "@/lib/axios";
 
 const InputWrapper = ({
   children,
@@ -12,14 +13,21 @@ const InputWrapper = ({
   className?: string;
 }) => <div className={`w-full relative group ${className}`}>{children}</div>;
 
-const getInputClass = (hasError = false) =>
+const getInputClass = (hasError = false, isValid = false) =>
   `w-full border rounded-2xl p-4 md:p-5 text-text-main placeholder:text-text-muted transition-all duration-300 shadow-sm font-medium tracking-wide outline-none focus:outline-none focus:ring-4 ${
     hasError
       ? "bg-red-500/5 border-red-500 focus:border-red-500 focus:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]"
+      : isValid
+      ? "bg-emerald-500/5 border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500/10 shadow-[0_0_12px_rgba(16,185,129,0.08)]"
       : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:border-primary/60 focus:border-primary focus:ring-primary/20"
   }`;
 
-const currencies = ["INR", "USD", "EUR", "GBP", "AUD", "AED", "SGD", "QAR", "NPR", "BDT", "LKR"];
+interface CurrencyOption {
+  id?: number | string;
+  code: string;
+  name: string;
+  symbol: string;
+}
 
 interface BankStepProps {
   formData: any;
@@ -35,6 +43,60 @@ export default function BankStep({
   errors,
 }: BankStepProps) {
   const [currencyOpen, setCurrencyOpen] = useState(false);
+  const [currenciesList, setCurrenciesList] = useState<CurrencyOption[]>([]);
+  const [currencySearch, setCurrencySearch] = useState("");
+  const [loadingCurrencies, setLoadingCurrencies] = useState(false);
+
+  useEffect(() => {
+    async function fetchCurrencies() {
+      setLoadingCurrencies(true);
+      try {
+        const { data } = await api.get("/currencies");
+        if (data && data.status && Array.isArray(data.data)) {
+          setCurrenciesList(data.data);
+        } else if (data && Array.isArray(data.data)) {
+          setCurrenciesList(data.data);
+        } else if (Array.isArray(data)) {
+          setCurrenciesList(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch currencies:", err);
+      } finally {
+        setLoadingCurrencies(false);
+      }
+    }
+    fetchCurrencies();
+  }, []);
+
+  const fallbackCurrencies: CurrencyOption[] = [
+    { code: "INR", name: "Indian Rupee", symbol: "₹" },
+    { code: "USD", name: "US Dollar", symbol: "$" },
+    { code: "EUR", name: "Euro", symbol: "€" },
+    { code: "GBP", name: "British Pound", symbol: "£" },
+    { code: "AUD", name: "Australian Dollar", symbol: "A$" },
+    { code: "AED", name: "UAE Dirham", symbol: "د.إ" },
+    { code: "SGD", name: "Singapore Dollar", symbol: "S$" },
+    { code: "QAR", name: "Qatari Rial", symbol: "ر.ق" },
+    { code: "NPR", name: "Nepalese Rupee", symbol: "रू" },
+    { code: "BDT", name: "Bangladeshi Taka", symbol: "৳" },
+    { code: "LKR", name: "Sri Lankan Rupee", symbol: "Rs" }
+  ];
+
+  const displayCurrencies = currenciesList.length > 0 ? currenciesList : fallbackCurrencies;
+
+  const filteredCurrencies = displayCurrencies.filter((c) => {
+    const term = currencySearch.toLowerCase();
+    return (
+      c.code?.toLowerCase().includes(term) ||
+      c.name?.toLowerCase().includes(term) ||
+      c.symbol?.toLowerCase().includes(term)
+    );
+  });
+
+  const selectedCurrencyObj = displayCurrencies.find(c => c.code === formData.currency);
+  const displayLabel = selectedCurrencyObj 
+    ? `${selectedCurrencyObj.code} - ${selectedCurrencyObj.name} (${selectedCurrencyObj.symbol})`
+    : (formData.currency || "Select Currency");
 
   return (
     <div className="space-y-6">
@@ -44,7 +106,7 @@ export default function BankStep({
           <input
             type="text"
             placeholder="Account Holder Name"
-            className={getInputClass(showErrors && !!errors?.bankAccountHolderName)}
+            className={getInputClass(showErrors && !!errors?.bankAccountHolderName, showErrors && !errors?.bankAccountHolderName && !!formData.bankAccountHolderName)}
             value={formData.bankAccountHolderName || ""}
             onChange={(e) => onChange({ bankAccountHolderName: e.target.value })}
           />
@@ -60,7 +122,7 @@ export default function BankStep({
           <input
             type="text"
             placeholder="Bank Name"
-            className={getInputClass(showErrors && !!errors?.bankName)}
+            className={getInputClass(showErrors && !!errors?.bankName, showErrors && !errors?.bankName && !!formData.bankName)}
             value={formData.bankName || ""}
             onChange={(e) => onChange({ bankName: e.target.value })}
           />
@@ -76,7 +138,7 @@ export default function BankStep({
           <input
             type="text"
             placeholder="Branch Name"
-            className={getInputClass(showErrors && !!errors?.branchName)}
+            className={getInputClass(showErrors && !!errors?.branchName, showErrors && !errors?.branchName && !!formData.branchName)}
             value={formData.branchName || ""}
             onChange={(e) => onChange({ branchName: e.target.value })}
           />
@@ -92,7 +154,7 @@ export default function BankStep({
           <input
             type="text"
             placeholder="Account Number"
-            className={getInputClass(showErrors && !!errors?.bankAccountNumber)}
+            className={getInputClass(showErrors && !!errors?.bankAccountNumber, showErrors && !errors?.bankAccountNumber && !!formData.bankAccountNumber)}
             value={formData.bankAccountNumber || ""}
             onChange={(e) => onChange({ bankAccountNumber: e.target.value })}
           />
@@ -108,10 +170,10 @@ export default function BankStep({
           <button
             type="button"
             onClick={() => setCurrencyOpen(!currencyOpen)}
-            className={`${getInputClass(showErrors && !!errors?.currency)} flex items-center justify-between cursor-pointer`}
+            className={`${getInputClass(showErrors && !!errors?.currency, showErrors && !errors?.currency && formData.currency !== "Select Currency" && formData.currency !== "")} flex items-center justify-between cursor-pointer`}
           >
             <span className={!formData.currency || formData.currency === "Select Currency" || formData.currency === "" ? "text-text-muted" : "text-text-main"}>
-              {formData.currency || "Select Currency"}
+              {displayLabel}
             </span>
             <ChevronDown className={`w-5 h-5 text-text-muted transition-transform duration-300 ${currencyOpen ? "rotate-180" : ""}`} />
           </button>
@@ -126,29 +188,65 @@ export default function BankStep({
               <>
                 <div 
                   className="fixed inset-0 z-40 cursor-default" 
-                  onClick={() => setCurrencyOpen(false)}
+                  onClick={() => {
+                    setCurrencySearch("");
+                    setCurrencyOpen(false);
+                  }}
                 />
                 <motion.div
                   initial={{ opacity: 0, y: 5, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                  className="absolute z-50 left-0 right-0 mt-2 max-h-60 overflow-y-auto bg-bg-base border border-border-main rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.3)] backdrop-blur-xl custom-scrollbar flex flex-col"
+                  className="absolute z-50 left-0 right-0 mt-2 bg-bg-base border border-border-main rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.3)] backdrop-blur-xl flex flex-col max-h-64 overflow-hidden"
                 >
-                  {currencies.map((curr) => (
-                    <button
-                      key={curr}
-                      type="button"
-                      onClick={() => {
-                        onChange({ currency: curr });
-                        setCurrencyOpen(false);
-                      }}
-                      className={`w-full cursor-pointer p-4 text-left text-text-main hover:bg-primary/20 hover:text-text-main transition-colors font-medium border-b border-border-main last:border-0 hover:pl-6 duration-300 ${
-                        formData.currency === curr ? "bg-primary/10 text-primary" : ""
-                      }`}
-                    >
-                      {curr}
-                    </button>
-                  ))}
+                  <div className="p-3 bg-black/5 dark:bg-white/[0.02] border-b border-border-main/50">
+                    <div className="relative">
+                      <Search className="w-4 h-4 text-text-muted absolute left-4 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        placeholder="Search currency..."
+                        value={currencySearch}
+                        onChange={(e) => setCurrencySearch(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            if (filteredCurrencies.length === 1) {
+                              const curr = filteredCurrencies[0];
+                              onChange({ currency: curr.code });
+                              setCurrencySearch("");
+                              setCurrencyOpen(false);
+                            }
+                          }
+                        }}
+                        className="w-full pl-10 pr-4 py-2.5 text-xs bg-bg-secondary/40 border border-border-main rounded-2xl text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary/50 transition-colors"
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+                  <div className="overflow-y-auto custom-scrollbar max-h-48 flex-1">
+                    {filteredCurrencies.length === 0 ? (
+                      <div className="p-4 text-xs text-text-muted text-center font-semibold">
+                        No matches found
+                      </div>
+                    ) : (
+                      filteredCurrencies.map((curr) => (
+                        <button
+                          key={curr.code}
+                          type="button"
+                          onClick={() => {
+                            onChange({ currency: curr.code });
+                            setCurrencySearch("");
+                            setCurrencyOpen(false);
+                          }}
+                          className={`w-full cursor-pointer p-4 text-left text-text-main hover:bg-primary/20 hover:text-text-main transition-colors font-medium border-b border-border-main last:border-0 hover:pl-6 duration-300 ${
+                            formData.currency === curr.code ? "bg-primary/10 text-primary" : ""
+                          }`}
+                        >
+                          {curr.code} - {curr.name} ({curr.symbol})
+                        </button>
+                      ))
+                    )}
+                  </div>
                 </motion.div>
               </>
             )}
@@ -160,7 +258,7 @@ export default function BankStep({
           <input
             type="text"
             placeholder="IFSC Code"
-            className={getInputClass(showErrors && !!errors?.bankIfscCode)}
+            className={getInputClass(showErrors && !!errors?.bankIfscCode, showErrors && !errors?.bankIfscCode && !!formData.bankIfscCode)}
             value={formData.bankIfscCode || ""}
             onChange={(e) => onChange({ bankIfscCode: e.target.value })}
           />
@@ -176,7 +274,7 @@ export default function BankStep({
           <input
             type="text"
             placeholder="IBAN (Optional)"
-            className={getInputClass(showErrors && !!errors?.iban)}
+            className={getInputClass(showErrors && !!errors?.iban, showErrors && !errors?.iban && !!formData.iban)}
             value={formData.iban || ""}
             onChange={(e) => onChange({ iban: e.target.value })}
           />
@@ -192,7 +290,7 @@ export default function BankStep({
           <input
             type="text"
             placeholder="SWIFT Code (Optional)"
-            className={getInputClass(showErrors && !!errors?.swiftCode)}
+            className={getInputClass(showErrors && !!errors?.swiftCode, showErrors && !errors?.swiftCode && !!formData.swiftCode)}
             value={formData.swiftCode || ""}
             onChange={(e) => onChange({ swiftCode: e.target.value })}
           />
@@ -208,7 +306,7 @@ export default function BankStep({
           <input
             type="text"
             placeholder="Routing Number (Optional)"
-            className={getInputClass(showErrors && !!errors?.routingNumber)}
+            className={getInputClass(showErrors && !!errors?.routingNumber, showErrors && !errors?.routingNumber && !!formData.routingNumber)}
             value={formData.routingNumber || ""}
             onChange={(e) => onChange({ routingNumber: e.target.value })}
           />
@@ -224,7 +322,7 @@ export default function BankStep({
           <input
             type="text"
             placeholder="UPI ID (Optional)"
-            className={getInputClass(showErrors && !!errors?.upiId)}
+            className={getInputClass(showErrors && !!errors?.upiId, showErrors && !errors?.upiId && !!formData.upiId)}
             value={formData.upiId || ""}
             onChange={(e) => onChange({ upiId: e.target.value })}
           />

@@ -42,8 +42,9 @@ export default function StepNavigation({
       {/* Next / Submit Button */}
       {!isLastStep ? (
         <PremiumButton
-          label="Next Step"
+          label="Submit"
           onClick={onNext}
+          disabled={isSubmitting}
           variant="primary"
           size="md"
           icon={<ArrowRight className="w-4 h-4" />}

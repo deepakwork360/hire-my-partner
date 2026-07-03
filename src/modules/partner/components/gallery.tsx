@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
 import { X, ChevronLeft, ChevronRight, Images } from "lucide-react";
 import Link from "next/link";
+import { useTheme } from "@/context/ThemeContext";
 
 const rochester = Rochester({
   subsets: ["latin"],
@@ -25,6 +26,7 @@ interface GalleryProps {
 }
 
 export default function Gallery({ images, partner }: GalleryProps) {
+  const { appearance } = useTheme();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const defaultImages = [
@@ -254,11 +256,35 @@ export default function Gallery({ images, partner }: GalleryProps) {
 
               {allImages.length > 9 && partner?.id && (
                 <div className="mt-6 flex justify-center">
-                  <Link href={`/partners/${partner.id}/gallery`} className="w-full">
-                    <button className="w-full py-3.5 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm cursor-pointer flex items-center justify-center gap-2">
-                      <Images size={14} />
-                      View All Gallery ({allImages.length} Photos)
-                    </button>
+                  <Link href={`/partners/${partner.id}/gallery`} className="w-full block">
+                    <div 
+                      className={`p-[1px] transition-colors duration-300 ${
+                        appearance === "light"
+                          ? "bg-zinc-700 hover:bg-zinc-600"
+                          : "bg-white/20 hover:bg-white/30"
+                      }`}
+                      style={{ 
+                        clipPath: "polygon(0 12px, 12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)" 
+                      }}
+                    >
+                      <button 
+                        className={`w-full h-14 transition-all duration-300 text-[15px] font-bold cursor-pointer flex items-center justify-center gap-3.5 group ${
+                          appearance === "light"
+                            ? "bg-primary text-white hover:bg-accent"
+                            : "bg-primary text-white hover:bg-accent"
+                        }`}
+                        style={{ 
+                          clipPath: "polygon(0 12px, 12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)" 
+                        }}
+                      >
+                        <img 
+                          src="/icons/img.png" 
+                          alt="Gallery Icon" 
+                          className="w-7 h-7 object-contain transition-all duration-300 group-hover:scale-115 group-hover:rotate-6 drop-shadow-[0_2px_4px_rgba(0,0,0,0.15)]" 
+                        />
+                        <span >View full gallery ({allImages.length} photos)</span>
+                      </button>
+                    </div>
                   </Link>
                 </div>
               )}

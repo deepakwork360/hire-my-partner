@@ -9,6 +9,7 @@ interface ReviewStepProps {
   showErrors: boolean;
   onChange: (data: any) => void;
   errors?: Record<string, string>;
+  languagesList?: any[];
 }
 
 export default function ReviewStep({
@@ -18,6 +19,7 @@ export default function ReviewStep({
   showErrors,
   onChange,
   errors,
+  languagesList = [],
 }: ReviewStepProps) {
 
   const getDocLabel = (idx: number) => {
@@ -79,10 +81,23 @@ export default function ReviewStep({
               <span className="text-text-muted font-medium">Email Address</span>
               <span className="text-text-main font-bold">{formData.email || "—"}</span>
             </div>
-            <div className="flex justify-between py-1">
+            <div className="flex justify-between py-1 border-b border-white/5">
               <span className="text-text-muted font-medium">Mobile Number</span>
               <span className="text-text-main font-bold">
                 {formData.phoneCountryCode} {formData.mobile || "—"}
+              </span>
+            </div>
+            <div className="flex justify-between py-1">
+              <span className="text-text-muted font-medium">Languages</span>
+              <span className="text-text-main font-bold text-right">
+                {(formData.languages || []).map((lang: any) => {
+                  const idVal = typeof lang === "number" ? lang : parseInt(lang, 10);
+                  if (!isNaN(idVal)) {
+                    const found = languagesList.find((l: any) => l.id === idVal);
+                    return found ? found.name : `Language #${idVal}`;
+                  }
+                  return String(lang);
+                }).join(", ") || "—"}
               </span>
             </div>
           </div>
@@ -108,9 +123,13 @@ export default function ReviewStep({
                 <span className="text-text-muted font-medium">State</span>
                 <span className="text-text-main font-bold">{formData.state || "—"}</span>
               </div>
-              <div className="flex justify-between py-1">
+              <div className="flex justify-between py-1 border-b border-white/5">
                 <span className="text-text-muted font-medium">Pincode</span>
                 <span className="text-text-main font-bold">{formData.pincode || "—"}</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="text-text-muted font-medium">Address</span>
+                <span className="text-text-main font-bold">{formData.address || "—"}</span>
               </div>
             </div>
           </div>

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import SideDashboard from "@/components/side-dashboard/side-dashboard";
 import Footer from "../home-page/sections/Footer";
 import ProfileCard from "@/components/ProfileCard/ProfileCard";
-import { Star, Sparkles, Heart, Compass, X } from "lucide-react";
+import { Bookmark, Sparkles, Heart, Compass, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Outfit } from "next/font/google";
 import Link from "next/link";
@@ -12,35 +12,57 @@ import Link from "next/link";
 const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "800"] });
 
 export default function FavouritesPage() {
-  const [favourites, setFavourites] = useState<any[]>([]);
+  const [bookmarks, setBookmarks] = useState<any[]>([]);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const loadFavourites = () => {
+    const loadBookmarks = () => {
       try {
-        const favs = localStorage.getItem("favourite_partners");
-        if (favs) {
-          setFavourites(JSON.parse(favs));
+        let bookmarksStr = localStorage.getItem("bookmarked_partners");
+        
+        // Graceful migration
+        if (!bookmarksStr) {
+          const oldFavs = localStorage.getItem("favourite_partners");
+          if (oldFavs) {
+            localStorage.setItem("bookmarked_partners", oldFavs);
+            bookmarksStr = oldFavs;
+          }
+        }
+
+        if (bookmarksStr) {
+          setBookmarks(JSON.parse(bookmarksStr));
+        } else {
+          setBookmarks([]);
         }
       } catch (e) {
         console.error(e);
       }
     };
-    loadFavourites();
+    loadBookmarks();
 
-    window.addEventListener("favourites_changed", loadFavourites);
-    return () => window.removeEventListener("favourites_changed", loadFavourites);
+    window.addEventListener("bookmarks_changed", loadBookmarks);
+    window.addEventListener("favourites_changed", loadBookmarks); // Backwards compatibility
+    return () => {
+      window.removeEventListener("bookmarks_changed", loadBookmarks);
+      window.removeEventListener("favourites_changed", loadBookmarks);
+    };
   }, []);
 
-  const handleRemoveFavourite = (id: string | number, name: string) => {
+  const handleRemoveBookmark = (id: string | number, name: string) => {
     try {
-      const favsStr = localStorage.getItem("favourite_partners");
-      let favList = favsStr ? JSON.parse(favsStr) : [];
+      let bookmarksStr = localStorage.getItem("bookmarked_partners");
+      if (!bookmarksStr) {
+        bookmarksStr = localStorage.getItem("favourite_partners");
+      }
+      
+      let favList = bookmarksStr ? JSON.parse(bookmarksStr) : [];
       if (Array.isArray(favList)) {
         favList = favList.filter((p: any) => String(p.id) !== String(id));
-        localStorage.setItem("favourite_partners", JSON.stringify(favList));
-        setFavourites(favList);
+        localStorage.setItem("bookmarked_partners", JSON.stringify(favList));
+        localStorage.setItem("favourite_partners", JSON.stringify(favList)); // Keep both sync'd
+        setBookmarks(favList);
+        window.dispatchEvent(new Event("bookmarks_changed"));
         window.dispatchEvent(new Event("favourites_changed"));
       }
     } catch (e) {
@@ -59,7 +81,7 @@ export default function FavouritesPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-bg-base" />
           <div className="relative z-10 text-center px-4">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-wider text-text-main">
-              My Favourites
+              Bookmarks
             </h1>
             <p className="text-xs sm:text-sm text-text-muted mt-2 max-w-md mx-auto">
               Your hand-picked list of premium companions for quick booking and direct access.
@@ -74,23 +96,23 @@ export default function FavouritesPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-border-main/50">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
-                <Star className="text-primary fill-primary" size={20} />
+                <Bookmark className="text-primary fill-primary" size={20} />
               </div>
               <div>
                 <h3 className="text-text-main text-lg font-black uppercase tracking-wider">
-                  Saved Companions
+                  Bookmarked Companions
                 </h3>
                 <p className="text-text-muted text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
                   <Sparkles size={12} className="text-primary animate-pulse" />
-                  Your curated list of favourites
+                  Your curated list of bookmarks
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 px-4 py-2 bg-bg-secondary rounded-full border border-border-main shadow-sm">
-              <Star size={14} className="text-primary fill-primary" />
+              <Bookmark size={14} className="text-primary fill-primary" />
               <span className="text-text-main text-[10px] font-black uppercase tracking-widest">
-                {favourites.length} Favourites
+                {bookmarks.length} Bookmarks
               </span>
             </div>
           </div>
@@ -98,10 +120,10 @@ export default function FavouritesPage() {
           {/* Grid list */}
           {mounted && (
             <div className="relative">
-              {favourites.length > 0 ? (
+              {bookmarks.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-8 justify-items-center">
                   <AnimatePresence mode="popLayout">
-                    {favourites.map((profile, index) => (
+                    {bookmarks.map((profile, index) => (
                       <motion.div
                         key={profile.id}
                         layout
@@ -141,9 +163,9 @@ export default function FavouritesPage() {
                             showViewIcon={true}
                           />
                           <button
-                            onClick={() => handleRemoveFavourite(profile.id, profile.name)}
+                            onClick={() => handleRemoveBookmark(profile.id, profile.name)}
                             className="absolute -top-3 -right-3 z-45 w-9 h-9 bg-rose-500 hover:bg-rose-600 text-white border-2 border-bg-base rounded-full flex items-center justify-center shadow-lg shadow-rose-500/20 transition-all duration-500 ease-in-out group-hover/card:-translate-y-2 scale-95 hover:scale-105 active:scale-95 cursor-pointer"
-                            title="Remove from Favourites"
+                            title="Remove Bookmark"
                           >
                             <X size={16} strokeWidth={2.5} />
                           </button>
@@ -159,14 +181,14 @@ export default function FavouritesPage() {
                   className="py-20 flex flex-col items-center justify-center text-center gap-6 bg-bg-secondary/20 border border-dashed border-border-main rounded-[40px]"
                 >
                   <div className="w-20 h-20 rounded-full bg-bg-secondary border border-border-main flex items-center justify-center text-text-muted">
-                    <Heart size={40} className="text-text-muted/40" />
+                    <Bookmark size={40} className="text-text-muted/40" />
                   </div>
                   <div className="space-y-2">
                     <h4 className="text-text-main text-xl font-bold uppercase tracking-widest">
-                      Your List is Empty
+                      No Bookmarks Yet
                     </h4>
                     <p className="text-text-muted text-sm font-medium max-w-sm">
-                      You haven't added any companions to your favorites list yet. Explore profiles to add them here.
+                      You haven't bookmarked any companions yet. Explore profiles to add them here.
                     </p>
                   </div>
                   <Link href="/browse-partners">

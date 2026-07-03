@@ -14,6 +14,7 @@ interface PremiumDatePickerProps {
   label?: string;
   className?: string;
   hasError?: boolean;
+  isValid?: boolean;
   minDate?: Date;
 }
 
@@ -24,6 +25,7 @@ export default function PremiumDatePicker({
   label,
   className = "",
   hasError = false,
+  isValid = false,
   minDate,
 }: PremiumDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -168,6 +170,8 @@ export default function PremiumDatePicker({
           className={`w-full cursor-pointer min-h-[58px] py-4 pl-5 pr-12 rounded-2xl text-left transition-all duration-300 flex items-center gap-4 group/btn border border-solid shadow-sm select-none outline-none focus:outline-none focus-visible:outline-none active:outline-none focus:ring-4 ${
             hasError
               ? "bg-red-500/5 border-red-500 focus:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]"
+              : isValid
+              ? "bg-emerald-500/5 border-emerald-500 focus:ring-emerald-500/10 shadow-[0_0_12px_rgba(16,185,129,0.08)]"
               : isOpen
               ? "bg-bg-base border-primary/60 ring-primary/20"
               : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:border-primary/60 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] focus:border-primary/60 focus:ring-primary/20"
