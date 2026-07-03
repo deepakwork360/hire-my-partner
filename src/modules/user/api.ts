@@ -1,7 +1,6 @@
+import { createApiFallbackProxy } from '@/lib/apiFallback';
 import { userMockApi } from './api.mock';
 import { userRealApi } from './api.real';
 
-const IS_MOCK = process.env.NEXT_PUBLIC_API_MODE !== 'api';
-
-// Switchable user API bridge. Swaps dynamically between mock and real modes.
-export const userApi = IS_MOCK ? userMockApi : userRealApi;
+// Switchable user API bridge. Intercepts and falls back to mock if real API routes return 404 or are unreachable.
+export const userApi = createApiFallbackProxy(userRealApi, userMockApi);

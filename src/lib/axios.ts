@@ -1,8 +1,19 @@
 import axios from 'axios';
 import { useAuthStore } from '../modules/auth/store';
 
+const getCleanApiUrl = (): string => {
+  let url = (process.env.NEXT_PUBLIC_API_URL || 'https://mypartneradmin.blackbullsolution.com/api').trim();
+  // Ensure relative URLs start with a leading slash to prevent relative resolution issues
+  if (!url.startsWith('http') && !url.startsWith('/')) {
+    url = '/' + url;
+  }
+  return url;
+};
+
+export const API_URL = getCleanApiUrl();
+
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://mypartneradmin.blackbullsolution.com/api',
+  baseURL: API_URL,
   withCredentials: true, // Strictly needed to pass httpOnly cookies (like refreshToken)
 });
 
@@ -27,7 +38,7 @@ api.interceptors.response.use(
       try {
         // The backend uses the httpOnly cookie to authenticate this refresh call
         const res = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || 'https://mypartneradmin.blackbullsolution.com/api'}/refresh`, 
+          `${API_URL}/refresh`, 
           {}, 
           { withCredentials: true }
         );
