@@ -22,19 +22,6 @@ export default function ReviewStep({
   languagesList = [],
 }: ReviewStepProps) {
 
-  const getDocLabel = (idx: number) => {
-    switch (idx) {
-      case 0:
-        return "Aadhaar Front";
-      case 1:
-        return "Aadhaar Back";
-      case 2:
-        return "PAN Front";
-      default:
-        return "PAN Back";
-    }
-  };
-
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "";
     try {
@@ -53,8 +40,8 @@ export default function ReviewStep({
   return (
     <div className="space-y-8 select-none">
       <div className="text-center mb-6">
-        <h3 className="text-xl font-bold text-text-main">Review Your Application</h3>
-        <p className="text-text-muted text-xs mt-1">Please double check all information below before submitting.</p>
+        <h3 className="text-xl font-bold text-text-main">Recieved Your Application</h3>
+        <p className="text-text-muted text-xs mt-1">Your Application is under review. You will be notified once it is approved.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -185,6 +172,7 @@ export default function ReviewStep({
             KYC Verification
           </h4>
           <div className="space-y-4 text-sm">
+            {/* Commented out as scheduling is postponed
             <div className="flex justify-between py-1 border-b border-white/5">
               <span className="text-text-muted font-medium">KYC Appointment</span>
               <span className="text-text-main font-bold text-right">
@@ -192,71 +180,43 @@ export default function ReviewStep({
                 {selectedKycSlot ? ` at ${selectedKycSlot}` : ""}
               </span>
             </div>
+            */}
             <div>
               <span className="text-text-muted font-medium block mb-2">Uploaded Identity Proofs</span>
-              <div className="grid grid-cols-4 gap-2">
-                {[0, 1, 2, 3].map((idx) => (
-                  <div key={idx} className="relative aspect-square border border-white/10 rounded-xl overflow-hidden bg-black/20">
-                    {formData.idProofs[idx] ? (
-                      <img
-                        src={formData.idProofs[idx]!}
-                        alt={getDocLabel(idx)}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[8px] font-black text-red-500 text-center p-1">
-                        Missing
-                      </div>
-                    )}
+              <div className={`grid gap-2 ${(formData.kycDocInputs || []).length > 2 ? "grid-cols-4" : "grid-cols-2"}`}>
+                {formData.kycDocInputs && formData.kycDocInputs.length > 0 ? (
+                  formData.kycDocInputs.map((doc: any, idx: number) => (
+                    <div key={idx} className="relative aspect-square border border-white/10 rounded-xl overflow-hidden bg-black/20 flex flex-col justify-end">
+                      {formData.idProofs && formData.idProofs[idx] ? (
+                        <>
+                          <img
+                            src={formData.idProofs[idx]!}
+                            alt={doc.name}
+                            className="w-full h-full object-cover absolute inset-0"
+                          />
+                          <div className="absolute inset-0 bg-black/40 flex items-end p-1">
+                            <span className="text-[8px] font-black text-white uppercase tracking-wider truncate w-full">{doc.name}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-center p-2">
+                          <span className="text-[8px] font-black text-red-500 uppercase tracking-wider mb-1">Missing</span>
+                          <span className="text-[7px] text-text-muted font-bold truncate max-w-full">{doc.name}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full py-4 text-center text-xs text-text-muted font-bold">
+                    No documents uploaded.
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Terms & Conditions Box */}
-      <div className="flex flex-col gap-2 w-full">
-        <div className={`border p-6 rounded-2xl flex items-start md:items-center gap-4 transition-all duration-500 bg-white/2 ${showErrors && errors?.termsAgreed ? "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] bg-red-500/5" : "border-border-main"}`}>
-          <label className="flex items-center gap-4 w-fit cursor-pointer group">
-            <div
-              className={`w-6 h-6 shrink-0 rounded flex items-center justify-center border-2 transition-all duration-300 ${
-                formData.termsAgreed 
-                  ? "bg-primary border-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" 
-                  : showErrors && errors?.termsAgreed 
-                  ? "border-red-500" 
-                  : "border-border-main group-hover:border-primary"
-              }`}
-            >
-              {formData.termsAgreed && (
-                <Check className="w-4 h-4 text-white stroke-3" />
-              )}
-            </div>
-            <span className={`text-sm md:text-base font-medium select-none transition-colors ${showErrors && errors?.termsAgreed ? "text-red-500" : "text-text-main group-hover:text-text-main"}`}>
-              I confirm that I agree to the{" "}
-              <span className="text-primary hover:text-primary/80 underline underline-offset-4">
-                Terms
-              </span>{" "}
-              and{" "}
-              <span className="text-primary hover:text-primary/80 underline underline-offset-4">
-                Booking Guidelines
-              </span>
-            </span>
-            <input
-              type="checkbox"
-              className="hidden"
-              checked={formData.termsAgreed}
-              onChange={() => onChange({ termsAgreed: !formData.termsAgreed })}
-            />
-          </label>
-        </div>
-        {showErrors && errors?.termsAgreed && (
-          <p className="text-red-500 text-xs mt-0.5 ml-2 font-semibold">
-            {errors.termsAgreed}
-          </p>
-        )}
-      </div>
     </div>
   );
 }

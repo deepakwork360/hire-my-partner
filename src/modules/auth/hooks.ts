@@ -24,17 +24,19 @@ export const useRegister = () => {
       const response = await authApi.register(data);
       toast.success(response.message || 'Registered successfully. Please verify your OTP.');
 
-      // Pass all details to the verify-otp page
-      const queryParams = new URLSearchParams({
-        type: 'register',
-        send_via: 'phone',
-        phone_no: data.phone_no || '',
-        phone_country_code: data.phone_country_code || '',
-        email: data.email || '',
-        emailOrPhone: data.phone_no || data.email || ''
-      }).toString();
+      // Save details securely to sessionStorage instead of exposing PII in URL
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('otp_verification_data', JSON.stringify({
+          type: 'register',
+          send_via: 'email',
+          phone_no: data.phone_no || '',
+          phone_country_code: data.phone_country_code || '',
+          email: data.email || '',
+          emailOrPhone: data.email || data.phone_no || ''
+        }));
+      }
 
-      router.push(`/verify-otp?${queryParams}`);
+      router.push(`/verify-otp`);
     } catch (error) {
       toast.error(getErrorMsg(error));
     } finally {
@@ -110,22 +112,63 @@ export const useVerifyOtp = () => {
         // Skip calling verifyOtp API so the OTP is not consumed/deleted.
         // Redirect directly to the reset-password page where both OTP and password will be submitted.
         toast.info('Redirecting to reset password...');
-        router.push(`/reset-password?emailOrPhone=${encodeURIComponent(data.emailOrPhone)}&otp=${data.otp}`);
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('reset_password_data', JSON.stringify({
+            emailOrPhone: data.emailOrPhone,
+            otp: data.otp
+          }));
+        }
+        router.push(`/reset-password`);
         return;
       }
 
       const response = await authApi.verifyOtp(data);
       if (data.type === 'register') {
-        toast.success('Verification successful! Please log in.');
+        if (data.send_via === 'email') {
+          toast.success('Email verified successfully! Sending verification code to your phone number.');
+          try {
+            await authApi.sendOtp({
+              type: 'register',
+              send_via: 'phone',
+              phone_no: data.phone_no || '',
+              phone_country_code: data.phone_country_code || '',
+              email: data.email || ''
+            });
+          } catch (sendErr) {
+            console.error("Failed to send phone OTP:", sendErr);
+          }
+
+          if (typeof window !== 'undefined') {
+            const sessionData = sessionStorage.getItem('otp_verification_data');
+            if (sessionData) {
+              const parsed = JSON.parse(sessionData);
+              parsed.send_via = 'phone';
+              sessionStorage.setItem('otp_verification_data', JSON.stringify(parsed));
+            }
+          }
+          window.location.reload();
+          return;
+        }
+
+        toast.success('Phone verified successfully! Please log in.');
         const username = data.phone_no || data.email || data.emailOrPhone;
-        router.push(`/login?emailOrPhone=${encodeURIComponent(username)}`);
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('login_autofill_data', username);
+        }
+        router.push(`/login`);
       } else if (response && response.token) {
         setAuth(response);
         toast.success('Verification successful!');
         router.push('/become-a-partner');
       } else {
         toast.info('OTP Verified successfully.');
-        router.push(`/reset-password?emailOrPhone=${encodeURIComponent(data.emailOrPhone)}&otp=${data.otp}`);
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('reset_password_data', JSON.stringify({
+            emailOrPhone: data.emailOrPhone,
+            otp: data.otp
+          }));
+        }
+        router.push(`/reset-password`);
       }
     } catch (error) {
       toast.error(getErrorMsg(error));
@@ -146,7 +189,14 @@ export const useForgotPassword = () => {
     try {
       await authApi.forgotPassword(data);
       toast.success('OTP sent successfully!');
-      router.push(`/verify-otp?emailOrPhone=${encodeURIComponent(data.emailOrPhone)}&type=forget`);
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('otp_verification_data', JSON.stringify({
+          type: 'forget',
+          emailOrPhone: data.emailOrPhone,
+          send_via: data.emailOrPhone.includes('@') ? 'email' : 'phone'
+        }));
+      }
+      router.push(`/verify-otp`);
     } catch (error) {
       toast.error(getErrorMsg(error));
     } finally {
@@ -166,6 +216,10 @@ export const useResetPassword = () => {
     try {
       await authApi.resetPassword(data);
       toast.success('Password reset successfully. You can now login.');
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('reset_password_data');
+        sessionStorage.removeItem('otp_verification_data');
+      }
       router.push('/login');
     } catch (error) {
       toast.error(getErrorMsg(error));

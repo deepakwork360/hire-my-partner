@@ -42,8 +42,26 @@ function EyeIcon({ className }: { className?: string }) {
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const emailOrPhone = searchParams.get("emailOrPhone") || "";
-  const otp = searchParams.get("otp") || "";
+
+  const [sessionData, setSessionData] = useState<any>(null);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = sessionStorage.getItem("reset_password_data");
+        if (stored) {
+          setSessionData(JSON.parse(stored));
+        }
+      } catch (e) {
+        console.error("Failed to parse sessionStorage", e);
+      }
+      setSessionLoaded(true);
+    }
+  }, []);
+
+  const emailOrPhone = sessionData?.emailOrPhone || searchParams.get("emailOrPhone") || "";
+  const otp = sessionData?.otp || searchParams.get("otp") || "";
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -52,11 +70,11 @@ function ResetPasswordForm() {
   const { activeTheme } = useTheme();
 
   useEffect(() => {
-    if (!emailOrPhone || !otp) {
+    if (sessionLoaded && (!emailOrPhone || !otp)) {
       toast.error("Invalid session. Start the forgot password process again.");
       router.push("/forgot-password");
     }
-  }, [emailOrPhone, otp, router]);
+  }, [sessionLoaded, emailOrPhone, otp, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

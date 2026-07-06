@@ -1,0 +1,15 @@
+video kyc call flow has been commented for now in the become-a-partner module because it's not ready yet 
+
+
+
+#KYC video call flow 
+
+Step 1: User uploads KYC documents and selects a date and time slot for the KYC video call
+
+Step 2: Admin approves the KYC documents and the video call request
+
+Step 3: User joins the video call and completes the KYC verification process
+
+Step 4: Admin approves the KYC video call and the user becomes a partner
+
+it is in the frontend/src/app/(main)/become-a-partner/components/KycStep.tsx

@@ -212,6 +212,19 @@ function LoginForm() {
         ...prev,
         emailOrPhone: emailOrPhoneParam
       }));
+    } else if (typeof window !== "undefined") {
+      try {
+        const stored = sessionStorage.getItem("login_autofill_data");
+        if (stored) {
+          setFormData(prev => ({
+            ...prev,
+            emailOrPhone: stored
+          }));
+          sessionStorage.removeItem("login_autofill_data");
+        }
+      } catch (e) {
+        console.error("Failed to parse sessionStorage", e);
+      }
     }
   }, [searchParams]);
 

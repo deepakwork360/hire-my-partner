@@ -118,7 +118,8 @@ export default function LocationStep({
         onChange({
           country_id: matchedCountry.id,
           state_id: null,
-          city_id: null
+          city_id: null,
+          idProofs: []
         });
       }
     }
@@ -402,7 +403,8 @@ export default function LocationStep({
                               state: "Select State",
                               state_id: null,
                               city: "Select City",
-                              city_id: null
+                              city_id: null,
+                              idProofs: []
                             });
                             setCountrySearch("");
                             setPartnerCountryOpen(false);

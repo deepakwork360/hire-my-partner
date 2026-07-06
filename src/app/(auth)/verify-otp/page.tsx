@@ -20,16 +20,34 @@ export default function VerifyOtpPage() {
 function VerifyOtpForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const emailOrPhone = searchParams.get("emailOrPhone") || "";
-  const type = (searchParams.get("type") as any) || "register";
+
+  const [sessionData, setSessionData] = useState<any>(null);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = sessionStorage.getItem("otp_verification_data");
+        if (stored) {
+          setSessionData(JSON.parse(stored));
+        }
+      } catch (e) {
+        console.error("Failed to parse sessionStorage", e);
+      }
+      setSessionLoaded(true);
+    }
+  }, []);
+
+  const emailOrPhone = sessionData?.emailOrPhone || searchParams.get("emailOrPhone") || "";
+  const type = sessionData?.type || (searchParams.get("type") as any) || "register";
   
   // Parse emailOrPhone if the specific query parameters are not present
   const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailOrPhone);
-  const sendVia = (searchParams.get("send_via") as any) || (isEmail ? "email" : "phone");
+  const sendVia = sessionData?.send_via || (searchParams.get("send_via") as any) || (isEmail ? "email" : "phone");
   
-  let phoneNo = searchParams.get("phone_no") || "";
-  let phoneCountryCode = searchParams.get("phone_country_code") || "";
-  let email = searchParams.get("email") || "";
+  let phoneNo = sessionData?.phone_no || searchParams.get("phone_no") || "";
+  let phoneCountryCode = sessionData?.phone_country_code || searchParams.get("phone_country_code") || "";
+  let email = sessionData?.email || searchParams.get("email") || "";
   
   if (!phoneNo && !email && emailOrPhone) {
     if (isEmail) {
@@ -59,11 +77,11 @@ function VerifyOtpForm() {
   const { handleSendOtp, isLoading: isSendingOtp } = useSendOtp();
 
   useEffect(() => {
-    if (!emailOrPhone && !phoneNo && !email) {
+    if (sessionLoaded && !emailOrPhone && !phoneNo && !email) {
       toast.error("Invalid session. Redirecting to register.");
       router.push("/register");
     }
-  }, [emailOrPhone, phoneNo, email, router]);
+  }, [sessionLoaded, emailOrPhone, phoneNo, email, router]);
 
   const handleChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
@@ -80,6 +98,26 @@ function VerifyOtpForm() {
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData("text").trim();
+    
+    // Filter only digits
+    const digits = pasteData.replace(/\D/g, "").slice(0, 6);
+    if (!digits) return;
+    
+    const newOtp = [...otp];
+    for (let i = 0; i < 6; i++) {
+      newOtp[i] = digits[i] || "";
+    }
+    setOtp(newOtp);
+    
+    const targetIndex = Math.min(digits.length - 1, 5);
+    if (targetIndex >= 0) {
+      inputRefs.current[targetIndex]?.focus();
     }
   };
 
@@ -175,7 +213,7 @@ function VerifyOtpForm() {
 
           <div className="flex flex-col items-center mb-10 text-center">
             <h2 className="text-3xl font-semibold text-text-main mt-6 mb-2 tracking-tight">
-              Verify Account
+              {sendVia === 'email' ? "Verify Email" : sendVia === 'phone' ? "Verify Phone Number" : "Verify Account"}
             </h2>
             <p className="text-text-muted text-sm max-w-sm">
               Code sent to <span className="text-text-main font-medium">{displayTarget}</span>
@@ -194,6 +232,7 @@ function VerifyOtpForm() {
                   value={digit}
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
+                  onPaste={handlePaste}
                   autoFocus={index === 0}
                   className="w-10 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-bold bg-bg-base text-text-main rounded-xl border border-border-main focus:border-primary/50 focus:bg-bg-card outline-none transition-all"
                 />

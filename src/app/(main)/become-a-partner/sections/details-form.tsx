@@ -471,6 +471,7 @@ export default function DetailsForm() {
     linkedin: "",
     termsAgreed: false,
     idProofs: [null, null, null, null] as (string | null)[],
+    kycDocInputs: [] as any[],
     gallery: [] as string[],
     videos: Array(3).fill(null) as (string | null)[],
     current_latitude: null as number | null,
@@ -481,6 +482,8 @@ export default function DetailsForm() {
   });
   const [lastSubmittedFormData, setLastSubmittedFormData] = useState<any>(null);
   const [currentStep, setCurrentStep] = useState(1);
+  const [reachedReviewStep, setReachedReviewStep] = useState(false);
+  const [lastLoadedKey, setLastLoadedKey] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isStepSubmitting, setIsStepSubmitting] = useState(false);
   const [languagesList, setLanguagesList] = useState<any[]>([]);
@@ -600,6 +603,12 @@ export default function DetailsForm() {
     fetchLanguages();
     fetchCountries();
   }, []);
+
+  useEffect(() => {
+    if (currentStep === 5) {
+      setReachedReviewStep(true);
+    }
+  }, [currentStep]);
 
   const handleStartEdit = () => {
     setLastSubmittedFormData(JSON.parse(JSON.stringify(formData)));
@@ -750,7 +759,13 @@ export default function DetailsForm() {
         setSelectedKycDate(parsed.kycDate || "");
         setSelectedKycSlot(parsed.kycSlot || "");
         setZoomLink(parsed.zoomLink || "");
-        setCurrentStep(Math.min(parsed.currentStep || 1, 5));
+        const hasReachedReview = parsed.reachedReviewStep || parsed.currentStep === 5 || (parsed.formData && parsed.formData.termsAgreed === true);
+        if (hasReachedReview) {
+          setReachedReviewStep(true);
+          setCurrentStep(5);
+        } else {
+          setCurrentStep(Math.min(parsed.currentStep || 1, 5));
+        }
         if (parsed.galleryItemIds) {
           setGalleryItemIds(parsed.galleryItemIds);
         }
@@ -762,7 +777,7 @@ export default function DetailsForm() {
         } else if (parsed.verificationStatus === "NEEDS_REVISION") {
           setView("form");
         } else if (parsed.view === "kyc-schedule") {
-          setView("kyc-schedule");
+          setView("summary");
         }
       } catch (e) {
         console.error("Failed to parse saved application data", e);
@@ -807,6 +822,7 @@ export default function DetailsForm() {
         linkedin: "",
         termsAgreed: false,
         idProofs: [null, null, null, null],
+        kycDocInputs: [],
         gallery: [],
         videos: Array(3).fill(null),
         current_latitude: null,
@@ -819,14 +835,16 @@ export default function DetailsForm() {
       setSubmissionStatus("pending");
       setVerificationStatus("DRAFT");
       setKycStatus("NOT_SCHEDULED");
+      setReachedReviewStep(false);
       setView("form");
     }
+    setLastLoadedKey(storageKey);
     setIsHydrated(true);
   }, [storageKey]);
 
   // Persistence: Save on Change (Include lightweight Browser Object URLs)
   useEffect(() => {
-    if (isHydrated) {
+    if (isHydrated && lastLoadedKey === storageKey) {
       localStorage.setItem(
         storageKey,
         JSON.stringify({
@@ -841,17 +859,18 @@ export default function DetailsForm() {
           kycSlot,
           zoomLink,
           currentStep,
+          reachedReviewStep,
           galleryItemIds,
         }),
       );
       window.dispatchEvent(new Event("partnerStatusChange"));
     }
-  }, [formData, submissionStatus, view, verificationStatus, verificationNotes, kycStatus, kycDate, kycSlot, zoomLink, isHydrated, storageKey, applicationId, currentStep, galleryItemIds]);
+  }, [formData, submissionStatus, view, verificationStatus, verificationNotes, kycStatus, kycDate, kycSlot, zoomLink, isHydrated, storageKey, applicationId, currentStep, reachedReviewStep, galleryItemIds, lastLoadedKey]);
 
 
   // Auto-Scroll on View Change
   useEffect(() => {
-    if (isHydrated && (view === "processing" || view === "summary" || view === "kyc-schedule")) {
+    if (isHydrated && (view === "processing" || view === "summary")) {
       sectionRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "start",
@@ -1058,19 +1077,20 @@ export default function DetailsForm() {
         });
         step3Schema.parse(formData);
       } else if (stepNum === 4) {
-        if (!formData.idProofs[0] || !formData.idProofs[1] || !formData.idProofs[2] || !formData.idProofs[3]) {
-          throw new Error("Please upload Aadhaar Front, Aadhaar Back, PAN Card Front, and PAN Card Back.");
+        const requiredDocs = formData.kycDocInputs || [];
+        for (let i = 0; i < requiredDocs.length; i++) {
+          if (requiredDocs[i].is_required && (!formData.idProofs || !formData.idProofs[i])) {
+            throw new Error(`Please upload your ${requiredDocs[i].name}.`);
+          }
         }
-        if (!selectedKycDate || !selectedKycSlot) {
-          throw new Error("Please select both date and time slot for your KYC Call.");
-        }
-      } else if (stepNum === 5) {
-        const step5Schema = z.object({
+        const step4Schema = z.object({
           termsAgreed: z.boolean().refine((val) => val === true, {
             message: "You must agree to the terms and conditions.",
           }),
         });
-        step5Schema.parse(formData);
+        step4Schema.parse(formData);
+      } else if (stepNum === 5) {
+        // No validation needed for step 5 since termsAgreed has been moved to step 4
       }
       setErrors({});
       if (!silent) {
@@ -1093,7 +1113,7 @@ export default function DetailsForm() {
         const fieldErrors: Record<string, string> = {};
         if (error.message.includes("at least 3 photos")) {
           fieldErrors.gallery = error.message;
-        } else if (error.message.includes("upload Aadhaar")) {
+        } else if (error.message.includes("upload Aadhaar") || error.message.startsWith("Please upload your")) {
           fieldErrors.idProofs = error.message;
         } else if (error.message.includes("KYC Call")) {
           fieldErrors.kycSlot = error.message;
@@ -1201,12 +1221,31 @@ export default function DetailsForm() {
             console.warn("Safety become-a-partner sync ignored:", err);
           }
         } else if (stepNum === 4) {
-          const payload = {
-            kycDate: selectedKycDate,
-            kycSlot: selectedKycSlot,
-            idProofs: formData.idProofs.filter(Boolean),
-          };
-          await api.post("/partner/become-a-partner", payload);
+          const formDataBody = new FormData();
+          const requiredDocs = formData.kycDocInputs || [];
+          
+          for (let i = 0; i < requiredDocs.length; i++) {
+            const doc = requiredDocs[i];
+            const blobUrl = formData.idProofs && formData.idProofs[i];
+            if (blobUrl) {
+              try {
+                const response = await fetch(blobUrl);
+                const fileBlob = await response.blob();
+                const extension = fileBlob.type.split("/")[1] || "jpg";
+                const fileName = `${doc.require_document_key}.${extension}`;
+                formDataBody.append(doc.require_document_key, fileBlob, fileName);
+              } catch (err) {
+                console.error(`Failed to fetch blob for ${doc.require_document_key}:`, err);
+              }
+            }
+          }
+
+          const res = await api.post("/partner/kyc-document/upload", formDataBody, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
+          console.log("KYC Upload Response:", res.data);
         }
 
         toast.success(`Step ${stepNum} details saved!`);
@@ -1481,6 +1520,7 @@ export default function DetailsForm() {
       linkedin: "",
       termsAgreed: false,
       idProofs: [null, null, null, null],
+      kycDocInputs: [],
       gallery: [],
       videos: Array(3).fill(null),
       current_latitude: null,
@@ -1522,7 +1562,10 @@ export default function DetailsForm() {
     const file = e.target.files?.[0];
     if (file) {
       const blobUrl = URL.createObjectURL(file);
-      const newProofs = [...formData.idProofs];
+      const newProofs = formData.idProofs ? [...formData.idProofs] : [];
+      while (newProofs.length <= index) {
+        newProofs.push(null);
+      }
       newProofs[index] = blobUrl;
       setFormData({ ...formData, idProofs: newProofs });
     }
@@ -1792,6 +1835,7 @@ export default function DetailsForm() {
                 onPrev={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
                 onNext={() => handleStepSubmit(currentStep)}
                 onSubmit={handleSubmit}
+                onEdit={() => setCurrentStep(1)}
                 isSubmitting={isStepSubmitting || (submissionStatus === "pending" && (view as string) === "processing")}
               />
             </motion.div>
@@ -1843,190 +1887,7 @@ export default function DetailsForm() {
             </motion.div>
           )}
 
-          {view === "kyc-schedule" && (
-            <motion.div
-              key="kyc-schedule"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
-              className="relative bg-bg-card/50 backdrop-blur-2xl border border-border-main rounded-[32px] md:rounded-[48px] p-8 md:p-14 shadow-2xl overflow-hidden"
-            >
-              {/* Subtle background glow */}
-              <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
 
-              {/* Funnel Progress Stepper */}
-              <div className="flex items-center justify-between max-w-2xl mx-auto mb-12 relative">
-                <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-white/10 z-0" />
-                
-                {/* Step 1 */}
-                <div className="relative z-10 flex flex-col items-center gap-2">
-                  <div className="w-10 h-10 rounded-full bg-green-500/20 border border-green-500 flex items-center justify-center text-green-500 font-bold text-sm">
-                    <Check className="w-5 h-5 text-green-500" />
-                  </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-green-500">Details Form</span>
-                </div>
-                
-                {/* Step 2 */}
-                <div className="relative z-10 flex flex-col items-center gap-2">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary flex items-center justify-center text-primary font-bold text-sm shadow-[0_0_15px_rgba(var(--primary-rgb),0.4)] animate-pulse">
-                    2
-                  </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Video KYC</span>
-                </div>
-
-                {/* Step 3 */}
-                <div className="relative z-10 flex flex-col items-center gap-2">
-                  <div className="w-10 h-10 rounded-full bg-bg-secondary border border-border-main flex items-center justify-center text-text-muted font-bold text-sm">
-                    3
-                  </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">Approval Review</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                {/* Left side: slot choices */}
-                <div className="lg:col-span-8 flex flex-col justify-between">
-                  <div>
-                    <h2 className="text-2xl md:text-3xl font-black text-text-main mb-3 tracking-wide flex items-center gap-3">
-                      <Video className="w-8 h-8 text-primary" />
-                      Schedule Your Video KYC Call
-                    </h2>
-                    <p className="text-text-muted text-sm md:text-base font-medium max-w-xl mb-8">
-                      Select a date and direct time slot to perform your 30-minute quick identity review call with our verification officer.
-                    </p>
-
-                    {/* Dates Horizontal Row */}
-                    <div className="mb-8">
-                      <label className="text-xs font-black uppercase tracking-widest text-text-muted block mb-4">
-                        Available Dates
-                      </label>
-                      <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-thin scrollbar-thumb-white/10">
-                        {getNext7Days().map((d) => {
-                          const isSelected = selectedKycDate === d.fullString;
-                          return (
-                            <button
-                              key={d.fullString}
-                              type="button"
-                              onClick={() => {
-                                setSelectedKycDate(d.fullString);
-                                setSelectedKycSlot(""); // Reset slot when date changes
-                              }}
-                              className={`cursor-pointer min-w-[90px] p-4 rounded-2xl border transition-all duration-300 flex flex-col items-center text-center gap-1 shrink-0 ${
-                                isSelected
-                                  ? "bg-primary/10 border-primary text-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.2)]"
-                                  : "bg-bg-secondary/40 border-border-main text-text-muted hover:border-white/20 hover:text-text-main"
-                              }`}
-                            >
-                              <span className="text-[10px] font-bold uppercase tracking-wider">{d.dayName}</span>
-                              <span className="text-2xl font-black">{d.dayNum}</span>
-                              <span className="text-[9px] font-semibold uppercase">{d.month}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Time Slots Grid */}
-                    {selectedKycDate && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mb-8"
-                      >
-                        <label className="text-xs font-black uppercase tracking-widest text-text-muted block mb-4">
-                          Available Slots
-                        </label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                          {timeSlots.map((slot) => {
-                            const isSelected = selectedKycSlot === slot;
-                            return (
-                              <button
-                                key={slot}
-                                type="button"
-                                onClick={() => setSelectedKycSlot(slot)}
-                                className={`cursor-pointer p-4 rounded-2xl border transition-all duration-300 text-center text-xs font-bold flex items-center justify-center gap-2 ${
-                                  isSelected
-                                    ? "bg-primary border-primary text-white shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]"
-                                    : "bg-bg-secondary/40 border-border-main text-text-main hover:border-white/20"
-                                }`}
-                              >
-                                <Clock className="w-3.5 h-3.5" />
-                                {slot}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </motion.div>
-                    )}
-                  </div>
-
-                  <div className="pt-6 border-t border-white/5 flex items-center justify-between gap-6">
-                    <button
-                      type="button"
-                      onClick={() => setView("form")}
-                      className="cursor-pointer text-text-muted hover:text-text-main transition-colors text-sm font-semibold uppercase tracking-wider"
-                    >
-                      Back to Form
-                    </button>
-                    <PremiumButton
-                      label="Confirm & Schedule Call"
-                      onClick={() => {
-                        if (!selectedKycDate || !selectedKycSlot) {
-                          toast.error("Please select both date and time slot first.");
-                          return;
-                        }
-                        setKycDate(selectedKycDate);
-                        setKycSlot(selectedKycSlot);
-                        setKycStatus("SCHEDULED");
-                        setView("summary");
-                        toast.success("Video KYC Scheduled successfully!");
-                      }}
-                      disabled={!selectedKycDate || !selectedKycSlot}
-                      variant="primary"
-                      icon={<Check className="w-5 h-5" />}
-                    />
-                  </div>
-                </div>
-
-                {/* Right side: visual checklist cards */}
-                <div className="lg:col-span-4 bg-bg-secondary/30 border border-border-main p-6 rounded-3xl flex flex-col gap-6 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
-                  
-                  <h3 className="text-sm font-black uppercase tracking-wider text-text-main flex items-center gap-2">
-                    <ShieldAlert className="w-4 h-4 text-primary" />
-                    KYC Requirements
-                  </h3>
-
-                  <div className="space-y-4 text-xs font-semibold text-text-muted leading-relaxed">
-                    <div className="flex gap-3">
-                      <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-[10px] text-text-main">1</div>
-                      <p>
-                        Keep your registered physical government ID card ready (Aadhaar, PAN, Passport, or DL).
-                      </p>
-                    </div>
-                    <div className="flex gap-3">
-                      <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-[10px] text-text-main">2</div>
-                      <p>
-                        A stable high-speed internet connection is required for video streaming.
-                      </p>
-                    </div>
-                    <div className="flex gap-3">
-                      <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-[10px] text-text-main">3</div>
-                      <p>
-                        Position yourself in a well-lit, quiet room to ensure a clean camera stream and clear voice capture.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-auto p-4 bg-white/5 border border-white/5 rounded-2xl">
-                    <p className="text-[10px] font-bold text-text-muted text-center uppercase tracking-wide">
-                      Your data is 100% encrypted & secure.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
 
           {view === "summary" && (
             <motion.div
@@ -2581,30 +2442,34 @@ export default function DetailsForm() {
                   )}
 
                   {/* Verification Proofs in Summary */}
-                  {formData.idProofs.filter(Boolean).length > 0 && (
+                  {(formData.idProofs || []).filter(Boolean).length > 0 && (
                     <div className="space-y-4 pt-4">
                       <SectionTitle>Verification Proofs</SectionTitle>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 bg-bg-secondary/30 p-6 rounded-[32px] border border-border-main">
-                        {formData.idProofs.map((proof, i) => proof && (
-                          <motion.div 
-                            key={i}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: i * 0.1 }}
-                            className="aspect-4/3 rounded-2xl overflow-hidden border-2 border-white/5 shadow-xl group relative"
-                          >
-                            <img 
-                              src={proof} 
-                              alt={`Proof ${i}`} 
-                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                            />
-                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              <span className="text-[10px] font-black text-white uppercase tracking-widest bg-primary/80 px-3 py-1 rounded-full backdrop-blur-md">
-                                {i === 0 ? "Adhaar Front" : i === 1 ? "Adhaar Back" : i === 2 ? "Pan Front" : "Pan Back"}
-                              </span>
-                            </div>
-                          </motion.div>
-                        ))}
+                        {(formData.idProofs || []).map((proof, i) => {
+                          if (!proof) return null;
+                          const docName = formData.kycDocInputs?.[i]?.name || `Proof ${i + 1}`;
+                          return (
+                            <motion.div 
+                              key={i}
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: i * 0.1 }}
+                              className="aspect-4/3 rounded-2xl overflow-hidden border-2 border-white/5 shadow-xl group relative"
+                            >
+                              <img 
+                                src={proof} 
+                                alt={docName} 
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                              />
+                              <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <span className="text-[10px] font-black text-white uppercase tracking-widest bg-primary/80 px-3 py-1 rounded-full backdrop-blur-md">
+                                  {docName}
+                                </span>
+                              </div>
+                            </motion.div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
