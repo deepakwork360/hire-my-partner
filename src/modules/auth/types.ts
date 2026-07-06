@@ -31,6 +31,7 @@ export interface RegisterPayload {
   password?: string;
   phone_country_code?: string;
   phone_no?: string;
+  app_language_code?: string;
 }
 
 export interface SendOtpPayload {

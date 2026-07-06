@@ -10,7 +10,7 @@ export const userMockApi = {
       name: "Johnny Depp",
       email: "johnny.depp@example.com",
       phone: "+919876543210",
-      avatar: "https://i.pravatar.cc/150?img=33",
+      avatar: "",
       isVerified: true
     };
   },
@@ -21,7 +21,7 @@ export const userMockApi = {
       name: "Johnny Depp",
       email: "johnny.depp@example.com",
       phone: "+919876543210",
-      avatar: "https://i.pravatar.cc/150?img=33",
+      avatar: "",
       isVerified: true
     };
   }

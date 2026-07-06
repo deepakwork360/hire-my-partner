@@ -8,6 +8,7 @@ export interface MockUser {
   password?: string;
   avatar?: string;
   isProfileComplete: boolean;
+  app_language_code?: string;
 }
 
 const DEFAULT_USERS: MockUser[] = [
@@ -41,7 +42,7 @@ const DEFAULT_USERS: MockUser[] = [
     name: "John Doe",
     email: "john@example.com",
     password: "password123",
-    avatar: "/images/avatar6.jpg",
+    avatar: "",
     isProfileComplete: false,
   }
 ];
@@ -113,7 +114,7 @@ export const mockDb = {
     );
   },
 
-  addUser(name: string, emailOrPhone: string, password?: string, phone?: string): MockUser {
+  addUser(name: string, emailOrPhone: string, password?: string, phone?: string, appLanguageCode?: string): MockUser {
     let email: string | undefined;
     let finalPhone: string | undefined;
 
@@ -142,8 +143,9 @@ export const mockDb = {
       email,
       phone: finalPhone,
       password,
-      avatar: "/images/avatar6.jpg",
-      isProfileComplete: false
+      avatar: "",
+      isProfileComplete: false,
+      app_language_code: appLanguageCode
     };
 
     users.push(newUser);

@@ -30,7 +30,31 @@ export default function PremiumDatePicker({
 }: PremiumDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [viewDate, setViewDate] = useState(new Date());
+  const [panelMode, setPanelMode] = useState<"days" | "month" | "year">("days");
   const containerRef = useRef<HTMLDivElement>(null);
+  const yearGridRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll selected year into view in year selection list
+  useEffect(() => {
+    if (panelMode === "year" && yearGridRef.current) {
+      const activeYearElement = document.getElementById("active-year-btn");
+      if (activeYearElement) {
+        const container = yearGridRef.current;
+        const offsetTop = activeYearElement.offsetTop;
+        const containerHeight = container.clientHeight;
+        const elementHeight = activeYearElement.clientHeight;
+        
+        container.scrollTop = offsetTop - (containerHeight / 2) + (elementHeight / 2);
+      }
+    }
+  }, [panelMode]);
+
+  // Reset back to days view when datepicker closes
+  useEffect(() => {
+    if (!isOpen) {
+      setPanelMode("days");
+    }
+  }, [isOpen]);
 
   // Parse current value or use today
   const selectedDate = useMemo(() => {
@@ -155,6 +179,69 @@ export default function PremiumDatePicker({
     return days;
   };
 
+  const renderMonthPanel = () => {
+    return (
+      <div className="grid grid-cols-3 gap-3 py-4">
+        {monthNames.map((name, idx) => {
+          const isSelected = viewDate.getMonth() === idx;
+          return (
+            <button
+              key={idx}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setViewDate(new Date(viewDate.getFullYear(), idx, 1));
+                setPanelMode("days");
+              }}
+              className={`py-3 px-1 text-center text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                isSelected
+                  ? "bg-primary text-white shadow-[0_0_12px_rgba(var(--primary-rgb),0.4)]"
+                  : "text-text-muted hover:bg-bg-card hover:text-text-main"
+              }`}
+            >
+              {name.substring(0, 3)}
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderYearPanel = () => {
+    const currentYear = new Date().getFullYear();
+    let years = Array.from({ length: 100 }, (_, i) => currentYear - i);
+    if (minDate) {
+      const minYear = minDate.getFullYear();
+      years = years.filter(yr => yr >= minYear);
+    }
+    return (
+      <div ref={yearGridRef} className="grid grid-cols-4 gap-2 max-h-52 overflow-y-auto custom-scrollbar py-3 px-1">
+        {years.map((yr) => {
+          const isSelected = viewDate.getFullYear() === yr;
+          return (
+            <button
+              key={yr}
+              id={isSelected ? "active-year-btn" : undefined}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setViewDate(new Date(yr, viewDate.getMonth(), 1));
+                setPanelMode("days");
+              }}
+              className={`py-2 text-center text-[10px] font-bold rounded-xl transition-all cursor-pointer ${
+                isSelected
+                  ? "bg-primary text-white shadow-[0_0_12px_rgba(var(--primary-rgb),0.4)]"
+                  : "text-text-muted hover:bg-bg-card hover:text-text-main"
+              }`}
+            >
+              {yr}
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div ref={containerRef} className={`relative flex flex-col gap-2 ${outfit.className} ${className} ${isOpen ? "z-10000" : "z-auto"}`}>
       {label && (
@@ -167,7 +254,7 @@ export default function PremiumDatePicker({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-full cursor-pointer min-h-[58px] py-4 pl-5 pr-12 rounded-2xl text-left transition-all duration-300 flex items-center gap-4 group/btn border border-solid shadow-sm select-none outline-none focus:outline-none focus-visible:outline-none active:outline-none focus:ring-4 ${
+          className={`w-full cursor-pointer min-h-[58px] py-4 pl-5 pr-36 rounded-2xl text-left transition-all duration-300 flex items-center gap-4 group/btn border border-solid shadow-sm select-none outline-none focus:outline-none focus-visible:outline-none active:outline-none focus:ring-4 ${
             hasError
               ? "bg-red-500/5 border-red-500 focus:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]"
               : isValid
@@ -218,63 +305,74 @@ export default function PremiumDatePicker({
                  <button 
                   type="button"
                   onClick={handlePrevMonth}
-                  disabled={!canGoPrev}
+                  disabled={!canGoPrev || panelMode !== "days"}
                   className={`p-2 rounded-xl text-text-muted transition-all ${
-                    canGoPrev 
+                    canGoPrev && panelMode === "days"
                       ? "hover:bg-bg-card hover:text-text-main cursor-pointer" 
-                      : "opacity-30 cursor-not-allowed"
+                      : "opacity-0 pointer-events-none"
                   }`}
                 >
                   <ChevronLeft size={16} />
                 </button>
                 
-                <div className="text-center flex flex-col items-center">
-                  <select
-                    value={viewDate.getMonth()}
-                    onChange={(e) => setViewDate(new Date(viewDate.getFullYear(), parseInt(e.target.value), 1))}
-                    className="bg-transparent text-xs font-black uppercase tracking-widest text-text-main text-center border-none outline-none focus:ring-0 cursor-pointer appearance-none px-1"
+                <div className="text-center flex flex-col items-center select-none">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPanelMode(panelMode === "month" ? "days" : "month");
+                    }}
+                    className={`text-xs font-black uppercase tracking-widest text-text-main hover:text-primary transition-colors cursor-pointer px-2 py-0.5 rounded-lg hover:bg-bg-card ${panelMode === "month" ? "text-primary bg-bg-card" : ""}`}
                   >
-                    {monthNames.map((name, idx) => (
-                      <option key={idx} value={idx} className="bg-bg-secondary text-text-main">
-                        {name}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={viewDate.getFullYear()}
-                    onChange={(e) => setViewDate(new Date(parseInt(e.target.value), viewDate.getMonth(), 1))}
-                    className="bg-transparent text-[10px] font-bold text-primary/60 text-center border-none outline-none focus:ring-0 cursor-pointer appearance-none px-1"
+                    {monthNames[viewDate.getMonth()]}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPanelMode(panelMode === "year" ? "days" : "year");
+                    }}
+                    className={`text-[10px] font-bold text-primary/60 hover:text-primary transition-colors cursor-pointer mt-0.5 px-2 py-0.5 rounded-lg hover:bg-bg-card ${panelMode === "year" ? "text-primary bg-bg-card" : ""}`}
                   >
-                    {Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - 80 + i).map((yr) => (
-                      <option key={yr} value={yr} className="bg-bg-secondary text-text-main">
-                        {yr}
-                      </option>
-                    ))}
-                  </select>
+                    {viewDate.getFullYear()}
+                  </button>
                 </div>
 
                 <button 
                   type="button"
                   onClick={handleNextMonth}
-                  className="p-2 hover:bg-bg-card rounded-xl text-text-muted hover:text-text-main transition-all cursor-pointer"
+                  disabled={panelMode !== "days"}
+                  className={`p-2 rounded-xl text-text-muted transition-all ${
+                    panelMode === "days"
+                      ? "hover:bg-bg-card hover:text-text-main cursor-pointer" 
+                      : "opacity-0 pointer-events-none"
+                  }`}
                 >
                   <ChevronRight size={16} />
                 </button>
               </div>
 
-              {/* Day Names */}
-              <div className="grid grid-cols-7 mb-2">
-                {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-                  <div key={day} className="text-center text-[8px] font-black uppercase text-text-muted/60">
-                    {day}
+              {/* Dynamic Content Panel */}
+              {panelMode === "days" && (
+                <>
+                  {/* Day Names */}
+                  <div className="grid grid-cols-7 mb-2">
+                    {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
+                      <div key={day} className="text-center text-[8px] font-black uppercase text-text-muted/60">
+                        {day}
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
 
-              {/* Days Grid */}
-              <div className="grid grid-cols-7 gap-1">
-                {renderDays()}
-              </div>
+                  {/* Days Grid */}
+                  <div className="grid grid-cols-7 gap-1">
+                    {renderDays()}
+                  </div>
+                </>
+              )}
+
+              {panelMode === "month" && renderMonthPanel()}
+              {panelMode === "year" && renderYearPanel()}
 
               {/* Footer Decoration */}
               <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-primary/10 blur-[50px] rounded-full pointer-events-none" />

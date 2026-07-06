@@ -27,6 +27,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
         const savedData = localStorage.getItem(storageKey);
         if (savedData) {
           const parsed = JSON.parse(savedData);
+          const fd = parsed.formData || {};
+          
+          if (fd.photo) {
+            const currentUser = useAuthStore.getState().user;
+            if (currentUser && currentUser.avatar !== fd.photo) {
+              useAuthStore.getState().updateUserAvatar(fd.photo);
+            }
+          }
+
           if (parsed.verificationStatus === "VERIFIED") {
             setIsLivePartner(true);
             return;

@@ -177,7 +177,7 @@ export default function BasicInfoStep({
               isValid={showErrors && !errors?.dob && !errors?.age && !!formData.dob}
             />
             {formData.age && (
-              <span className="absolute right-12 top-1/2 -translate-y-1/2 text-xs font-bold text-primary pointer-events-none">
+              <span className="absolute right-24 top-1/2 -translate-y-1/2 text-xs font-bold text-primary pointer-events-none">
                 {formData.age} yrs old
               </span>
             )}

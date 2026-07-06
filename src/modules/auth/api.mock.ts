@@ -84,7 +84,7 @@ export const authMockApi = {
     }
 
     // Add user as pending
-    mockDb.addUser(data.name, email, data.password, phone);
+    mockDb.addUser(data.name, email, data.password, phone, data.app_language_code);
     
     const phoneOtp = "376169";
     const emailOtp = "511846";
@@ -171,7 +171,7 @@ export const authMockApi = {
       name: "Temporary User",
       email: target.includes('@') ? target : undefined,
       phone: !target.includes('@') ? target : undefined,
-      avatar: "https://i.pravatar.cc/150",
+      avatar: "",
       isProfileComplete: false,
     };
 

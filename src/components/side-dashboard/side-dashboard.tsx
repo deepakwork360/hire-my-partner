@@ -210,6 +210,16 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
         const savedData = localStorage.getItem(storageKey);
         if (savedData) {
           const parsed = JSON.parse(savedData);
+          const fd = parsed.formData || {};
+          
+          if (fd.photo) {
+            setPartnerPhoto(fd.photo);
+            const currentUser = useAuthStore.getState().user;
+            if (currentUser && currentUser.avatar !== fd.photo) {
+              updateUserAvatar(fd.photo);
+            }
+          }
+
           if (parsed.verificationStatus === "VERIFIED" && parsed.formData) {
             setIsLivePartner(true);
             if (parsed.formData.photo) {
@@ -333,22 +343,24 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
 
   const saveCroppedAvatar = (url: string) => {
     updateUserAvatar(url);
-    if (isLivePartner) {
-      try {
-        const savedApp = localStorage.getItem(storageKey);
-        if (savedApp) {
-          const parsed = JSON.parse(savedApp);
-          if (!parsed.formData) parsed.formData = {};
-          parsed.formData.photo = url;
-          localStorage.setItem(storageKey, JSON.stringify(parsed));
-          setPartnerPhoto(url);
+    setPartnerPhoto(url);
+    try {
+      const savedApp = localStorage.getItem(storageKey);
+      if (savedApp) {
+        const parsed = JSON.parse(savedApp);
+        if (!parsed.formData) parsed.formData = {};
+        parsed.formData.photo = url;
+        localStorage.setItem(storageKey, JSON.stringify(parsed));
+        
+        // Update approved partners list if already verified
+        if (parsed.verificationStatus === "VERIFIED" || isLivePartner) {
           const nameToFind = parsed.formData.fullName;
           if (nameToFind) {
             const approvedStr = localStorage.getItem("approved_partners");
             if (approvedStr) {
               const list = JSON.parse(approvedStr);
               const updatedList = list.map((p: any) => {
-                if (p.name === nameToFind) {
+                if (p.name === nameToFind || String(p.id) === String(user?.id)) {
                   return { ...p, image: url };
                 }
                 return p;
@@ -357,9 +369,9 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
             }
           }
         }
-      } catch (err) {
-        console.error("Failed to sync partner photo upload:", err);
       }
+    } catch (err) {
+      console.error("Failed to sync partner photo upload:", err);
     }
     window.dispatchEvent(new Event("partnerStatusChange"));
     window.dispatchEvent(new Event("partner_profile_updated"));
@@ -593,7 +605,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                     />
                     
                     <div className="relative w-20 h-20 rounded-full border-2 border-primary/40 shadow-lg mb-3 shrink-0">
-                      {isLivePartner && partnerPhoto ? (
+                      {partnerPhoto ? (
                         <img
                           src={partnerPhoto}
                           alt={user.name}

@@ -603,7 +603,9 @@ input[type="tel"],
 input[type="number"],
 input[type="password"],
 textarea,
-select {
+select,
+.country-code-btn,
+.language-select-btn {
   background-color: rgba(0, 0, 0, 0.025) !important;
   border-color: rgba(var(--primary-rgb), 0.35) !important;
   border-width: 1px !important;
@@ -617,7 +619,9 @@ select {
 [data-appearance='dark'] input[type="number"],
 [data-appearance='dark'] input[type="password"],
 [data-appearance='dark'] textarea,
-[data-appearance='dark'] select {
+[data-appearance='dark'] select,
+[data-appearance='dark'] .country-code-btn,
+[data-appearance='dark'] .language-select-btn {
   background-color: rgba(255, 255, 255, 0.04) !important;
   border-color: rgba(var(--primary-rgb), 0.35) !important;
 }
@@ -628,7 +632,9 @@ input[type="tel"]:hover,
 input[type="number"]:hover,
 input[type="password"]:hover,
 textarea:hover,
-select:hover {
+select:hover,
+.country-code-btn:hover,
+.language-select-btn:hover {
   background-color: rgba(0, 0, 0, 0.035) !important;
   border-color: rgba(var(--primary-rgb), 0.60) !important;
 }
@@ -639,7 +645,9 @@ select:hover {
 [data-appearance='dark'] input[type="number"]:hover,
 [data-appearance='dark'] input[type="password"]:hover,
 [data-appearance='dark'] textarea:hover,
-[data-appearance='dark'] select:hover {
+[data-appearance='dark'] select:hover,
+[data-appearance='dark'] .country-code-btn:hover,
+[data-appearance='dark'] .language-select-btn:hover {
   background-color: rgba(255, 255, 255, 0.06) !important;
   border-color: rgba(var(--primary-rgb), 0.60) !important;
 }
@@ -657,7 +665,11 @@ input[type="password"]:focus-visible,
 textarea:focus,
 textarea:focus-visible,
 select:focus,
-select:focus-visible {
+select:focus-visible,
+.country-code-btn:focus,
+.country-code-btn.active,
+.language-select-btn:focus,
+.language-select-btn.active {
   background-color: rgba(0, 0, 0, 0.025) !important;
   border-color: rgb(var(--primary-rgb)) !important;
   box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.20) !important;
@@ -677,7 +689,11 @@ select:focus-visible {
 [data-appearance='dark'] textarea:focus,
 [data-appearance='dark'] textarea:focus-visible,
 [data-appearance='dark'] select:focus,
-[data-appearance='dark'] select:focus-visible {
+[data-appearance='dark'] select:focus-visible,
+[data-appearance='dark'] .country-code-btn:focus,
+[data-appearance='dark'] .country-code-btn.active,
+[data-appearance='dark'] .language-select-btn:focus,
+[data-appearance='dark'] .language-select-btn.active {
   background-color: rgba(255, 255, 255, 0.04) !important;
 }
 

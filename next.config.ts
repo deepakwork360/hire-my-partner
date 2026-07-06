@@ -37,6 +37,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "pravatar.cc",
       },
+      {
+        protocol: "https",
+        hostname: "mypartneradmin.blackbullsolution.com",
+      },
     ],
   },
   async rewrites() {

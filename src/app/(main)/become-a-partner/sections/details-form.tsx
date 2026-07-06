@@ -404,7 +404,7 @@ const calculateAge = (dobString: string): string => {
 };
 
 export default function DetailsForm() {
-  const { user, updateUserProfile } = useAuthStore();
+  const { user, updateUserProfile, updateUserAvatar } = useAuthStore();
   const storageKey = user && user.email ? `partnerApplication_${user.email.replace(/[^a-zA-Z0-9]/g, "_")}` : "partnerApplication";
 
   // Crop States
@@ -655,6 +655,15 @@ export default function DetailsForm() {
   const [applicationId, setApplicationId] = useState("");
   const [showSuccessCard, setShowSuccessCard] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
+
+  // Scroll to the top of the window when step or view changes
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [currentStep, view]);
+
   const sectionRef = useRef<HTMLElement>(null);
   
   // Section Refs for Auto-Scroll
@@ -1357,6 +1366,9 @@ export default function DetailsForm() {
         phone_country_code: formData.phoneCountryCode,
         address: formData.address || `${formData.city}, ${formData.country || ""}`
       });
+      if (formData.photo) {
+        updateUserAvatar(formData.photo);
+      }
       window.dispatchEvent(new Event("partnerStatusChange"));
       window.dispatchEvent(new Event("partner_profile_updated"));
     } catch (e) {
@@ -2857,6 +2869,9 @@ export default function DetailsForm() {
                       ...prev,
                       photo: res.url,
                     }));
+                    if (res.url) {
+                      updateUserAvatar(res.url);
+                    }
                     if (res.url && croppedUrl) {
                       setLocalPreviews((prev) => ({ ...prev, [res.url]: croppedUrl }));
                     }

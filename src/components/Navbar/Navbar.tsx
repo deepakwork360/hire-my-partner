@@ -36,20 +36,61 @@ export default function Navbar() {
   const { isAuthenticated, user, clearAuth } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
+
+    const updateAvatar = () => {
+      const currentUser = useAuthStore.getState().user;
+      if (currentUser) {
+        // Read partner application photo from localStorage if present
+        const storageKey = currentUser.email 
+          ? `partnerApplication_${currentUser.email.replace(/[^a-zA-Z0-9]/g, "_")}` 
+          : "partnerApplication";
+        try {
+          const savedData = localStorage.getItem(storageKey);
+          if (savedData) {
+            const parsed = JSON.parse(savedData);
+            if (parsed.formData?.photo) {
+              setAvatarUrl(parsed.formData.photo);
+              return;
+            }
+          }
+        } catch (e) {
+          console.error(e);
+        }
+        setAvatarUrl(currentUser.avatar || "");
+      } else {
+        setAvatarUrl("");
+      }
+    };
+
+    updateAvatar();
 
     const onOpened = () => setIsSidebarOpen(true);
     const onClosed = () => setIsSidebarOpen(false);
 
     window.addEventListener("side_dashboard_opened", onOpened);
     window.addEventListener("side_dashboard_closed", onClosed);
+    window.addEventListener("partnerStatusChange", updateAvatar);
+    window.addEventListener("partner_profile_updated", updateAvatar);
+    window.addEventListener("storage", updateAvatar);
+
+    // Subscribe to auth store changes directly
+    const unsub = useAuthStore.subscribe(() => {
+      updateAvatar();
+    });
+
     return () => {
       window.removeEventListener("side_dashboard_opened", onOpened);
       window.removeEventListener("side_dashboard_closed", onClosed);
+      window.removeEventListener("partnerStatusChange", updateAvatar);
+      window.removeEventListener("partner_profile_updated", updateAvatar);
+      window.removeEventListener("storage", updateAvatar);
+      unsub();
     };
-  }, []);
+  }, [user]);
 
   const handleProfileClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -183,14 +224,18 @@ export default function Navbar() {
                     : "bg-black/25 border-white/20 hover:bg-black/45 text-white"
               }`}
             >
-              <div className="relative w-7 h-7 rounded-full overflow-hidden border border-white/10 shrink-0">
-                <Image
-                  src={user?.avatar || "/images/avatar6.jpg"}
-                  alt="profile"
-                  width={28}
-                  height={28}
-                  className="object-cover w-full h-full"
-                />
+              <div className="relative w-7 h-7 rounded-full overflow-hidden border border-white/10 shrink-0 flex items-center justify-center bg-primary/10">
+                {avatarUrl && avatarUrl !== "/images/avatar6.jpg" ? (
+                  <Image
+                    src={avatarUrl}
+                    alt="profile"
+                    width={28}
+                    height={28}
+                    className="object-cover w-full h-full"
+                  />
+                ) : (
+                  <User size={14} className="text-primary" />
+                )}
               </div>
               <span className="text-xs font-bold tracking-wide max-w-[100px] truncate">
                 {user?.name ? user.name.split(" ")[0] : "Profile"}

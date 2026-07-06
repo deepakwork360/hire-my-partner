@@ -12,6 +12,7 @@ import Image from "next/image";
 import ThemeLogo from "@/components/ui/ThemeLogo";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuthStore } from "@/modules/auth/store";
+import { api } from "@/lib/axios";
 
 function MailIcon({ className }: { className?: string }) {
   return (
@@ -48,6 +49,47 @@ function PhoneIcon({ className }: { className?: string }) {
       className={className}
     >
       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  );
+}
+
+function GlobeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+      <path d="M2 12h20" />
+    </svg>
+  );
+}
+
+function SearchIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
     </svg>
   );
 }
@@ -222,19 +264,64 @@ export default function RegisterPage() {
     phoneNo: "",
     password: "",
     confirmPassword: "",
+    app_language_code: "",
   });
   const { activeTheme } = useTheme();
 
-  // Redirect if already authenticated
+  // Languages dropdown states
+  const [languagesList, setLanguagesList] = useState<any[]>([]);
+  const [languageSearch, setLanguageSearch] = useState("");
+  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
+  const languageDropdownRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-focus search input when language dropdown opens
   useEffect(() => {
-    if (isAuthenticated) {
-      router.replace("/");
+    if (isLanguageDropdownOpen) {
+      const timer = setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timer);
     }
-  }, [isAuthenticated, router]);
+  }, [isLanguageDropdownOpen]);
+
+  // Fetch languages from backend API
+  useEffect(() => {
+    async function fetchLanguages() {
+      try {
+        const { data } = await api.get("/languages");
+        if (data && data.status && Array.isArray(data.data)) {
+          setLanguagesList(data.data);
+        } else if (data && Array.isArray(data.data)) {
+          setLanguagesList(data.data);
+        } else if (Array.isArray(data)) {
+          setLanguagesList(data);
+        }
+      } catch (e) {
+        console.error("Failed to fetch languages", e);
+      }
+    }
+    fetchLanguages();
+  }, []);
 
   // Country dropdown states
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const countryDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        languageDropdownRef.current &&
+        !languageDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsLanguageDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -251,6 +338,13 @@ export default function RegisterPage() {
     };
   }, []);
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/");
+    }
+  }, [isAuthenticated, router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -265,6 +359,7 @@ export default function RegisterPage() {
       password: formData.password,
       phone_country_code: formData.phoneCountryCode,
       phone_no: formData.phoneNo,
+      app_language_code: formData.app_language_code,
     });
 
     if (!validation.success) {
@@ -278,6 +373,7 @@ export default function RegisterPage() {
       password: formData.password,
       phone_country_code: formData.phoneCountryCode,
       phone_no: formData.phoneNo,
+      app_language_code: formData.app_language_code,
     });
   };
 
@@ -422,7 +518,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                  className="w-full flex items-center justify-between bg-bg-base text-text-main text-sm rounded-xl px-3 py-3.5 outline-none border border-border-main focus:border-primary/50 focus:bg-bg-card transition-all font-medium cursor-pointer"
+                  className={`w-full flex items-center justify-between text-text-main text-sm rounded-xl px-3 py-3.5 outline-none font-medium cursor-pointer country-code-btn ${isCountryDropdownOpen ? "active" : ""}`}
                 >
                   <span className="flex items-center gap-2">
                     <img
@@ -479,6 +575,86 @@ export default function RegisterPage() {
                   required
                 />
               </div>
+            </div>
+
+            {/* Preferred Language Field */}
+            <div className="relative" ref={languageDropdownRef}>
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted z-10 pointer-events-none">
+                <GlobeIcon className="w-5 h-5" />
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                className={`w-full flex items-center justify-between text-text-main text-sm rounded-xl pl-12 pr-5 py-3.5 outline-none font-medium cursor-pointer text-left language-select-btn ${isLanguageDropdownOpen ? "active" : ""}`}
+              >
+                <span className={formData.app_language_code ? "text-text-main" : "text-text-muted/45 font-normal"}>
+                  {formData.app_language_code
+                    ? languagesList.find((l) => l.code === formData.app_language_code)?.name || "Select Preferred Language"
+                    : "Select Preferred Language"}
+                </span>
+                <ChevronDown className={`w-3.5 h-3.5 text-text-muted transition-transform duration-300 ${isLanguageDropdownOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              <AnimatePresence>
+                {isLanguageDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                    className="absolute z-50 left-0 right-0 top-full mt-2 max-h-64 overflow-hidden bg-bg-base border border-border-main rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.3)] backdrop-blur-xl flex flex-col"
+                  >
+                    {/* Search Input */}
+                    <div className="p-2 border-b border-border-main/50 bg-bg-card/50 relative flex items-center">
+                      <div className="absolute left-4 text-text-muted pointer-events-none">
+                        <SearchIcon className="w-3.5 h-3.5" />
+                      </div>
+                      <input
+                        ref={searchInputRef}
+                        type="text"
+                        placeholder="Search language..."
+                        value={languageSearch}
+                        onChange={(e) => setLanguageSearch(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-full bg-bg-base text-text-main text-xs rounded-lg pl-8 pr-3 py-2 outline-none border border-border-main/60 focus:border-primary/40 transition-all placeholder:text-text-muted/45"
+                      />
+                    </div>
+                    
+                    {/* Items List */}
+                    <div className="overflow-y-auto custom-scrollbar max-h-48 flex flex-col">
+                      {languagesList
+                        .filter((l) =>
+                          l.name.toLowerCase().includes(languageSearch.toLowerCase()) ||
+                          l.native_name?.toLowerCase().includes(languageSearch.toLowerCase()) ||
+                          l.code.toLowerCase().includes(languageSearch.toLowerCase())
+                        )
+                        .map((l) => (
+                          <button
+                            key={l.code}
+                            type="button"
+                            onClick={() => {
+                              setFormData({ ...formData, app_language_code: l.code });
+                              setIsLanguageDropdownOpen(false);
+                              setLanguageSearch("");
+                            }}
+                            className={`w-full cursor-pointer flex items-center justify-between px-4 py-2.5 text-left text-text-main hover:bg-primary/15 transition-colors text-sm font-medium ${l.code === formData.app_language_code ? "bg-primary/10 text-primary" : ""}`}
+                          >
+                            <span>{l.name} ({l.native_name || l.name})</span>
+                            <span className="text-xs text-text-muted uppercase font-semibold">{l.code}</span>
+                          </button>
+                        ))}
+                      {languagesList.filter((l) =>
+                        l.name.toLowerCase().includes(languageSearch.toLowerCase()) ||
+                        l.native_name?.toLowerCase().includes(languageSearch.toLowerCase()) ||
+                        l.code.toLowerCase().includes(languageSearch.toLowerCase())
+                      ).length === 0 && (
+                        <div className="px-4 py-3 text-xs text-text-muted text-center">
+                          No languages found
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Password Field */}
