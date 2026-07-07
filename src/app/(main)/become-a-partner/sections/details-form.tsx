@@ -476,6 +476,8 @@ export default function DetailsForm() {
     videos: Array(3).fill(null) as (string | null)[],
     current_latitude: null as number | null,
     current_longitude: null as number | null,
+    current_heading: null as number | null,
+    current_accuracy: null as number | null,
     country_id: null as number | null,
     state_id: null as number | null,
     city_id: null as number | null,
@@ -684,162 +686,302 @@ export default function DetailsForm() {
   const termsRef = useRef<HTMLDivElement>(null);
 
   // Persistence: Load on Mount
+  // Persistence: Load on Mount
   useEffect(() => {
-    let activeAppId = `APP-${Math.floor(100000 + Math.random() * 900000)}`;
+    const initAndLoad = async () => {
+      let activeAppId = `APP-${Math.floor(100000 + Math.random() * 900000)}`;
 
-    // Seed Sabrina Carpenter if she is logged in and doesn't have an application yet
-    if (user && user.email === "sabrina@gmail.com" && !localStorage.getItem(storageKey)) {
-      activeAppId = "APP-123456";
-      localStorage.setItem(storageKey, JSON.stringify({
-        applicationId: activeAppId,
-        formData: {
-          fullName: "Sabrina Carpenter",
-          displayName: "Sabrina",
-          gender: "Female",
-          age: "24",
-          city: "New York, USA",
-          mobile: "+91 9876543210",
-          phoneCountryCode: "+91",
-          email: "sabrina@gmail.com",
-          bio: "Singer, songwriter, actress and your companion. Let's talk about music, films, and coffee.",
-          hourlyRate: "899",
-          languages: ["English", "French"],
-          interestsInput: ["Music", "Coffee", "Films"],
-          tagsInput: ["Singer", "Actor", "Artist"],
-          termsAgreed: true,
-          photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256",
-          verificationStatus: "VERIFIED"
-        },
-        submissionStatus: "success",
-        verificationStatus: "VERIFIED",
-        kycStatus: "APPROVED",
-        view: "summary"
-      }));
-    }
+      // Seed Sabrina Carpenter if she is logged in and doesn't have an application yet
+      if (user && user.email === "sabrina@gmail.com" && !localStorage.getItem(storageKey)) {
+        activeAppId = "APP-123456";
+        localStorage.setItem(storageKey, JSON.stringify({
+          applicationId: activeAppId,
+          formData: {
+            fullName: "Sabrina Carpenter",
+            displayName: "Sabrina",
+            gender: "Female",
+            age: "24",
+            city: "New York, USA",
+            mobile: "+91 9876543210",
+            phoneCountryCode: "+91",
+            email: "sabrina@gmail.com",
+            bio: "Singer, songwriter, actress and your companion. Let's talk about music, films, and coffee.",
+            hourlyRate: "899",
+            languages: ["English", "French"],
+            interestsInput: ["Music", "Coffee", "Films"],
+            tagsInput: ["Singer", "Actor", "Artist"],
+            termsAgreed: true,
+            photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256",
+            verificationStatus: "VERIFIED"
+          },
+          submissionStatus: "success",
+          verificationStatus: "VERIFIED",
+          kycStatus: "APPROVED",
+          view: "summary"
+        }));
+      }
 
-    const savedData = localStorage.getItem(storageKey);
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        if (parsed.applicationId) {
-          activeAppId = parsed.applicationId;
+      // Check if localStorage has an already submitted status or is empty
+      const savedData = localStorage.getItem(storageKey);
+      let isAlreadySubmitted = false;
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          if (
+            parsed.submissionStatus === "success" ||
+            ["PENDING", "VERIFIED", "REJECTED", "NEEDS_REVISION"].includes(parsed.verificationStatus) ||
+            parsed.reachedReviewStep === true ||
+            parsed.currentStep === 5
+          ) {
+            isAlreadySubmitted = true;
+          }
+        } catch (e) {}
+      }
+
+      // Decide if we should fetch from API: either they already submitted or localStorage is empty (different device/session)
+      let profileFromApi: any = null;
+      if (isAlreadySubmitted || !savedData) {
+        try {
+          const { data: res } = await api.get('/partner/profile');
+          if (res && res.status !== false) {
+            const profile = res.data || res;
+            const isSubmittedOnServer = 
+              profile.submission_status === "success" ||
+              ["PENDING", "VERIFIED", "REJECTED", "NEEDS_REVISION"].includes(profile.verification_status);
+            
+            if (isSubmittedOnServer) {
+              profileFromApi = profile;
+            }
+          }
+        } catch (err) {
+          console.warn("Failed to check partner/profile status:", err);
         }
-        setApplicationId(activeAppId);
-        const loadedFormData = parsed.formData || {};
-        if (typeof loadedFormData.tagsInput === "string") {
-          loadedFormData.tagsInput = loadedFormData.tagsInput
-            ? loadedFormData.tagsInput.split(",").map((t: string) => t.trim()).filter(Boolean)
-            : [];
+      }
+
+      if (profileFromApi) {
+        // Load from API
+        const loadedData: any = {};
+        
+        if (profileFromApi.name) loadedData.fullName = profileFromApi.name;
+        if (profileFromApi.gender) {
+          loadedData.gender = profileFromApi.gender.charAt(0).toUpperCase() + profileFromApi.gender.slice(1);
         }
-        if (typeof loadedFormData.interestsInput === "string") {
-          loadedFormData.interestsInput = loadedFormData.interestsInput
-            ? loadedFormData.interestsInput.split(",").map((i: string) => i.trim()).filter(Boolean)
-            : [];
+        if (profileFromApi.date_of_birth) loadedData.dob = profileFromApi.date_of_birth;
+        if (profileFromApi.bio) loadedData.bio = profileFromApi.bio;
+        if (profileFromApi.pricing_hourly) loadedData.hourlyRate = String(profileFromApi.pricing_hourly);
+        
+        if (profileFromApi.address) loadedData.address = profileFromApi.address;
+        if (profileFromApi.pincode) loadedData.pincode = profileFromApi.pincode;
+        if (profileFromApi.country_id) loadedData.country_id = profileFromApi.country_id;
+        if (profileFromApi.state_id) loadedData.state_id = profileFromApi.state_id;
+        if (profileFromApi.city_id) loadedData.city_id = profileFromApi.city_id;
+        if (profileFromApi.country) loadedData.country = profileFromApi.country;
+        if (profileFromApi.state) loadedData.state = profileFromApi.state;
+        if (profileFromApi.city) loadedData.city = profileFromApi.city;
+        
+        if (profileFromApi.current_latitude) loadedData.current_latitude = parseFloat(profileFromApi.current_latitude);
+        if (profileFromApi.current_longitude) loadedData.current_longitude = parseFloat(profileFromApi.current_longitude);
+        if (profileFromApi.current_heading) loadedData.current_heading = parseFloat(profileFromApi.current_heading);
+        if (profileFromApi.current_accuracy) loadedData.current_accuracy = parseFloat(profileFromApi.current_accuracy);
+        
+        if (profileFromApi.photo) loadedData.photo = profileFromApi.photo;
+        if (profileFromApi.banner) loadedData.banner = profileFromApi.banner;
+        
+        // Map languages
+        if (profileFromApi.languages) {
+          if (Array.isArray(profileFromApi.languages)) {
+            loadedData.languages = profileFromApi.languages.map((l: any) => typeof l === 'object' ? l.name : l);
+          } else if (typeof profileFromApi.languages === 'string') {
+            loadedData.languages = profileFromApi.languages.split(',').map((l: string) => l.trim()).filter(Boolean);
+          }
         }
-        if (!loadedFormData.videos || !Array.isArray(loadedFormData.videos)) {
-          loadedFormData.videos = Array(3).fill(null);
+        
+        // Map tags / interests
+        if (profileFromApi.tags) {
+          loadedData.tagsInput = Array.isArray(profileFromApi.tags) 
+            ? profileFromApi.tags.map((t: any) => typeof t === 'object' ? t.name : t)
+            : String(profileFromApi.tags).split(',').map((t: string) => t.trim()).filter(Boolean);
         }
-        if (loadedFormData.gallery && Array.isArray(loadedFormData.gallery)) {
-          loadedFormData.gallery = loadedFormData.gallery
-            .map((img: any) => typeof img === "string" ? img : (img && img.image ? img.image : null))
+        if (profileFromApi.interests) {
+          loadedData.interestsInput = Array.isArray(profileFromApi.interests)
+            ? profileFromApi.interests.map((i: any) => typeof i === 'object' ? i.name : i)
+            : String(profileFromApi.interests).split(',').map((i: string) => i.trim()).filter(Boolean);
+        }
+        
+        // Map bank account
+        if (profileFromApi.bank_account || profileFromApi.bank) {
+          const bank = profileFromApi.bank_account || profileFromApi.bank;
+          if (bank.account_holder_name) loadedData.bankAccountHolderName = bank.account_holder_name;
+          if (bank.bank_name) loadedData.bankName = bank.bank_name;
+          if (bank.branch_name) loadedData.branchName = bank.branch_name;
+          if (bank.account_number) loadedData.bankAccountNumber = bank.account_number;
+          if (bank.iban) loadedData.iban = bank.iban;
+          if (bank.swift_code) loadedData.swiftCode = bank.swift_code;
+          if (bank.routing_number) loadedData.routingNumber = bank.routing_number;
+          if (bank.ifsc_code) loadedData.bankIfscCode = bank.ifsc_code;
+          if (bank.currency) loadedData.currency = bank.currency;
+        }
+        
+        // Map gallery / videos
+        if (profileFromApi.gallery && Array.isArray(profileFromApi.gallery)) {
+          loadedData.gallery = profileFromApi.gallery
+            .map((img: any) => typeof img === 'string' ? img : (img && img.image ? img.image : null))
             .filter(Boolean);
-        } else {
-          loadedFormData.gallery = [];
         }
+        if (profileFromApi.videos && Array.isArray(profileFromApi.videos)) {
+          loadedData.videos = [...profileFromApi.videos];
+          while (loadedData.videos.length < 3) loadedData.videos.push(null);
+        }
+        
+        const submission_status = profileFromApi.submission_status || "success";
+        const verification_status = profileFromApi.verification_status || "PENDING";
+        const kyc_status = profileFromApi.kyc_status || "NOT_SCHEDULED";
+        
+        setSubmissionStatus(submission_status);
+        setVerificationStatus(verification_status);
+        setKycStatus(kyc_status);
+        
+        if (profileFromApi.kyc_date) {
+          setKycDate(profileFromApi.kyc_date);
+          setSelectedKycDate(profileFromApi.kyc_date);
+        }
+        if (profileFromApi.kyc_slot) {
+          setKycSlot(profileFromApi.kyc_slot);
+          setSelectedKycSlot(profileFromApi.kyc_slot);
+        }
+        if (profileFromApi.zoom_link) setZoomLink(profileFromApi.zoom_link);
+        
         setFormData((prev) => ({
           ...prev,
-          ...loadedFormData,
+          ...loadedData
         }));
-        setSubmissionStatus(parsed.submissionStatus || "pending");
-        setVerificationStatus(parsed.verificationStatus || "DRAFT");
-        setVerificationNotes(parsed.verificationNotes || "");
-        setKycStatus(parsed.kycStatus || "NOT_SCHEDULED");
-        setKycDate(parsed.kycDate || "");
-        setKycSlot(parsed.kycSlot || "");
-        setSelectedKycDate(parsed.kycDate || "");
-        setSelectedKycSlot(parsed.kycSlot || "");
-        setZoomLink(parsed.zoomLink || "");
-        const hasReachedReview = parsed.reachedReviewStep || parsed.currentStep === 5 || (parsed.formData && parsed.formData.termsAgreed === true);
-        if (hasReachedReview) {
-          setReachedReviewStep(true);
-          setCurrentStep(5);
+        
+        setReachedReviewStep(true);
+        setCurrentStep(5);
+        setView("summary");
+        setLastSubmittedFormData(JSON.parse(JSON.stringify(loadedData)));
+      } else {
+        // Load from LocalStorage (Draft / Onboarding mode)
+        if (savedData) {
+          try {
+            const parsed = JSON.parse(savedData);
+            if (parsed.applicationId) {
+              activeAppId = parsed.applicationId;
+            }
+            setApplicationId(activeAppId);
+            const loadedFormData = parsed.formData || {};
+            if (typeof loadedFormData.tagsInput === "string") {
+              loadedFormData.tagsInput = loadedFormData.tagsInput
+                ? loadedFormData.tagsInput.split(",").map((t: string) => t.trim()).filter(Boolean)
+                : [];
+            }
+            if (typeof loadedFormData.interestsInput === "string") {
+              loadedFormData.interestsInput = loadedFormData.interestsInput
+                ? loadedFormData.interestsInput.split(",").map((i: string) => i.trim()).filter(Boolean)
+                : [];
+            }
+            if (!loadedFormData.videos || !Array.isArray(loadedFormData.videos)) {
+              loadedFormData.videos = Array(3).fill(null);
+            }
+            if (loadedFormData.gallery && Array.isArray(loadedFormData.gallery)) {
+              loadedFormData.gallery = loadedFormData.gallery
+                .map((img: any) => typeof img === "string" ? img : (img && img.image ? img.image : null))
+                .filter(Boolean);
+            } else {
+              loadedFormData.gallery = [];
+            }
+            setFormData((prev) => ({
+              ...prev,
+              ...loadedFormData,
+            }));
+            setSubmissionStatus(parsed.submissionStatus || "pending");
+            setVerificationStatus(parsed.verificationStatus || "DRAFT");
+            setVerificationNotes(parsed.verificationNotes || "");
+            setKycStatus(parsed.kycStatus || "NOT_SCHEDULED");
+            setKycDate(parsed.kycDate || "");
+            setKycSlot(parsed.kycSlot || "");
+            setSelectedKycDate(parsed.kycDate || "");
+            setSelectedKycSlot(parsed.kycSlot || "");
+            setZoomLink(parsed.zoomLink || "");
+            const hasReachedReview = parsed.reachedReviewStep || parsed.currentStep === 5 || (parsed.formData && parsed.formData.termsAgreed === true);
+            if (hasReachedReview) {
+              setReachedReviewStep(true);
+              setCurrentStep(5);
+              setView("summary");
+              setLastSubmittedFormData(JSON.parse(JSON.stringify(loadedFormData)));
+            } else {
+              setCurrentStep(Math.min(parsed.currentStep || 1, 5));
+              setView("form");
+            }
+            if (parsed.galleryItemIds) {
+              setGalleryItemIds(parsed.galleryItemIds);
+            }
+          } catch (e) {
+            console.error("Failed to parse saved application data", e);
+          }
         } else {
-          setCurrentStep(Math.min(parsed.currentStep || 1, 5));
-        }
-        if (parsed.galleryItemIds) {
-          setGalleryItemIds(parsed.galleryItemIds);
-        }
-        // If they already submitted successfully or are pending review/verified, show summary
-        if (parsed.submissionStatus === "success" || parsed.verificationStatus === "PENDING" || parsed.verificationStatus === "VERIFIED" || parsed.verificationStatus === "REJECTED") {
-          setView("summary");
-          setShowSuccessCard(false);
-          setLastSubmittedFormData(JSON.parse(JSON.stringify(loadedFormData)));
-        } else if (parsed.verificationStatus === "NEEDS_REVISION") {
+          setApplicationId(activeAppId);
+          setFormData({
+            photo: null,
+            banner: null,
+            fullName: "",
+            gender: "Select Gender",
+            dob: "",
+            age: "",
+            city: "",
+            state: "",
+            mobile: "",
+            phoneCountryCode: "+91",
+            email: "",
+            bankName: "",
+            bankAccountNumber: "",
+            bankIfscCode: "",
+            bankAccountHolderName: "",
+            branchName: "",
+            currency: "",
+            iban: "",
+            swiftCode: "",
+            routingNumber: "",
+            country: "",
+            address: "",
+            pincode: "",
+            upiId: "",
+            addons: [],
+            otherAddon: "",
+            languages: [],
+            bio: "",
+            tagsInput: [],
+            interestsInput: [],
+            hourlyRate: "",
+            availability: [],
+            instagram: "",
+            linkedin: "",
+            termsAgreed: false,
+            idProofs: [null, null, null, null],
+            kycDocInputs: [],
+            gallery: [],
+            videos: Array(3).fill(null),
+            current_latitude: null,
+            current_longitude: null,
+            current_heading: null,
+            current_accuracy: null,
+            country_id: null,
+            state_id: null,
+            city_id: null,
+          });
+          setGalleryItemIds({});
+          setSubmissionStatus("pending");
+          setVerificationStatus("DRAFT");
+          setKycStatus("NOT_SCHEDULED");
+          setReachedReviewStep(false);
           setView("form");
-        } else if (parsed.view === "kyc-schedule") {
-          setView("summary");
         }
-      } catch (e) {
-        console.error("Failed to parse saved application data", e);
       }
-    } else {
-      setApplicationId(activeAppId);
-      // Clear/reset form to blank defaults if no saved data exists for this user
-      setFormData({
-        photo: null,
-        banner: null,
-        fullName: "",
-        gender: "Select Gender",
-        dob: "",
-        age: "",
-        city: "",
-        state: "",
-        mobile: "",
-        phoneCountryCode: "+91",
-        email: "",
-        bankName: "",
-        bankAccountNumber: "",
-        bankIfscCode: "",
-        bankAccountHolderName: "",
-        branchName: "",
-        currency: "",
-        iban: "",
-        swiftCode: "",
-        routingNumber: "",
-        country: "",
-        address: "",
-        pincode: "",
-        upiId: "",
-        addons: [],
-        otherAddon: "",
-        languages: [],
-        bio: "",
-        tagsInput: [],
-        interestsInput: [],
-        hourlyRate: "",
-        availability: [],
-        instagram: "",
-        linkedin: "",
-        termsAgreed: false,
-        idProofs: [null, null, null, null],
-        kycDocInputs: [],
-        gallery: [],
-        videos: Array(3).fill(null),
-        current_latitude: null,
-        current_longitude: null,
-        country_id: null,
-        state_id: null,
-        city_id: null,
-      });
-      setGalleryItemIds({});
-      setSubmissionStatus("pending");
-      setVerificationStatus("DRAFT");
-      setKycStatus("NOT_SCHEDULED");
-      setReachedReviewStep(false);
-      setView("form");
-    }
-    setLastLoadedKey(storageKey);
-    setIsHydrated(true);
+      setLastLoadedKey(storageKey);
+      setIsHydrated(true);
+    };
+
+    initAndLoad();
   }, [storageKey]);
 
   // Persistence: Save on Change (Include lightweight Browser Object URLs)
@@ -1172,6 +1314,21 @@ export default function DetailsForm() {
 
         // Hit the real API
         await api.post("/partner/become-a-partner", payload);
+
+        // Save live-location if geolocation data exists
+        if (formData.current_latitude !== null && formData.current_longitude !== null) {
+          try {
+            await api.post("/bookings/live-location", {
+              latitude: formData.current_latitude,
+              longitude: formData.current_longitude,
+              heading: formData.current_heading !== null ? formData.current_heading : 120.5,
+              accuracy: formData.current_accuracy !== null ? formData.current_accuracy : 8.2
+            });
+          } catch (liveLocErr) {
+            console.warn("Failed to save live-location:", liveLocErr);
+          }
+        }
+
         toast.success("Step 1 details saved successfully!");
         setCurrentStep((prev) => Math.min(5, prev + 1));
       } catch (error: any) {
@@ -1233,7 +1390,10 @@ export default function DetailsForm() {
                 const fileBlob = await response.blob();
                 const extension = fileBlob.type.split("/")[1] || "jpg";
                 const fileName = `${doc.require_document_key}.${extension}`;
-                formDataBody.append(doc.require_document_key, fileBlob, fileName);
+                
+                // Append using structured documents[index][key] and documents[index][file]
+                formDataBody.append(`documents[${i}][key]`, doc.require_document_key);
+                formDataBody.append(`documents[${i}][file]`, fileBlob, fileName);
               } catch (err) {
                 console.error(`Failed to fetch blob for ${doc.require_document_key}:`, err);
               }
@@ -1525,6 +1685,8 @@ export default function DetailsForm() {
       videos: Array(3).fill(null),
       current_latitude: null,
       current_longitude: null,
+      current_heading: null,
+      current_accuracy: null,
       country_id: null,
       state_id: null,
       city_id: null,

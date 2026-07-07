@@ -204,8 +204,10 @@ export default function LocationStep({
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        const lat = parseFloat(position.coords.latitude.toFixed(4));
-        const lng = parseFloat(position.coords.longitude.toFixed(4));
+        const lat = parseFloat(position.coords.latitude.toFixed(6));
+        const lng = parseFloat(position.coords.longitude.toFixed(6));
+        const heading = position.coords.heading !== null && position.coords.heading !== undefined ? parseFloat(position.coords.heading.toFixed(1)) : 120.5;
+        const accuracy = position.coords.accuracy !== null && position.coords.accuracy !== undefined ? parseFloat(position.coords.accuracy.toFixed(1)) : 8.2;
 
         try {
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`, {
@@ -242,7 +244,9 @@ export default function LocationStep({
             pincode: postcode,
             address: displayAddress,
             current_latitude: lat,
-            current_longitude: lng
+            current_longitude: lng,
+            current_heading: heading,
+            current_accuracy: accuracy
           });
 
           toast.success("Successfully fetched your GPS location details!");
@@ -250,7 +254,9 @@ export default function LocationStep({
           console.error(error);
           onChange({
             current_latitude: lat,
-            current_longitude: lng
+            current_longitude: lng,
+            current_heading: heading,
+            current_accuracy: accuracy
           });
           toast.info("GPS coordinates retrieved. Please select Country, State, and City manually.");
         } finally {

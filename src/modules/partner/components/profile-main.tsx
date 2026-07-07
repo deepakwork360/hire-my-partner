@@ -347,8 +347,8 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
               onClick={handleFollowToggle}
               className={`flex-1 sm:flex-none sm:px-6 h-12 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl flex items-center justify-center gap-2 border transition-all cursor-pointer text-center ${
                 isFollowing
-                  ? "bg-primary/10 border-primary/40 text-primary hover:bg-primary/20"
-                  : "bg-bg-secondary border-border-main text-text-main hover:bg-bg-card hover:border-primary/30"
+                    ? "bg-primary text-white border-primary shadow-lg shadow-primary/25"
+  : "bg-zinc-900/70 border-zinc-700 text-zinc-200 hover:bg-zinc-800 hover:border-primary/40 transition-all duration-200"
               }`}
             >
               {isFollowing ? <UserCheck size={14} /> : <UserPlus size={14} />}

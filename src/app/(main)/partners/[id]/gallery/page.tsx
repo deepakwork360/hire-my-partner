@@ -128,7 +128,7 @@ export default function PartnerGalleryPage({ params }: PageProps) {
           >
             <Link 
               href={`/partners/${partner.id}`}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-primary/30 text-text-muted hover:text-text-main text-[11px] font-black uppercase tracking-widest transition-all duration-300 cursor-pointer shadow-md"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-primary/90 hover:border-primary/30 text-text-muted hover:text-text-main text-[11px] font-black uppercase tracking-widest transition-all duration-300 cursor-pointer shadow-md"
             >
               <ArrowLeft size={12} className="text-primary" />
               Back to Profile

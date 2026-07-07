@@ -263,7 +263,7 @@ function VerifyOtpForm() {
               </p>
             </div>
           </form>
-        </div>
+        </div>  
       </div>
     </div>
   );
