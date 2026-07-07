@@ -20,23 +20,39 @@ export const useRegister = () => {
 
   const handleRegister = async (data: RegisterPayload) => {
     setIsLoading(true);
-    try {
-      const response = await authApi.register(data);
-      toast.success(response.message || 'Registered successfully. Please verify your OTP.');
 
-      // Save details securely to sessionStorage instead of exposing PII in URL
+    try {
+      // 1. Register user
+      const response = await authApi.register(data);
+
+      // 2. Automatically send Email OTP
+      await authApi.sendOtp({
+        type: 'register',
+        send_via: 'email',
+        email: data.email || '',
+        phone_no: data.phone_no || '',
+        phone_country_code: data.phone_country_code || '',
+      });
+
+      toast.success(response.message || 'OTP sent to your email.');
+
+      // 3. Save verification details
       if (typeof window !== 'undefined') {
-        sessionStorage.setItem('otp_verification_data', JSON.stringify({
-          type: 'register',
-          send_via: 'email',
-          phone_no: data.phone_no || '',
-          phone_country_code: data.phone_country_code || '',
-          email: data.email || '',
-          emailOrPhone: data.email || data.phone_no || ''
-        }));
+        sessionStorage.setItem(
+          'otp_verification_data',
+          JSON.stringify({
+            type: 'register',
+            send_via: 'email',
+            phone_no: data.phone_no || '',
+            phone_country_code: data.phone_country_code || '',
+            email: data.email || '',
+            emailOrPhone: data.email || data.phone_no || '',
+          })
+        );
       }
 
-      router.push(`/verify-otp`);
+      // 4. Go to Email OTP screen
+      router.push('/verify-otp');
     } catch (error) {
       toast.error(getErrorMsg(error));
     } finally {
