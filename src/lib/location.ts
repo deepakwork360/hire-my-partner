@@ -56,6 +56,13 @@ export function resolveCoordinates(locationStr: string): { lat: number; lng: num
   if (cityDict[normalized]) {
     return cityDict[normalized];
   }
+
+  // Fallback to substring matching (e.g. "mumbaimaharashtra" contains "mumbai")
+  for (const key of Object.keys(cityDict)) {
+    if (normalized.includes(key)) {
+      return cityDict[key];
+    }
+  }
   
   return getDeterministicCoordinates(locationStr);
 }
@@ -87,19 +94,28 @@ export function calculateHaversineDistance(
 
 export function getUserLocation(): UserLocation {
   if (typeof window === "undefined") {
-    return { city: "Mumbai", lat: 19.0760, lng: 72.8777 };
+    return { city: "Mumbai", lat: 19.0760, lng: 72.8777, latitude: 19.0760, longitude: 72.8777 };
   }
   
   try {
     const saved = localStorage.getItem("user_active_location");
     if (saved) {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      const lat = parsed.lat !== undefined ? parsed.lat : (parsed.latitude !== undefined ? parsed.latitude : 19.0760);
+      const lng = parsed.lng !== undefined ? parsed.lng : (parsed.longitude !== undefined ? parsed.longitude : 72.8777);
+      return {
+        ...parsed,
+        lat,
+        lng,
+        latitude: lat,
+        longitude: lng
+      };
     }
   } catch (e) {
     console.error("Failed to parse user active location", e);
   }
   
-  return { city: "Mumbai", lat: 19.0760, lng: 72.8777 };
+  return { city: "Mumbai", lat: 19.0760, lng: 72.8777, latitude: 19.0760, longitude: 72.8777 };
 }
 
 export function setUserLocation(loc: UserLocation) {

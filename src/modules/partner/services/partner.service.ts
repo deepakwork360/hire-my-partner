@@ -54,10 +54,12 @@ function enrichPartnerWithDynamicReviews(partner: any): Partner {
   if (typeof window !== "undefined") {
     try {
       const userLoc = getUserLocation();
-      const partnerLat = partner.lat !== undefined ? partner.lat : undefined;
-      const partnerLng = partner.lng !== undefined ? partner.lng : undefined;
+      const rawLat = partner.latitude !== undefined ? partner.latitude : partner.lat;
+      const rawLng = partner.longitude !== undefined ? partner.longitude : partner.lng;
+      const partnerLat = rawLat !== undefined && rawLat !== null ? parseFloat(String(rawLat)) : undefined;
+      const partnerLng = rawLng !== undefined && rawLng !== null ? parseFloat(String(rawLng)) : undefined;
 
-      if (partnerLat !== undefined && partnerLng !== undefined) {
+      if (partnerLat !== undefined && !isNaN(partnerLat) && partnerLng !== undefined && !isNaN(partnerLng)) {
         distanceNum = calculateHaversineDistance(userLoc.lat, userLoc.lng, partnerLat, partnerLng);
       } else {
         const coords = resolveCoordinates(partner.location || partner.city);
@@ -207,6 +209,66 @@ export const PartnerService = {
         throw new Error("Partner not found");
       }
       return enrichPartnerWithDynamicReviews(partner);
+    }
+  },
+
+  /**
+   * Fetches partners nearby based on latitude, longitude, radius, and booked hours.
+   * If the API fails, falls back gracefully to PartnerService.getPartners() and filters locally.
+   */
+  async getNearbyPartners(params: {
+    latitude: number;
+    longitude: number;
+    radiusKm?: number;
+    bookedHours?: number;
+  }): Promise<Partner[]> {
+    const lat = params.latitude;
+    const lng = params.longitude;
+    const radius = params.radiusKm !== undefined ? params.radiusKm : 25;
+    const hours = params.bookedHours !== undefined ? params.bookedHours : 2;
+
+    try {
+      const response = await api.get("/bookings/partners/nearby", {
+        params: {
+          service_latitude: lat.toFixed(8),
+          service_longitude: lng.toFixed(8),
+          radius_km: radius,
+          booked_hours: hours,
+        },
+      });
+
+      const resData = response.data;
+      let rawPartners: any[] = [];
+      if (resData && typeof resData === "object") {
+        if (resData.status && resData.data && Array.isArray(resData.data.partners)) {
+          rawPartners = resData.data.partners;
+        } else if (Array.isArray(resData.partners)) {
+          rawPartners = resData.partners;
+        } else if (resData.data && Array.isArray(resData.data)) {
+          rawPartners = resData.data;
+        } else if (Array.isArray(resData)) {
+          rawPartners = resData;
+        }
+      }
+
+      // Map through enrichment to ensure distance and review attributes exist
+      const enriched = rawPartners.map(enrichPartnerWithDynamicReviews);
+
+      // Fetch all local/mock partners and merge those within the requested radius
+      const allPartners = await PartnerService.getPartners();
+      const localNearby = allPartners.filter((p) => {
+        const alreadyExists = enriched.some((ep) => String(ep.id) === String(p.id));
+        return !alreadyExists && p.distance <= radius;
+      });
+
+      return [...enriched, ...localNearby];
+    } catch (error) {
+      console.warn("Failed to fetch nearby partners from API, falling back to local filtration:", error);
+      const allPartners = await PartnerService.getPartners();
+      return allPartners.filter((partner) => {
+        // partner.distance is already computed during enrichment in getPartners()
+        return partner.distance <= radius;
+      });
     }
   }
 };

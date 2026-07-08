@@ -15,6 +15,7 @@ interface KycStepProps {
   onKycSlotChange: (slot: string) => void;
   handleIdUpload: (index: number, e: React.ChangeEvent<HTMLInputElement>) => void;
   errors?: Record<string, string>;
+  uploadingKycIndexes?: Record<number, boolean>;
 }
 
 const getNext7Days = () => {
@@ -54,6 +55,7 @@ export default function KycStep({
   onKycSlotChange,
   handleIdUpload,
   errors,
+  uploadingKycIndexes,
 }: KycStepProps) {
   const [kycDocInputs, setKycDocInputs] = useState<any[]>([]);
   const [loadingDocs, setLoadingDocs] = useState(false);
@@ -140,7 +142,14 @@ export default function KycStep({
                       : "border-border-main bg-bg-card hover:border-primary hover:bg-bg-secondary hover:shadow-[0_0_25px_rgba(var(--primary-rgb),0.15)]"
                   }`}
                 >
-                  {isUploaded ? (
+                  {uploadingKycIndexes && uploadingKycIndexes[index] ? (
+                    <div className="flex flex-col items-center justify-center gap-3 p-4 text-center">
+                      <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+                      <span className="text-[9px] font-black uppercase tracking-widest text-primary animate-pulse">
+                        Uploading...
+                      </span>
+                    </div>
+                  ) : isUploaded ? (
                     <div className="relative w-full h-full group/id">
                       <img
                         src={formData.idProofs[index]!}

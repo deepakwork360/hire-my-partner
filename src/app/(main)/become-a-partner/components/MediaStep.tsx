@@ -13,6 +13,7 @@ interface MediaStepProps {
   onVideoUpload: (index: number, e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemoveVideo: (index: number) => void;
   errors?: Record<string, string>;
+  isUploadingGallery?: boolean;
 }
 
 export default function MediaStep({
@@ -25,6 +26,7 @@ export default function MediaStep({
   onVideoUpload,
   onRemoveVideo,
   errors,
+  isUploadingGallery,
 }: MediaStepProps) {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "photo" | "banner") => {
@@ -166,37 +168,55 @@ export default function MediaStep({
           ))}
 
           {/* Add Photo Slot (always available for unlimited uploads) */}
-          <motion.div
-            className={`relative aspect-square rounded-[32px] overflow-hidden border-2 border-dashed transition-all duration-700 group ${
-              showErrors && (formData.gallery || []).length < 3 
-                ? "border-red-500/50 bg-red-500/5 animate-pulse" 
-                : "border-primary/30 bg-bg-secondary/20 hover:border-primary hover:bg-primary/5"
-            }`}
-          >
-            <label className="w-full h-full flex flex-col items-center justify-center gap-3 cursor-pointer group/add transition-all duration-500">
-              <div className="w-14 h-14 rounded-[20px] bg-primary/10 border border-primary/20 flex items-center justify-center transition-all duration-700 group-hover/add:rotate-90 group-hover/add:scale-110">
-                <Plus className="w-6 h-6 text-primary group-hover/add:text-accent" />
+          {isUploadingGallery ? (
+            <motion.div
+              className="relative aspect-square rounded-[32px] overflow-hidden border-2 border-dashed border-primary/50 bg-primary/5 flex flex-col items-center justify-center gap-3"
+            >
+              <div className="w-14 h-14 rounded-[20px] bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <div className="w-6 h-6 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
               </div>
               <div className="flex flex-col items-center gap-1">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted group-hover/add:text-primary">
-                  Add Photos
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary animate-pulse">
+                  Uploading...
                 </span>
-                {(formData.gallery || []).length < 3 && (
-                  <span className="text-[8px] font-bold text-red-500 uppercase tracking-wider">
-                    {3 - (formData.gallery || []).length} more required
-                  </span>
-                )}
+                <span className="text-[8px] font-medium text-text-muted">
+                  Please wait
+                </span>
               </div>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={onGalleryUpload}
-              />
-              <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover/add:opacity-100 transition-opacity duration-700" />
-            </label>
-          </motion.div>
+            </motion.div>
+          ) : (
+            <motion.div
+              className={`relative aspect-square rounded-[32px] overflow-hidden border-2 border-dashed transition-all duration-700 group ${
+                showErrors && (formData.gallery || []).length < 3 
+                  ? "border-red-500/50 bg-red-500/5 animate-pulse" 
+                  : "border-primary/30 bg-bg-secondary/20 hover:border-primary hover:bg-primary/5"
+              }`}
+            >
+              <label className="w-full h-full flex flex-col items-center justify-center gap-3 cursor-pointer group/add transition-all duration-500">
+                <div className="w-14 h-14 rounded-[20px] bg-primary/10 border border-primary/20 flex items-center justify-center transition-all duration-700 group-hover/add:rotate-90 group-hover/add:scale-110">
+                  <Plus className="w-6 h-6 text-primary group-hover/add:text-accent" />
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted group-hover/add:text-primary">
+                    Add Photos
+                  </span>
+                  {(formData.gallery || []).length < 3 && (
+                    <span className="text-[8px] font-bold text-red-500 uppercase tracking-wider">
+                      {3 - (formData.gallery || []).length} more required
+                    </span>
+                  )}
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={onGalleryUpload}
+                />
+                <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover/add:opacity-100 transition-opacity duration-700" />
+              </label>
+            </motion.div>
+          )}
         </div>
       </div>
 

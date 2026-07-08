@@ -5,12 +5,21 @@ export interface User {
   phone?: string;
   avatar?: string;
   isProfileComplete: boolean;
+  is_email_verified?: boolean;
+  is_phone_verified?: boolean;
+  email_verified_at?: string | null;
+  phone_verified_at?: string | null;
+  phone_no_verified_at?: string | null;
   gender?: string;
   age?: string;
   address?: string;
   city?: string;
   phone_country_code?: string;
   country?: string;
+  state?: string;
+  country_id?: number | null;
+  state_id?: number | null;
+  city_id?: number | null;
 }
 
 export interface AuthResponse {

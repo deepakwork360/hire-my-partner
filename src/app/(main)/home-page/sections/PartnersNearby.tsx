@@ -5,7 +5,7 @@ import ProfileCard from "@/components/ProfileCard/ProfileCard";
 import PremiumDropdown from "@/components/ui/PremiumDropdown";
 import { Range } from "react-range";
 import { Outfit, Rochester } from "next/font/google";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Search,
   Filter,
@@ -17,7 +17,9 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
-import { usePartners } from "@/modules/partner/hooks/usePartners";
+import { PartnerService } from "@/modules/partner/services/partner.service";
+import { getUserLocation } from "@/lib/location";
+import { Partner } from "@/modules/partner/types/partner.types";
 import ProfileCardSkeleton from "@/components/ProfileCard/ProfileCardSkeleton";
 
 const outfit = Outfit({
@@ -31,15 +33,64 @@ const rochester = Rochester({
 });
 
 export default function PartnersNearby() {
-  const { partners: fetchedPartners, loading } = usePartners();
+  const [nearbyPartners, setNearbyPartners] = useState<Partner[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [age, setAge] = useState("");
   const [eventType, setEventType] = useState("");
   const [rating, setRating] = useState("");
   const [distance, setDistance] = useState("");
   const [values, setValues] = useState<number[]>([0, 100]);
+  const [debouncedRadius, setDebouncedRadius] = useState<number>(100);
+
+  // Debounce the slider radius value to avoid API rate limiting while dragging
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedRadius(values[1]);
+    }, 450);
+    return () => clearTimeout(handler);
+  }, [values[1]]);
+
+  const loadNearbyPartners = useCallback(async () => {
+    setLoading(true);
+    try {
+      const loc = getUserLocation();
+      const latitude = loc.latitude !== undefined ? loc.latitude : loc.lat;
+      const longitude = loc.longitude !== undefined ? loc.longitude : loc.lng;
+
+      const data = await PartnerService.getNearbyPartners({
+        latitude,
+        longitude,
+        radiusKm: debouncedRadius,
+        bookedHours: 2,
+      });
+      setNearbyPartners(data);
+    } catch (e) {
+      console.error("Failed to load nearby partners:", e);
+    } finally {
+      setLoading(false);
+    }
+  }, [debouncedRadius]);
+
+  useEffect(() => {
+    loadNearbyPartners();
+
+    const handleUpdate = () => {
+      loadNearbyPartners();
+    };
+
+    window.addEventListener("user_location_updated", handleUpdate);
+    window.addEventListener("partner_location_updated", handleUpdate);
+    window.addEventListener("reviews_updated", handleUpdate);
+
+    return () => {
+      window.removeEventListener("user_location_updated", handleUpdate);
+      window.removeEventListener("partner_location_updated", handleUpdate);
+      window.removeEventListener("reviews_updated", handleUpdate);
+    };
+  }, [loadNearbyPartners]);
 
   // Dynamic filter logic for real partners
-  const filteredProfiles = fetchedPartners.filter((partner) => {
+  const filteredProfiles = nearbyPartners.filter((partner) => {
     // 1. Age Range filter (supports ranges like "20-30" or single ages like "25")
     if (age.trim()) {
       const match = age.match(/^(\d+)-(\d+)$/);

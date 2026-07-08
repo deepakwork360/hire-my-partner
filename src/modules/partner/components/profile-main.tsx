@@ -157,6 +157,12 @@ export default function ProfileMain({ partner }: ProfileMainProps) {
 
         window.dispatchEvent(new Event("bookmarks_changed"));
         window.dispatchEvent(new Event("favourites_changed"));
+
+        if (nextState && favList.length === 1) {
+          setTimeout(() => {
+            window.dispatchEvent(new Event("open_sidebar_bookmarks"));
+          }, 50);
+        }
       } catch (e) {
         console.error(e);
       }

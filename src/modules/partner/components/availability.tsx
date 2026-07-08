@@ -731,6 +731,10 @@ export default function Availability({ partner }: AvailabilityProps) {
 
     if (!user?.gender || !user?.age || !user?.address || !user?.city || !user?.country) {
       toast.error("Please complete your profile details (Gender, Age, Country, City, and Address) in the Account Center to book.");
+      if (typeof window !== "undefined") {
+        const redirectUrl = window.location.pathname + window.location.search + "#booking-section";
+        localStorage.setItem("redirect_after_profile_update", redirectUrl);
+      }
       window.dispatchEvent(new CustomEvent("open_account_center", { detail: { section: "personal-info" } }));
       return;
     }

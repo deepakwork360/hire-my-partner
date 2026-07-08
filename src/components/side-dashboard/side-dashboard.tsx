@@ -285,11 +285,21 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
         setActiveMoodText(moodText);
       }
     };
+    const handleOpenAndScrollToBookmarks = () => {
+      setIsOpen(true);
+      setTimeout(() => {
+        const bookmarksEl = document.getElementById("sidebar-bookmarks-section");
+        if (bookmarksEl) {
+          bookmarksEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 300);
+    };
 
     window.addEventListener("keydown", handleEsc);
     window.addEventListener("toggle_side_dashboard", handleToggle);
     window.addEventListener("open_account_center", handleOpenAccountCenter);
     window.addEventListener("user_mood_changed", handleMoodChange);
+    window.addEventListener("open_sidebar_bookmarks", handleOpenAndScrollToBookmarks);
 
     // Initial load
     handleMoodChange();
@@ -301,6 +311,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
       window.removeEventListener("toggle_side_dashboard", handleToggle);
       window.removeEventListener("open_account_center", handleOpenAccountCenter);
       window.removeEventListener("user_mood_changed", handleMoodChange);
+      window.removeEventListener("open_sidebar_bookmarks", handleOpenAndScrollToBookmarks);
     };
   }, [storageKey]);
 
@@ -811,8 +822,8 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                 )}
 
                 {/* BOOKMARKS SECTION */}
-                {isAuthenticated && (
-                  <div>
+                {(isAuthenticated || bookmarkedCompanions.length > 0) && (
+                  <div id="sidebar-bookmarks-section">
                     <h4 className="text-[10px] font-bold uppercase tracking-[0.15em] text-text-muted/70 mb-2 px-1 flex items-center justify-between">
                       <span>Bookmarks</span>
                       {bookmarkedCompanions.length > 0 && (

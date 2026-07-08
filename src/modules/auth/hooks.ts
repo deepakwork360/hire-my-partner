@@ -9,7 +9,22 @@ import axios from 'axios';
 // Helper to extract message from axios error
 const getErrorMsg = (error: unknown) => {
   if (axios.isAxiosError(error)) {
-    return error.response?.data?.message || error.message;
+    const data = error.response?.data;
+    if (data && data.errors && typeof data.errors === 'object') {
+      // Gather validation error messages
+      const messages = Object.entries(data.errors)
+        .map(([field, msgs]) => {
+          if (Array.isArray(msgs)) {
+            return msgs.join(', ');
+          }
+          return String(msgs);
+        })
+        .join(' ');
+      if (messages) {
+        return messages;
+      }
+    }
+    return data?.message || error.message;
   }
   return 'An unexpected error occurred';
 };
@@ -99,6 +114,64 @@ export const useLogin = () => {
       }
 
       const response = await authApi.login(data);
+      console.log("LOGIN RESPONSE USER:", response.user);
+
+      // Determine if email and phone are verified using a helper
+      const isVerifiedField = (val: any) => {
+        if (val === true || val === 1 || val === "1" || val === "true") return true;
+        if (typeof val === "string" && val.trim() !== "" && val !== "null") return true;
+        return false;
+      };
+
+      const isEmailVerified = 
+        isVerifiedField(response.user.is_email_verified) || 
+        isVerifiedField(response.user.email_verified_at);
+        
+      const isPhoneVerified = 
+        isVerifiedField(response.user.is_phone_verified) || 
+        isVerifiedField(response.user.phone_verified_at) ||
+        isVerifiedField(response.user.phone_no_verified_at);
+
+      if (!isEmailVerified || !isPhoneVerified) {
+        toast.info("Please verify your account to log in.");
+        
+        // Determine the next step and target
+        const emailOrPhone = response.user.email || response.user.phone || data.emailOrPhone;
+        const sendVia = !isEmailVerified ? "email" : "phone";
+        
+        // 1. Send the OTP for verification
+        try {
+          await authApi.sendOtp({
+            type: 'register',
+            send_via: sendVia,
+            email: response.user.email || '',
+            phone_no: response.user.phone || '',
+            phone_country_code: response.user.phone_country_code || '',
+          });
+        } catch (sendErr) {
+          console.error("Failed to automatically send OTP on login interception:", sendErr);
+        }
+
+        // 2. Save verification details in sessionStorage so VerifyOtpPage knows what to do
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(
+            'otp_verification_data',
+            JSON.stringify({
+              type: 'register',
+              send_via: sendVia,
+              phone_no: response.user.phone || '',
+              phone_country_code: response.user.phone_country_code || '',
+              email: response.user.email || '',
+              emailOrPhone: emailOrPhone,
+            })
+          );
+        }
+
+        // 3. Redirect to Verify OTP page
+        router.push('/verify-otp');
+        return;
+      }
+
       setAuth(response);
       toast.success('Login successful! Welcome back.');
       if (redirectUrl) {

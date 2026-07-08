@@ -405,7 +405,6 @@ const calculateAge = (dobString: string): string => {
 
 export default function DetailsForm() {
   const { user, updateUserProfile, updateUserAvatar } = useAuthStore();
-  const storageKey = user && user.email ? `partnerApplication_${user.email.replace(/[^a-zA-Z0-9]/g, "_")}` : "partnerApplication";
 
   // Crop States
   const [cropModalOpen, setCropModalOpen] = useState(false);
@@ -485,7 +484,6 @@ export default function DetailsForm() {
   const [lastSubmittedFormData, setLastSubmittedFormData] = useState<any>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [reachedReviewStep, setReachedReviewStep] = useState(false);
-  const [lastLoadedKey, setLastLoadedKey] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isStepSubmitting, setIsStepSubmitting] = useState(false);
   const [languagesList, setLanguagesList] = useState<any[]>([]);
@@ -494,8 +492,10 @@ export default function DetailsForm() {
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+  const [uploadingKycIndexes, setUploadingKycIndexes] = useState<Record<number, boolean>>({});
   const [galleryItemIds, setGalleryItemIds] = useState<Record<string, number | string>>({});
   const [localPreviews, setLocalPreviews] = useState<Record<string, string>>({});
+  const [kycFiles, setKycFiles] = useState<(File | null)[]>(Array(4).fill(null));
 
   const normalizeUrl = (urlStr: string): string => {
     if (!urlStr) return urlStr;
@@ -685,132 +685,262 @@ export default function DetailsForm() {
   const docsRef = useRef<HTMLDivElement>(null);
   const termsRef = useRef<HTMLDivElement>(null);
 
-  // Persistence: Load on Mount
-  // Persistence: Load on Mount
+  // Persistence: Load on Mount from API
   useEffect(() => {
     const initAndLoad = async () => {
       let activeAppId = `APP-${Math.floor(100000 + Math.random() * 900000)}`;
 
-      // Seed Sabrina Carpenter if she is logged in and doesn't have an application yet
-      if (user && user.email === "sabrina@gmail.com" && !localStorage.getItem(storageKey)) {
-        activeAppId = "APP-123456";
-        localStorage.setItem(storageKey, JSON.stringify({
-          applicationId: activeAppId,
-          formData: {
-            fullName: "Sabrina Carpenter",
-            displayName: "Sabrina",
-            gender: "Female",
-            age: "24",
-            city: "New York, USA",
-            mobile: "+91 9876543210",
-            phoneCountryCode: "+91",
-            email: "sabrina@gmail.com",
-            bio: "Singer, songwriter, actress and your companion. Let's talk about music, films, and coffee.",
-            hourlyRate: "899",
-            languages: ["English", "French"],
-            interestsInput: ["Music", "Coffee", "Films"],
-            tagsInput: ["Singer", "Actor", "Artist"],
-            termsAgreed: true,
-            photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256",
-            verificationStatus: "VERIFIED"
-          },
-          submissionStatus: "success",
-          verificationStatus: "VERIFIED",
-          kycStatus: "APPROVED",
-          view: "summary"
-        }));
-      }
-
-      // Check if localStorage has an already submitted status or is empty
-      const savedData = localStorage.getItem(storageKey);
-      let isAlreadySubmitted = false;
-      if (savedData) {
-        try {
-          const parsed = JSON.parse(savedData);
-          if (
-            parsed.submissionStatus === "success" ||
-            ["PENDING", "VERIFIED", "REJECTED", "NEEDS_REVISION"].includes(parsed.verificationStatus) ||
-            parsed.reachedReviewStep === true ||
-            parsed.currentStep === 5
-          ) {
-            isAlreadySubmitted = true;
-          }
-        } catch (e) {}
-      }
-
-      // Decide if we should fetch from API: either they already submitted or localStorage is empty (different device/session)
+      // Fetch from the GET API `/partner/profile`
       let profileFromApi: any = null;
-      if (isAlreadySubmitted || !savedData) {
-        try {
-          const { data: res } = await api.get('/partner/profile');
-          if (res && res.status !== false) {
-            const profile = res.data || res;
-            const isSubmittedOnServer = 
-              profile.submission_status === "success" ||
-              ["PENDING", "VERIFIED", "REJECTED", "NEEDS_REVISION"].includes(profile.verification_status);
-            
-            if (isSubmittedOnServer) {
-              profileFromApi = profile;
-            }
-          }
-        } catch (err) {
-          console.warn("Failed to check partner/profile status:", err);
+      try {
+        const { data: res } = await api.get('/partner/profile');
+
+        if (res && res.status !== false) {
+          const rawProfile = res.data || res;
+          profileFromApi = {
+            ...rawProfile,
+            ...(rawProfile.profile || {}),
+            ...(rawProfile.partner || {}),
+          };
         }
+      } catch (err: any) {
+        console.warn("Failed to check partner/profile status:", err);
       }
 
       if (profileFromApi) {
         // Load from API
         const loadedData: any = {};
         
-        if (profileFromApi.name) loadedData.fullName = profileFromApi.name;
+        loadedData.fullName = profileFromApi.name || user?.name || "";
         if (profileFromApi.gender) {
-          loadedData.gender = profileFromApi.gender.charAt(0).toUpperCase() + profileFromApi.gender.slice(1);
+          const g = String(profileFromApi.gender).trim();
+          loadedData.gender = g.charAt(0).toUpperCase() + g.slice(1).toLowerCase();
         }
-        if (profileFromApi.date_of_birth) loadedData.dob = profileFromApi.date_of_birth;
+
+        // Handle Date of Birth & Age
+        if (profileFromApi.date_of_birth || profileFromApi.dob) {
+          const dobStr = String(profileFromApi.date_of_birth || profileFromApi.dob);
+          let cleanDob = dobStr;
+          if (dobStr.includes('T')) {
+            cleanDob = dobStr.split('T')[0];
+          } else if (dobStr.includes(' ')) {
+            cleanDob = dobStr.split(' ')[0];
+          }
+          loadedData.dob = cleanDob;
+
+          // Compute age using calculated value if possible
+          if (cleanDob) {
+            const birthDate = new Date(cleanDob);
+            const today = new Date();
+            let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+              calculatedAge--;
+            }
+            if (!isNaN(calculatedAge)) {
+              loadedData.age = String(calculatedAge);
+            }
+          }
+        }
+
         if (profileFromApi.bio) loadedData.bio = profileFromApi.bio;
-        if (profileFromApi.pricing_hourly) loadedData.hourlyRate = String(profileFromApi.pricing_hourly);
+
+        // Pricing details
+        if (profileFromApi.pricing_hourly) {
+          loadedData.hourlyRate = String(profileFromApi.pricing_hourly);
+        } else if (profileFromApi.pricing && (profileFromApi.pricing.oneHour !== undefined || profileFromApi.pricing.one_hour !== undefined)) {
+          loadedData.hourlyRate = String(profileFromApi.pricing.oneHour !== undefined ? profileFromApi.pricing.oneHour : profileFromApi.pricing.one_hour);
+        } else if (profileFromApi.pricing_hourly_rate) {
+          loadedData.hourlyRate = String(profileFromApi.pricing_hourly_rate);
+        } else if (profileFromApi.hourly_rate) {
+          loadedData.hourlyRate = String(profileFromApi.hourly_rate);
+        }
         
-        if (profileFromApi.address) loadedData.address = profileFromApi.address;
-        if (profileFromApi.pincode) loadedData.pincode = profileFromApi.pincode;
-        if (profileFromApi.country_id) loadedData.country_id = profileFromApi.country_id;
-        if (profileFromApi.state_id) loadedData.state_id = profileFromApi.state_id;
-        if (profileFromApi.city_id) loadedData.city_id = profileFromApi.city_id;
-        if (profileFromApi.country) loadedData.country = profileFromApi.country;
-        if (profileFromApi.state) loadedData.state = profileFromApi.state;
-        if (profileFromApi.city) loadedData.city = profileFromApi.city;
+        // Handle Location, Country, State, City, Pincode
+        const addrObj = typeof profileFromApi.address === 'object' && profileFromApi.address !== null ? profileFromApi.address : null;
+
+        if (addrObj) {
+          loadedData.address = addrObj.address || addrObj.street || "";
+          
+          if (addrObj.pincode) loadedData.pincode = String(addrObj.pincode);
+          else if (addrObj.pin_code) loadedData.pincode = String(addrObj.pin_code);
+
+          if (addrObj.country) {
+            if (typeof addrObj.country === 'object') {
+              loadedData.country = addrObj.country.name || addrObj.country.title;
+              loadedData.country_id = Number(addrObj.country.id);
+            } else {
+              loadedData.country = String(addrObj.country);
+            }
+          }
+          if (addrObj.country_id) loadedData.country_id = Number(addrObj.country_id);
+
+          if (addrObj.state) {
+            if (typeof addrObj.state === 'object') {
+              loadedData.state = addrObj.state.name || addrObj.state.title;
+              loadedData.state_id = Number(addrObj.state.id);
+            } else {
+              loadedData.state = String(addrObj.state);
+            }
+          }
+          if (addrObj.state_id) loadedData.state_id = Number(addrObj.state_id);
+
+          if (addrObj.city) {
+            if (typeof addrObj.city === 'object') {
+              loadedData.city = addrObj.city.name || addrObj.city.title;
+              loadedData.city_id = Number(addrObj.city.id);
+            } else {
+              loadedData.city = String(addrObj.city);
+            }
+          }
+          if (addrObj.city_id) loadedData.city_id = Number(addrObj.city_id);
+
+        } else {
+          if (profileFromApi.address) loadedData.address = String(profileFromApi.address);
+          
+          if (profileFromApi.pincode) loadedData.pincode = String(profileFromApi.pincode);
+          else if (profileFromApi.pin_code) loadedData.pincode = String(profileFromApi.pin_code);
+
+          // Handle Country
+          if (profileFromApi.country) {
+            if (typeof profileFromApi.country === 'object') {
+              loadedData.country = profileFromApi.country.name || profileFromApi.country.title;
+              loadedData.country_id = Number(profileFromApi.country.id);
+            } else {
+              loadedData.country = String(profileFromApi.country);
+            }
+          }
+          if (profileFromApi.country_id) {
+            loadedData.country_id = Number(profileFromApi.country_id);
+          }
+
+          // Handle State
+          if (profileFromApi.state) {
+            if (typeof profileFromApi.state === 'object') {
+              loadedData.state = profileFromApi.state.name || profileFromApi.state.title;
+              loadedData.state_id = Number(profileFromApi.state.id);
+            } else {
+              loadedData.state = String(profileFromApi.state);
+            }
+          }
+          if (profileFromApi.state_id) {
+            loadedData.state_id = Number(profileFromApi.state_id);
+          }
+
+          // Handle City
+          if (profileFromApi.city) {
+            if (typeof profileFromApi.city === 'object') {
+              loadedData.city = profileFromApi.city.name || profileFromApi.city.title;
+              loadedData.city_id = Number(profileFromApi.city.id);
+            } else {
+              loadedData.city = String(profileFromApi.city);
+            }
+          }
+          if (profileFromApi.city_id) {
+            loadedData.city_id = Number(profileFromApi.city_id);
+          }
+        }
         
         if (profileFromApi.current_latitude) loadedData.current_latitude = parseFloat(profileFromApi.current_latitude);
         if (profileFromApi.current_longitude) loadedData.current_longitude = parseFloat(profileFromApi.current_longitude);
         if (profileFromApi.current_heading) loadedData.current_heading = parseFloat(profileFromApi.current_heading);
         if (profileFromApi.current_accuracy) loadedData.current_accuracy = parseFloat(profileFromApi.current_accuracy);
         
-        if (profileFromApi.photo) loadedData.photo = profileFromApi.photo;
-        if (profileFromApi.banner) loadedData.banner = profileFromApi.banner;
+        loadedData.photo = profileFromApi.photo || profileFromApi.profile_image_url || user?.avatar || null;
+        if (profileFromApi.banner || profileFromApi.cover_image_url) {
+          loadedData.banner = profileFromApi.banner || profileFromApi.cover_image_url;
+        }
+        
+        // Prefill contact & meta info
+        if (profileFromApi.mobile) loadedData.mobile = String(profileFromApi.mobile);
+        else if (profileFromApi.phone) loadedData.mobile = String(profileFromApi.phone);
+        else if (user?.phone) loadedData.mobile = String(user.phone);
+        else loadedData.mobile = "";
+
+        if (profileFromApi.phone_country_code) loadedData.phoneCountryCode = String(profileFromApi.phone_country_code);
+        else if (profileFromApi.phoneCountryCode) loadedData.phoneCountryCode = String(profileFromApi.phoneCountryCode);
+        else if (user?.phone_country_code) loadedData.phoneCountryCode = String(user.phone_country_code);
+        else loadedData.phoneCountryCode = "+91";
+
+        loadedData.email = profileFromApi.email || user?.email || "";
+        
+        // Use calculated age if not set on server
+        if (profileFromApi.age) {
+          loadedData.age = String(profileFromApi.age);
+        }
+        
+        if (profileFromApi.instagram) loadedData.instagram = String(profileFromApi.instagram);
+        if (profileFromApi.linkedin) loadedData.linkedin = String(profileFromApi.linkedin);
         
         // Map languages
-        if (profileFromApi.languages) {
-          if (Array.isArray(profileFromApi.languages)) {
-            loadedData.languages = profileFromApi.languages.map((l: any) => typeof l === 'object' ? l.name : l);
-          } else if (typeof profileFromApi.languages === 'string') {
-            loadedData.languages = profileFromApi.languages.split(',').map((l: string) => l.trim()).filter(Boolean);
+        const rawLanguages = profileFromApi.languages || profileFromApi.partner_languages || profileFromApi.languages_spoken || profileFromApi.spoken_languages || profileFromApi.language;
+        if (rawLanguages) {
+          if (Array.isArray(rawLanguages)) {
+            loadedData.languages = rawLanguages.map((l: any) => {
+              if (typeof l === 'object') {
+                return l.id || l.language_id || l.name;
+              }
+              return l;
+            });
+          } else if (typeof rawLanguages === 'string') {
+            loadedData.languages = rawLanguages.split(',').map((l: string) => {
+              const val = l.trim();
+              return isNaN(Number(val)) ? val : Number(val);
+            }).filter(Boolean);
           }
         }
         
         // Map tags / interests
         if (profileFromApi.tags) {
           loadedData.tagsInput = Array.isArray(profileFromApi.tags) 
-            ? profileFromApi.tags.map((t: any) => typeof t === 'object' ? t.name : t)
+            ? profileFromApi.tags.map((t: any) => typeof t === 'object' ? t.name || t.id : t)
             : String(profileFromApi.tags).split(',').map((t: string) => t.trim()).filter(Boolean);
         }
         if (profileFromApi.interests) {
           loadedData.interestsInput = Array.isArray(profileFromApi.interests)
-            ? profileFromApi.interests.map((i: any) => typeof i === 'object' ? i.name : i)
+            ? profileFromApi.interests.map((i: any) => typeof i === 'object' ? i.name || i.id : i)
             : String(profileFromApi.interests).split(',').map((i: string) => i.trim()).filter(Boolean);
         }
+
+        // Map addons
+        if (profileFromApi.addons) {
+          if (Array.isArray(profileFromApi.addons)) {
+            loadedData.addons = profileFromApi.addons.map((a: any) => typeof a === 'object' ? a.name || a.id : a);
+          } else if (typeof profileFromApi.addons === 'string') {
+            loadedData.addons = profileFromApi.addons.split(',').map((a: string) => a.trim()).filter(Boolean);
+          }
+        }
+        if (profileFromApi.otherAddon || profileFromApi.other_addon) {
+          loadedData.otherAddon = profileFromApi.otherAddon || profileFromApi.other_addon;
+        }
+
+        // Map availability
+        if (profileFromApi.availability) {
+          if (Array.isArray(profileFromApi.availability)) {
+            loadedData.availability = profileFromApi.availability.map((a: any) => typeof a === 'object' ? a.name || a.day || a.id : a);
+          } else if (typeof profileFromApi.availability === 'string') {
+            loadedData.availability = profileFromApi.availability.split(',').map((a: string) => a.trim()).filter(Boolean);
+          }
+        }
+
+        if (profileFromApi.terms_agreed !== undefined) loadedData.termsAgreed = !!profileFromApi.terms_agreed;
+        else if (profileFromApi.termsAgreed !== undefined) loadedData.termsAgreed = !!profileFromApi.termsAgreed;
         
         // Map bank account
-        if (profileFromApi.bank_account || profileFromApi.bank) {
-          const bank = profileFromApi.bank_account || profileFromApi.bank;
+        // Map bank account
+        let bank = profileFromApi.bank_account || profileFromApi.bank;
+        if (!bank && Array.isArray(profileFromApi.bank_accounts) && profileFromApi.bank_accounts.length > 0) {
+          const primary = profileFromApi.bank_accounts.find((b: any) => b.is_primary === 1 || b.is_primary === "1");
+          bank = primary || profileFromApi.bank_accounts[0];
+        } else if (!bank && Array.isArray(profileFromApi.bank) && profileFromApi.bank.length > 0) {
+          const primary = profileFromApi.bank.find((b: any) => b.is_primary === 1 || b.is_primary === "1");
+          bank = primary || profileFromApi.bank[0];
+        } else if (!bank && Array.isArray(profileFromApi.bank_account) && profileFromApi.bank_account.length > 0) {
+          const primary = profileFromApi.bank_account.find((b: any) => b.is_primary === 1 || b.is_primary === "1");
+          bank = primary || profileFromApi.bank_account[0];
+        }
+
+        if (bank) {
           if (bank.account_holder_name) loadedData.bankAccountHolderName = bank.account_holder_name;
           if (bank.bank_name) loadedData.bankName = bank.bank_name;
           if (bank.branch_name) loadedData.branchName = bank.branch_name;
@@ -820,21 +950,64 @@ export default function DetailsForm() {
           if (bank.routing_number) loadedData.routingNumber = bank.routing_number;
           if (bank.ifsc_code) loadedData.bankIfscCode = bank.ifsc_code;
           if (bank.currency) loadedData.currency = bank.currency;
+          if (bank.upi_id) loadedData.upiId = bank.upi_id;
+        } else {
+          if (profileFromApi.bank_name) loadedData.bankName = profileFromApi.bank_name;
+          if (profileFromApi.account_number) loadedData.bankAccountNumber = profileFromApi.account_number;
+          if (profileFromApi.ifsc_code) loadedData.bankIfscCode = profileFromApi.ifsc_code;
+          if (profileFromApi.account_holder_name) loadedData.bankAccountHolderName = profileFromApi.account_holder_name;
+          if (profileFromApi.branch_name) loadedData.branchName = profileFromApi.branch_name;
+          if (profileFromApi.currency) loadedData.currency = profileFromApi.currency;
+          if (profileFromApi.iban) loadedData.iban = profileFromApi.iban;
+          if (profileFromApi.swift_code) loadedData.swiftCode = profileFromApi.swift_code;
+          if (profileFromApi.routing_number) loadedData.routingNumber = profileFromApi.routing_number;
+          if (profileFromApi.upi_id) loadedData.upiId = profileFromApi.upi_id;
         }
         
         // Map gallery / videos
-        if (profileFromApi.gallery && Array.isArray(profileFromApi.gallery)) {
-          loadedData.gallery = profileFromApi.gallery
-            .map((img: any) => typeof img === 'string' ? img : (img && img.image ? img.image : null))
+        const rawGallery = profileFromApi.gallery || profileFromApi.gallery_images;
+        if (rawGallery && Array.isArray(rawGallery)) {
+          loadedData.gallery = rawGallery
+            .map((img: any) => typeof img === 'string' ? img : (img && (img.url || img.image) ? img.url || img.image : null))
             .filter(Boolean);
         }
         if (profileFromApi.videos && Array.isArray(profileFromApi.videos)) {
           loadedData.videos = [...profileFromApi.videos];
           while (loadedData.videos.length < 3) loadedData.videos.push(null);
         }
+
+        // Fetch country specific document requirements to prefill KYC documents correctly
+        const countryId = profileFromApi.country_id || 101;
+        let requiredDocs: any[] = [];
+        try {
+          const reqRes = await api.get(`/partner/kyc-document-inputs?country_id=${countryId}`);
+          if (reqRes?.data?.status && Array.isArray(reqRes.data.data)) {
+            requiredDocs = reqRes.data.data;
+          }
+        } catch (e) {
+          console.warn("Failed to fetch kyc document requirements during load:", e);
+        }
+
+        // Map documents
+        const idProofs = Array(requiredDocs.length).fill(null);
+        const apiDocs = profileFromApi.documents || profileFromApi.id_proofs || profileFromApi.idProofs || [];
+        if (Array.isArray(apiDocs)) {
+          apiDocs.forEach((doc: any) => {
+            const key = doc.document_name || doc.document_key || doc.document_type || doc.key || doc.require_document_key;
+            const url = doc.file || doc.file_path || doc.url;
+            if (key && url) {
+              const idx = requiredDocs.findIndex((r: any) => r.require_document_key === key);
+              if (idx !== -1) {
+                idProofs[idx] = normalizeUrl(url);
+              }
+            }
+          });
+        }
+        loadedData.idProofs = idProofs;
+        loadedData.kycDocInputs = requiredDocs;
         
-        const submission_status = profileFromApi.submission_status || "success";
-        const verification_status = profileFromApi.verification_status || "PENDING";
+        const submission_status = profileFromApi.submission_status || "pending";
+        const verification_status = profileFromApi.verification_status || "DRAFT";
         const kyc_status = profileFromApi.kyc_status || "NOT_SCHEDULED";
         
         setSubmissionStatus(submission_status);
@@ -855,159 +1028,104 @@ export default function DetailsForm() {
           ...prev,
           ...loadedData
         }));
+
+        // Determine current step dynamically based on what is populated in API
+        const hasBasicInfo = loadedData.fullName && loadedData.gender && loadedData.dob && loadedData.city;
+        const hasMedia = loadedData.gallery && loadedData.gallery.length >= 3;
+        const hasBank = loadedData.bankAccountNumber && loadedData.bankName;
+        const hasKycDoc = (profileFromApi.documents && profileFromApi.documents.length > 0) || (loadedData.idProofs && loadedData.idProofs.length > 0);
         
-        setReachedReviewStep(true);
-        setCurrentStep(5);
-        setView("summary");
-        setLastSubmittedFormData(JSON.parse(JSON.stringify(loadedData)));
-      } else {
-        // Load from LocalStorage (Draft / Onboarding mode)
-        if (savedData) {
-          try {
-            const parsed = JSON.parse(savedData);
-            if (parsed.applicationId) {
-              activeAppId = parsed.applicationId;
-            }
-            setApplicationId(activeAppId);
-            const loadedFormData = parsed.formData || {};
-            if (typeof loadedFormData.tagsInput === "string") {
-              loadedFormData.tagsInput = loadedFormData.tagsInput
-                ? loadedFormData.tagsInput.split(",").map((t: string) => t.trim()).filter(Boolean)
-                : [];
-            }
-            if (typeof loadedFormData.interestsInput === "string") {
-              loadedFormData.interestsInput = loadedFormData.interestsInput
-                ? loadedFormData.interestsInput.split(",").map((i: string) => i.trim()).filter(Boolean)
-                : [];
-            }
-            if (!loadedFormData.videos || !Array.isArray(loadedFormData.videos)) {
-              loadedFormData.videos = Array(3).fill(null);
-            }
-            if (loadedFormData.gallery && Array.isArray(loadedFormData.gallery)) {
-              loadedFormData.gallery = loadedFormData.gallery
-                .map((img: any) => typeof img === "string" ? img : (img && img.image ? img.image : null))
-                .filter(Boolean);
-            } else {
-              loadedFormData.gallery = [];
-            }
-            setFormData((prev) => ({
-              ...prev,
-              ...loadedFormData,
-            }));
-            setSubmissionStatus(parsed.submissionStatus || "pending");
-            setVerificationStatus(parsed.verificationStatus || "DRAFT");
-            setVerificationNotes(parsed.verificationNotes || "");
-            setKycStatus(parsed.kycStatus || "NOT_SCHEDULED");
-            setKycDate(parsed.kycDate || "");
-            setKycSlot(parsed.kycSlot || "");
-            setSelectedKycDate(parsed.kycDate || "");
-            setSelectedKycSlot(parsed.kycSlot || "");
-            setZoomLink(parsed.zoomLink || "");
-            const hasReachedReview = parsed.reachedReviewStep || parsed.currentStep === 5 || (parsed.formData && parsed.formData.termsAgreed === true);
-            if (hasReachedReview) {
-              setReachedReviewStep(true);
-              setCurrentStep(5);
-              setView("summary");
-              setLastSubmittedFormData(JSON.parse(JSON.stringify(loadedFormData)));
-            } else {
-              setCurrentStep(Math.min(parsed.currentStep || 1, 5));
-              setView("form");
-            }
-            if (parsed.galleryItemIds) {
-              setGalleryItemIds(parsed.galleryItemIds);
-            }
-          } catch (e) {
-            console.error("Failed to parse saved application data", e);
-          }
+        const isSubmittedOnServer = 
+          submission_status === "success" ||
+          ["PENDING", "VERIFIED", "REJECTED", "NEEDS_REVISION"].includes(verification_status);
+        
+        if (isSubmittedOnServer) {
+          setReachedReviewStep(true);
+          setCurrentStep(5);
+          setView("summary");
+          setLastSubmittedFormData(JSON.parse(JSON.stringify(loadedData)));
         } else {
-          setApplicationId(activeAppId);
-          setFormData({
-            photo: null,
-            banner: null,
-            fullName: "",
-            gender: "Select Gender",
-            dob: "",
-            age: "",
-            city: "",
-            state: "",
-            mobile: "",
-            phoneCountryCode: "+91",
-            email: "",
-            bankName: "",
-            bankAccountNumber: "",
-            bankIfscCode: "",
-            bankAccountHolderName: "",
-            branchName: "",
-            currency: "",
-            iban: "",
-            swiftCode: "",
-            routingNumber: "",
-            country: "",
-            address: "",
-            pincode: "",
-            upiId: "",
-            addons: [],
-            otherAddon: "",
-            languages: [],
-            bio: "",
-            tagsInput: [],
-            interestsInput: [],
-            hourlyRate: "",
-            availability: [],
-            instagram: "",
-            linkedin: "",
-            termsAgreed: false,
-            idProofs: [null, null, null, null],
-            kycDocInputs: [],
-            gallery: [],
-            videos: Array(3).fill(null),
-            current_latitude: null,
-            current_longitude: null,
-            current_heading: null,
-            current_accuracy: null,
-            country_id: null,
-            state_id: null,
-            city_id: null,
-          });
-          setGalleryItemIds({});
-          setSubmissionStatus("pending");
-          setVerificationStatus("DRAFT");
-          setKycStatus("NOT_SCHEDULED");
-          setReachedReviewStep(false);
+          let step = 1;
+          if (!hasBasicInfo) {
+            step = 1;
+          } else if (!hasMedia) {
+            step = 2;
+          } else if (!hasBank) {
+            step = 3;
+          } else if (!hasKycDoc) {
+            step = 4;
+          } else {
+            step = 5;
+          }
+          setCurrentStep(step);
           setView("form");
+          if (step === 5) {
+            setReachedReviewStep(true);
+          }
         }
+      } else {
+        // Start with a clean form
+        setApplicationId(activeAppId);
+        setFormData({
+          photo: user?.avatar || null,
+          banner: null,
+          fullName: user?.name || "",
+          gender: "Select Gender",
+          dob: "",
+          age: "",
+          city: "",
+          state: "",
+          mobile: user?.phone || "",
+          phoneCountryCode: user?.phone_country_code || "+91",
+          email: user?.email || "",
+          bankName: "",
+          bankAccountNumber: "",
+          bankIfscCode: "",
+          bankAccountHolderName: "",
+          branchName: "",
+          currency: "",
+          iban: "",
+          swiftCode: "",
+          routingNumber: "",
+          country: "",
+          address: "",
+          pincode: "",
+          upiId: "",
+          addons: [],
+          otherAddon: "",
+          languages: [],
+          bio: "",
+          tagsInput: [],
+          interestsInput: [],
+          hourlyRate: "",
+          availability: [],
+          instagram: "",
+          linkedin: "",
+          termsAgreed: false,
+          idProofs: [null, null, null, null],
+          kycDocInputs: [],
+          gallery: [],
+          videos: Array(3).fill(null),
+          current_latitude: null,
+          current_longitude: null,
+          current_heading: null,
+          current_accuracy: null,
+          country_id: null,
+          state_id: null,
+          city_id: null,
+        });
+        setGalleryItemIds({});
+        setSubmissionStatus("pending");
+        setVerificationStatus("DRAFT");
+        setKycStatus("NOT_SCHEDULED");
+        setReachedReviewStep(false);
+        setView("form");
       }
-      setLastLoadedKey(storageKey);
       setIsHydrated(true);
     };
 
     initAndLoad();
-  }, [storageKey]);
-
-  // Persistence: Save on Change (Include lightweight Browser Object URLs)
-  useEffect(() => {
-    if (isHydrated && lastLoadedKey === storageKey) {
-      localStorage.setItem(
-        storageKey,
-        JSON.stringify({
-          applicationId,
-          formData: formData,
-          submissionStatus,
-          view,
-          verificationStatus,
-          verificationNotes,
-          kycStatus,
-          kycDate,
-          kycSlot,
-          zoomLink,
-          currentStep,
-          reachedReviewStep,
-          galleryItemIds,
-        }),
-      );
-      window.dispatchEvent(new Event("partnerStatusChange"));
-    }
-  }, [formData, submissionStatus, view, verificationStatus, verificationNotes, kycStatus, kycDate, kycSlot, zoomLink, isHydrated, storageKey, applicationId, currentStep, reachedReviewStep, galleryItemIds, lastLoadedKey]);
+  }, [user?.id, user?.name, user?.email, user?.phone, user?.phone_country_code]);
 
 
   // Auto-Scroll on View Change
@@ -1300,7 +1418,39 @@ export default function DetailsForm() {
           current_longitude: formData.current_longitude,
           app_language_code: "en",
           name: formData.fullName || "",
+          mobile: formData.mobile || "",
+          phone: formData.mobile || "",
+          email: formData.email || "",
+          phone_country_code: formData.phoneCountryCode || "+91",
+          phoneCountryCode: formData.phoneCountryCode || "+91",
+          age: formData.age || "",
+          city: formData.city || "",
+          state: formData.state || "",
+          country: formData.country || "",
+          pincode: formData.pincode || "",
+          pin_code: formData.pincode || "",
         };
+
+        if (formData.instagram) payload.instagram = formData.instagram;
+        if (formData.linkedin) payload.linkedin = formData.linkedin;
+        if (formData.otherAddon) payload.otherAddon = formData.otherAddon;
+
+        const selectedTags = formData.tagsInput || [];
+        selectedTags.forEach((tag: string, idx: number) => {
+          payload[`tags[${idx}]`] = tag;
+        });
+        const selectedInterests = formData.interestsInput || [];
+        selectedInterests.forEach((interest: string, idx: number) => {
+          payload[`interests[${idx}]`] = interest;
+        });
+        const selectedAddons = formData.addons || [];
+        selectedAddons.forEach((addon: string, idx: number) => {
+          payload[`addons[${idx}]`] = addon;
+        });
+        const selectedAvail = formData.availability || [];
+        selectedAvail.forEach((avail: string, idx: number) => {
+          payload[`availability[${idx}]`] = avail;
+        });
 
         const selectedLangs = formData.languages || [];
         selectedLangs.forEach((lang: any, idx: number) => {
@@ -1380,32 +1530,67 @@ export default function DetailsForm() {
         } else if (stepNum === 4) {
           const formDataBody = new FormData();
           const requiredDocs = formData.kycDocInputs || [];
+          let hasLocalFiles = false;
           
           for (let i = 0; i < requiredDocs.length; i++) {
             const doc = requiredDocs[i];
-            const blobUrl = formData.idProofs && formData.idProofs[i];
-            if (blobUrl) {
-              try {
-                const response = await fetch(blobUrl);
-                const fileBlob = await response.blob();
-                const extension = fileBlob.type.split("/")[1] || "jpg";
-                const fileName = `${doc.require_document_key}.${extension}`;
-                
-                // Append using structured documents[index][key] and documents[index][file]
-                formDataBody.append(`documents[${i}][key]`, doc.require_document_key);
-                formDataBody.append(`documents[${i}][file]`, fileBlob, fileName);
-              } catch (err) {
-                console.error(`Failed to fetch blob for ${doc.require_document_key}:`, err);
-              }
+            const file = kycFiles[i];
+            if (file) {
+              const extension = file.type.split("/")[1] || "jpg";
+              const fileName = `${doc.require_document_key}.${extension}`;
+              
+              formDataBody.append(`documents[${i}][key]`, doc.require_document_key);
+              formDataBody.append(`documents[${i}][file]`, file, fileName);
+              hasLocalFiles = true;
             }
           }
 
-          const res = await api.post("/partner/kyc-document/upload", formDataBody, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          });
-          console.log("KYC Upload Response:", res.data);
+          if (hasLocalFiles) {
+            const indexesToUpload: number[] = [];
+            requiredDocs.forEach((_, idx) => {
+              if (kycFiles[idx]) {
+                indexesToUpload.push(idx);
+                setUploadingKycIndexes((prev) => ({ ...prev, [idx]: true }));
+              }
+            });
+
+            try {
+              const res = await api.post("/partner/kyc-document/upload", formDataBody, {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+              });
+              console.log("KYC Upload Response:", res.data);
+              
+              // Map the uploaded URLs back to formData.idProofs so the review step shows them
+              if (res.data && res.data.status && Array.isArray(res.data.data)) {
+                const uploadedDocs = res.data.data;
+                const newProofs = formData.idProofs ? [...formData.idProofs] : [];
+                
+                requiredDocs.forEach((doc: any, idx: number) => {
+                  const match = uploadedDocs.find((u: any) => 
+                    (u.key && u.key === doc.require_document_key) || 
+                    (u.document_key && u.document_key === doc.require_document_key) ||
+                    (u.document_type && u.document_type === doc.require_document_key)
+                  );
+                  if (match && (match.url || match.file_path || match.file)) {
+                    newProofs[idx] = normalizeUrl(match.url || match.file_path || match.file);
+                  }
+                });
+                
+                setFormData((prev) => ({ ...prev, idProofs: newProofs }));
+              }
+            } catch (err: any) {
+              console.error("KYC documents upload failed:", err);
+              const errMsg = err.response?.data?.message || err.message || "Failed to upload KYC documents";
+              toast.error("Failed to upload KYC documents: " + errMsg);
+              return; // Block step progression
+            } finally {
+              indexesToUpload.forEach((idx) => {
+                setUploadingKycIndexes((prev) => ({ ...prev, [idx]: false }));
+              });
+            }
+          }
         }
 
         toast.success(`Step ${stepNum} details saved!`);
@@ -1527,6 +1712,7 @@ export default function DetailsForm() {
       country: formData.country,
       address: formData.address || "",
       pincode: formData.pincode,
+      pin_code: formData.pincode,
       upiId: formData.upiId,
       tags: formData.tagsInput.length > 0 ? formData.tagsInput.map(t => {
         const trimmed = t.trim();
@@ -1692,7 +1878,9 @@ export default function DetailsForm() {
       city_id: null,
     });
     setGalleryItemIds({});
-    localStorage.removeItem(storageKey);
+    setKycFiles(Array(4).fill(null));
+    const legacyKey = user && user.email ? `partnerApplication_${user.email.replace(/[^a-zA-Z0-9]/g, "_")}` : "partnerApplication";
+    localStorage.removeItem(legacyKey);
     // Also remove from approved_partners
     try {
       const saved = localStorage.getItem("approved_partners");
@@ -1717,19 +1905,38 @@ export default function DetailsForm() {
     });
   };
 
-  const handleIdUpload = (
+  const handleIdUpload = async (
     index: number,
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = e.target.files?.[0];
     if (file) {
-      const blobUrl = URL.createObjectURL(file);
-      const newProofs = formData.idProofs ? [...formData.idProofs] : [];
-      while (newProofs.length <= index) {
-        newProofs.push(null);
+      const doc = formData.kycDocInputs?.[index];
+      if (!doc) return;
+
+      try {
+        const localUrl = URL.createObjectURL(file);
+        
+        const newProofs = formData.idProofs ? [...formData.idProofs] : [];
+        while (newProofs.length <= index) {
+          newProofs.push(null);
+        }
+        newProofs[index] = localUrl;
+        setFormData((prev) => ({ ...prev, idProofs: newProofs }));
+
+        setKycFiles((prevFiles) => {
+          const nextFiles = [...prevFiles];
+          while (nextFiles.length <= index) {
+            nextFiles.push(null);
+          }
+          nextFiles[index] = file;
+          return nextFiles;
+        });
+
+        toast.success(`${doc.name} selected successfully!`);
+      } catch (err: any) {
+        console.error("KYC selection failed:", err);
       }
-      newProofs[index] = blobUrl;
-      setFormData({ ...formData, idProofs: newProofs });
     }
   };
 
@@ -1949,6 +2156,7 @@ export default function DetailsForm() {
                     onVideoUpload={handleVideoUpload}
                     onRemoveVideo={removeVideo}
                     errors={errors}
+                    isUploadingGallery={isUploadingGallery}
                   />
                 )}
                 {currentStep === 3 && (
@@ -1962,7 +2170,23 @@ export default function DetailsForm() {
                 {currentStep === 4 && (
                   <KycStep
                     formData={formData}
-                    onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
+                    onChange={(data) => {
+                      setFormData((prev) => {
+                        const next = { ...prev, ...data };
+                        if (data.idProofs) {
+                          setKycFiles((prevFiles) => {
+                            const nextFiles = [...prevFiles];
+                            for (let i = 0; i < data.idProofs!.length; i++) {
+                              if (data.idProofs![i] === null || data.idProofs![i] === undefined) {
+                                nextFiles[i] = null;
+                              }
+                            }
+                            return nextFiles;
+                          });
+                        }
+                        return next;
+                      });
+                    }}
                     showErrors={showErrors}
                     selectedKycDate={selectedKycDate}
                     onKycDateChange={(date) => setSelectedKycDate(date)}
@@ -1970,6 +2194,7 @@ export default function DetailsForm() {
                     onKycSlotChange={(slot) => setSelectedKycSlot(slot)}
                     handleIdUpload={handleIdUpload}
                     errors={errors}
+                    uploadingKycIndexes={uploadingKycIndexes}
                   />
                 )}
                 {currentStep === 5 && (
@@ -2856,7 +3081,7 @@ export default function DetailsForm() {
               {(isUploadingPhoto || isUploadingBanner) && (
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-xs z-50 flex flex-col items-center justify-center gap-4 rounded-3xl">
                   <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-                  <p className="text-xs font-black uppercase tracking-widest text-primary animate-pulse">Uploading to server...</p>
+                  <p className="text-xs font-black uppercase tracking-widest text-primary animate-pulse">Wait for Upload...</p>
                 </div>
               )}
 

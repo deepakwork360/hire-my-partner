@@ -58,7 +58,13 @@ export const authRealApi = {
         email: user.email,
         phone: user.phone || user.phone_no,
         avatar: user.avatar || user.profile_image,
-        isProfileComplete: user.isProfileComplete || false
+        isProfileComplete: user.isProfileComplete || false,
+        is_email_verified: user.is_email_verified,
+        is_phone_verified: user.is_phone_verified,
+        email_verified_at: user.email_verified_at,
+        phone_verified_at: user.phone_verified_at,
+        phone_no_verified_at: user.phone_no_verified_at,
+        phone_country_code: user.phone_country_code
       },
       token: resData.token
     };
@@ -132,7 +138,28 @@ export const authRealApi = {
     }
 
     try {
-      const { data: userData } = await api.get('/user/me', {
+      const userDirect = responseData.user || responseData.data?.user;
+      if (userDirect) {
+        return {
+          user: {
+            id: userDirect.id || userDirect.user_id || "usr_temp",
+            name: userDirect.name || "User",
+            email: userDirect.email,
+            phone: userDirect.phone || userDirect.phone_no,
+            avatar: userDirect.avatar,
+            isProfileComplete: userDirect.isProfileComplete || false,
+            is_email_verified: userDirect.is_email_verified,
+            is_phone_verified: userDirect.is_phone_verified,
+            email_verified_at: userDirect.email_verified_at,
+            phone_verified_at: userDirect.phone_verified_at,
+            phone_no_verified_at: userDirect.phone_no_verified_at,
+            phone_country_code: userDirect.phone_country_code
+          },
+          token
+        };
+      }
+
+      const { data: userData } = await api.get('/profile/me', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -145,19 +172,31 @@ export const authRealApi = {
           email: user.email,
           phone: user.phone || user.phone_no,
           avatar: user.avatar,
-          isProfileComplete: user.isProfileComplete || false
+          isProfileComplete: user.isProfileComplete || false,
+          is_email_verified: user.is_email_verified,
+          is_phone_verified: user.is_phone_verified,
+          email_verified_at: user.email_verified_at,
+          phone_verified_at: user.phone_verified_at,
+          phone_no_verified_at: user.phone_no_verified_at,
+          phone_country_code: user.phone_country_code
         },
         token
       };
     } catch (e) {
       console.error("Failed to fetch user profile after OTP verification", e);
+      const isEmail = data.send_via === 'email';
+      const nowStr = new Date().toISOString();
       return {
         user: {
           id: "usr_temp",
           name: data.phone_no || data.emailOrPhone,
           email: data.email || (data.emailOrPhone.includes('@') ? data.emailOrPhone : undefined),
           phone: data.phone_no || (!data.emailOrPhone.includes('@') ? data.emailOrPhone : undefined),
-          isProfileComplete: false
+          isProfileComplete: false,
+          is_email_verified: true,
+          email_verified_at: nowStr,
+          is_phone_verified: !isEmail,
+          phone_verified_at: !isEmail ? nowStr : null
         },
         token
       };

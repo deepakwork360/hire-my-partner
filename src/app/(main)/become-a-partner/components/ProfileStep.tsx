@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown, ChevronUp, X, Search } from "lucide-react";
 
@@ -194,14 +194,29 @@ export default function ProfileStep({
 
   const options = languagesList && languagesList.length > 0 ? languagesList : fallbackList;
 
-  const filteredOptions = options.filter(item => 
+  // Sort options so selected languages appear at the beginning of the list
+  const sortedOptions = useMemo(() => {
+    const selected: LanguageOption[] = [];
+    const unselected: LanguageOption[] = [];
+    for (const item of options) {
+      const isChecked = (formData.languages || []).includes(item.id) || (formData.languages || []).includes(item.name);
+      if (isChecked) {
+        selected.push(item);
+      } else {
+        unselected.push(item);
+      }
+    }
+    return [...selected, ...unselected];
+  }, [options, formData.languages]);
+
+  const filteredOptions = sortedOptions.filter(item => 
     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (item.native_name && item.native_name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const displayedOptions = searchQuery 
     ? filteredOptions 
-    : (showAllLanguages ? options : options.slice(0, 4));
+    : (showAllLanguages ? sortedOptions : sortedOptions.slice(0, 4));
 
   const toggleLanguage = (item: LanguageOption) => {
     const current = formData.languages || [];

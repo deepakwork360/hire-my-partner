@@ -22,8 +22,8 @@ export default function PricingCardSkeleton({ popular = false }: PricingCardSkel
       {/* Most Popular Ribbon Skeleton */}
       {popular && (
         <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-30">
-          <div className="bg-slate-300 dark:bg-slate-800 text-transparent text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2 animate-pulse">
-            <Star className="w-3 h-3 text-slate-400 dark:text-slate-600 fill-current" />
+          <div className="bg-bg-skeleton-strong dark:bg-slate-800 text-transparent text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2 animate-pulse">
+            <Star className="w-3 h-3 text-black/30 dark:text-slate-600 fill-current" />
             Most Popular
           </div>
         </div>
@@ -46,21 +46,21 @@ export default function PricingCardSkeleton({ popular = false }: PricingCardSkel
         <div className="mb-8 relative z-0">
           <div className="flex items-center justify-between mb-6">
             {/* Icon Wrapper Skeleton */}
-            <div className="w-[48px] h-[48px] rounded-2xl bg-slate-200 dark:bg-white/5 shrink-0" />
+            <div className="w-[48px] h-[48px] rounded-2xl bg-bg-skeleton shrink-0" />
             {/* Plan Name Skeleton */}
-            <div className="h-4 w-16 rounded bg-slate-300 dark:bg-white/10" />
+            <div className="h-4 w-16 rounded bg-bg-skeleton-strong" />
           </div>
 
           {/* Pricing Text Skeleton */}
           <div className="flex items-end gap-1.5 mb-4">
-            <div className="h-12 w-28 rounded-xl bg-slate-300 dark:bg-white/10" />
-            <div className="h-4 w-12 rounded bg-slate-200 dark:bg-white/5 mb-1" />
+            <div className="h-12 w-28 rounded-xl bg-bg-skeleton-strong" />
+            <div className="h-4 w-12 rounded bg-bg-skeleton mb-1" />
           </div>
 
           {/* Description Lines Skeletons */}
           <div className="space-y-2 mt-4">
-            <div className="h-3 w-full rounded bg-slate-200 dark:bg-white/5" />
-            <div className="h-3 w-4/5 rounded bg-slate-200 dark:bg-white/5" />
+            <div className="h-3 w-full rounded bg-bg-skeleton" />
+            <div className="h-3 w-4/5 rounded bg-bg-skeleton" />
           </div>
         </div>
 
@@ -75,9 +75,9 @@ export default function PricingCardSkeleton({ popular = false }: PricingCardSkel
           ].map((item, idx) => (
             <div key={idx} className="flex items-center gap-3">
               {/* Check Icon Circular Placeholder */}
-              <div className="w-5 h-5 rounded-full bg-slate-300 dark:bg-white/10 shrink-0" />
+              <div className="w-5 h-5 rounded-full bg-bg-skeleton-strong shrink-0" />
               {/* Text Placeholder */}
-              <div className={`h-3 rounded bg-slate-200 dark:bg-white/5 ${item.width}`} />
+              <div className={`h-3 rounded bg-bg-skeleton ${item.width}`} />
             </div>
           ))}
         </div>
@@ -85,11 +85,11 @@ export default function PricingCardSkeleton({ popular = false }: PricingCardSkel
         {/* CTA Buttons Skeletons */}
         <div className="space-y-3">
           {/* Main Huge CTA Button */}
-          <div className="w-full h-[60px] rounded-[24px] bg-slate-300 dark:bg-white/10" />
+          <div className="w-full h-[60px] rounded-[24px] bg-bg-skeleton-strong" />
 
           {/* Popular subtext Trial option */}
           {popular && (
-            <div className="w-32 h-3.5 mx-auto rounded bg-slate-200 dark:bg-white/5" />
+            <div className="w-32 h-3.5 mx-auto rounded bg-bg-skeleton" />
           )}
         </div>
       </div>

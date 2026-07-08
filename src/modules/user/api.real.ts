@@ -3,7 +3,7 @@ import { User } from './types';
 
 export const userRealApi = {
   getCurrentUser: async (): Promise<User> => {
-    const { data } = await api.get('/user/me');
+    const { data } = await api.get('/profile/me');
     return data;
   },
   getUserById: async (userId: string): Promise<User> => {

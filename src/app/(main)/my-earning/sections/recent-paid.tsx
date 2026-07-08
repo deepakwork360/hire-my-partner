@@ -11,11 +11,11 @@ const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "600",
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 
 const recentBookings = [
-  { id: 1, user: "Rahul S.", img: "/images/client.png", date: "20 June 2025", time: "8:00 PM", event: "Movie Night", amount: 800, tip: 200 },
-  { id: 2, user: "Riya T.", img: "/images/client1.png", date: "18 June 2025", time: "6:30 PM", event: "Dinner Event", amount: 1200, tip: 0 },
-  { id: 3, user: "Sagar M.", img: "/images/client2.png", date: "15 June 2025", time: "5:00 PM", event: "City Tour", amount: 1500, tip: 0 },
-  { id: 4, user: "Tara P.", img: "/images/client3.png", date: "12 June 2025", time: "7:45 PM", event: "Party Companion", amount: 950, tip: 0 },
-  { id: 5, user: "Mehul V.", img: "/images/client.png", date: "08 June 2025", time: "3:30 PM", event: "Café Meetup", amount: 750, tip: 0 },
+  { id: 1, user: "Rahul S.", img: "/images/client.png", date: "20 June 2025", time: "8:00 PM - 10:00 PM", amount: 800, tip: 200 },
+  { id: 2, user: "Riya T.", img: "/images/client1.png", date: "18 June 2025", time: "6:30 PM - 8:00 PM", amount: 1200, tip: 0 },
+  { id: 3, user: "Sagar M.", img: "/images/client2.png", date: "15 June 2025", time: "5:00 PM - 7:00 PM", amount: 1500, tip: 0 },
+  { id: 4, user: "Tara P.", img: "/images/client3.png", date: "12 June 2025", time: "7:45 PM - 9:00 PM", amount: 950, tip: 0 },
+  { id: 5, user: "Mehul V.", img: "/images/client.png", date: "08 June 2025", time: "3:30 PM - 5:00 PM", amount: 750, tip: 0 },
 ];
 
 export default function RecentPaid() {
@@ -45,11 +45,10 @@ export default function RecentPaid() {
            <table className="w-full text-left min-w-[700px]">
               <thead className="bg-linear-to-r from-primary-dark via-primary to-accent text-white">
                  <tr className="uppercase font-black text-[10px] xl:text-[11px] tracking-widest">
-                    <th className="px-6 xl:px-8 py-5 xl:py-7">User</th>
-                    <th className="px-6 xl:px-8 py-5 xl:py-7">Date</th>
-                    <th className="px-6 xl:px-8 py-5 xl:py-7">Time</th>
-                    <th className="px-6 xl:px-8 py-5 xl:py-7">Event Type</th>
-                    <th className="px-6 xl:px-8 py-5 xl:py-7 text-right">Amount</th>
+                    <th className="px-18 xl:px-20 py-5 xl:py-7">User</th>
+                    <th className="px-15 xl:px-18 py-5 xl:py-7">Date</th>
+                    <th className="px-20 xl:px-24 py-5 xl:py-7">Time</th>
+                    <th className="px-14 xl:px-14 py-5 xl:py-7 text-right">Amount</th>
                  </tr>
               </thead>
               <tbody className="divide-y divide-border-main bg-bg-secondary/40">
@@ -80,12 +79,7 @@ export default function RecentPaid() {
                              {row.time}
                           </div>
                        </td>
-                       <td className="px-6 xl:px-8 py-5 xl:py-7">
-                          <span className="px-4 py-2 bg-linear-to-r from-primary-dark to-accent rounded-lg text-white text-[9px] xl:text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20">
-                             {row.event}
-                          </span>
-                       </td>
-                       <td className="px-6 xl:px-8 py-5 xl:py-7 text-right">
+                       <td className="px-16 xl:px-16 py-5 xl:py-7 text-right">
                           <div className="flex flex-col items-end">
                              <span className="text-text-main text-base xl:text-lg font-black group-hover:text-primary transition-colors">₹{row.amount.toLocaleString()}</span>
                              {row.tip > 0 && (
@@ -121,10 +115,6 @@ export default function RecentPaid() {
                   </div>
                   <span className="text-text-main text-sm font-bold uppercase tracking-tight">{row.user}</span>
                 </div>
-                
-                <span className="px-3 py-1.5 bg-linear-to-r from-primary-dark to-accent rounded-lg text-white text-[9px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 shrink-0">
-                  {row.event}
-                </span>
               </div>
 
               {/* Schedule Details */}

@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@variant dark (html:not([data-appearance="light"]) &);
+
 .no-transitions * {
   transition: none !important;
 }
@@ -18,6 +20,9 @@
   --primary-rgb: 139, 92, 246;
   --primary-dark-rgb: 124, 58, 237;
   --accent-rgb: 91, 33, 182;
+
+  --bg-skeleton: rgba(255, 255, 255, 0.06);
+  --bg-skeleton-strong: rgba(255, 255, 255, 0.12);
 }
 
 [data-appearance='light'] {
@@ -29,6 +34,9 @@
   --text-muted: 71, 85, 105;
   --border-main: 0, 0, 0;
   --border-opacity: 0.08;
+
+  --bg-skeleton: rgba(0, 0, 0, 0.08);
+  --bg-skeleton-strong: rgba(0, 0, 0, 0.16);
 }
 
 [data-theme='gold'] {
@@ -77,6 +85,9 @@
   --color-text-main: rgb(var(--text-main));
   --color-text-muted: rgb(var(--text-muted));
   --color-border-main: rgba(var(--border-main), var(--border-opacity));
+  
+  --color-bg-skeleton: var(--bg-skeleton);
+  --color-bg-skeleton-strong: var(--bg-skeleton-strong);
   
   /* Maintain compatibility for existing classes during migration */
   --color-brand-pink: rgb(var(--primary-rgb));

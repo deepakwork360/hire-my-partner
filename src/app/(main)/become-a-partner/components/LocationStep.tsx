@@ -102,9 +102,21 @@ export default function LocationStep({
   // Sync country_id from selected country name
   useEffect(() => {
     if (!formData.country || formData.country === "Select Country") {
-      setStates([]);
-      if (formData.country_id) {
-        onChange({ country_id: null, state_id: null, city_id: null });
+      // If country name is empty, try to resolve country name once countriesList is loaded
+      if (!formData.country && formData.country_id && countriesList && countriesList.length > 0) {
+        const matched = countries.find((c) => Number(c.id) === Number(formData.country_id));
+        if (matched) {
+          onChange({ country: matched.name });
+          return;
+        }
+      }
+
+      // Only clear if the user explicitly selected "Select Country" or if there is no country_id
+      if (formData.country === "Select Country" || !formData.country_id) {
+        setStates([]);
+        if (formData.country_id) {
+          onChange({ country_id: null, state_id: null, city_id: null });
+        }
       }
       return;
     }
@@ -114,7 +126,7 @@ export default function LocationStep({
     );
 
     if (matchedCountry) {
-      if (formData.country_id !== matchedCountry.id) {
+      if (Number(formData.country_id) !== Number(matchedCountry.id)) {
         onChange({
           country_id: matchedCountry.id,
           state_id: null,
@@ -146,8 +158,16 @@ export default function LocationStep({
           const matchedState = list.find(
             (s: any) => s.name.toLowerCase() === formData.state.toLowerCase()
           );
-          if (matchedState && formData.state_id !== matchedState.id) {
+          if (matchedState && Number(formData.state_id) !== Number(matchedState.id)) {
             onChange({ state_id: matchedState.id, city_id: null });
+          }
+        } else if (formData.state_id && (!formData.state || formData.state === "Select State")) {
+          // Resolve state name from state_id
+          const matchedState = list.find(
+            (s: any) => Number(s.id) === Number(formData.state_id)
+          );
+          if (matchedState) {
+            onChange({ state: matchedState.name });
           }
         }
       } catch (err) {
@@ -181,8 +201,16 @@ export default function LocationStep({
           const matchedCity = list.find(
             (c: any) => c.name.toLowerCase() === formData.city.toLowerCase()
           );
-          if (matchedCity && formData.city_id !== matchedCity.id) {
+          if (matchedCity && Number(formData.city_id) !== Number(matchedCity.id)) {
             onChange({ city_id: matchedCity.id });
+          }
+        } else if (formData.city_id && (!formData.city || formData.city === "Select City")) {
+          // Resolve city name from city_id
+          const matchedCity = list.find(
+            (c: any) => Number(c.id) === Number(formData.city_id)
+          );
+          if (matchedCity) {
+            onChange({ city: matchedCity.name });
           }
         }
       } catch (err) {
@@ -433,10 +461,10 @@ export default function LocationStep({
         <InputWrapper>
           <button
             type="button"
-            disabled={!formData.country || formData.country === "Select Country" || formData.country === ""}
+            disabled={!formData.country_id && (!formData.country || formData.country === "Select Country" || formData.country === "")}
             onClick={() => setPartnerStateOpen(!partnerStateOpen)}
             className={`${getInputClass(showErrors && !!errors?.state, showErrors && !errors?.state && formData.state !== "Select State" && formData.state !== "")} flex items-center justify-between ${
-              (!formData.country || formData.country === "Select Country" || formData.country === "") ? "opacity-55 cursor-not-allowed" : "cursor-pointer"
+              (!formData.country_id && (!formData.country || formData.country === "Select Country" || formData.country === "")) ? "opacity-55 cursor-not-allowed" : "cursor-pointer"
             }`}
           >
             <span className={!formData.state || formData.state === "Select State" || formData.state === "" ? "text-text-muted" : "text-text-main"}>
@@ -451,7 +479,7 @@ export default function LocationStep({
           )}
 
           <AnimatePresence>
-            {partnerStateOpen && formData.country && formData.country !== "Select Country" && formData.country !== "" && (
+            {partnerStateOpen && (formData.country_id || (formData.country && formData.country !== "Select Country" && formData.country !== "")) && (
               <>
                 <div 
                   className="fixed inset-0 z-40 cursor-default" 
@@ -533,10 +561,10 @@ export default function LocationStep({
         <InputWrapper>
           <button
             type="button"
-            disabled={!formData.state || formData.state === "Select State" || formData.state === ""}
+            disabled={!formData.state_id && (!formData.state || formData.state === "Select State" || formData.state === "")}
             onClick={() => setPartnerCityOpen(!partnerCityOpen)}
             className={`${getInputClass(showErrors && !!errors?.city, showErrors && !errors?.city && formData.city !== "Select City" && formData.city !== "")} flex items-center justify-between ${
-              (!formData.state || formData.state === "Select State" || formData.state === "") ? "opacity-55 cursor-not-allowed" : "cursor-pointer"
+              (!formData.state_id && (!formData.state || formData.state === "Select State" || formData.state === "")) ? "opacity-55 cursor-not-allowed" : "cursor-pointer"
             }`}
           >
             <span className={!formData.city || formData.city === "Select City" || formData.city === "" ? "text-text-muted" : "text-text-main"}>
@@ -551,7 +579,7 @@ export default function LocationStep({
           )}
 
           <AnimatePresence>
-            {partnerCityOpen && formData.state && formData.state !== "Select State" && formData.state !== "" && (
+            {partnerCityOpen && (formData.state_id || (formData.state && formData.state !== "Select State" && formData.state !== "")) && (
               <>
                 <div 
                   className="fixed inset-0 z-40 cursor-default" 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Outfit, Rochester } from "next/font/google";
 import SideDashboard from "@/components/side-dashboard/side-dashboard";
@@ -22,8 +23,10 @@ import {
   EyeOff,
   Navigation,
   Plus,
-  X
+  X,
+  Search
 } from "lucide-react";
+import { api } from "@/lib/axios";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -35,21 +38,6 @@ const rochester = Rochester({
   weight: ["400"],
 });
 
-const countryCitiesMap: Record<string, string[]> = {
-  "India": ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai", "Kolkata", "Pune", "Ahmedabad"],
-  "United States": ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia", "San Antonio", "San Diego"],
-  "United Kingdom": ["London", "Birmingham", "Leeds", "Glasgow", "Sheffield", "Manchester", "Edinburgh", "Liverpool"],
-  "Australia": ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Gold Coast", "Canberra", "Hobart"],
-  "United Arab Emirates": ["Dubai", "Abu Dhabi", "Sharjah", "Al Ain", "Ajman", "Ras Al Khaimah", "Fujairah", "Umm Al Quwain"],
-  "Singapore": ["Singapore"],
-  "Germany": ["Berlin", "Hamburg", "Munich", "Cologne", "Frankfurt", "Stuttgart", "Düsseldorf", "Dortmund"],
-  "France": ["Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes", "Strasbourg", "Montpellier"],
-  "Saudi Arabia": ["Riyadh", "Jeddah", "Mecca", "Medina", "Dammam", "Taif", "Tabuk", "Buraidah"],
-  "Qatar": ["Doha", "Al Rayyan", "Al Wakrah", "Al Khor", "Umm Salal", "Madinat ash Shamal"],
-  "Nepal": ["Kathmandu", "Pokhara", "Lalitpur", "Bharatpur", "Biratnagar", "Dharan"],
-  "Bangladesh": ["Dhaka", "Chittagong", "Khulna", "Rajshahi", "Sylhet", "Barisal"],
-  "Sri Lanka": ["Colombo", "Kandy", "Galle", "Jaffna", "Negombo", "Anuradhapura"]
-};
 
 const countries = [
   { code: "+91", iso: "in", name: "India" },
@@ -281,10 +269,16 @@ export default function AccountCenterPage() {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   1. PERSONAL INFORMATION FORM
-   ───────────────────────────────────────────────────────────────────────────── */
+const InputWrapper = ({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => <div className={`w-full relative group ${className}`}>{children}</div>;
+
 function PersonalInfoForm() {
+  const router = useRouter();
   const { user, updateUserProfile } = useAuthStore();
   const [infoData, setInfoData] = useState({
     name: user?.name || "",
@@ -294,7 +288,11 @@ function PersonalInfoForm() {
     gender: user?.gender || "Select Gender",
     age: user?.age || "",
     country: user?.country || "Select Country",
+    country_id: user?.country_id || null as number | null,
+    state: user?.state || "Select State",
+    state_id: user?.state_id || null as number | null,
     city: user?.city || "Select City",
+    city_id: user?.city_id || null as number | null,
     address: user?.address || ""
   });
 
@@ -305,8 +303,21 @@ function PersonalInfoForm() {
   const [fieldsUnlocked, setFieldsUnlocked] = useState(false);
   const [genderDropdownOpen, setGenderDropdownOpen] = useState(false);
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
-  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
-  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+
+  const [countriesList, setCountriesList] = useState<any[]>([]);
+  const [statesList, setStatesList] = useState<any[]>([]);
+  const [citiesList, setCitiesList] = useState<any[]>([]);
+
+  const [loadingStates, setLoadingStates] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
+
+  const [countrySearch, setCountrySearch] = useState("");
+  const [stateSearch, setStateSearch] = useState("");
+  const [citySearch, setCitySearch] = useState("");
+
+  const [partnerCountryOpen, setPartnerCountryOpen] = useState(false);
+  const [partnerStateOpen, setPartnerStateOpen] = useState(false);
+  const [partnerCityOpen, setPartnerCityOpen] = useState(false);
 
   const [unlockModalOpen, setUnlockModalOpen] = useState(false);
   const [unlockTarget, setUnlockTarget] = useState<"email" | "phone" | null>(null);
@@ -316,6 +327,98 @@ function PersonalInfoForm() {
   const [unlockTimer, setUnlockTimer] = useState(59);
   const [otpSent, setOtpSent] = useState(false);
   const [unlockInfo, setUnlockInfo] = useState("");
+
+  // Fetch countries list on mount
+  useEffect(() => {
+    async function fetchCountries() {
+      try {
+        const { data } = await api.get("/countries");
+        const list = (data && data.status && Array.isArray(data.data))
+          ? data.data
+          : (Array.isArray(data) ? data : (data?.data || []));
+        setCountriesList(list);
+      } catch (err) {
+        console.error("Failed to fetch countries list:", err);
+      }
+    }
+    fetchCountries();
+  }, []);
+
+  // Fetch states when country_id changes
+  useEffect(() => {
+    if (!infoData.country_id) {
+      setStatesList([]);
+      return;
+    }
+
+    async function fetchStates() {
+      setLoadingStates(true);
+      try {
+        const { data } = await api.get(`/countries/${infoData.country_id}/states`);
+        const list = (data && data.status && Array.isArray(data.data))
+          ? data.data
+          : (Array.isArray(data) ? data : (data?.data || []));
+        setStatesList(list);
+      } catch (err) {
+        console.error("Failed to fetch states:", err);
+      } finally {
+        setLoadingStates(false);
+      }
+    }
+    fetchStates();
+  }, [infoData.country_id]);
+
+  // Fetch cities when state_id changes
+  useEffect(() => {
+    if (!infoData.state_id) {
+      setCitiesList([]);
+      return;
+    }
+
+    async function fetchCities() {
+      setLoadingCities(true);
+      try {
+        const { data } = await api.get(`/states/${infoData.state_id}/cities`);
+        const list = (data && data.status && Array.isArray(data.data))
+          ? data.data
+          : (Array.isArray(data) ? data : (data?.data || []));
+        setCitiesList(list);
+      } catch (err) {
+        console.error("Failed to fetch cities:", err);
+      } finally {
+        setLoadingCities(false);
+      }
+    }
+    fetchCities();
+  }, [infoData.state_id]);
+
+  // Sync country_id / state_id / city_id if countries list loads and matches name
+  useEffect(() => {
+    if (countriesList.length > 0 && infoData.country && infoData.country !== "Select Country" && !infoData.country_id) {
+      const matched = countriesList.find(c => c.name.toLowerCase() === infoData.country.toLowerCase());
+      if (matched) {
+        setInfoData(prev => ({ ...prev, country_id: matched.id }));
+      }
+    }
+  }, [countriesList, infoData.country, infoData.country_id]);
+
+  useEffect(() => {
+    if (statesList.length > 0 && infoData.state && infoData.state !== "Select State" && !infoData.state_id) {
+      const matched = statesList.find(s => s.name.toLowerCase() === infoData.state.toLowerCase());
+      if (matched) {
+        setInfoData(prev => ({ ...prev, state_id: matched.id }));
+      }
+    }
+  }, [statesList, infoData.state, infoData.state_id]);
+
+  useEffect(() => {
+    if (citiesList.length > 0 && infoData.city && infoData.city !== "Select City" && !infoData.city_id) {
+      const matched = citiesList.find(c => c.name.toLowerCase() === infoData.city.toLowerCase());
+      if (matched) {
+        setInfoData(prev => ({ ...prev, city_id: matched.id }));
+      }
+    }
+  }, [citiesList, infoData.city, infoData.city_id]);
 
   useEffect(() => {
     if (user) {
@@ -327,11 +430,27 @@ function PersonalInfoForm() {
         gender: user.gender || "Select Gender",
         age: user.age || "",
         country: user.country || "Select Country",
+        country_id: user.country_id || null,
+        state: user.state || "Select State",
+        state_id: user.state_id || null,
         city: user.city || "Select City",
+        city_id: user.city_id || null,
         address: user.address || ""
       });
     }
   }, [user]);
+
+  const filteredCountries = countriesList.filter((c) =>
+    c.name.toLowerCase().includes(countrySearch.toLowerCase())
+  );
+
+  const filteredStates = statesList.filter((s) =>
+    s.name.toLowerCase().includes(stateSearch.toLowerCase())
+  );
+
+  const filteredCities = citiesList.filter((c) =>
+    c.name.toLowerCase().includes(citySearch.toLowerCase())
+  );
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -429,6 +548,11 @@ function PersonalInfoForm() {
       setInvalidField("country");
       return;
     }
+    if (!infoData.state || infoData.state === "Select State") {
+      setError("State is required.");
+      setInvalidField("state");
+      return;
+    }
     if (!infoData.city || infoData.city === "Select City" || !infoData.city.trim()) {
       setError("City is required.");
       setInvalidField("city");
@@ -448,7 +572,11 @@ function PersonalInfoForm() {
       infoData.gender !== (user?.gender || "Select Gender") ||
       infoData.age.toString() !== (user?.age?.toString() || "") ||
       infoData.country !== (user?.country || "Select Country") ||
+      infoData.country_id !== (user?.country_id || null) ||
+      infoData.state !== (user?.state || "Select State") ||
+      infoData.state_id !== (user?.state_id || null) ||
       infoData.city.trim() !== (user?.city || "Select City").trim() ||
+      infoData.city_id !== (user?.city_id || null) ||
       infoData.address.trim() !== (user?.address || "").trim();
 
     if (!hasChanges) {
@@ -467,11 +595,26 @@ function PersonalInfoForm() {
           gender: infoData.gender,
           age: infoData.age,
           country: infoData.country,
+          country_id: infoData.country_id,
+          state: infoData.state,
+          state_id: infoData.state_id,
           city: infoData.city,
+          city_id: infoData.city_id,
           address: infoData.address
         });
         setFieldsUnlocked(false);
         toast.success("Personal information saved successfully!");
+        
+        // Redirect back to the booking flow if they came from it
+        if (typeof window !== "undefined") {
+          const redirectUrl = localStorage.getItem("redirect_after_profile_update");
+          if (redirectUrl) {
+            localStorage.removeItem("redirect_after_profile_update");
+            setTimeout(() => {
+              router.push(redirectUrl);
+            }, 800);
+          }
+        }
       } catch (err) {
         setError("Failed to update profile.");
       } finally {
@@ -692,88 +835,311 @@ function PersonalInfoForm() {
         {/* Country */}
         <div className="flex flex-col gap-1.5 relative">
           <label className={labelClassName}>Country</label>
-          <button
-            type="button"
-            onClick={() => setCountryDropdownOpen((prev) => !prev)}
-            className={selectBtnClassName(false, invalidField === "country")}
-          >
-            <span>{infoData.country}</span>
-            <ChevronDown size={14} className={`text-text-muted transition-transform duration-200 ${countryDropdownOpen ? "rotate-180" : ""}`} />
-          </button>
+          <InputWrapper>
+            <button
+              type="button"
+              onClick={() => setPartnerCountryOpen(!partnerCountryOpen)}
+              className={selectBtnClassName(false, invalidField === "country")}
+            >
+              <span className={!infoData.country || infoData.country === "Select Country" ? "text-text-muted" : "text-text-main"}>
+                {infoData.country || "Select Country"}
+              </span>
+              <ChevronDown size={14} className={`text-text-muted transition-transform duration-200 ${partnerCountryOpen ? "rotate-180" : ""}`} />
+            </button>
 
-          <AnimatePresence>
-            {countryDropdownOpen && (
-              <>
-                <div className="fixed inset-0 z-40 cursor-default" onClick={() => setCountryDropdownOpen(false)} />
-                <motion.div
-                  initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                  className="absolute left-0 right-0 top-15 bg-bg-base border border-border-main rounded-xl shadow-xl z-50 overflow-y-auto max-h-48 py-1 flex flex-col custom-scrollbar"
-                >
-                  {Object.keys(countryCitiesMap).map((cName) => (
-                    <button
-                      key={cName}
-                      type="button"
-                      onClick={() => {
-                        setInfoData((p) => ({ ...p, country: cName, city: "Select City" }));
-                        setCountryDropdownOpen(false);
-                        if (invalidField === "country") setInvalidField(null);
-                      }}
-                      className="w-full h-10 px-4 text-left text-xs font-semibold hover:bg-primary/10 hover:text-primary transition-all flex items-center justify-between cursor-pointer text-text-main"
-                    >
-                      <span>{cName}</span>
-                      {infoData.country === cName && <Check size={12} className="text-primary" />}
-                    </button>
-                  ))}
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
+            <AnimatePresence>
+              {partnerCountryOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40 cursor-default" 
+                    onClick={() => {
+                      setCountrySearch("");
+                      setPartnerCountryOpen(false);
+                    }}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                    className="absolute z-50 left-0 right-0 mt-2 bg-bg-base border border-border-main rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.3)] backdrop-blur-xl flex flex-col max-h-64 overflow-hidden"
+                  >
+                    <div className="p-3 bg-black/5 dark:bg-white/[0.02] border-b border-border-main/50">
+                      <div className="relative flex items-center">
+                        <Search className="w-4 h-4 text-text-muted absolute left-4" />
+                        <input
+                          type="text"
+                          placeholder="Search country..."
+                          value={countrySearch}
+                          onChange={(e) => setCountrySearch(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              if (filteredCountries.length === 1) {
+                                const c = filteredCountries[0];
+                                setInfoData(prev => ({
+                                  ...prev,
+                                  country: c.name,
+                                  country_id: c.id,
+                                  state: "Select State",
+                                  state_id: null,
+                                  city: "Select City",
+                                  city_id: null
+                                }));
+                                if (invalidField === "country") setInvalidField(null);
+                                setCountrySearch("");
+                                setPartnerCountryOpen(false);
+                              }
+                            }
+                          }}
+                          className="w-full pl-10 pr-4 py-2.5 text-xs bg-bg-secondary/40 border border-border-main rounded-2xl text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary/50 transition-colors font-semibold"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+                    <div className="overflow-y-auto custom-scrollbar max-h-48 flex-1">
+                      {filteredCountries.length === 0 ? (
+                        <div className="p-4 text-xs text-text-muted text-center font-semibold">
+                          No countries found
+                        </div>
+                      ) : (
+                        filteredCountries.map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => {
+                              setInfoData(prev => ({
+                                ...prev,
+                                country: c.name,
+                                country_id: c.id,
+                                state: "Select State",
+                                state_id: null,
+                                city: "Select City",
+                                city_id: null
+                              }));
+                              if (invalidField === "country") setInvalidField(null);
+                              setCountrySearch("");
+                              setPartnerCountryOpen(false);
+                            }}
+                            className={`w-full cursor-pointer p-3.5 text-left text-text-main hover:bg-primary/20 hover:text-text-main transition-colors font-semibold text-xs border-b border-border-main last:border-0 hover:pl-6 duration-300 ${
+                              infoData.country === c.name ? "bg-primary/10 text-primary" : ""
+                            }`}
+                          >
+                            {c.name}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </InputWrapper>
+        </div>
+
+        {/* State */}
+        <div className="flex flex-col gap-1.5 relative">
+          <label className={labelClassName}>State</label>
+          <InputWrapper>
+            <button
+              type="button"
+              disabled={!infoData.country || infoData.country === "Select Country"}
+              onClick={() => setPartnerStateOpen(!partnerStateOpen)}
+              className={selectBtnClassName(!infoData.country || infoData.country === "Select Country", invalidField === "state")}
+            >
+              <span className={!infoData.state || infoData.state === "Select State" ? "text-text-muted" : "text-text-main"}>
+                {infoData.state || "Select State"}
+              </span>
+              <ChevronDown className={`w-4 h-4 text-text-muted transition-transform duration-200 ${partnerStateOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            <AnimatePresence>
+              {partnerStateOpen && infoData.country && infoData.country !== "Select Country" && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40 cursor-default" 
+                    onClick={() => {
+                      setStateSearch("");
+                      setPartnerStateOpen(false);
+                    }}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                    className="absolute z-50 left-0 right-0 mt-2 bg-bg-base border border-border-main rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.3)] backdrop-blur-xl flex flex-col max-h-64 overflow-hidden"
+                  >
+                    <div className="p-3 bg-black/5 dark:bg-white/[0.02] border-b border-border-main/50">
+                      <div className="relative flex items-center">
+                        <Search className="w-4 h-4 text-text-muted absolute left-4" />
+                        <input
+                          type="text"
+                          placeholder="Search state..."
+                          value={stateSearch}
+                          onChange={(e) => setStateSearch(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              if (filteredStates.length === 1) {
+                                const s = filteredStates[0];
+                                setInfoData(prev => ({
+                                  ...prev,
+                                  state: s.name,
+                                  state_id: s.id,
+                                  city: "Select City",
+                                  city_id: null
+                                }));
+                                if (invalidField === "state") setInvalidField(null);
+                                setStateSearch("");
+                                setPartnerStateOpen(false);
+                              }
+                            }
+                          }}
+                          className="w-full pl-10 pr-4 py-2.5 text-xs bg-bg-secondary/40 border border-border-main rounded-2xl text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary/50 transition-colors font-semibold"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+                    <div className="overflow-y-auto custom-scrollbar max-h-48 flex-1">
+                      {loadingStates ? (
+                        <div className="p-4 text-xs text-text-muted text-center font-semibold animate-pulse">
+                          Loading states...
+                        </div>
+                      ) : filteredStates.length === 0 ? (
+                        <div className="p-4 text-xs text-text-muted text-center font-semibold">
+                          No states found
+                        </div>
+                      ) : (
+                        filteredStates.map((s) => (
+                          <button
+                            key={s.id}
+                            type="button"
+                            onClick={() => {
+                              setInfoData(prev => ({
+                                ...prev,
+                                state: s.name,
+                                state_id: s.id,
+                                city: "Select City",
+                                city_id: null
+                              }));
+                              if (invalidField === "state") setInvalidField(null);
+                              setStateSearch("");
+                              setPartnerStateOpen(false);
+                            }}
+                            className={`w-full cursor-pointer p-3.5 text-left text-text-main hover:bg-primary/20 hover:text-text-main transition-colors font-semibold text-xs border-b border-border-main last:border-0 hover:pl-6 duration-300 ${
+                              infoData.state === s.name ? "bg-primary/10 text-primary" : ""
+                            }`}
+                          >
+                            {s.name}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </InputWrapper>
         </div>
 
         {/* City */}
         <div className="flex flex-col gap-1.5 relative">
           <label className={labelClassName}>City</label>
-          <button
-            type="button"
-            disabled={infoData.country === "Select Country"}
-            onClick={() => setCityDropdownOpen((prev) => !prev)}
-            className={selectBtnClassName(infoData.country === "Select Country", invalidField === "city")}
-          >
-            <span>{infoData.city}</span>
-            <ChevronDown size={14} className={`text-text-muted transition-transform duration-200 ${cityDropdownOpen ? "rotate-180" : ""}`} />
-          </button>
+          <InputWrapper>
+            <button
+              type="button"
+              disabled={!infoData.state || infoData.state === "Select State"}
+              onClick={() => setPartnerCityOpen(!partnerCityOpen)}
+              className={selectBtnClassName(!infoData.state || infoData.state === "Select State", invalidField === "city")}
+            >
+              <span className={!infoData.city || infoData.city === "Select City" ? "text-text-muted" : "text-text-main"}>
+                {infoData.city || "Select City"}
+              </span>
+              <ChevronDown size={14} className={`text-text-muted transition-transform duration-200 ${partnerCityOpen ? "rotate-180" : ""}`} />
+            </button>
 
-          <AnimatePresence>
-            {cityDropdownOpen && infoData.country !== "Select Country" && (
-              <>
-                <div className="fixed inset-0 z-40 cursor-default" onClick={() => setCityDropdownOpen(false)} />
-                <motion.div
-                  initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                  className="absolute left-0 right-0 top-15 bg-bg-base border border-border-main rounded-xl shadow-xl z-50 overflow-y-auto max-h-48 py-1 flex flex-col custom-scrollbar"
-                >
-                  {(countryCitiesMap[infoData.country] || []).map((cityName) => (
-                    <button
-                      key={cityName}
-                      type="button"
-                      onClick={() => {
-                        setInfoData((p) => ({ ...p, city: cityName }));
-                        setCityDropdownOpen(false);
-                        if (invalidField === "city") setInvalidField(null);
-                      }}
-                      className="w-full h-10 px-4 text-left text-xs font-semibold hover:bg-primary/10 hover:text-primary transition-all flex items-center justify-between cursor-pointer text-text-main"
-                    >
-                      <span>{cityName}</span>
-                      {infoData.city === cityName && <Check size={12} className="text-primary" />}
-                    </button>
-                  ))}
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
+            <AnimatePresence>
+              {partnerCityOpen && infoData.state && infoData.state !== "Select State" && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40 cursor-default" 
+                    onClick={() => {
+                      setCitySearch("");
+                      setPartnerCityOpen(false);
+                    }}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                    className="absolute z-50 left-0 right-0 mt-2 bg-bg-base border border-border-main rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.3)] backdrop-blur-xl flex flex-col max-h-64 overflow-hidden"
+                  >
+                    <div className="p-3 bg-black/5 dark:bg-white/[0.02] border-b border-border-main/50">
+                      <div className="relative flex items-center">
+                        <Search className="w-4 h-4 text-text-muted absolute left-4" />
+                        <input
+                          type="text"
+                          placeholder="Search city..."
+                          value={citySearch}
+                          onChange={(e) => setCitySearch(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              if (filteredCities.length === 1) {
+                                const c = filteredCities[0];
+                                setInfoData(prev => ({
+                                  ...prev,
+                                  city: c.name,
+                                  city_id: c.id
+                                }));
+                                if (invalidField === "city") setInvalidField(null);
+                                setCitySearch("");
+                                setPartnerCityOpen(false);
+                              }
+                            }
+                          }}
+                          className="w-full pl-10 pr-4 py-2.5 text-xs bg-bg-secondary/40 border border-border-main rounded-2xl text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary/50 transition-colors font-semibold"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+                    <div className="overflow-y-auto custom-scrollbar max-h-48 flex-1">
+                      {loadingCities ? (
+                        <div className="p-4 text-xs text-text-muted text-center font-semibold animate-pulse">
+                          Loading cities...
+                        </div>
+                      ) : filteredCities.length === 0 ? (
+                        <div className="p-4 text-xs text-text-muted text-center font-semibold">
+                          No cities found
+                        </div>
+                      ) : (
+                        filteredCities.map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => {
+                              setInfoData(prev => ({
+                                ...prev,
+                                city: c.name,
+                                city_id: c.id
+                              }));
+                              if (invalidField === "city") setInvalidField(null);
+                              setCitySearch("");
+                              setPartnerCityOpen(false);
+                            }}
+                            className={`w-full cursor-pointer p-3.5 text-left text-text-main hover:bg-primary/20 hover:text-text-main transition-colors font-semibold text-xs border-b border-border-main last:border-0 hover:pl-6 duration-300 ${
+                              infoData.city === c.name ? "bg-primary/10 text-primary" : ""
+                            }`}
+                          >
+                            {c.name}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </InputWrapper>
         </div>
 
         {/* Address - Spans full width on desktop */}

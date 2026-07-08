@@ -59,7 +59,8 @@ export default function PremiumDatePicker({
   // Parse current value or use today
   const selectedDate = useMemo(() => {
     if (!value) return null;
-    const [year, month, day] = value.split("-").map(Number);
+    const cleanValue = value.includes("T") ? value.split("T")[0] : (value.includes(" ") ? value.split(" ")[0] : value);
+    const [year, month, day] = cleanValue.split("-").map(Number);
     const d = new Date(year, month - 1, day);
     return isNaN(d.getTime()) ? null : d;
   }, [value]);

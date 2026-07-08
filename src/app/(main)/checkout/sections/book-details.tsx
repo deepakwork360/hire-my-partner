@@ -11,6 +11,7 @@ import { partners } from "@/modules/partner/data/partners";
 import { usePartner } from "@/modules/partner/hooks/usePartner";
 import { Partner } from "@/modules/partner/types/partner.types";
 import PremiumDatePicker from "@/components/ui/PremiumDatePicker";
+import { BookingService } from "@/modules/partner/services/booking.service";
 
 import {
   Calendar,
@@ -622,16 +623,90 @@ export default function BookDetails() {
     }
   };
 
-  const basePrice = getBasePrice(selectedDuration, partner);
-  const addOnsTotal = selectedAddOns.reduce((acc, addonId) => {
+  const [basePrice, setBasePrice] = useState<number>(0);
+  const [addOnsTotal, setAddOnsTotal] = useState<number>(0);
+  const [taxAmount, setTaxAmount] = useState<number>(0);
+  const [totalAmount, setTotalAmount] = useState<number>(0);
+
+  // Define fallback values
+  const fallbackBasePrice = getBasePrice(selectedDuration, partner);
+  const fallbackAddOnsTotal = selectedAddOns.reduce((acc, addonId) => {
     const addon = addOnOptions.find((a) => a.id === addonId);
     return acc + (addon ? addon.price : 0);
   }, 0);
-  const subtotal = basePrice + addOnsTotal;
-  const taxAmount = Math.round(subtotal * 0.18);
-  const totalAmount = subtotal + taxAmount;
+  const fallbackSubtotal = fallbackBasePrice + fallbackAddOnsTotal;
+  const fallbackTaxAmount = Math.round(fallbackSubtotal * 0.18);
+  const fallbackTotalAmount = fallbackSubtotal + fallbackTaxAmount;
 
-  const handleBookingSubmit = (e: React.MouseEvent) => {
+  // Sync pricing estimates dynamically from the backend with local fallback
+  useEffect(() => {
+    let active = true;
+    const fetchEstimate = async () => {
+      if (!partner.id) return;
+      const durationHours = selectedDuration === "1 minute" ? 0.01 : (parseFloat(selectedDuration) || 1);
+
+      let formattedStartTime = "";
+      if (customDate && customTime) {
+        const parsedStart = parseDateTime(customDate, customTime);
+        if (parsedStart) {
+          const pad = (n: number) => String(n).padStart(2, "0");
+          formattedStartTime = `${parsedStart.getFullYear()}-${pad(parsedStart.getMonth() + 1)}-${pad(parsedStart.getDate())} ${pad(parsedStart.getHours())}:${pad(parsedStart.getMinutes())}:00`;
+        }
+      }
+
+      if (!formattedStartTime) {
+        const pad = (n: number) => String(n).padStart(2, "0");
+        const dummyDate = new Date();
+        formattedStartTime = `${dummyDate.getFullYear()}-${pad(dummyDate.getMonth() + 1)}-${pad(dummyDate.getDate())} 12:00:00`;
+      }
+
+      try {
+        const res = await BookingService.getEstimate({
+          partner_id: partner.id,
+          start_time: formattedStartTime,
+          booked_hours: durationHours,
+          addons: selectedAddOns,
+        });
+
+        if (active) {
+          if (res && res.status && res.data) {
+            setBasePrice(res.data.base_amount);
+            setAddOnsTotal(res.data.addons_amount);
+            setTaxAmount(res.data.tax_amount);
+            setTotalAmount(res.data.total_amount);
+          } else {
+            throw new Error("Invalid response format");
+          }
+        }
+      } catch (err) {
+        console.warn("Cost estimation API failed, using frontend fallback calculations:", err);
+        if (active) {
+          setBasePrice(fallbackBasePrice);
+          setAddOnsTotal(fallbackAddOnsTotal);
+          setTaxAmount(fallbackTaxAmount);
+          setTotalAmount(fallbackTotalAmount);
+        }
+      }
+    };
+
+    fetchEstimate();
+
+    return () => {
+      active = false;
+    };
+  }, [
+    partner.id,
+    customDate,
+    customTime,
+    selectedDuration,
+    selectedAddOns,
+    fallbackBasePrice,
+    fallbackAddOnsTotal,
+    fallbackTaxAmount,
+    fallbackTotalAmount,
+  ]);
+
+  const handleBookingSubmit = async (e: React.MouseEvent) => {
     e.preventDefault();
 
     if (hasActiveRunningBooking()) {
@@ -668,13 +743,50 @@ export default function BookDetails() {
       return;
     }
 
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem("booking_in_progress", "true");
+    const durationHours = selectedDuration === "1 minute" ? 0.01 : (parseFloat(selectedDuration) || 1);
+
+    let formattedStartTime = "";
+    if (customDate && customTime) {
+      const parsedStart = parseDateTime(customDate, customTime);
+      if (parsedStart) {
+        const pad = (n: number) => String(n).padStart(2, "0");
+        formattedStartTime = `${parsedStart.getFullYear()}-${pad(parsedStart.getMonth() + 1)}-${pad(parsedStart.getDate())} ${pad(parsedStart.getHours())}:${pad(parsedStart.getMinutes())}:00`;
+      }
     }
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const bookingId = `BK-2026-${String(partner.id).padStart(2, "0")}-${randomSuffix}`;
-    const url = `/booking-confirmation?partner=${partner.id}&bookingId=${bookingId}&date=${encodeURIComponent(selectedDateTime)}&duration=${encodeURIComponent(selectedDuration === "1 minute" ? "0.01" : selectedDuration)}&addons=${encodeURIComponent(selectedAddOnLabels.join(","))}&amount=${totalAmount}&reason=${encodeURIComponent(notes)}`;
-    router.push(url);
+
+    try {
+      toast.info("Sending booking request...");
+      const res = await BookingService.createBooking({
+        partner_id: partner.id,
+        start_time: formattedStartTime,
+        booked_hours: durationHours,
+        addons: selectedAddOns,
+        reason: notes.trim(),
+        total_amount: totalAmount,
+      });
+
+      if (res && res.status) {
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("booking_in_progress", "true");
+        }
+        const serverBookingId = res.data?.id || `BK-2026-${String(partner.id).padStart(2, "0")}-${Math.floor(1000 + Math.random() * 9000)}`;
+        toast.success("Booking request sent successfully!");
+
+        const url = `/booking-confirmation?partner=${partner.id}&bookingId=${serverBookingId}&date=${encodeURIComponent(selectedDateTime)}&duration=${encodeURIComponent(selectedDuration === "1 minute" ? "0.01" : selectedDuration)}&addons=${encodeURIComponent(selectedAddOnLabels.join(","))}&amount=${totalAmount}&reason=${encodeURIComponent(notes)}`;
+        router.push(url);
+      } else {
+        throw new Error("Invalid response status");
+      }
+    } catch (err: any) {
+      console.warn("POST /bookings API failed, falling back to local simulation:", err);
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("booking_in_progress", "true");
+      }
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      const bookingId = `BK-2026-${String(partner.id).padStart(2, "0")}-${randomSuffix}`;
+      const url = `/booking-confirmation?partner=${partner.id}&bookingId=${bookingId}&date=${encodeURIComponent(selectedDateTime)}&duration=${encodeURIComponent(selectedDuration === "1 minute" ? "0.01" : selectedDuration)}&addons=${encodeURIComponent(selectedAddOnLabels.join(","))}&amount=${totalAmount}&reason=${encodeURIComponent(notes)}`;
+      router.push(url);
+    }
   };
 
   return (
