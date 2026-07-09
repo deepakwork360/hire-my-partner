@@ -558,22 +558,19 @@ export default function DetailsForm() {
 
       console.log(`Upload Response from ${endpoint}:`, res.data);
 
-      if (res.data && res.data.status) {
+      if (res.data && (res.data.status || res.data.success)) {
         const url = res.data.data?.url || res.data.data?.image || res.data.url;
         const id = res.data.data?.id || res.data.id;
         if (url) {
           return { url: normalizeUrl(url), id };
         }
       }
-      
-      const fallbackUrl = res.data?.url || res.data?.data?.url || (typeof blobUrlOrFile === "string" ? blobUrlOrFile : URL.createObjectURL(blobUrlOrFile));
-      const fallbackId = res.data?.id || res.data?.data?.id;
-      return { url: normalizeUrl(fallbackUrl), id: fallbackId };
+      throw new Error(res.data?.message || "Invalid response status from server");
     } catch (error: any) {
       console.error(`Failed to upload image to ${endpoint}:`, error);
-      toast.error(`Failed to sync upload with server, saved locally.`);
-      const localUrl = typeof blobUrlOrFile === "string" ? blobUrlOrFile : URL.createObjectURL(blobUrlOrFile);
-      return { url: normalizeUrl(localUrl) };
+      const errMsg = error.response?.data?.message || error.message || "Failed to upload image to server.";
+      toast.error(errMsg);
+      throw error;
     }
   };
 
@@ -2137,16 +2134,18 @@ export default function DetailsForm() {
       }
     }
 
-    setFormData((prev) => ({
-      ...prev,
-      gallery: [...prev.gallery, ...uploadedUrls]
-    }));
-    setGalleryItemIds((prev) => ({
-      ...prev,
-      ...newMappings
-    }));
+    if (uploadedUrls.length > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        gallery: [...prev.gallery, ...uploadedUrls]
+      }));
+      setGalleryItemIds((prev) => ({
+        ...prev,
+        ...newMappings
+      }));
+      toast.success(`Successfully uploaded ${uploadedUrls.length} image(s) to your gallery.`);
+    }
     setIsUploadingGallery(false);
-    toast.success(`Successfully uploaded ${uploadedUrls.length} image(s) to your gallery.`);
   };
 
   const removeGalleryPhoto = async (index: number) => {
@@ -3310,22 +3309,27 @@ export default function DetailsForm() {
                   imageSrc={tempImageSrc}
                   onCropComplete={async (croppedUrl) => {
                     setIsUploadingPhoto(true);
-                    const res = await uploadImageRuntime(croppedUrl, "both/profile-image/update", "profile_image");
-                    setFormData((prev) => ({
-                      ...prev,
-                      photo: res.url,
-                    }));
-                    if (res.url) {
-                      updateUserAvatar(res.url);
+                    try {
+                      const res = await uploadImageRuntime(croppedUrl, "both/profile-image/update", "profile_image");
+                      setFormData((prev) => ({
+                        ...prev,
+                        photo: res.url,
+                      }));
+                      if (res.url) {
+                        updateUserAvatar(res.url);
+                      }
+                      if (res.url && croppedUrl) {
+                        setLocalPreviews((prev) => ({ ...prev, [res.url]: croppedUrl }));
+                      }
+                      toast.success("Profile photo uploaded successfully!");
+                    } catch (err) {
+                      console.error("Profile photo upload failed:", err);
+                    } finally {
+                      setIsUploadingPhoto(false);
+                      setCropModalOpen(false);
+                      setTempImageSrc(null);
+                      setCropType(null);
                     }
-                    if (res.url && croppedUrl) {
-                      setLocalPreviews((prev) => ({ ...prev, [res.url]: croppedUrl }));
-                    }
-                    setIsUploadingPhoto(false);
-                    setCropModalOpen(false);
-                    setTempImageSrc(null);
-                    setCropType(null);
-                    toast.success("Profile photo uploaded successfully!");
                   }}
                   onCancel={() => {
                     setCropModalOpen(false);
@@ -3372,20 +3376,25 @@ export default function DetailsForm() {
                       onClick={async () => {
                         if (imgRef.current && crop) {
                           setIsUploadingBanner(true);
-                          const croppedUrl = await getCroppedImg(imgRef.current, crop);
-                          const res = await uploadImageRuntime(croppedUrl, "both/cover-image/update", "cover_image");
-                          setFormData((prev) => ({
-                            ...prev,
-                            banner: res.url,
-                          }));
-                          if (res.url && croppedUrl) {
-                            setLocalPreviews((prev) => ({ ...prev, [res.url]: croppedUrl }));
+                          try {
+                            const croppedUrl = await getCroppedImg(imgRef.current, crop);
+                            const res = await uploadImageRuntime(croppedUrl, "both/cover-image/update", "cover_image");
+                            setFormData((prev) => ({
+                              ...prev,
+                              banner: res.url,
+                            }));
+                            if (res.url && croppedUrl) {
+                              setLocalPreviews((prev) => ({ ...prev, [res.url]: croppedUrl }));
+                            }
+                            toast.success("Cover banner uploaded successfully!");
+                          } catch (err) {
+                            console.error("Cover banner upload failed:", err);
+                          } finally {
+                            setIsUploadingBanner(false);
+                            setCropModalOpen(false);
+                            setTempImageSrc(null);
+                            setCropType(null);
                           }
-                          setIsUploadingBanner(false);
-                          setCropModalOpen(false);
-                          setTempImageSrc(null);
-                          setCropType(null);
-                          toast.success("Cover banner uploaded successfully!");
                         }
                       }}
                       disabled={isUploadingBanner}
