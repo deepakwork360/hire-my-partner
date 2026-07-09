@@ -42,14 +42,14 @@ export default function ReviewStep({
     if (!status) return null;
     const s = status.toLowerCase();
     
-    let bg = "bg-red-500/10 border-red-500/20 text-red-500";
+    let bg = "bg-amber-500/10 border-amber-500/20 text-amber-600";
     
     if (s === "approved" || s === "active" || s === "verified") {
       bg = "bg-emerald-500/10 border-emerald-500/20 text-emerald-400";
     } else if (s === "rejected") {
       bg = "bg-rose-500/10 border-rose-500/20 text-rose-400";
-    } else if (s === "needs_revision" || s === "revision") {
-      bg = "bg-blue-500/10 border-blue-500/20 text-blue-400";
+    } else if (s === "pending") {
+      bg = "bg-amber-500/10 border-amber-500/20 text-amber-500";
     }
     
     return (
