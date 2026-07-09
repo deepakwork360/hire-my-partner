@@ -21,6 +21,7 @@ interface PremiumDropdownProps {
   label?: string;
   icon?: LucideIcon;
   className?: string;
+  size?: "sm" | "md";
 }
 
 export default function PremiumDropdown({
@@ -31,6 +32,7 @@ export default function PremiumDropdown({
   label,
   icon: Icon,
   className = "",
+  size = "md",
 }: PremiumDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -61,23 +63,27 @@ export default function PremiumDropdown({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-full cursor-pointer h-14 pl-5 pr-12 rounded-2xl text-left transition-all duration-300 flex items-center gap-3 group/btn border border-border-main bg-bg-secondary shadow-sm ${
-            isOpen ? "border-primary/50 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)]" : "hover:border-primary/30"
+          className={`w-full cursor-pointer rounded-2xl text-left transition-all duration-200 flex items-center gap-3 group/btn border text-sm font-medium premium-dropdown-btn ${
+            size === "sm" ? "h-12 pl-4 pr-10" : "h-14 pl-5 pr-12"
+          } ${
+            isOpen
+              ? "border-primary bg-black/[0.025] dark:bg-white/[0.04] ring-4 ring-primary/20"
+              : "border-primary/35 bg-black/[0.025] dark:bg-white/[0.04] hover:border-primary/60 hover:bg-black/[0.035] dark:hover:bg-white/[0.06]"
           }`}
         >
           {Icon && (
             <Icon 
-              size={18} 
+              size={size === "sm" ? 16 : 18} 
               className={`transition-colors duration-300 ${isOpen ? "text-primary" : "text-text-muted group-hover/btn:text-primary"}`} 
             />
           )}
           
-          <span className={`text-xs font-bold truncate ${selectedOption ? "text-text-main" : "text-text-muted"}`}>
+          <span className={`truncate ${size === "sm" ? "text-sm font-medium" : "text-xs font-bold"} ${selectedOption ? "text-text-main" : "text-text-muted"}`}>
             {selectedOption ? selectedOption.label : placeholder}
           </span>
 
           <ChevronDown 
-            size={16} 
+            size={size === "sm" ? 14 : 16} 
             className={`absolute right-5 transition-transform duration-500 text-text-muted ${isOpen ? "rotate-180 text-primary" : ""}`} 
           />
         </button>

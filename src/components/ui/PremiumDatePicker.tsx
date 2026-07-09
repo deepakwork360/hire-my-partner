@@ -255,7 +255,7 @@ export default function PremiumDatePicker({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-full cursor-pointer min-h-[58px] py-4 pl-5 pr-36 rounded-2xl text-left transition-all duration-300 flex items-center gap-4 group/btn border border-solid shadow-sm select-none outline-none focus:outline-none focus-visible:outline-none active:outline-none focus:ring-4 ${
+          className={`w-full cursor-pointer h-14 pl-5 pr-16 rounded-2xl text-left transition-all duration-300 flex items-center gap-4 group/btn border border-solid shadow-sm select-none outline-none focus:outline-none focus-visible:outline-none active:outline-none focus:ring-4 ${
             hasError
               ? "bg-red-500/5 border-red-500 focus:ring-red-500/10 shadow-[0_0_12px_rgba(239,68,68,0.08)]"
               : isValid

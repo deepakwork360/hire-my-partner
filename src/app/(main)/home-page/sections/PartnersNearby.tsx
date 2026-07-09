@@ -180,6 +180,7 @@ export default function PartnersNearby() {
                 { value: "30-40", label: "30+ Yrs", icon: User },
               ]}
               className="flex-1"
+              size="sm"
             />
 
             {/* Event Type Filter */}
@@ -215,6 +216,7 @@ export default function PartnersNearby() {
                 { value: "3.5", label: "3.5+ Stars", icon: Star },
               ]}
               className="flex-1"
+              size="sm"
             />
 
             {/* Distance Range */}

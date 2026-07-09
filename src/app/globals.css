@@ -616,7 +616,8 @@ input[type="password"],
 textarea,
 select,
 .country-code-btn,
-.language-select-btn {
+.language-select-btn,
+.premium-dropdown-btn {
   background-color: rgba(0, 0, 0, 0.025) !important;
   border-color: rgba(var(--primary-rgb), 0.35) !important;
   border-width: 1px !important;
@@ -632,7 +633,8 @@ select,
 [data-appearance='dark'] textarea,
 [data-appearance='dark'] select,
 [data-appearance='dark'] .country-code-btn,
-[data-appearance='dark'] .language-select-btn {
+[data-appearance='dark'] .language-select-btn,
+[data-appearance='dark'] .premium-dropdown-btn {
   background-color: rgba(255, 255, 255, 0.04) !important;
   border-color: rgba(var(--primary-rgb), 0.35) !important;
 }
@@ -645,7 +647,8 @@ input[type="password"]:hover,
 textarea:hover,
 select:hover,
 .country-code-btn:hover,
-.language-select-btn:hover {
+.language-select-btn:hover,
+.premium-dropdown-btn:hover {
   background-color: rgba(0, 0, 0, 0.035) !important;
   border-color: rgba(var(--primary-rgb), 0.60) !important;
 }
@@ -658,7 +661,8 @@ select:hover,
 [data-appearance='dark'] textarea:hover,
 [data-appearance='dark'] select:hover,
 [data-appearance='dark'] .country-code-btn:hover,
-[data-appearance='dark'] .language-select-btn:hover {
+[data-appearance='dark'] .language-select-btn:hover,
+[data-appearance='dark'] .premium-dropdown-btn:hover {
   background-color: rgba(255, 255, 255, 0.06) !important;
   border-color: rgba(var(--primary-rgb), 0.60) !important;
 }
@@ -680,7 +684,9 @@ select:focus-visible,
 .country-code-btn:focus,
 .country-code-btn.active,
 .language-select-btn:focus,
-.language-select-btn.active {
+.language-select-btn.active,
+.premium-dropdown-btn:focus,
+.premium-dropdown-btn.active {
   background-color: rgba(0, 0, 0, 0.025) !important;
   border-color: rgb(var(--primary-rgb)) !important;
   box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.20) !important;
@@ -704,7 +710,9 @@ select:focus-visible,
 [data-appearance='dark'] .country-code-btn:focus,
 [data-appearance='dark'] .country-code-btn.active,
 [data-appearance='dark'] .language-select-btn:focus,
-[data-appearance='dark'] .language-select-btn.active {
+[data-appearance='dark'] .language-select-btn.active,
+[data-appearance='dark'] .premium-dropdown-btn:focus,
+[data-appearance='dark'] .premium-dropdown-btn.active {
   background-color: rgba(255, 255, 255, 0.04) !important;
 }
 

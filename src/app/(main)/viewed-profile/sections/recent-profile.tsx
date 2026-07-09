@@ -256,7 +256,7 @@ export default function RecentProfile() {
         <div className="xl:col-span-1">
           <button
             onClick={resetFilters}
-            className="w-full h-14 cursor-pointer bg-bg-secondary border border-border-main rounded-2xl flex items-center justify-center gap-3 text-text-muted hover:text-text-main hover:bg-bg-card transition-all group font-black uppercase tracking-widest text-[10px] shadow-sm"
+            className="w-full h-14 cursor-pointer border border-primary/35 bg-black/[0.025] dark:bg-white/[0.04] rounded-2xl flex items-center justify-center gap-3 text-text-muted hover:text-text-main hover:border-primary/60 hover:bg-black/[0.035] dark:hover:bg-white/[0.06] transition-all group font-black uppercase tracking-widest text-[10px] shadow-sm"
           >
             <RefreshCw
               size={14}
