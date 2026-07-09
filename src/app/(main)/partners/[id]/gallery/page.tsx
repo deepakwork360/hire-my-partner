@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
 import { X, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
 import { usePartner } from "@/modules/partner/hooks/usePartner";
+import { partners as mockPartners } from "@/modules/partner/data/partners";
 import PageHeaderAccent from "@/components/ui/PageHeaderAccent";
 import Footer from "@/app/(main)/home-page/sections/Footer";
 import PartnerDetailSkeleton from "@/components/loader/PartnerDetailSkeleton";
@@ -28,7 +29,21 @@ interface PageProps {
 
 export default function PartnerGalleryPage({ params }: PageProps) {
   const { id } = use(params);
-  const { partner, loading, error } = usePartner(id);
+  const { partner: apiPartner, loading, error } = usePartner(id);
+
+  // For gallery page right now, use mock data fallback
+  const partner = useMemo(() => {
+    if (apiPartner) return apiPartner;
+    const decodedId = decodeURIComponent(id).toLowerCase();
+    const mockFound = mockPartners.find((p) => {
+      const rawIdMatch = String(p.id).toLowerCase() === decodedId;
+      const nameSlug = p.name.toLowerCase().replace(/\s+/g, "-");
+      const slugMatch = nameSlug === decodedId;
+      return rawIdMatch || slugMatch;
+    });
+    return mockFound || mockPartners[0];
+  }, [apiPartner, id]);
+
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const touchStartX = useRef<number>(0);
@@ -109,10 +124,6 @@ export default function PartnerGalleryPage({ params }: PageProps) {
     return <PartnerDetailSkeleton />;
   }
 
-  if (error || !partner) {
-    notFound();
-  }
-
   return (
     <div className={`flex flex-col gap-0 relative min-h-screen bg-bg-base overflow-hidden ${outfit.className}`}>
       <PageHeaderAccent />
@@ -148,7 +159,7 @@ export default function PartnerGalleryPage({ params }: PageProps) {
 
         {/* Gallery Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-          {allImages.map((src, idx) => (
+          {allImages.map((src: string, idx: number) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, scale: 0.95 }}
