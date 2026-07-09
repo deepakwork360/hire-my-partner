@@ -115,7 +115,7 @@ export default function LocationStep({
       if (formData.country === "Select Country" || !formData.country_id) {
         setStates([]);
         if (formData.country_id) {
-          onChange({ country_id: null, state_id: null, city_id: null });
+          onChange({ country_id: null });
         }
       }
       return;
@@ -128,10 +128,7 @@ export default function LocationStep({
     if (matchedCountry) {
       if (Number(formData.country_id) !== Number(matchedCountry.id)) {
         onChange({
-          country_id: matchedCountry.id,
-          state_id: null,
-          city_id: null,
-          idProofs: []
+          country_id: matchedCountry.id
         });
       }
     }
@@ -159,7 +156,7 @@ export default function LocationStep({
             (s: any) => s.name.toLowerCase() === formData.state.toLowerCase()
           );
           if (matchedState && Number(formData.state_id) !== Number(matchedState.id)) {
-            onChange({ state_id: matchedState.id, city_id: null });
+            onChange({ state_id: matchedState.id });
           }
         } else if (formData.state_id && (!formData.state || formData.state === "Select State")) {
           // Resolve state name from state_id

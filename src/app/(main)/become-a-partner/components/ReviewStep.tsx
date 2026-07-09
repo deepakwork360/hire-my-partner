@@ -1,6 +1,7 @@
 "use client";
 
 import { ShieldCheck, User, MapPin, DollarSign, Landmark, Check } from "lucide-react";
+import SecureImage from "@/components/ui/SecureImage";
 
 interface ReviewStepProps {
   formData: any;
@@ -37,11 +38,34 @@ export default function ReviewStep({
     }
   };
 
+  const getStatusBadge = (status: string) => {
+    if (!status) return null;
+    const s = status.toLowerCase();
+    
+    let bg = "bg-red-500/10 border-red-500/20 text-red-500";
+    
+    if (s === "approved" || s === "active" || s === "verified") {
+      bg = "bg-emerald-500/10 border-emerald-500/20 text-emerald-400";
+    } else if (s === "rejected") {
+      bg = "bg-rose-500/10 border-rose-500/20 text-rose-400";
+    } else if (s === "needs_revision" || s === "revision") {
+      bg = "bg-blue-500/10 border-blue-500/20 text-blue-400";
+    }
+    
+    return (
+      <div className={`mt-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-xs font-semibold uppercase tracking-wider ${bg}`}>
+        <ShieldCheck className="w-4.5 h-4.5" />
+        Status: {status}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-8 select-none">
       <div className="text-center mb-6">
         <h3 className="text-xl font-bold text-text-main">Recieved Your Application</h3>
         <p className="text-text-muted text-xs mt-1">Your Application is under review. You will be notified once it is approved.</p>
+        {getStatusBadge(formData.partnerStatus)}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -189,7 +213,7 @@ export default function ReviewStep({
                     <div key={idx} className="relative aspect-square border border-white/10 rounded-xl overflow-hidden bg-black/20 flex flex-col justify-end">
                       {formData.idProofs && formData.idProofs[idx] ? (
                         <>
-                          <img
+                          <SecureImage
                             src={formData.idProofs[idx]!}
                             alt={doc.name}
                             className="w-full h-full object-cover absolute inset-0"

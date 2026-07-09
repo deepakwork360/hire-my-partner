@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Plus, X, Video, Clock, Check } from "lucide-react";
 import { api } from "@/lib/axios";
+import SecureImage from "@/components/ui/SecureImage";
 
 interface KycStepProps {
   formData: any;
@@ -151,7 +152,7 @@ export default function KycStep({
                     </div>
                   ) : isUploaded ? (
                     <div className="relative w-full h-full group/id">
-                      <img
+                      <SecureImage
                         src={formData.idProofs[index]!}
                         alt={doc.name}
                         className="w-full h-full object-cover group-hover/id:scale-105 transition-transform duration-500"

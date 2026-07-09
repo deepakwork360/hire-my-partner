@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Camera, Plus, X, Video as VideoIcon, Sparkles, Info, Ban } from "lucide-react";
+import SecureImage from "@/components/ui/SecureImage";
 
 interface MediaStepProps {
   formData: any;
@@ -50,7 +51,7 @@ export default function MediaStep({
         <div className="relative w-full h-44 sm:h-56 md:h-64 rounded-3xl overflow-hidden border-2 border-dashed border-primary/30 bg-bg-secondary/40 backdrop-blur-xl hover:border-primary/60 transition-all duration-500 group/banner">
           {formData.banner ? (
             <div className="w-full h-full relative">
-              <img
+              <SecureImage
                 src={formData.banner}
                 alt="Profile Banner"
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover/banner:scale-105"
@@ -97,7 +98,7 @@ export default function MediaStep({
 
             <div className="w-[90%] h-[90%] rounded-full bg-linear-to-b from-primary/10 to-accent/5 flex items-center justify-center overflow-hidden relative hover:from-primary/20 hover:to-accent/15 transition-all shadow-[inset_0_0_30px_rgba(var(--primary-rgb),0.2)] group-hover:scale-105 duration-500">
               {formData.photo ? (
-                <img
+                <SecureImage
                   src={formData.photo}
                   alt="Profile"
                   className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700"
@@ -149,7 +150,7 @@ export default function MediaStep({
               className="relative aspect-square rounded-[32px] overflow-hidden border-2 border-white/5 bg-bg-secondary/40 backdrop-blur-xl hover:border-primary/40 hover:shadow-primary/20 transition-all duration-700 group"
             >
               <div className="w-full h-full group/photo relative">
-                <img
+                <SecureImage
                   src={photo}
                   alt={`Gallery ${index + 1}`}
                   className="w-full h-full object-cover group-hover/photo:scale-110 transition-transform duration-1000"

@@ -199,7 +199,10 @@ export default function ProfileStep({
     const selected: LanguageOption[] = [];
     const unselected: LanguageOption[] = [];
     for (const item of options) {
-      const isChecked = (formData.languages || []).includes(item.id) || (formData.languages || []).includes(item.name);
+      const isChecked = (formData.languages || []).some((l: any) => 
+        String(l) === String(item.id) || 
+        String(l).toLowerCase() === item.name.toLowerCase()
+      );
       if (isChecked) {
         selected.push(item);
       } else {
@@ -220,11 +223,17 @@ export default function ProfileStep({
 
   const toggleLanguage = (item: LanguageOption) => {
     const current = formData.languages || [];
-    const isChecked = current.includes(item.id) || current.includes(item.name);
+    const isChecked = current.some((l: any) => 
+      String(l) === String(item.id) || 
+      String(l).toLowerCase() === item.name.toLowerCase()
+    );
     
     let updated;
     if (isChecked) {
-      updated = current.filter((val: any) => val !== item.id && val !== item.name);
+      updated = current.filter((val: any) => 
+        String(val) !== String(item.id) && 
+        String(val).toLowerCase() !== item.name.toLowerCase()
+      );
     } else {
       updated = [...current, item.id];
     }
@@ -258,7 +267,10 @@ export default function ProfileStep({
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
             {displayedOptions.map((item) => {
-              const isChecked = (formData.languages || []).includes(item.id) || (formData.languages || []).includes(item.name);
+              const isChecked = (formData.languages || []).some((l: any) => 
+                String(l) === String(item.id) || 
+                String(l).toLowerCase() === item.name.toLowerCase()
+              );
               return (
                 <CheckboxItem
                   key={item.id}

@@ -480,6 +480,7 @@ export default function DetailsForm() {
     country_id: null as number | null,
     state_id: null as number | null,
     city_id: null as number | null,
+    partnerStatus: "",
   });
   const [lastSubmittedFormData, setLastSubmittedFormData] = useState<any>(null);
   const [currentStep, setCurrentStep] = useState(1);
@@ -500,14 +501,17 @@ export default function DetailsForm() {
   const normalizeUrl = (urlStr: string): string => {
     if (!urlStr) return urlStr;
     try {
-      if (urlStr.startsWith("http://") || urlStr.startsWith("https://")) {
-        const isHttps = urlStr.startsWith("https://");
+      // Remove any literal backslashes (e.g. from escaped slashes \/ in JSON strings)
+      let cleanedUrl = urlStr.replace(/\\/g, "");
+      
+      if (cleanedUrl.startsWith("http://") || cleanedUrl.startsWith("https://")) {
+        const isHttps = cleanedUrl.startsWith("https://");
         const protocol = isHttps ? "https://" : "http://";
-        const remainder = urlStr.substring(protocol.length);
+        const remainder = cleanedUrl.substring(protocol.length);
         const cleaned = remainder.replace(/\/+/g, "/");
         return protocol + cleaned;
       }
-      return urlStr;
+      return cleanedUrl;
     } catch (e) {
       return urlStr;
     }
@@ -690,11 +694,12 @@ export default function DetailsForm() {
     const initAndLoad = async () => {
       let activeAppId = `APP-${Math.floor(100000 + Math.random() * 900000)}`;
 
-      // Fetch from the GET API `/partner/profile`
+      // Fetch Profile and Bank Accounts independently
       let profileFromApi: any = null;
+      let bankFromApi: any = null;
+
       try {
         const { data: res } = await api.get('/partner/profile');
-
         if (res && res.status !== false) {
           const rawProfile = res.data || res;
           profileFromApi = {
@@ -707,11 +712,83 @@ export default function DetailsForm() {
         console.warn("Failed to check partner/profile status:", err);
       }
 
+      try {
+        const fetchedBank = await api.get('/both/bank-accounts');
+        bankFromApi = fetchedBank.data;
+      } catch (bankErr) {
+        console.warn("Failed to fetch bank accounts:", bankErr);
+      }
+
+      // Log both responses for debug
+      try {
+        await fetch('/api/debug-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ res: profileFromApi, bankRes: bankFromApi })
+        });
+      } catch (logErr) {}
+
+      const loadedData: any = {
+        photo: user?.avatar || null,
+        banner: null,
+        fullName: user?.name || "",
+        gender: "Select Gender",
+        dob: "",
+        age: "",
+        city: "",
+        state: "",
+        mobile: user?.phone || "",
+        phoneCountryCode: user?.phone_country_code || "+91",
+        email: user?.email || "",
+        bankName: "",
+        bankAccountNumber: "",
+        bankIfscCode: "",
+        bankAccountHolderName: "",
+        branchName: "",
+        currency: "",
+        iban: "",
+        swiftCode: "",
+        routingNumber: "",
+        country: "",
+        address: "",
+        pincode: "",
+        upiId: "",
+        addons: [],
+        otherAddon: "",
+        languages: [],
+        bio: "",
+        tagsInput: [],
+        interestsInput: [],
+        hourlyRate: "",
+        availability: [],
+        instagram: "",
+        linkedin: "",
+        termsAgreed: false,
+        idProofs: [null, null, null, null],
+        kycDocInputs: [],
+        gallery: [],
+        videos: Array(3).fill(null),
+        current_latitude: null,
+        current_longitude: null,
+        current_heading: null,
+        current_accuracy: null,
+        country_id: null,
+        state_id: null,
+        city_id: null,
+        partnerStatus: "",
+      };
+
       if (profileFromApi) {
-        // Load from API
-        const loadedData: any = {};
-        
         loadedData.fullName = profileFromApi.name || user?.name || "";
+        if (profileFromApi.partner_status) {
+          loadedData.partnerStatus = String(profileFromApi.partner_status);
+        } else if (profileFromApi.user?.partner_status) {
+          loadedData.partnerStatus = String(profileFromApi.user.partner_status);
+        } else if ((user as any)?.partner_status) {
+          loadedData.partnerStatus = String((user as any).partner_status);
+        } else {
+          loadedData.partnerStatus = "";
+        }
         if (profileFromApi.gender) {
           const g = String(profileFromApi.gender).trim();
           loadedData.gender = g.charAt(0).toUpperCase() + g.slice(1).toLowerCase();
@@ -841,15 +918,21 @@ export default function DetailsForm() {
           }
         }
         
-        if (profileFromApi.current_latitude) loadedData.current_latitude = parseFloat(profileFromApi.current_latitude);
-        if (profileFromApi.current_longitude) loadedData.current_longitude = parseFloat(profileFromApi.current_longitude);
-        if (profileFromApi.current_heading) loadedData.current_heading = parseFloat(profileFromApi.current_heading);
-        if (profileFromApi.current_accuracy) loadedData.current_accuracy = parseFloat(profileFromApi.current_accuracy);
+        // Handle coordinates from either top-level or nested address relation
+        const latVal = (profileFromApi.address && typeof profileFromApi.address === 'object' ? profileFromApi.address.current_latitude : null) || profileFromApi.current_latitude;
+        const lngVal = (profileFromApi.address && typeof profileFromApi.address === 'object' ? profileFromApi.address.current_longitude : null) || profileFromApi.current_longitude;
+        const headingVal = (profileFromApi.address && typeof profileFromApi.address === 'object' ? profileFromApi.address.current_heading : null) || profileFromApi.current_heading;
+        const accuracyVal = (profileFromApi.address && typeof profileFromApi.address === 'object' ? profileFromApi.address.current_accuracy : null) || profileFromApi.current_accuracy;
+
+        if (latVal !== null && latVal !== undefined && latVal !== "") loadedData.current_latitude = parseFloat(String(latVal));
+        if (lngVal !== null && lngVal !== undefined && lngVal !== "") loadedData.current_longitude = parseFloat(String(lngVal));
+        if (headingVal !== null && headingVal !== undefined && headingVal !== "") loadedData.current_heading = parseFloat(String(headingVal));
+        if (accuracyVal !== null && accuracyVal !== undefined && accuracyVal !== "") loadedData.current_accuracy = parseFloat(String(accuracyVal));
         
-        loadedData.photo = profileFromApi.photo || profileFromApi.profile_image_url || user?.avatar || null;
-        if (profileFromApi.banner || profileFromApi.cover_image_url) {
-          loadedData.banner = profileFromApi.banner || profileFromApi.cover_image_url;
-        }
+        const photoUrl = profileFromApi.photo || profileFromApi.profile_image_url || user?.avatar || null;
+        loadedData.photo = photoUrl ? normalizeUrl(photoUrl) : null;
+        const bannerUrl = profileFromApi.banner || profileFromApi.cover_image_url || null;
+        loadedData.banner = bannerUrl ? normalizeUrl(bannerUrl) : null;
         
         // Prefill contact & meta info
         if (profileFromApi.mobile) loadedData.mobile = String(profileFromApi.mobile);
@@ -873,11 +956,33 @@ export default function DetailsForm() {
         if (profileFromApi.linkedin) loadedData.linkedin = String(profileFromApi.linkedin);
         
         // Map languages
-        const rawLanguages = profileFromApi.languages || profileFromApi.partner_languages || profileFromApi.languages_spoken || profileFromApi.spoken_languages || profileFromApi.language;
+        let rawLanguages = null;
+        const langKeys = ["languages", "partner_languages", "languages_spoken", "spoken_languages", "language"];
+        for (const key of langKeys) {
+          const val = profileFromApi[key];
+          if (val) {
+            if (Array.isArray(val) && val.length > 0) {
+              rawLanguages = val;
+              break;
+            } else if (typeof val === "string" && val.trim().length > 0) {
+              rawLanguages = val;
+              break;
+            }
+          }
+        }
+        if (!rawLanguages) {
+          rawLanguages = profileFromApi.languages || profileFromApi.partner_languages || profileFromApi.languages_spoken || profileFromApi.spoken_languages || profileFromApi.language;
+        }
+
         if (rawLanguages) {
+          console.log("=== DEBUG LANGUAGES SYSTEM ===");
+          console.log("rawLanguages from API:", rawLanguages);
           if (Array.isArray(rawLanguages)) {
             loadedData.languages = rawLanguages.map((l: any) => {
               if (typeof l === 'object') {
+                if (l.language && typeof l.language === 'object') {
+                  return l.language.id || l.language.name || l.id || l.language_id;
+                }
                 return l.id || l.language_id || l.name;
               }
               return l;
@@ -888,6 +993,7 @@ export default function DetailsForm() {
               return isNaN(Number(val)) ? val : Number(val);
             }).filter(Boolean);
           }
+          console.log("mapped loadedData.languages:", loadedData.languages);
         }
         
         // Map tags / interests
@@ -925,51 +1031,78 @@ export default function DetailsForm() {
 
         if (profileFromApi.terms_agreed !== undefined) loadedData.termsAgreed = !!profileFromApi.terms_agreed;
         else if (profileFromApi.termsAgreed !== undefined) loadedData.termsAgreed = !!profileFromApi.termsAgreed;
-        
-        // Map bank account
-        // Map bank account
-        let bank = profileFromApi.bank_account || profileFromApi.bank;
-        if (!bank && Array.isArray(profileFromApi.bank_accounts) && profileFromApi.bank_accounts.length > 0) {
-          const primary = profileFromApi.bank_accounts.find((b: any) => b.is_primary === 1 || b.is_primary === "1");
+      }
+
+      // Map bank details
+      let bank = profileFromApi ? (profileFromApi.bank_account || profileFromApi.bank) : null;
+      if (profileFromApi && !bank) {
+        if (Array.isArray(profileFromApi.bank_accounts) && profileFromApi.bank_accounts.length > 0) {
+          const primary = profileFromApi.bank_accounts.find((b: any) => b.is_primary === 1 || b.is_primary === "1" || b.is_primary === true || b.is_primary === "true");
           bank = primary || profileFromApi.bank_accounts[0];
-        } else if (!bank && Array.isArray(profileFromApi.bank) && profileFromApi.bank.length > 0) {
-          const primary = profileFromApi.bank.find((b: any) => b.is_primary === 1 || b.is_primary === "1");
+        } else if (Array.isArray(profileFromApi.bank) && profileFromApi.bank.length > 0) {
+          const primary = profileFromApi.bank.find((b: any) => b.is_primary === 1 || b.is_primary === "1" || b.is_primary === true || b.is_primary === "true");
           bank = primary || profileFromApi.bank[0];
-        } else if (!bank && Array.isArray(profileFromApi.bank_account) && profileFromApi.bank_account.length > 0) {
-          const primary = profileFromApi.bank_account.find((b: any) => b.is_primary === 1 || b.is_primary === "1");
+        } else if (Array.isArray(profileFromApi.bank_account) && profileFromApi.bank_account.length > 0) {
+          const primary = profileFromApi.bank_account.find((b: any) => b.is_primary === 1 || b.is_primary === "1" || b.is_primary === true || b.is_primary === "true");
           bank = primary || profileFromApi.bank_account[0];
         }
+      }
 
-        if (bank) {
-          if (bank.account_holder_name) loadedData.bankAccountHolderName = bank.account_holder_name;
-          if (bank.bank_name) loadedData.bankName = bank.bank_name;
-          if (bank.branch_name) loadedData.branchName = bank.branch_name;
-          if (bank.account_number) loadedData.bankAccountNumber = bank.account_number;
-          if (bank.iban) loadedData.iban = bank.iban;
-          if (bank.swift_code) loadedData.swiftCode = bank.swift_code;
-          if (bank.routing_number) loadedData.routingNumber = bank.routing_number;
-          if (bank.ifsc_code) loadedData.bankIfscCode = bank.ifsc_code;
-          if (bank.currency) loadedData.currency = bank.currency;
-          if (bank.upi_id) loadedData.upiId = bank.upi_id;
-        } else {
-          if (profileFromApi.bank_name) loadedData.bankName = profileFromApi.bank_name;
-          if (profileFromApi.account_number) loadedData.bankAccountNumber = profileFromApi.account_number;
-          if (profileFromApi.ifsc_code) loadedData.bankIfscCode = profileFromApi.ifsc_code;
-          if (profileFromApi.account_holder_name) loadedData.bankAccountHolderName = profileFromApi.account_holder_name;
-          if (profileFromApi.branch_name) loadedData.branchName = profileFromApi.branch_name;
-          if (profileFromApi.currency) loadedData.currency = profileFromApi.currency;
-          if (profileFromApi.iban) loadedData.iban = profileFromApi.iban;
-          if (profileFromApi.swift_code) loadedData.swiftCode = profileFromApi.swift_code;
-          if (profileFromApi.routing_number) loadedData.routingNumber = profileFromApi.routing_number;
-          if (profileFromApi.upi_id) loadedData.upiId = profileFromApi.upi_id;
+      // Fallback to bankFromApi fetched directly from /both/bank-accounts
+      if (!bank && bankFromApi) {
+        const rawBank = bankFromApi.data || bankFromApi;
+        if (Array.isArray(rawBank)) {
+          const primary = rawBank.find((b: any) => b.is_primary === 1 || b.is_primary === "1" || b.is_primary === true || b.is_primary === "true");
+          bank = primary || rawBank[0];
+        } else if (rawBank && typeof rawBank === 'object') {
+          bank = rawBank;
         }
-        
+      }
+
+      if (bank) {
+        if (bank.account_holder_name) loadedData.bankAccountHolderName = bank.account_holder_name;
+        if (bank.bank_name) loadedData.bankName = bank.bank_name;
+        if (bank.branch_name) loadedData.branchName = bank.branch_name;
+        if (bank.account_number) loadedData.bankAccountNumber = bank.account_number;
+        if (bank.iban) loadedData.iban = bank.iban;
+        if (bank.swift_code) loadedData.swiftCode = bank.swift_code;
+        if (bank.routing_number) loadedData.routingNumber = bank.routing_number;
+        if (bank.ifsc_code) loadedData.bankIfscCode = bank.ifsc_code;
+        if (bank.currency) loadedData.currency = bank.currency;
+        if (bank.upi_id) loadedData.upiId = bank.upi_id;
+      } else if (profileFromApi) {
+        if (profileFromApi.bank_name) loadedData.bankName = profileFromApi.bank_name;
+        if (profileFromApi.account_number) loadedData.bankAccountNumber = profileFromApi.account_number;
+        if (profileFromApi.ifsc_code) loadedData.bankIfscCode = profileFromApi.ifsc_code;
+        if (profileFromApi.account_holder_name) loadedData.bankAccountHolderName = profileFromApi.account_holder_name;
+        if (profileFromApi.branch_name) loadedData.branchName = profileFromApi.branch_name;
+        if (profileFromApi.currency) loadedData.currency = profileFromApi.currency;
+        if (profileFromApi.iban) loadedData.iban = profileFromApi.iban;
+        if (profileFromApi.swift_code) loadedData.swiftCode = profileFromApi.swift_code;
+        if (profileFromApi.routing_number) loadedData.routingNumber = profileFromApi.routing_number;
+        if (profileFromApi.upi_id) loadedData.upiId = profileFromApi.upi_id;
+      }
+
+      if (profileFromApi) {
         // Map gallery / videos
         const rawGallery = profileFromApi.gallery || profileFromApi.gallery_images;
         if (rawGallery && Array.isArray(rawGallery)) {
+          const initialGalleryItemIds: Record<string, number | string> = {};
           loadedData.gallery = rawGallery
-            .map((img: any) => typeof img === 'string' ? img : (img && (img.url || img.image) ? img.url || img.image : null))
+            .map((img: any) => {
+              const url = typeof img === "string" ? img : (img && (img.url || img.image) ? img.url || img.image : null);
+              if (url) {
+                const norm = normalizeUrl(url);
+                if (img && img.id) {
+                  initialGalleryItemIds[norm] = img.id;
+                }
+                return norm;
+              }
+              return null;
+            })
             .filter(Boolean);
+          
+          setGalleryItemIds(initialGalleryItemIds);
         }
         if (profileFromApi.videos && Array.isArray(profileFromApi.videos)) {
           loadedData.videos = [...profileFromApi.videos];
@@ -988,20 +1121,85 @@ export default function DetailsForm() {
           console.warn("Failed to fetch kyc document requirements during load:", e);
         }
 
+        // Fetch uploaded KYC documents from the dedicated /partner/kyc-documents API
+        let apiDocs: any[] = [];
+        try {
+          const kycDocsRes = await api.get("/partner/kyc-documents");
+          console.log("KYC Documents API Response:", kycDocsRes.data);
+          if (typeof window !== "undefined") {
+            window.localStorage.setItem("debug_kyc_docs_raw", JSON.stringify(kycDocsRes.data));
+          }
+          if (kycDocsRes?.data) {
+            // Check top level documents first (as returned by the API sibling to data), then fallbacks
+            apiDocs = kycDocsRes.data.documents || 
+                      kycDocsRes.data.data?.documents || 
+                      kycDocsRes.data.id_proofs || 
+                      kycDocsRes.data.data?.id_proofs || 
+                      (Array.isArray(kycDocsRes.data) ? kycDocsRes.data : []) || 
+                      (kycDocsRes.data.data && Array.isArray(kycDocsRes.data.data) ? kycDocsRes.data.data : []);
+          }
+        } catch (e: any) {
+          console.warn("Failed to fetch uploaded kyc documents from /partner/kyc-documents:", e);
+          if (typeof window !== "undefined") {
+            window.localStorage.setItem("debug_kyc_docs_error", e.message || String(e));
+          }
+        }
+
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem("debug_kyc_required_docs", JSON.stringify(requiredDocs));
+          window.localStorage.setItem("debug_kyc_api_docs_parsed", JSON.stringify(apiDocs));
+        }
+
         // Map documents
         const idProofs = Array(requiredDocs.length).fill(null);
-        const apiDocs = profileFromApi.documents || profileFromApi.id_proofs || profileFromApi.idProofs || [];
-        if (Array.isArray(apiDocs)) {
-          apiDocs.forEach((doc: any) => {
-            const key = doc.document_name || doc.document_key || doc.document_type || doc.key || doc.require_document_key;
-            const url = doc.file || doc.file_path || doc.url;
-            if (key && url) {
-              const idx = requiredDocs.findIndex((r: any) => r.require_document_key === key);
-              if (idx !== -1) {
-                idProofs[idx] = normalizeUrl(url);
-              }
+        
+        const mapDocItem = (doc: any) => {
+          if (!doc) return;
+          const key = doc.require_document_key || 
+                      doc.document_key || 
+                      doc.document_name || 
+                      doc.document_type || 
+                      doc.key ||
+                      (doc.document && (doc.document.require_document_key || doc.document.key || doc.document.document_name || doc.document.document_key));
+                      
+          const url = doc.document_url || 
+                      doc.file || 
+                      doc.file_path || 
+                      doc.url || 
+                      doc.document_file || 
+                      doc.image || 
+                      (doc.media && doc.media[0] && (doc.media[0].original_url || doc.media[0].url || doc.media[0].file_path)) ||
+                      (doc.document && (doc.document.file || doc.document.file_path || doc.document.url || doc.document.image || doc.document.document_url));
+                      
+          if (key && url) {
+            let finalUrl = url;
+            if (typeof finalUrl === "string" && finalUrl.startsWith("/")) {
+              finalUrl = `https://mypartneradmin.blackbullsolution.com${finalUrl}`;
             }
-          });
+            // Find index using exact match first
+            let idx = requiredDocs.findIndex((r: any) => r.require_document_key === key);
+            if (idx === -1) {
+              // Try flexible matching to handle spelling variations (e.g., adhar vs aadhar) and case differences
+              const k1 = String(key).toLowerCase().replace(/_/g, "").replace(/aa/g, "a");
+              idx = requiredDocs.findIndex((r: any) => {
+                const k2 = String(r.require_document_key).toLowerCase().replace(/_/g, "").replace(/aa/g, "a");
+                return k2.includes(k1) || k1.includes(k2);
+              });
+            }
+            if (idx !== -1) {
+              idProofs[idx] = normalizeUrl(finalUrl);
+            }
+          }
+        };
+
+        if (Array.isArray(apiDocs) && apiDocs.length > 0) {
+          apiDocs.forEach(mapDocItem);
+        } else {
+          // Fallback to profileFromApi documents if kyc-documents api returned empty
+          const fallbackDocs = profileFromApi.documents || profileFromApi.id_proofs || profileFromApi.idProofs || [];
+          if (Array.isArray(fallbackDocs)) {
+            fallbackDocs.forEach(mapDocItem);
+          }
         }
         loadedData.idProofs = idProofs;
         loadedData.kycDocInputs = requiredDocs;
@@ -1023,18 +1221,23 @@ export default function DetailsForm() {
           setSelectedKycSlot(profileFromApi.kyc_slot);
         }
         if (profileFromApi.zoom_link) setZoomLink(profileFromApi.zoom_link);
-        
-        setFormData((prev) => ({
-          ...prev,
-          ...loadedData
-        }));
+      }
 
-        // Determine current step dynamically based on what is populated in API
+      setFormData((prev) => ({
+        ...prev,
+        ...loadedData
+      }));
+
+      // Determine step & view
+      if (profileFromApi) {
         const hasBasicInfo = loadedData.fullName && loadedData.gender && loadedData.dob && loadedData.city;
         const hasMedia = loadedData.gallery && loadedData.gallery.length >= 3;
         const hasBank = loadedData.bankAccountNumber && loadedData.bankName;
         const hasKycDoc = (profileFromApi.documents && profileFromApi.documents.length > 0) || (loadedData.idProofs && loadedData.idProofs.length > 0);
         
+        const submission_status = profileFromApi.submission_status || "pending";
+        const verification_status = profileFromApi.verification_status || "DRAFT";
+
         const isSubmittedOnServer = 
           submission_status === "success" ||
           ["PENDING", "VERIFIED", "REJECTED", "NEEDS_REVISION"].includes(verification_status);
@@ -1064,62 +1267,14 @@ export default function DetailsForm() {
           }
         }
       } else {
-        // Start with a clean form
         setApplicationId(activeAppId);
-        setFormData({
-          photo: user?.avatar || null,
-          banner: null,
-          fullName: user?.name || "",
-          gender: "Select Gender",
-          dob: "",
-          age: "",
-          city: "",
-          state: "",
-          mobile: user?.phone || "",
-          phoneCountryCode: user?.phone_country_code || "+91",
-          email: user?.email || "",
-          bankName: "",
-          bankAccountNumber: "",
-          bankIfscCode: "",
-          bankAccountHolderName: "",
-          branchName: "",
-          currency: "",
-          iban: "",
-          swiftCode: "",
-          routingNumber: "",
-          country: "",
-          address: "",
-          pincode: "",
-          upiId: "",
-          addons: [],
-          otherAddon: "",
-          languages: [],
-          bio: "",
-          tagsInput: [],
-          interestsInput: [],
-          hourlyRate: "",
-          availability: [],
-          instagram: "",
-          linkedin: "",
-          termsAgreed: false,
-          idProofs: [null, null, null, null],
-          kycDocInputs: [],
-          gallery: [],
-          videos: Array(3).fill(null),
-          current_latitude: null,
-          current_longitude: null,
-          current_heading: null,
-          current_accuracy: null,
-          country_id: null,
-          state_id: null,
-          city_id: null,
-        });
         setGalleryItemIds({});
         setSubmissionStatus("pending");
         setVerificationStatus("DRAFT");
         setKycStatus("NOT_SCHEDULED");
         setReachedReviewStep(false);
         setView("form");
+        setCurrentStep(1);
       }
       setIsHydrated(true);
     };
@@ -1436,33 +1591,30 @@ export default function DetailsForm() {
         if (formData.otherAddon) payload.otherAddon = formData.otherAddon;
 
         const selectedTags = formData.tagsInput || [];
-        selectedTags.forEach((tag: string, idx: number) => {
-          payload[`tags[${idx}]`] = tag;
-        });
+        payload.tags = selectedTags;
+
         const selectedInterests = formData.interestsInput || [];
-        selectedInterests.forEach((interest: string, idx: number) => {
-          payload[`interests[${idx}]`] = interest;
-        });
+        payload.interests = selectedInterests;
+
         const selectedAddons = formData.addons || [];
-        selectedAddons.forEach((addon: string, idx: number) => {
-          payload[`addons[${idx}]`] = addon;
-        });
+        payload.addons = selectedAddons;
+
         const selectedAvail = formData.availability || [];
-        selectedAvail.forEach((avail: string, idx: number) => {
-          payload[`availability[${idx}]`] = avail;
-        });
+        payload.availability = selectedAvail;
 
         const selectedLangs = formData.languages || [];
-        selectedLangs.forEach((lang: any, idx: number) => {
+        const mappedLangs: any[] = [];
+        selectedLangs.forEach((lang: any) => {
           let idVal = typeof lang === "number" ? lang : parseInt(lang, 10);
           if (isNaN(idVal)) {
             const found = languagesList.find((l: any) => l.name.toLowerCase() === String(lang).toLowerCase());
             idVal = found ? found.id : getLanguageId(lang);
           }
-          payload[`languages[${idx}]`] = idVal;
+          mappedLangs.push(idVal);
         });
+        payload.languages = mappedLangs;
 
-        // Hit the real API
+        // Hit the real API with the clean standard JSON payload
         await api.post("/partner/become-a-partner", payload);
 
         // Save live-location if geolocation data exists
@@ -1531,6 +1683,7 @@ export default function DetailsForm() {
           const formDataBody = new FormData();
           const requiredDocs = formData.kycDocInputs || [];
           let hasLocalFiles = false;
+          let docsCount = 0;
           
           for (let i = 0; i < requiredDocs.length; i++) {
             const doc = requiredDocs[i];
@@ -1539,8 +1692,9 @@ export default function DetailsForm() {
               const extension = file.type.split("/")[1] || "jpg";
               const fileName = `${doc.require_document_key}.${extension}`;
               
-              formDataBody.append(`documents[${i}][key]`, doc.require_document_key);
-              formDataBody.append(`documents[${i}][file]`, file, fileName);
+              formDataBody.append(`documents[${docsCount}][key]`, doc.require_document_key);
+              formDataBody.append(`documents[${docsCount}][file]`, file, fileName);
+              docsCount++;
               hasLocalFiles = true;
             }
           }
@@ -1797,15 +1951,29 @@ export default function DetailsForm() {
         gender: existingPartner.gender || formData.gender,
         city: existingPartner.location || formData.city,
         bio: existingPartner.bio || formData.bio,
-        photo: existingPartner.image || formData.photo,
-        banner: existingPartner.banner || formData.banner,
+        photo: existingPartner.image ? normalizeUrl(existingPartner.image) : formData.photo,
+        banner: existingPartner.banner ? normalizeUrl(existingPartner.banner) : formData.banner,
         languages: existingPartner.languages ? String(existingPartner.languages).split(",").map((s: string) => s.trim()).filter(Boolean) : formData.languages,
         interestsInput: existingPartner.interests ? String(existingPartner.interests).split(",").map((s: string) => s.trim()).filter(Boolean) : formData.interestsInput,
         tagsInput: existingPartner.tags ? existingPartner.tags.map((t: string) => t.replace("#", "").trim()).filter(Boolean) : formData.tagsInput,
         hourlyRate: existingPartner.pricing?.oneHour ? String(existingPartner.pricing.oneHour) : formData.hourlyRate,
-        gallery: existingPartner.gallery ? existingPartner.gallery.map((g: any) => g.image).filter(Boolean) : formData.gallery,
+        gallery: existingPartner.gallery ? existingPartner.gallery.map((g: any) => g.image ? normalizeUrl(g.image) : null).filter(Boolean) : formData.gallery,
         videos: existingPartner.videos || formData.videos,
       });
+
+      if (existingPartner.gallery && Array.isArray(existingPartner.gallery)) {
+        const revertMappings: Record<string, number | string> = {};
+        existingPartner.gallery.forEach((g: any) => {
+          const imagePath = g.image || g.url;
+          if (imagePath) {
+            const norm = normalizeUrl(imagePath);
+            if (g.id) {
+              revertMappings[norm] = g.id;
+            }
+          }
+        });
+        setGalleryItemIds(revertMappings);
+      }
 
       setVerificationStatus("VERIFIED");
       setKycStatus("APPROVED");
@@ -1876,6 +2044,7 @@ export default function DetailsForm() {
       country_id: null,
       state_id: null,
       city_id: null,
+      partnerStatus: "",
     });
     setGalleryItemIds({});
     setKycFiles(Array(4).fill(null));
@@ -1895,7 +2064,7 @@ export default function DetailsForm() {
     toast.info("Application cleared.");
   };
 
-  if (!isHydrated) return null;
+
 
   const handleAgeChange = (increment: boolean) => {
     setFormData((prev) => {
@@ -1993,9 +2162,7 @@ export default function DetailsForm() {
     if (id) {
       toast.info("Removing photo from server...");
       try {
-        await api.post(`user/gallery/remove/${id}`).catch(async () => {
-          await api.post("user/gallery/remove/", { id });
-        });
+        await api.delete(`both/gallery/remove/${id}`);
         toast.success("Photo removed successfully.");
       } catch (err) {
         console.error("Failed to remove photo from server:", err);
@@ -2035,8 +2202,33 @@ export default function DetailsForm() {
     });
   };
 
+
+  //loader for becoming a partner in the form field
   if (!isHydrated) {
-    return <Loader />;
+    return (
+      <section
+        id="join"
+        ref={sectionRef}
+        className={`pt-16 md:pt-16 pb-20 md:pb-16 bg-bg-base min-h-screen relative ${outfit.className}`}
+      >
+        <div className="max-w-5xl mx-auto px-4 md:px-8 relative z-10 w-full animate-pulse">
+          <div className="relative bg-bg-card/30 backdrop-blur-2xl border border-border-main rounded-[32px] md:rounded-[48px] p-6 md:p-14 shadow-2xl overflow-hidden min-h-[500px] flex flex-col items-center justify-center">
+            {/* Ambient Inner Glows */}
+            <div className="absolute -top-60 -right-60 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute -bottom-60 -left-60 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[120px] pointer-events-none" />
+
+            <div className="relative flex flex-col items-center gap-6 z-10">
+              {/* Theme Colored Spinner */}
+              <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+              <div className="flex flex-col items-center gap-2 text-center">
+                <h3 className="text-xl font-semibold text-text-main">Setting Up Your Workspace</h3>
+                <p className="text-sm text-text-muted">Fetching profile and KYC settings...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return (
