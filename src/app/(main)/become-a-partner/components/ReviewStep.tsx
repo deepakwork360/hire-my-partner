@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldCheck, User, MapPin, DollarSign, Landmark, Check, Image, Film } from "lucide-react";
+import { ShieldCheck, User, MapPin, DollarSign, Landmark, Check, Image, Film, Edit3 } from "lucide-react";
 import SecureImage from "@/components/ui/SecureImage";
 
 interface ReviewStepProps {
@@ -11,6 +11,7 @@ interface ReviewStepProps {
   onChange: (data: any) => void;
   errors?: Record<string, string>;
   languagesList?: any[];
+  onEditStep?: (step: number) => void;
 }
 
 export default function ReviewStep({
@@ -21,6 +22,7 @@ export default function ReviewStep({
   onChange,
   errors,
   languagesList = [],
+  onEditStep,
 }: ReviewStepProps) {
 
   const formatDate = (dateStr: string) => {
@@ -71,10 +73,22 @@ export default function ReviewStep({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Basic Info Card */}
         <div className="bg-bg-secondary/40 border border-border-main p-6 rounded-3xl space-y-4">
-          <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
-            <User className="w-4 h-4" />
-            Personal Details
-          </h4>
+          <div className="flex justify-between items-center">
+            <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+              <User className="w-4 h-4" />
+              Personal Details
+            </h4>
+            {onEditStep && (
+              <button
+                type="button"
+                onClick={() => onEditStep(1)}
+                className="p-1.5 hover:bg-white/5 rounded-lg text-text-muted hover:text-primary transition-all cursor-pointer"
+                title="Edit Personal Details"
+              >
+                <Edit3 className="w-4.5 h-4.5" />
+              </button>
+            )}
+          </div>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between py-1 border-b border-white/5">
               <span className="text-text-muted font-medium">Full Name</span>
@@ -117,10 +131,22 @@ export default function ReviewStep({
         {/* Location & Pricing */}
         <div className="bg-bg-secondary/40 border border-border-main p-6 rounded-3xl space-y-6">
           <div className="space-y-4">
-            <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
-              <MapPin className="w-4 h-4" />
-              Location Details
-            </h4>
+            <div className="flex justify-between items-center">
+              <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                Location Details
+              </h4>
+              {onEditStep && (
+                <button
+                  type="button"
+                  onClick={() => onEditStep(1)}
+                  className="p-1.5 hover:bg-white/5 rounded-lg text-text-muted hover:text-primary transition-all cursor-pointer"
+                  title="Edit Location & Pricing"
+                >
+                  <Edit3 className="w-4.5 h-4.5" />
+                </button>
+              )}
+            </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between py-1 border-b border-white/5">
                 <span className="text-text-muted font-medium">Country</span>
@@ -161,10 +187,22 @@ export default function ReviewStep({
 
         {/* Bank details Card */}
         <div className="bg-bg-secondary/40 border border-border-main p-6 rounded-3xl space-y-4">
-          <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
-            <Landmark className="w-4 h-4" />
-            Payout & Bank Details
-          </h4>
+          <div className="flex justify-between items-center">
+            <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+              <Landmark className="w-4 h-4" />
+              Payout & Bank Details
+            </h4>
+            {onEditStep && (
+              <button
+                type="button"
+                onClick={() => onEditStep(3)}
+                className="p-1.5 hover:bg-white/5 rounded-lg text-text-muted hover:text-primary transition-all cursor-pointer"
+                title="Edit Bank Details"
+              >
+                <Edit3 className="w-4.5 h-4.5" />
+              </button>
+            )}
+          </div>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between py-1 border-b border-white/5">
               <span className="text-text-muted font-medium">Account Holder</span>
@@ -191,10 +229,22 @@ export default function ReviewStep({
 
         {/* KYC Verification details */}
         <div className="bg-bg-secondary/40 border border-border-main p-6 rounded-3xl space-y-4">
-          <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4" />
-            KYC Verification
-          </h4>
+          <div className="flex justify-between items-center">
+            <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4" />
+              KYC Verification
+            </h4>
+            {onEditStep && (
+              <button
+                type="button"
+                onClick={() => onEditStep(4)}
+                className="p-1.5 hover:bg-white/5 rounded-lg text-text-muted hover:text-primary transition-all cursor-pointer"
+                title="Edit KYC Verification"
+              >
+                <Edit3 className="w-4.5 h-4.5" />
+              </button>
+            )}
+          </div>
           <div className="space-y-4 text-sm">
             {/* Commented out as scheduling is postponed
             <div className="flex justify-between py-1 border-b border-white/5">
@@ -242,10 +292,22 @@ export default function ReviewStep({
 
         {/* Media Gallery */}
         <div className="bg-bg-secondary/40 border border-border-main p-6 rounded-3xl space-y-4 md:col-span-2">
-          <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
-            <Image className="w-4 h-4" />
-            Media Gallery & Uploads
-          </h4>
+          <div className="flex justify-between items-center">
+            <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+              <Image className="w-4 h-4" />
+              Media Gallery & Uploads
+            </h4>
+            {onEditStep && (
+              <button
+                type="button"
+                onClick={() => onEditStep(2)}
+                className="p-1.5 hover:bg-white/5 rounded-lg text-text-muted hover:text-primary transition-all cursor-pointer"
+                title="Edit Media Gallery"
+              >
+                <Edit3 className="w-4.5 h-4.5" />
+              </button>
+            )}
+          </div>
           <div className="space-y-4">
             <div>
               <span className="text-text-muted font-medium text-xs block mb-2">Gallery Photos</span>

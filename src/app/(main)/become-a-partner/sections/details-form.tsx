@@ -1632,7 +1632,7 @@ export default function DetailsForm() {
         }
 
         toast.success("Step 1 details saved successfully!");
-        setCurrentStep((prev) => Math.min(5, prev + 1));
+        setCurrentStep((prev) => reachedReviewStep ? 5 : Math.min(5, prev + 1));
       } catch (error: any) {
         console.error("API error details:", error.response?.data || error.message);
         const errMsg = error.response?.data?.message || error.message || "Failed to save details";
@@ -1748,11 +1748,11 @@ export default function DetailsForm() {
         }
 
         toast.success(`Step ${stepNum} details saved!`);
-        setCurrentStep((prev) => Math.min(5, prev + 1));
+        setCurrentStep((prev) => reachedReviewStep ? 5 : Math.min(5, prev + 1));
       } catch (error: any) {
         console.warn(`API save for step ${stepNum} failed/not configured, proceeding locally:`, error.message);
         toast.success(`Step ${stepNum} saved successfully!`);
-        setCurrentStep((prev) => Math.min(5, prev + 1));
+        setCurrentStep((prev) => reachedReviewStep ? 5 : Math.min(5, prev + 1));
       } finally {
         setIsStepSubmitting(false);
       }
@@ -2403,20 +2403,22 @@ export default function DetailsForm() {
                     onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
                     errors={errors}
                     languagesList={languagesList}
+                    onEditStep={(step) => setCurrentStep(step)}
                   />
                 )}
               </div>
 
               {/* Navigation Controls */}
-              <StepNavigation
-                currentStep={currentStep}
-                totalSteps={5}
-                onPrev={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
-                onNext={() => handleStepSubmit(currentStep)}
-                onSubmit={handleSubmit}
-                onEdit={() => setCurrentStep(1)}
-                isSubmitting={isStepSubmitting || (submissionStatus === "pending" && (view as string) === "processing")}
-              />
+              {currentStep < 5 && (
+                <StepNavigation
+                  currentStep={currentStep}
+                  totalSteps={5}
+                  onPrev={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
+                  onNext={() => handleStepSubmit(currentStep)}
+                  onSubmit={handleSubmit}
+                  isSubmitting={isStepSubmitting || (submissionStatus === "pending" && (view as string) === "processing")}
+                />
+              )}
             </motion.div>
           )}
 

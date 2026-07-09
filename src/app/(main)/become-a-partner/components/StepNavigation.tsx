@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, CheckCircle2, Edit3 } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import PremiumButton from "@/components/ui/PremiumButton";
 
 interface StepNavigationProps {
@@ -10,7 +10,6 @@ interface StepNavigationProps {
   onNext: () => void;
   onSubmit: () => void;
   isSubmitting?: boolean;
-  onEdit?: () => void;
 }
 
 export default function StepNavigation({
@@ -20,7 +19,6 @@ export default function StepNavigation({
   onNext,
   onSubmit,
   isSubmitting = false,
-  onEdit,
 }: StepNavigationProps) {
   const isFirstStep = currentStep === 1;
   const isLastStep = currentStep === totalSteps;
@@ -28,9 +26,7 @@ export default function StepNavigation({
   return (
     <div className="flex items-center justify-between gap-4 mt-8 pt-6 border-t border-border-main select-none">
       {/* Left Column: Previous / Back Button */}
-      {currentStep === 5 ? (
-        <div /> // Spacer
-      ) : !isFirstStep ? (
+      {!isFirstStep ? (
         <button
           type="button"
           onClick={onPrev}
@@ -43,30 +39,15 @@ export default function StepNavigation({
         <div /> // Spacer
       )}
 
-      {/* Right Column: Next / Edit Button */}
-      {currentStep === 5 ? (
-        onEdit ? (
-          <PremiumButton
-            label="Edit Information"
-            onClick={onEdit}
-            disabled={isSubmitting}
-            variant="primary"
-            size="md"
-            icon={<Edit3 className="w-4 h-4" />}
-          />
-        ) : (
-          <div />
-        )
-      ) : (
-        <PremiumButton
-          label="Submit"
-          onClick={onNext}
-          disabled={isSubmitting}
-          variant="primary"
-          size="md"
-          icon={<ArrowRight className="w-4 h-4" />}
-        />
-      )}
+      {/* Right Column: Next / Submit Button */}
+      <PremiumButton
+        label="Submit"
+        onClick={onNext}
+        disabled={isSubmitting}
+        variant="primary"
+        size="md"
+        icon={<ArrowRight className="w-4 h-4" />}
+      />
     </div>
   );
 }
