@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldCheck, User, MapPin, DollarSign, Landmark, Check } from "lucide-react";
+import { ShieldCheck, User, MapPin, DollarSign, Landmark, Check, Image, Film } from "lucide-react";
 import SecureImage from "@/components/ui/SecureImage";
 
 interface ReviewStepProps {
@@ -237,6 +237,57 @@ export default function ReviewStep({
                 )}
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Media Gallery */}
+        <div className="bg-bg-secondary/40 border border-border-main p-6 rounded-3xl space-y-4 md:col-span-2">
+          <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+            <Image className="w-4 h-4" />
+            Media Gallery & Uploads
+          </h4>
+          <div className="space-y-4">
+            <div>
+              <span className="text-text-muted font-medium text-xs block mb-2">Gallery Photos</span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                {formData.gallery && formData.gallery.filter(Boolean).length > 0 ? (
+                  formData.gallery.filter(Boolean).map((photo: string, idx: number) => (
+                    <div key={idx} className="relative aspect-square border border-white/10 rounded-2xl overflow-hidden bg-black/20 group">
+                      <SecureImage
+                        src={photo}
+                        alt={`Gallery ${idx + 1}`}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full py-6 text-center text-xs text-text-muted font-bold bg-black/10 rounded-2xl border border-dashed border-white/5">
+                    No gallery images uploaded.
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Show videos if present */}
+            {formData.videos && formData.videos.filter(Boolean).length > 0 && (
+              <div className="pt-4 border-t border-white/5">
+                <span className="text-text-muted font-medium text-xs block mb-2 flex items-center gap-1">
+                  <Film className="w-3.5 h-3.5 text-primary" />
+                  Uploaded Videos
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {formData.videos.filter(Boolean).map((video: string, idx: number) => (
+                    <div key={idx} className="relative aspect-video border border-white/10 rounded-2xl overflow-hidden bg-black/20">
+                      <video
+                        src={video}
+                        controls
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
