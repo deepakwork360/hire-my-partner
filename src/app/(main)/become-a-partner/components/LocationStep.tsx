@@ -229,8 +229,8 @@ export default function LocationStep({
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        const lat = parseFloat(position.coords.latitude.toFixed(6));
-        const lng = parseFloat(position.coords.longitude.toFixed(6));
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
         const heading = position.coords.heading !== null && position.coords.heading !== undefined ? parseFloat(position.coords.heading.toFixed(1)) : 120.5;
         const accuracy = position.coords.accuracy !== null && position.coords.accuracy !== undefined ? parseFloat(position.coords.accuracy.toFixed(1)) : 8.2;
 
@@ -292,7 +292,7 @@ export default function LocationStep({
         setIsLocating(false);
         toast.error(error.message || "Failed to retrieve your GPS location.");
       },
-      { enableHighAccuracy: true, timeout: 8000 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   };
 
@@ -322,7 +322,7 @@ export default function LocationStep({
           <p className="text-xs font-black text-text-main uppercase tracking-widest"> GPS Geolocation </p>
           <p className="text-[10px] text-text-muted font-bold leading-relaxed">
             {formData.current_latitude && formData.current_longitude 
-              ? `Verification Coordinates: ${formData.current_latitude.toFixed(4)}, ${formData.current_longitude.toFixed(4)}`
+              ? `Verification Coordinates: ${formData.current_latitude.toFixed(8)}, ${formData.current_longitude.toFixed(8)}`
               : "Verify your coordinates automatically for distance tracking."}
           </p>
           {showErrors && (errors?.current_latitude || errors?.current_longitude) && (

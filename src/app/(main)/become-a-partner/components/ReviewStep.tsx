@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldCheck, User, MapPin, DollarSign, Landmark, Check, Image, Film, Edit3, XCircle, Clock, HelpCircle } from "lucide-react";
+import { ShieldCheck, User, MapPin, DollarSign, Landmark, Check, Image, Film, Edit3, XCircle, Clock, HelpCircle, QrCode } from "lucide-react";
 import SecureImage from "@/components/ui/SecureImage";
 
 interface ReviewStepProps {
@@ -205,45 +205,80 @@ export default function ReviewStep({
           </div>
         </div>
 
-        {/* Bank details Card */}
+
+        {/* Payout & Bank/UPI Details Card */}
         <div className="bg-bg-secondary/40 border border-border-main p-6 rounded-3xl space-y-4">
           <div className="flex justify-between items-center">
             <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
-              <Landmark className="w-4 h-4" />
-              Payout & Bank Details
+              {formData.paymentMode === "upi" ? <QrCode className="w-4 h-4" /> : <Landmark className="w-4 h-4" />}
+              Payout Details ({formData.paymentMode === "upi" ? "UPI ID" : "Bank Account"})
             </h4>
             {onEditStep && (
               <button
                 type="button"
                 onClick={() => onEditStep(3)}
                 className="p-1.5 hover:bg-white/5 rounded-lg text-text-muted hover:text-primary transition-all cursor-pointer"
-                title="Edit Bank Details"
+                title="Edit Payout Details"
               >
                 <Edit3 className="w-4.5 h-4.5" />
               </button>
             )}
           </div>
+
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between py-1 border-b border-white/5">
-              <span className="text-text-muted font-medium">Account Holder</span>
-              <span className="text-text-main font-bold">{formData.bankAccountHolderName || "—"}</span>
-            </div>
-            <div className="flex justify-between py-1 border-b border-white/5">
-              <span className="text-text-muted font-medium">Bank Name</span>
-              <span className="text-text-main font-bold">{formData.bankName || "—"}</span>
-            </div>
-            <div className="flex justify-between py-1 border-b border-white/5">
-              <span className="text-text-muted font-medium">Account Number</span>
-              <span className="text-text-main font-bold">{formData.bankAccountNumber || "—"}</span>
-            </div>
-            <div className="flex justify-between py-1 border-b border-white/5">
-              <span className="text-text-muted font-medium">IFSC Code</span>
-              <span className="text-text-main font-bold">{formData.bankIfscCode || "—"}</span>
-            </div>
-            <div className="flex justify-between py-1">
-              <span className="text-text-muted font-medium">UPI ID</span>
-              <span className="text-text-main font-bold">{formData.upiId || "—"}</span>
-            </div>
+            {formData.paymentMode === "upi" ? (
+              <div className="flex justify-between py-1">
+                <span className="text-text-muted font-medium">UPI ID</span>
+                <span className="text-text-main font-bold">{formData.upiId || "—"}</span>
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-between py-1 border-b border-white/5">
+                  <span className="text-text-muted font-medium">Account Holder</span>
+                  <span className="text-text-main font-bold">{formData.bankAccountHolderName || "—"}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-white/5">
+                  <span className="text-text-muted font-medium">Bank Name</span>
+                  <span className="text-text-main font-bold">{formData.bankName || "—"}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-white/5">
+                  <span className="text-text-muted font-medium">Branch Name</span>
+                  <span className="text-text-main font-bold">{formData.branchName || "—"}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-white/5">
+                  <span className="text-text-muted font-medium">Account Number</span>
+                  <span className="text-text-main font-bold">{formData.bankAccountNumber || "—"}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-white/5">
+                  <span className="text-text-muted font-medium">Currency</span>
+                  <span className="text-text-main font-bold">{formData.currency || "—"}</span>
+                </div>
+                {formData.bankIfscCode && (
+                  <div className="flex justify-between py-1 border-b border-white/5">
+                    <span className="text-text-muted font-medium">IFSC Code</span>
+                    <span className="text-text-main font-bold">{formData.bankIfscCode}</span>
+                  </div>
+                )}
+                {formData.iban && (
+                  <div className="flex justify-between py-1 border-b border-white/5">
+                    <span className="text-text-muted font-medium">IBAN</span>
+                    <span className="text-text-main font-bold">{formData.iban}</span>
+                  </div>
+                )}
+                {formData.swiftCode && (
+                  <div className="flex justify-between py-1 border-b border-white/5">
+                    <span className="text-text-muted font-medium">SWIFT Code</span>
+                    <span className="text-text-main font-bold">{formData.swiftCode}</span>
+                  </div>
+                )}
+                {formData.routingNumber && (
+                  <div className="flex justify-between py-1">
+                    <span className="text-text-muted font-medium">Routing Number</span>
+                    <span className="text-text-main font-bold">{formData.routingNumber}</span>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
 

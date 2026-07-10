@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import PremiumDatePicker from "@/components/ui/PremiumDatePicker";
 
 // Reusable InputWrapper matching original structure
@@ -58,6 +58,7 @@ interface BasicInfoStepProps {
   onChange: (data: any) => void;
   showErrors: boolean;
   errors?: Record<string, string>;
+  countriesList?: any[];
 }
 
 export default function BasicInfoStep({
@@ -65,12 +66,33 @@ export default function BasicInfoStep({
   onChange,
   showErrors,
   errors,
+  countriesList = [],
 }: BasicInfoStepProps) {
   const [isGenderOpen, setIsGenderOpen] = useState(false);
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const countryDropdownRef = useRef<HTMLDivElement>(null);
+  const [phoneSearch, setPhoneSearch] = useState("");
 
   const genders = ["Male", "Female", "Other"];
+
+  const activeCountries = (countriesList && countriesList.length > 0)
+    ? countriesList.map((c) => {
+        let code = c.phonecode || "";
+        if (code && !code.startsWith("+")) {
+          code = `+${code}`;
+        }
+        return {
+          code,
+          iso: (c.iso2 || c.iso || "in").toLowerCase(),
+          name: c.name,
+        };
+      })
+    : countries;
+
+  const filteredActiveCountries = activeCountries.filter((c) =>
+    c.name.toLowerCase().includes(phoneSearch.toLowerCase()) ||
+    c.code.toLowerCase().includes(phoneSearch.toLowerCase())
+  );
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -79,6 +101,7 @@ export default function BasicInfoStep({
         !countryDropdownRef.current.contains(event.target as Node)
       ) {
         setIsCountryDropdownOpen(false);
+        setPhoneSearch("");
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -216,7 +239,7 @@ export default function BasicInfoStep({
               >
                 <span className="flex items-center gap-1.5">
                   <img
-                    src={`https://flagcdn.com/w40/${(countries.find(c => c.code === formData.phoneCountryCode)?.iso || "in")}.png`}
+                    src={`https://flagcdn.com/w40/${(activeCountries.find(c => c.code === formData.phoneCountryCode)?.iso || "in")}.png`}
                     alt="Flag"
                     className="w-5 h-3.5 object-cover rounded-[2px] shrink-0"
                   />
@@ -231,26 +254,59 @@ export default function BasicInfoStep({
                     initial={{ opacity: 0, y: 5, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                    className="absolute z-50 left-0 top-full mt-2 w-56 max-h-60 overflow-y-auto bg-bg-base border border-border-main rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.3)] backdrop-blur-xl custom-scrollbar flex flex-col"
+                    className="absolute z-50 left-0 top-full mt-2 w-56 max-h-60 bg-bg-base border border-border-main rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.3)] backdrop-blur-xl flex flex-col overflow-hidden"
                   >
-                    {countries.map((c) => (
-                      <button
-                        key={c.code}
-                        type="button"
-                        onClick={() => {
-                          onChange({ phoneCountryCode: c.code });
-                          setIsCountryDropdownOpen(false);
-                        }}
-                        className={`w-full cursor-pointer flex items-center gap-3 px-4 py-2.5 text-left text-text-main hover:bg-primary/15 transition-colors text-sm font-medium ${c.code === formData.phoneCountryCode ? "bg-primary/10 text-primary" : ""}`}
-                      >
-                        <img
-                          src={`https://flagcdn.com/w40/${c.iso}.png`}
-                          alt={c.name}
-                          className="w-5 h-3.5 object-cover rounded-[2px] shrink-0"
+                    <div className="p-2.5 bg-black/5 dark:bg-white/[0.02] border-b border-border-main/50">
+                      <div className="relative">
+                        <Search className="w-3.5 h-3.5 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          placeholder="Search..."
+                          value={phoneSearch}
+                          onChange={(e) => setPhoneSearch(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              if (filteredActiveCountries.length === 1) {
+                                const c = filteredActiveCountries[0];
+                                onChange({ phoneCountryCode: c.code });
+                                setPhoneSearch("");
+                                setIsCountryDropdownOpen(false);
+                              }
+                            }
+                          }}
+                          className="w-full pl-8 pr-3 py-1.5 text-[11px] bg-bg-secondary/40 border border-border-main rounded-xl text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary/50 transition-colors"
+                          autoFocus
                         />
-                        <span className="text-xs font-semibold">{c.code} ({c.name})</span>
-                      </button>
-                    ))}
+                      </div>
+                    </div>
+                    <div className="overflow-y-auto custom-scrollbar flex-1 max-h-44">
+                      {filteredActiveCountries.length === 0 ? (
+                        <div className="p-4 text-xs text-text-muted text-center font-semibold">
+                          No results found
+                        </div>
+                      ) : (
+                        filteredActiveCountries.map((c) => (
+                          <button
+                            key={`${c.code}-${c.iso}`}
+                            type="button"
+                            onClick={() => {
+                              onChange({ phoneCountryCode: c.code });
+                              setPhoneSearch("");
+                              setIsCountryDropdownOpen(false);
+                            }}
+                            className={`w-full cursor-pointer flex items-center gap-3 px-4 py-2.5 text-left text-text-main hover:bg-primary/15 transition-colors text-sm font-medium ${c.code === formData.phoneCountryCode ? "bg-primary/10 text-primary" : ""}`}
+                          >
+                            <img
+                              src={`https://flagcdn.com/w40/${c.iso}.png`}
+                              alt={c.name}
+                              className="w-5 h-3.5 object-cover rounded-[2px] shrink-0"
+                            />
+                            <span className="text-xs font-semibold">{c.code} ({c.name})</span>
+                          </button>
+                        ))
+                      )}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>

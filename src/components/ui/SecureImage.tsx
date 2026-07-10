@@ -29,6 +29,7 @@ export default function SecureImage({ src, fallback, ...props }: SecureImageProp
     }
 
     let active = true;
+    let blobUrl = "";
     setLoading(true);
     setError(false);
 
@@ -50,7 +51,7 @@ export default function SecureImage({ src, fallback, ...props }: SecureImageProp
         
         const response = await api.get(fetchPath, { responseType: "blob" });
         if (active) {
-          const blobUrl = URL.createObjectURL(response.data);
+          blobUrl = URL.createObjectURL(response.data);
           setImageSrc(blobUrl);
           setLoading(false);
         }
@@ -69,6 +70,9 @@ export default function SecureImage({ src, fallback, ...props }: SecureImageProp
 
     return () => {
       active = false;
+      if (blobUrl && blobUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(blobUrl);
+      }
     };
   }, [src]);
 

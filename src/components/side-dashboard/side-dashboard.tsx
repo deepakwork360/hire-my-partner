@@ -485,8 +485,8 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        const lat = parseFloat(position.coords.latitude.toFixed(4));
-        const lng = parseFloat(position.coords.longitude.toFixed(4));
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
         
         try {
           // Perform reverse geocoding via OpenStreetMap Nominatim API
@@ -520,7 +520,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
         console.error("Geolocation error:", error);
         toast.error(error.message || "Failed to retrieve GPS location.");
       },
-      { enableHighAccuracy: true, timeout: 8000 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   };
 
@@ -651,16 +651,12 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                     <span className="text-text-muted text-xs font-medium tracking-wide mb-3">
                       {user.email}
                     </span>
-                    <button
-                      onClick={() => {
-                        router.push("/account-center");
-                        setIsOpen(false);
-                      }}
-                      className="cursor-pointer px-4 py-1.5 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary text-[10px] font-black uppercase tracking-widest rounded-full transition-all flex items-center gap-1.5 shadow-sm"
-                    >
-                      <Settings size={10} />
-                      <span>Account Center</span>
-                    </button>
+                    <Link href="/become-a-partner" onClick={() => setIsOpen(false)}>
+                      <button className="cursor-pointer px-4 py-1.5 bg-linear-to-r from-primary to-accent hover:from-primary-dark hover:to-accent text-white text-[10px] font-black uppercase tracking-widest rounded-full transition-all flex items-center gap-1.5 shadow-sm">
+                        <Sparkles size={10} className="animate-pulse" />
+                        <span>{isLivePartner ? "Manage Partner" : "Become a Partner"}</span>
+                      </button>
+                    </Link>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center text-center py-6 w-full">
@@ -685,6 +681,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                 className="flex-1 overflow-y-auto pr-1 flex flex-col gap-6 sidebar-scroll-container"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
               >
+
                 {/* MY MOOD/VIBE SECTION */}
                 {isAuthenticated && (
                   <div>
@@ -789,6 +786,13 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                   </div>
                 )}
 
+                 {/* ACCOUNT CENTER */}
+                {isAuthenticated && (
+                  <div className="flex flex-col gap-1.5">
+                    {renderMenuItem("/account-center", "Account Center", Settings)}
+                  </div>
+                )}
+
                 {/* EXPLORE SECTION */}
                 <div>
                   <h4 className="text-[10px] font-bold uppercase tracking-[0.15em] text-text-muted/70 mb-2 px-1">
@@ -797,14 +801,6 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                   <div className="flex flex-col gap-1.5">
                     {renderMenuItem("/browse-partners", "Browse Companions", Compass)}
                     {renderMenuItem("/pricing", "Pricing", CircleDollarSign, "lg:hidden")}
-                    <div className="mt-1 px-1">
-                      <Link href="/become-a-partner" onClick={() => setIsOpen(false)} className="w-full">
-                        <button className="w-full h-11 bg-linear-to-r from-primary to-accent hover:from-primary-dark hover:to-accent text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md cursor-pointer flex items-center justify-center gap-2">
-                          <Sparkles size={13} className="animate-pulse" />
-                          <span>{isLivePartner ? "Manage Partner Profile" : "Become a Partner"}</span>
-                        </button>
-                      </Link>
-                    </div>
                   </div>
                 </div>
 

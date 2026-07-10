@@ -20,6 +20,7 @@ import Link from "next/link";
 import { PartnerService } from "@/modules/partner/services/partner.service";
 import { getUserLocation } from "@/lib/location";
 import { Partner } from "@/modules/partner/types/partner.types";
+import { toast } from "@/components/ui/toastStore";
 import ProfileCardSkeleton from "@/components/ProfileCard/ProfileCardSkeleton";
 
 const outfit = Outfit({
@@ -36,11 +37,12 @@ export default function PartnersNearby() {
   const [nearbyPartners, setNearbyPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [age, setAge] = useState("");
-  const [eventType, setEventType] = useState("");
   const [rating, setRating] = useState("");
   const [distance, setDistance] = useState("");
   const [values, setValues] = useState<number[]>([0, 100]);
   const [debouncedRadius, setDebouncedRadius] = useState<number>(100);
+  const [hasCoords, setHasCoords] = useState<boolean>(false);
+  const [locationError, setLocationError] = useState<string>("");
 
   // Debounce the slider radius value to avoid API rate limiting while dragging
   useEffect(() => {
@@ -50,7 +52,26 @@ export default function PartnersNearby() {
     return () => clearTimeout(handler);
   }, [values[1]]);
 
+  // Sync coords set state on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("user_active_location");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.useCustom || parsed.geolocated) {
+            setHasCoords(true);
+          }
+        } catch (e) {}
+      }
+    }
+  }, []);
+
   const loadNearbyPartners = useCallback(async () => {
+    if (!hasCoords) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const loc = getUserLocation();
@@ -69,12 +90,29 @@ export default function PartnersNearby() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedRadius]);
+  }, [debouncedRadius, hasCoords]);
 
   useEffect(() => {
     loadNearbyPartners();
 
     const handleUpdate = () => {
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("user_active_location");
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (parsed.useCustom || parsed.geolocated) {
+              setHasCoords(true);
+            } else {
+              setHasCoords(false);
+            }
+          } catch (e) {
+            setHasCoords(false);
+          }
+        } else {
+          setHasCoords(false);
+        }
+      }
       loadNearbyPartners();
     };
 
@@ -88,6 +126,62 @@ export default function PartnersNearby() {
       window.removeEventListener("reviews_updated", handleUpdate);
     };
   }, [loadNearbyPartners]);
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser.");
+      setLocationError("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setLocationError("");
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        let cityName = "My Location";
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`
+          );
+          const data = await res.json();
+          cityName = data.address?.city || data.address?.town || data.address?.village || data.address?.suburb || "My Location";
+        } catch (e) {
+          console.warn("Osm reverse geocoding failed, using fallback name", e);
+        }
+
+        const newLoc = {
+          city: cityName,
+          lat: latitude,
+          lng: longitude,
+          latitude,
+          longitude,
+          useCustom: true,
+          geolocated: true,
+        };
+
+        if (typeof window !== "undefined") {
+          localStorage.setItem("user_active_location", JSON.stringify(newLoc));
+          window.dispatchEvent(new Event("user_location_updated"));
+        }
+        setHasCoords(true);
+        toast.success(`Location set successfully to ${cityName}!`);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        let msg = "Failed to retrieve location.";
+        if (error.code === error.PERMISSION_DENIED) {
+          msg = "Location permission is blocked or denied. Please reset the site location permission in your browser's address bar to allow location access and try again.";
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          msg = "Location information is unavailable.";
+        } else if (error.code === error.TIMEOUT) {
+          msg = "Location request timed out.";
+        }
+        setLocationError(msg);
+        toast.error(msg);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
 
   // Dynamic filter logic for real partners
   const filteredProfiles = nearbyPartners.filter((partner) => {
@@ -183,24 +277,25 @@ export default function PartnersNearby() {
               size="sm"
             />
 
-            {/* Event Type Filter */}
+            {/* Location Coordinates Filter */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-text-muted uppercase tracking-widest flex items-center gap-2 ml-1">
-                <Calendar size={12} className="text-primary" /> Event Type
+                <MapPin size={12} className="text-primary" /> Location Coordinates
               </label>
-              <div className="relative group">
-                <input
-                  type="text"
-                  placeholder="Select Event"
-                  value={eventType}
-                  onChange={(e) => setEventType(e.target.value)}
-                  className="w-full h-12 pl-4 pr-10 rounded-2xl bg-white/5 border border-border-main text-text-main placeholder-slate-500 focus:border-primary-dark focus:ring-4 focus:ring-primary/20 outline-hidden transition-all text-sm font-medium"
-                />
-                <Search
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted"
-                  size={16}
-                />
-              </div>
+              <button
+                onClick={handleGetLocation}
+                type="button"
+                className={`w-full h-12 px-4 rounded-2xl border flex items-center justify-between text-sm font-medium transition-all cursor-pointer ${
+                  hasCoords
+                    ? "bg-primary/10 border-primary/30 text-primary hover:bg-primary/20"
+                    : "bg-white/5 border-border-main text-text-main hover:bg-white/10"
+                }`}
+              >
+                <span className="truncate">
+                  {hasCoords ? `Coords: ${getUserLocation().lat.toFixed(4)}, ${getUserLocation().lng.toFixed(4)}` : "Set Coordinates"}
+                </span>
+                <MapPin size={16} className={hasCoords ? "text-primary animate-pulse" : "text-text-muted"} />
+              </button>
             </div>
 
             {/* Rating Filter */}
@@ -317,7 +412,34 @@ export default function PartnersNearby() {
         {/* Results Slider */}
         <div className="relative -mx-4 md:mx-0 py-8">
           <div className="px-4 md:px-12 overflow-visible">
-            {loading ? (
+            {!hasCoords ? (
+              <div className="flex flex-col items-center justify-center p-8 md:p-16 rounded-[32px] bg-white/5 backdrop-blur-xl border border-border-main shadow-xl text-center max-w-2xl mx-auto my-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="relative mb-6">
+                  {/* Glowing background */}
+                  <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl scale-150" />
+                  <div className="relative w-20 h-20 rounded-full bg-bg-secondary border border-border-main flex items-center justify-center shadow-lg animate-pulse">
+                    <MapPin className="w-8 h-8 text-primary" />
+                  </div>
+                </div>
+                <h3 className="text-2xl font-bold text-text-main mb-2 tracking-tight">
+                  Set Your Coordinates
+                </h3>
+                <p className="text-text-muted font-medium mb-8 max-w-md">
+                  Please set your coordinates for finding nearby partners and measuring distance.
+                </p>
+                {locationError && (
+                  <p className="text-red-400 text-sm font-medium mb-6 bg-red-500/10 border border-red-500/20 px-4 py-2.5 rounded-2xl max-w-md mx-auto">
+                    {locationError}
+                  </p>
+                )}
+                <button
+                  onClick={handleGetLocation}
+                  className="px-6 py-3 rounded-full bg-linear-to-br from-primary to-primary-dark text-white font-bold text-sm uppercase tracking-wider hover:scale-105 active:scale-95 transition-all shadow-lg hover:shadow-primary/25 cursor-pointer"
+                >
+                  Set Coordinates Automatically
+                </button>
+              </div>
+            ) : loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 justify-items-center py-4">
                 <div className="block"><ProfileCardSkeleton /></div>
                 <div className="hidden sm:block"><ProfileCardSkeleton /></div>
@@ -342,7 +464,6 @@ export default function PartnersNearby() {
                 <button
                   onClick={() => {
                     setAge("");
-                    setEventType("");
                     setRating("");
                     setValues([0, 100]);
                   }}

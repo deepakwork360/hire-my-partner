@@ -398,6 +398,7 @@ export default function DetailsForm() {
     address: "",
     pincode: "",
     upiId: "",
+    paymentMode: "bank",
     addons: [] as string[],
     otherAddon: "",
     languages: [] as string[],
@@ -499,8 +500,12 @@ export default function DetailsForm() {
       console.log(`Upload Response from ${endpoint}:`, res.data);
 
       if (res.data && (res.data.status || res.data.success)) {
-        const url = res.data.data?.url || res.data.data?.image || res.data.url;
-        const id = res.data.data?.id || res.data.id;
+        let dataObj = res.data.data;
+        if (Array.isArray(dataObj) && dataObj.length > 0) {
+          dataObj = dataObj[0];
+        }
+        const url = dataObj?.url || dataObj?.image || res.data.url || (typeof dataObj === "string" ? dataObj : undefined);
+        const id = dataObj?.id || res.data.id;
         if (url) {
           return { url: normalizeUrl(url), id };
         }
@@ -608,12 +613,22 @@ export default function DetailsForm() {
   const [showSuccessCard, setShowSuccessCard] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
 
-  // Scroll to the top of the window when step or view changes
+  // Scroll to the top of the form when step or view changes
   useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    if (sectionRef.current) {
+      const rect = sectionRef.current.getBoundingClientRect();
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const targetTop = rect.top + scrollTop - 80; // Adjust for navbar height
+      window.scrollTo({
+        top: targetTop,
+        behavior: "smooth",
+      });
+    } else {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
   }, [currentStep, view]);
 
   const sectionRef = useRef<HTMLElement>(null);
@@ -656,14 +671,7 @@ export default function DetailsForm() {
         console.warn("Failed to fetch bank accounts:", bankErr);
       }
 
-      // Log both responses for debug
-      try {
-        await fetch('/api/debug-log', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ res: profileFromApi, bankRes: bankFromApi })
-        });
-      } catch (logErr) {}
+
 
       const loadedData: any = {
         photo: user?.avatar || null,
@@ -690,6 +698,7 @@ export default function DetailsForm() {
         address: "",
         pincode: "",
         upiId: "",
+        paymentMode: "bank",
         addons: [],
         otherAddon: "",
         languages: [],
@@ -1062,10 +1071,6 @@ export default function DetailsForm() {
         let apiDocs: any[] = [];
         try {
           const kycDocsRes = await api.get("/partner/kyc-documents");
-          console.log("KYC Documents API Response:", kycDocsRes.data);
-          if (typeof window !== "undefined") {
-            window.localStorage.setItem("debug_kyc_docs_raw", JSON.stringify(kycDocsRes.data));
-          }
           if (kycDocsRes?.data) {
             // Check top level documents first (as returned by the API sibling to data), then fallbacks
             apiDocs = kycDocsRes.data.documents || 
@@ -1077,14 +1082,6 @@ export default function DetailsForm() {
           }
         } catch (e: any) {
           console.warn("Failed to fetch uploaded kyc documents from /partner/kyc-documents:", e);
-          if (typeof window !== "undefined") {
-            window.localStorage.setItem("debug_kyc_docs_error", e.message || String(e));
-          }
-        }
-
-        if (typeof window !== "undefined") {
-          window.localStorage.setItem("debug_kyc_required_docs", JSON.stringify(requiredDocs));
-          window.localStorage.setItem("debug_kyc_api_docs_parsed", JSON.stringify(apiDocs));
         }
 
         // Map documents
@@ -1337,53 +1334,10 @@ export default function DetailsForm() {
           throw new Error("Please upload at least 3 photos to your gallery.");
         }
       } else if (stepNum === 3) {
-        const step3Schema = z.object({
-          bankAccountHolderName: z.string()
-            .min(1, "Please enter bank account holder name.")
-            .min(3, "Account holder name must be at least 3 characters.")
-            .max(100, "Account holder name cannot exceed 100 characters.")
-            .regex(/^[a-zA-Z\s.]+$/, "Account holder name must only contain letters, spaces, or dots."),
-          bankName: z.string()
-            .min(1, "Please enter your bank name.")
-            .min(3, "Bank name must be at least 3 characters.")
-            .max(100, "Bank name cannot exceed 100 characters."),
-          branchName: z.string()
-            .min(1, "Please enter your branch name.")
-            .min(2, "Branch name must be at least 2 characters."),
-          bankAccountNumber: z.string()
-            .min(1, "Please enter your bank account number.")
-            .regex(/^\d{8,20}$/, "Bank account number must be between 8 and 20 digits."),
-          currency: z.string().min(1, "Please select your currency.").refine((c) => c !== "Select Currency" && c !== "", {
-            message: "Please select your currency.",
-          }),
-          bankIfscCode: z.string().optional().nullable().or(z.literal("")),
-          upiId: z.string().optional().nullable().or(z.literal("")),
-          iban: z.string().optional().nullable().or(z.literal("")),
-          swiftCode: z.string().optional().nullable().or(z.literal("")),
-          routingNumber: z.string().optional().nullable().or(z.literal("")),
-        }).superRefine((data, ctx) => {
-          const isINR = data.currency === "INR";
-
-          if (isINR) {
-            if (!data.bankIfscCode || data.bankIfscCode.trim() === "") {
-              ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "IFSC code is required for INR accounts.",
-                path: ["bankIfscCode"],
-              });
-            } else {
-              const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/i;
-              if (!ifscRegex.test(data.bankIfscCode)) {
-                ctx.addIssue({
-                  code: z.ZodIssueCode.custom,
-                  message: "Invalid IFSC code format (e.g. SBIN0001234).",
-                  path: ["bankIfscCode"],
-                });
-              }
-            }
-          }
-
-          if (data.upiId && data.upiId.trim() !== "") {
+        if (formData.paymentMode === "upi") {
+          const upiSchema = z.object({
+            upiId: z.string().min(1, "Please select or enter a UPI ID.")
+          }).superRefine((data, ctx) => {
             const upiRegex = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
             if (!upiRegex.test(data.upiId)) {
               ctx.addIssue({
@@ -1392,42 +1346,89 @@ export default function DetailsForm() {
                 path: ["upiId"],
               });
             }
-          }
+          });
+          upiSchema.parse(formData);
+        } else {
+          const step3Schema = z.object({
+            bankAccountHolderName: z.string()
+              .min(1, "Please enter bank account holder name.")
+              .min(3, "Account holder name must be at least 3 characters.")
+              .max(100, "Account holder name cannot exceed 100 characters.")
+              .regex(/^[a-zA-Z\s.]+$/, "Account holder name must only contain letters, spaces, or dots."),
+            bankName: z.string()
+              .min(1, "Please enter your bank name.")
+              .min(3, "Bank name must be at least 3 characters.")
+              .max(100, "Bank name cannot exceed 100 characters."),
+            branchName: z.string()
+              .min(1, "Please enter your branch name.")
+              .min(2, "Branch name must be at least 2 characters."),
+            bankAccountNumber: z.string()
+              .min(1, "Please enter your bank account number.")
+              .regex(/^\d{8,20}$/, "Bank account number must be between 8 and 20 digits."),
+            currency: z.string().min(1, "Please select your currency.").refine((c) => c !== "Select Currency" && c !== "", {
+              message: "Please select your currency.",
+            }),
+            bankIfscCode: z.string().optional().nullable().or(z.literal("")),
+            iban: z.string().optional().nullable().or(z.literal("")),
+            swiftCode: z.string().optional().nullable().or(z.literal("")),
+            routingNumber: z.string().optional().nullable().or(z.literal("")),
+          }).superRefine((data, ctx) => {
+            const isINR = data.currency === "INR";
 
-          if (data.swiftCode && data.swiftCode.trim() !== "") {
-            const swiftRegex = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/i;
-            if (!swiftRegex.test(data.swiftCode)) {
-              ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Invalid SWIFT/BIC code format (8 or 11 characters).",
-                path: ["swiftCode"],
-              });
+            if (isINR) {
+              if (!data.bankIfscCode || data.bankIfscCode.trim() === "") {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: "IFSC code is required for INR accounts.",
+                  path: ["bankIfscCode"],
+                });
+              } else {
+                const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/i;
+                if (!ifscRegex.test(data.bankIfscCode)) {
+                  ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "Invalid IFSC code format (e.g. SBIN0001234).",
+                    path: ["bankIfscCode"],
+                  });
+                }
+              }
             }
-          }
 
-          if (data.iban && data.iban.trim() !== "") {
-            const cleanIban = data.iban.replace(/\s+/g, "");
-            if (cleanIban.length < 15 || cleanIban.length > 34) {
-              ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "IBAN must be between 15 and 34 characters.",
-                path: ["iban"],
-              });
+            if (data.swiftCode && data.swiftCode.trim() !== "") {
+              const swiftRegex = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/i;
+              if (!swiftRegex.test(data.swiftCode)) {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: "Invalid SWIFT/BIC code format (8 or 11 characters).",
+                  path: ["swiftCode"],
+                });
+              }
             }
-          }
 
-          if (data.routingNumber && data.routingNumber.trim() !== "") {
-            const routingRegex = /^\d{5,15}$/;
-            if (!routingRegex.test(data.routingNumber)) {
-              ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Routing number must be between 5 and 15 digits.",
-                path: ["routingNumber"],
-              });
+            if (data.iban && data.iban.trim() !== "") {
+              const cleanIban = data.iban.replace(/\s+/g, "");
+              if (cleanIban.length < 15 || cleanIban.length > 34) {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: "IBAN must be between 15 and 34 characters.",
+                  path: ["iban"],
+                });
+              }
             }
-          }
-        });
-        step3Schema.parse(formData);
+
+            if (data.routingNumber && data.routingNumber.trim() !== "") {
+              const routingRegex = /^\d{5,15}$/;
+              if (!routingRegex.test(data.routingNumber)) {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: "Routing number must be between 5 and 15 digits.",
+                  path: ["routingNumber"],
+                });
+              }
+            }
+          });
+          step3Schema.parse(formData);
+        }
       } else if (stepNum === 4) {
         const requiredDocs = formData.kycDocInputs || [];
         for (let i = 0; i < requiredDocs.length; i++) {
@@ -1582,11 +1583,7 @@ export default function DetailsForm() {
       setIsStepSubmitting(true);
       try {
         if (stepNum === 2) {
-          const payload = {
-            gallery: formData.gallery.filter(Boolean),
-            videos: formData.videos.filter(Boolean),
-          };
-          await api.post("/partner/become-a-partner", payload);
+          // No API call is needed on submit, as all photos/videos are uploaded/removed via separate endpoints in real-time.
         } else if (stepNum === 3) {
           const bankPayload = {
             account_holder_name: formData.bankAccountHolderName,
@@ -1959,6 +1956,7 @@ export default function DetailsForm() {
       address: "",
       pincode: "",
       upiId: "",
+      paymentMode: "bank",
       addons: [],
       otherAddon: "",
       languages: [],
@@ -2083,7 +2081,6 @@ export default function DetailsForm() {
         ...prev,
         ...newMappings
       }));
-      toast.success(`Successfully uploaded ${uploadedUrls.length} image(s) to your gallery.`);
     }
     setIsUploadingGallery(false);
   };
@@ -2099,12 +2096,11 @@ export default function DetailsForm() {
     }));
 
     if (id) {
-      toast.info("Removing photo from server...");
       try {
         await api.delete(`both/gallery/remove/${id}`);
-        toast.success("Photo removed successfully.");
       } catch (err) {
         console.error("Failed to remove photo from server:", err);
+        toast.error("Failed to remove photo from server.");
       }
       
       setGalleryItemIds((prev) => {
@@ -2112,8 +2108,6 @@ export default function DetailsForm() {
         delete copy[url];
         return copy;
       });
-    } else {
-      toast.success("Photo removed from gallery.");
     }
   };
 
@@ -2216,6 +2210,8 @@ export default function DetailsForm() {
                     "KYC",
                     "Review"
                   ]}
+                  onStepClick={(step) => setCurrentStep(step)}
+                  isClickable={reachedReviewStep || currentStep === 5}
                 />
               </div>
 
@@ -2230,6 +2226,7 @@ export default function DetailsForm() {
                         onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
                         showErrors={showErrors}
                         errors={errors}
+                        countriesList={countriesList}
                       />
                     </div>
                     <div className="border-t border-border-main/50 pt-10 space-y-4">

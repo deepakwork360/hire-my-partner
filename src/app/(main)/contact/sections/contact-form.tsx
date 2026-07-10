@@ -125,7 +125,7 @@ export default function ContactForm() {
                   <button
                     type="button"
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="w-full h-14 bg-bg-secondary border border-border-main rounded-2xl px-5 text-left text-text-main flex items-center justify-between hover:bg-bg-secondary/80 transition-all"
+                    className="w-full h-14 cursor-pointer bg-bg-secondary border border-border-main rounded-2xl px-5 text-left text-text-main flex items-center justify-between hover:bg-bg-secondary/80 transition-all"
                   >
                     <span>{formData.subject}</span>
                     <ChevronDown
@@ -149,7 +149,7 @@ export default function ContactForm() {
                               setFormData({ ...formData, subject: sub });
                               setIsDropdownOpen(false);
                             }}
-                            className="w-full h-12 px-5 text-left text-text-main hover:bg-primary/5 hover:text-primary transition-colors text-sm font-medium"
+                            className="w-full cursor-pointer h-12 px-5 text-left text-text-main hover:bg-primary/5 hover:text-primary transition-colors text-sm font-medium"
                           >
                             {sub}
                           </button>
