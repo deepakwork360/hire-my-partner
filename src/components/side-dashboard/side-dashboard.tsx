@@ -979,68 +979,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                     </AnimatePresence>
 
 
- 
-                    {/* Collapsible Location Trigger */}
-                    <button
-                      onClick={() => setShowLocationSettings(!showLocationSettings)}
-                      className={`w-full cursor-pointer flex items-center justify-between px-4 py-3.5 rounded-xl border-l-2 transition-all duration-200 group ${
-                        showLocationSettings
-                          ? "bg-primary/10 border-primary text-primary font-bold"
-                          : "bg-transparent border-transparent text-text-muted hover:bg-bg-secondary/60 hover:text-text-main"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3.5">
-                        <MapPin size={18} className={showLocationSettings ? "text-primary" : "text-text-muted group-hover:text-text-main group-hover:scale-105 transition-transform"} />
-                        <span className="text-sm font-semibold tracking-wide flex items-center gap-1.5 text-left">
-                          <span>{isLivePartner ? "Set Current Location" : "Set Your Location"}</span>
-                          <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-primary/25 text-primary max-w-[100px] truncate">
-                            {activeLocationName || "Mumbai"}
-                          </span>
-                        </span>
-                      </div>
-                      {showLocationSettings ? (
-                        <ChevronDown size={14} className="text-primary rotate-180 transition-transform duration-200" />
-                      ) : (
-                        <ChevronRight size={14} className="text-text-muted/40 group-hover:text-text-main transition-colors" />
-                      )}
-                    </button>
- 
-                    {/* Collapsed Location Panel */}
-                    <AnimatePresence>
-                      {showLocationSettings && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="overflow-hidden bg-bg-secondary/20 border border-border-main/30 rounded-xl px-4 py-3.5 flex flex-col gap-3 mt-1"
-                        >
-                          {/* Geolocation Trigger */}
-                          <div className="w-full">
-                            <button
-                              type="button"
-                              onClick={handleUseGPSLocation}
-                              disabled={isLocating}
-                              className={`w-full cursor-pointer flex items-center justify-between p-2.5 rounded-xl border text-xs font-semibold transition-all ${
-                                isLocating
-                                  ? "bg-primary/10 border-primary/30 text-primary"
-                                  : "bg-bg-card border-border-main/50 text-text-muted hover:text-text-main"
-                              }`}
-                            >
-                              <div className="flex items-center gap-2.5">
-                                <Locate size={14} className={isLocating ? "animate-pulse text-primary" : ""} />
-                                <span>
-                                  {isLocating ? "Locating via GPS..." : "Use My Current Location"}
-                                </span>
-                              </div>
-                              {isLocating && <Sparkles size={10} className="text-primary animate-pulse shrink-0" />}
-                            </button>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
- 
-                    {/* Help & Support (Navigates to Contact) */}
+                     {/* Help & Support (Navigates to Contact) */}
                     <Link
                       href="/contact"
                       onClick={() => setIsOpen(false)}
