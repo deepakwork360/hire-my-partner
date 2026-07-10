@@ -93,7 +93,7 @@ export default function NotFound() {
           transition={{ delay: 2, duration: 1 }}
           className="mt-20 text-[10px] text-text-muted font-black uppercase tracking-[0.4em]"
         >
-          Hire My Partner &copy; 2026
+          Go Partner &copy; 2026
         </motion.p>
       </div>
 

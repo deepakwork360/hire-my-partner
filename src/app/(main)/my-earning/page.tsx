@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import SideDashboard from "@/components/side-dashboard/side-dashboard";
 import EarningPart from "./sections/earning-part";
 import Overview from "./sections/overview";
@@ -9,10 +10,27 @@ import Note from "./sections/note";
 import Footer from "../home-page/sections/Footer";
 import MainEarning from "./sections/main-earning";
 import { Outfit } from "next/font/google";
+import { useAuthStore } from "@/modules/auth/store";
 
 const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "800"] });
 
 export default function MyEarning() {
+  const { isAuthenticated } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !isAuthenticated) {
+      window.location.href = "/login?redirect=/my-earning";
+    }
+  }, [mounted, isAuthenticated]);
+
+  if (!mounted || !isAuthenticated) {
+    return null;
+  }
   return (
     <div className={`bg-bg-base min-h-screen ${outfit.className}`}>
       {/* ── REUSABLE TOGGLE DASHBOARD ── */}

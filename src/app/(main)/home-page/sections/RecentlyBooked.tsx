@@ -41,7 +41,7 @@ export default function RecentlyBooked() {
     name: partner.name,
     age: partner.age,
     location: partner.location.split(",")[0].trim(),
-    bio: RECENT_EVENTS[index % RECENT_EVENTS.length],
+    bio: partner.bio,
     rating: partner.rating,
     confirmation: "Just Booked",
     tag: (() => {

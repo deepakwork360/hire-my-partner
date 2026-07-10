@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from "react-image-crop";
-import "react-image-crop/dist/ReactCrop.css";
 import CircleCropper from "@/components/ui/CircleCropper";
 import { motion, AnimatePresence } from "framer-motion";
 import { Outfit, Rochester } from "next/font/google";
@@ -349,45 +347,7 @@ const getInputClass = (hasError = false, isValid = false) =>
       : "bg-black/[0.025] dark:bg-white/[0.04] border-primary/35 hover:border-primary/60 focus:border-primary focus:ring-primary/20"
   }`;
 
-const getCroppedImg = (image: HTMLImageElement, crop: Crop): Promise<string> => {
-  const canvas = document.createElement("canvas");
-  const scaleX = image.naturalWidth / image.width;
-  const scaleY = image.naturalHeight / image.height;
-  
-  const width = crop.width * scaleX;
-  const height = crop.height * scaleY;
-  
-  canvas.width = width;
-  canvas.height = height;
-  
-  const ctx = canvas.getContext("2d");
-  if (!ctx) {
-    return Promise.reject(new Error("No 2d context"));
-  }
 
-  ctx.drawImage(
-    image,
-    crop.x * scaleX,
-    crop.y * scaleY,
-    width,
-    height,
-    0,
-    0,
-    width,
-    height
-  );
-
-  return new Promise((resolve) => {
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        resolve("");
-        return;
-      }
-      const fileUrl = URL.createObjectURL(blob);
-      resolve(fileUrl);
-    }, "image/jpeg", 0.95);
-  });
-};
 
 const calculateAge = (dobString: string): string => {
   if (!dobString) return "";
@@ -409,29 +369,9 @@ export default function DetailsForm() {
   // Crop States
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
-  const [crop, setCrop] = useState<Crop>();
   const [cropType, setCropType] = useState<'photo' | 'banner' | null>(null);
-  const imgRef = useRef<HTMLImageElement | null>(null);
   const [showAllLanguages, setShowAllLanguages] = useState(false);
 
-  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const { width, height } = e.currentTarget;
-    const aspect = cropType === "photo" ? 1 : 3 / 1;
-    const initialCrop = centerCrop(
-      makeAspectCrop(
-        {
-          unit: "%",
-          width: 90,
-        },
-        aspect,
-        width,
-        height
-      ),
-      width,
-      height
-    );
-    setCrop(initialCrop);
-  };
 
   const [formData, setFormData] = useState({
     photo: null as string | null,
@@ -2403,6 +2343,7 @@ export default function DetailsForm() {
                     errors={errors}
                     languagesList={languagesList}
                     onEditStep={(step) => setCurrentStep(step)}
+                    kycStatus={kycStatus}
                   />
                 )}
               </div>
@@ -3338,72 +3279,37 @@ export default function DetailsForm() {
                   }}
                 />
               ) : (
-                <>
-                  <div className="max-h-[50vh] overflow-y-auto w-full flex justify-center bg-black/20 rounded-2xl p-2 border border-border-main/10">
-                    <ReactCrop
-                      crop={crop}
-                      onChange={(c) => setCrop(c)}
-                      aspect={3 / 1}
-                      circularCrop={false}
-                      className="max-w-full"
-                    >
-                      <img
-                        ref={imgRef}
-                        src={tempImageSrc}
-                        alt="Source"
-                        onLoad={onImageLoad}
-                        className="max-w-full h-auto block"
-                        crossOrigin="anonymous"
-                      />
-                    </ReactCrop>
-                  </div>
-
-                  <div className="flex justify-end gap-3 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCropModalOpen(false);
-                        setTempImageSrc(null);
-                        setCropType(null);
-                      }}
-                      disabled={isUploadingBanner}
-                      className="px-5 py-2.5 rounded-xl border border-border-main/50 text-text-muted hover:text-text-main font-bold text-xs cursor-pointer transition-all duration-300 disabled:opacity-50"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        if (imgRef.current && crop) {
-                          setIsUploadingBanner(true);
-                          try {
-                            const croppedUrl = await getCroppedImg(imgRef.current, crop);
-                            const res = await uploadImageRuntime(croppedUrl, "both/cover-image/update", "cover_image");
-                            setFormData((prev) => ({
-                              ...prev,
-                              banner: res.url,
-                            }));
-                            if (res.url && croppedUrl) {
-                              setLocalPreviews((prev) => ({ ...prev, [res.url]: croppedUrl }));
-                            }
-                            toast.success("Cover banner uploaded successfully!");
-                          } catch (err) {
-                            console.error("Cover banner upload failed:", err);
-                          } finally {
-                            setIsUploadingBanner(false);
-                            setCropModalOpen(false);
-                            setTempImageSrc(null);
-                            setCropType(null);
-                          }
-                        }
-                      }}
-                      disabled={isUploadingBanner}
-                      className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-bold text-xs cursor-pointer transition-all duration-300 disabled:opacity-50"
-                    >
-                      Apply Crop
-                    </button>
-                  </div>
-                </>
+                <CircleCropper
+                  imageSrc={tempImageSrc}
+                  circularCrop={false}
+                  aspectRatio={3 / 1}
+                  onCropComplete={async (croppedUrl) => {
+                    setIsUploadingBanner(true);
+                    try {
+                      const res = await uploadImageRuntime(croppedUrl, "both/cover-image/update", "cover_image");
+                      setFormData((prev) => ({
+                        ...prev,
+                        banner: res.url,
+                      }));
+                      if (res.url && croppedUrl) {
+                        setLocalPreviews((prev) => ({ ...prev, [res.url]: croppedUrl }));
+                      }
+                      toast.success("Cover banner uploaded successfully!");
+                    } catch (err) {
+                      console.error("Cover banner upload failed:", err);
+                    } finally {
+                      setIsUploadingBanner(false);
+                      setCropModalOpen(false);
+                      setTempImageSrc(null);
+                      setCropType(null);
+                    }
+                  }}
+                  onCancel={() => {
+                    setCropModalOpen(false);
+                    setTempImageSrc(null);
+                    setCropType(null);
+                  }}
+                />
               )}
             </motion.div>
           </div>

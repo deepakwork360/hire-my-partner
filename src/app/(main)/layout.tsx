@@ -2,7 +2,7 @@
 
 import Navbar from "@/components/Navbar/Navbar";
 import React, { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/modules/auth/store";
 import SideDashboard from "@/components/side-dashboard/side-dashboard";
 import ActiveMeetingWidget from "@/components/ActiveMeetingWidget/ActiveMeetingWidget";
@@ -13,6 +13,7 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [isLivePartner, setIsLivePartner] = useState(false);
@@ -56,6 +57,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
       window.removeEventListener("partnerStatusChange", checkPartnerStatus);
     };
   }, [storageKey]);
+
+  useEffect(() => {
+    if (mounted && !isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [mounted, isAuthenticated, router]);
+
+  if (!mounted || !isAuthenticated) {
+    return null;
+  }
 
   const dashboardTabs = [
     "/my-booking",

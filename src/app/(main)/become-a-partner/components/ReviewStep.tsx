@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldCheck, User, MapPin, DollarSign, Landmark, Check, Image, Film, Edit3 } from "lucide-react";
+import { ShieldCheck, User, MapPin, DollarSign, Landmark, Check, Image, Film, Edit3, XCircle, Clock, HelpCircle } from "lucide-react";
 import SecureImage from "@/components/ui/SecureImage";
 
 interface ReviewStepProps {
@@ -12,6 +12,7 @@ interface ReviewStepProps {
   errors?: Record<string, string>;
   languagesList?: any[];
   onEditStep?: (step: number) => void;
+  kycStatus?: string;
 }
 
 export default function ReviewStep({
@@ -23,6 +24,7 @@ export default function ReviewStep({
   errors,
   languagesList = [],
   onEditStep,
+  kycStatus = "NOT_SCHEDULED",
 }: ReviewStepProps) {
 
   const formatDate = (dateStr: string) => {
@@ -40,24 +42,42 @@ export default function ReviewStep({
     }
   };
 
+  const getKycStatusIcon = (status: string) => {
+    const s = (status || "").toUpperCase();
+    if (s === "DOCUMENT_APPROVED" || s === "COMPLETED" || s === "VERIFIED" || s === "APPROVED" || s === "ACTIVE") {
+      return <ShieldCheck className="w-3 h-3 mr-1 text-emerald-400" />;
+    }
+    if (s === "DOCUMENT_REJECTED" || s === "REJECTED" || s === "FAILED") {
+      return <XCircle className="w-3 h-3 mr-1 text-rose-400" />;
+    }
+    if (s === "PENDING" || s === "UNDER_REVIEW" || s === "SCHEDULED") {
+      return <Clock className="w-3 h-3 mr-1 text-amber-400 animate-pulse" />;
+    }
+    return <HelpCircle className="w-3 h-3 mr-1 text-text-muted" />;
+  };
+
   const getStatusBadge = (status: string) => {
     if (!status) return null;
-    const s = status.toLowerCase();
+    const s = status.toUpperCase();
     
-    let bg = "bg-amber-500/10 border-amber-500/20 text-amber-600";
+    let bg = "bg-white/5 border-white/10 text-text-muted hover:bg-white/10";
+    let icon = <HelpCircle className="w-3.5 h-3.5 text-text-muted" />;
     
-    if (s === "approved" || s === "active" || s === "verified") {
-      bg = "bg-emerald-500/10 border-emerald-500/20 text-emerald-400";
-    } else if (s === "rejected") {
-      bg = "bg-rose-500/10 border-rose-500/20 text-rose-400";
-    } else if (s === "pending") {
-      bg = "bg-amber-500/10 border-amber-500/20 text-amber-500";
+    if (s === "APPROVED" || s === "ACTIVE" || s === "VERIFIED") {
+      bg = "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20";
+      icon = <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />;
+    } else if (s === "REJECTED" || s === "FAILED") {
+      bg = "bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-500/20";
+      icon = <XCircle className="w-3.5 h-3.5 text-rose-400" />;
+    } else if (s === "PENDING") {
+      bg = "bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20";
+      icon = <Clock className="w-3.5 h-3.5 text-amber-500 animate-pulse" />;
     }
     
     return (
-      <div className={`mt-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-xs font-semibold uppercase tracking-wider ${bg}`}>
-        <ShieldCheck className="w-4.5 h-4.5" />
-        Status: {status}
+      <div className={`mt-4 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest shadow-sm transition-all duration-300 ${bg}`}>
+        {icon}
+        Status: {status.replace(/_/g, " ")}
       </div>
     );
   };
@@ -255,6 +275,27 @@ export default function ReviewStep({
               </span>
             </div>
             */}
+            <div className="flex justify-between py-1 border-b border-white/5 items-center">
+              <span className="text-text-muted font-medium">KYC Status</span>
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-sm transition-all duration-300 ${
+                (() => {
+                  const s = (kycStatus || "").toUpperCase();
+                  if (s === "DOCUMENT_APPROVED" || s === "COMPLETED" || s === "VERIFIED" || s === "APPROVED" || s === "ACTIVE") {
+                    return "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20";
+                  }
+                  if (s === "DOCUMENT_REJECTED" || s === "REJECTED" || s === "FAILED") {
+                    return "bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-500/20";
+                  }
+                  if (s === "PENDING" || s === "UNDER_REVIEW" || s === "SCHEDULED") {
+                    return "bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20";
+                  }
+                  return "bg-white/5 border-white/10 text-text-muted hover:bg-white/10";
+                })()
+              }`}>
+                {getKycStatusIcon(kycStatus)}
+                {kycStatus.replace(/_/g, " ")}
+              </span>
+            </div>
             <div>
               <span className="text-text-muted font-medium block mb-2">Uploaded Identity Proofs</span>
               <div className={`grid gap-2 ${(formData.kycDocInputs || []).length > 2 ? "grid-cols-4" : "grid-cols-2"}`}>

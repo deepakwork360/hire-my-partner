@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SideDashboard from "@/components/side-dashboard/side-dashboard";
 import Footer from "../home-page/sections/Footer";
 import Bookings from "./sections/bookings";
@@ -9,11 +9,28 @@ import MainBooking from "./sections/main-booking";
 import CategorySwitcher from "./sections/category-switcher";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
+import { useAuthStore } from "@/modules/auth/store";
 
 export default function MyBooking() {
+  const { isAuthenticated } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
   const [activeCategory, setActiveCategory] = useState("hired_by_me");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !isAuthenticated) {
+      window.location.href = "/login?redirect=/my-booking";
+    }
+  }, [mounted, isAuthenticated]);
+
+  if (!mounted || !isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="bg-bg-base min-h-screen relative flex">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useAuthStore } from "@/modules/auth/store";
@@ -34,7 +34,9 @@ export default function BecomeAPartnerPage() {
   return (
     <div>
       <MainBecAPart />
-      <DetailsForm />
+      <Suspense fallback={<Loader />}>
+        <DetailsForm />
+      </Suspense>
       <Footer />
     </div>
   );

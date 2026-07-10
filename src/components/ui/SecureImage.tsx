@@ -76,5 +76,9 @@ export default function SecureImage({ src, fallback, ...props }: SecureImageProp
     return <>{fallback}</>;
   }
 
+  if (!imageSrc) {
+    return null;
+  }
+
   return <img src={imageSrc} {...props} />;
 }

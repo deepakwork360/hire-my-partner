@@ -7,9 +7,17 @@ interface CircleCropperProps {
   imageSrc: string;
   onCropComplete: (croppedUrl: string) => void;
   onCancel: () => void;
+  aspectRatio?: number;
+  circularCrop?: boolean;
 }
 
-export default function CircleCropper({ imageSrc, onCropComplete, onCancel }: CircleCropperProps) {
+export default function CircleCropper({
+  imageSrc,
+  onCropComplete,
+  onCancel,
+  aspectRatio = 1,
+  circularCrop = true,
+}: CircleCropperProps) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -25,20 +33,27 @@ export default function CircleCropper({ imageSrc, onCropComplete, onCancel }: Ci
     renderedHeight: 0,
   });
 
-  const cropSize = 240; // The fixed size of the circular crop area in pixels
+  // Calculate crop box width and height based on shape and aspect ratio
+  const cropWidth = circularCrop ? 240 : 360;
+  const cropHeight = circularCrop ? 240 : 360 / aspectRatio;
 
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
     const nw = img.naturalWidth;
     const nh = img.naturalHeight;
 
-    // Calculate dimensions so the shorter side matches cropSize
-    let rw = cropSize;
-    let rh = cropSize;
-    if (nw > nh) {
-      rw = cropSize * (nw / nh);
+    let rw = cropWidth;
+    let rh = cropHeight;
+
+    const cropAspect = cropWidth / cropHeight;
+    const imgAspect = nw / nh;
+
+    if (imgAspect > cropAspect) {
+      rh = cropHeight;
+      rw = cropHeight * imgAspect;
     } else {
-      rh = cropSize * (nh / nw);
+      rw = cropWidth;
+      rh = cropWidth / imgAspect;
     }
 
     setDimensions({
@@ -48,15 +63,13 @@ export default function CircleCropper({ imageSrc, onCropComplete, onCancel }: Ci
       renderedHeight: rh,
     });
 
-    // Center the image in the crop area initially
     setPan({
-      x: (cropSize - rw) / 2,
-      y: (cropSize - rh) / 2,
+      x: (cropWidth - rw) / 2,
+      y: (cropHeight - rh) / 2,
     });
     setZoom(1);
   };
 
-  // Mouse Down
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -64,7 +77,6 @@ export default function CircleCropper({ imageSrc, onCropComplete, onCancel }: Ci
     panStart.current = { ...pan };
   };
 
-  // Touch Start
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 1) {
       setIsDragging(true);
@@ -73,7 +85,6 @@ export default function CircleCropper({ imageSrc, onCropComplete, onCancel }: Ci
     }
   };
 
-  // Mouse/Touch Move
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
@@ -112,61 +123,54 @@ export default function CircleCropper({ imageSrc, onCropComplete, onCancel }: Ci
     let newX = panStart.current.x + dx;
     let newY = panStart.current.y + dy;
 
-    // Restrict pan so the image always covers the circular crop area
     const currentWidth = dimensions.renderedWidth * zoom;
     const currentHeight = dimensions.renderedHeight * zoom;
 
-    // Minimum X is cropSize - currentWidth (image's right edge is at crop area right edge)
-    // Maximum X is 0 (image's left edge is at crop area left edge)
-    const minX = cropSize - currentWidth;
-    const minY = cropSize - currentHeight;
+    const minX = cropWidth - currentWidth;
+    const minY = cropHeight - currentHeight;
 
-    if (currentWidth >= cropSize) {
+    if (currentWidth >= cropWidth) {
       newX = Math.min(0, Math.max(minX, newX));
     } else {
-      newX = (cropSize - currentWidth) / 2;
+      newX = (cropWidth - currentWidth) / 2;
     }
 
-    if (currentHeight >= cropSize) {
+    if (currentHeight >= cropHeight) {
       newY = Math.min(0, Math.max(minY, newY));
     } else {
-      newY = (cropSize - currentHeight) / 2;
+      newY = (cropHeight - currentHeight) / 2;
     }
 
     setPan({ x: newX, y: newY });
   };
 
-  // Zooming
   const handleZoomChange = (newZoom: number) => {
     const targetZoom = Math.min(3, Math.max(1, newZoom));
     
-    // Adjust pan when zooming to keep the image centered
     setZoom((prevZoom) => {
       const zoomRatio = targetZoom / prevZoom;
       setPan((prevPan) => {
-        // Calculate center of the crop circle
-        const centerX = cropSize / 2;
-        const centerY = cropSize / 2;
+        const centerX = cropWidth / 2;
+        const centerY = cropHeight / 2;
 
         let newX = centerX - (centerX - prevPan.x) * zoomRatio;
         let newY = centerY - (centerY - prevPan.y) * zoomRatio;
 
-        // Apply restrictions
         const currentWidth = dimensions.renderedWidth * targetZoom;
         const currentHeight = dimensions.renderedHeight * targetZoom;
-        const minX = cropSize - currentWidth;
-        const minY = cropSize - currentHeight;
+        const minX = cropWidth - currentWidth;
+        const minY = cropHeight - currentHeight;
 
-        if (currentWidth >= cropSize) {
+        if (currentWidth >= cropWidth) {
           newX = Math.min(0, Math.max(minX, newX));
         } else {
-          newX = (cropSize - currentWidth) / 2;
+          newX = (cropWidth - currentWidth) / 2;
         }
 
-        if (currentHeight >= cropSize) {
+        if (currentHeight >= cropHeight) {
           newY = Math.min(0, Math.max(minY, newY));
         } else {
-          newY = (cropSize - currentHeight) / 2;
+          newY = (cropHeight - currentHeight) / 2;
         }
 
         return { x: newX, y: newY };
@@ -186,32 +190,34 @@ export default function CircleCropper({ imageSrc, onCropComplete, onCancel }: Ci
     if (!imgRef.current) return;
 
     const canvas = document.createElement("canvas");
-    canvas.width = 400; // Output resolution width
-    canvas.height = 400; // Output resolution height
+    const outputWidth = circularCrop ? 400 : 1200;
+    const outputHeight = circularCrop ? 400 : 1200 / aspectRatio;
+
+    canvas.width = outputWidth;
+    canvas.height = outputHeight;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Enable high-quality image scaling
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
 
-    // Calculate source crop dimensions on the natural image
     const scale = (dimensions.renderedWidth * zoom) / dimensions.naturalWidth;
     const sourceX = -pan.x / scale;
     const sourceY = -pan.y / scale;
-    const sourceSize = cropSize / scale;
+    const sourceWidth = cropWidth / scale;
+    const sourceHeight = cropHeight / scale;
 
     ctx.drawImage(
       imgRef.current,
       sourceX,
       sourceY,
-      sourceSize,
-      sourceSize,
+      sourceWidth,
+      sourceHeight,
       0,
       0,
-      400,
-      400
+      outputWidth,
+      outputHeight
     );
 
     canvas.toBlob((blob) => {
@@ -230,15 +236,15 @@ export default function CircleCropper({ imageSrc, onCropComplete, onCancel }: Ci
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
-        className="relative overflow-hidden bg-black/40 border border-white/10 rounded-2xl cursor-move shadow-inner flex items-center justify-center"
-        style={{ width: cropSize, height: cropSize }}
+        className="relative overflow-hidden bg-black/40 border border-white/10 rounded-2xl cursor-move shadow-inner"
+        style={{ width: cropWidth, height: cropHeight }}
       >
         <img
           ref={imgRef}
           src={imageSrc}
           alt="To Crop"
           onLoad={handleImageLoad}
-          className="absolute origin-top-left pointer-events-none max-w-none max-h-none"
+          className="absolute top-0 left-0 origin-top-left pointer-events-none max-w-none max-h-none"
           style={{
             width: dimensions.renderedWidth,
             height: dimensions.renderedHeight,
@@ -247,11 +253,15 @@ export default function CircleCropper({ imageSrc, onCropComplete, onCancel }: Ci
           crossOrigin="anonymous"
         />
 
-        {/* Circular Mask Overlay */}
-        <div className="absolute inset-0 pointer-events-none rounded-2xl border border-white/10 shadow-[0_0_0_9999px_rgba(0,0,0,0.65)]" />
-        
-        {/* Circular Dotted Guide */}
-        <div className="absolute inset-0 pointer-events-none rounded-full border-2 border-dashed border-primary/60 shadow-[0_0_0_9999px_rgba(0,0,0,0.15)]" />
+        {/* Mask Overlay */}
+        {circularCrop ? (
+          <>
+            <div className="absolute inset-0 pointer-events-none rounded-2xl border border-white/10 shadow-[0_0_0_9999px_rgba(0,0,0,0.65)]" />
+            <div className="absolute inset-0 pointer-events-none rounded-full border-2 border-dashed border-primary/60 shadow-[0_0_0_9999px_rgba(0,0,0,0.15)]" />
+          </>
+        ) : (
+          <div className="absolute inset-0 pointer-events-none border-2 border-dashed border-primary/60 rounded-2xl" />
+        )}
 
         {/* Move Badge Overlay */}
         <div className="absolute bottom-2.5 right-2.5 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md border border-white/10 text-[9px] font-bold text-white/70 flex items-center gap-1.5 opacity-60 pointer-events-none">

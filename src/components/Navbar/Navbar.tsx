@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Menu,
   X,
@@ -31,6 +31,7 @@ const navItems = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const { activeTheme } = useTheme();
   const { isAuthenticated, user, clearAuth } = useAuthStore();
@@ -181,7 +182,13 @@ export default function Navbar() {
           {navItems.map((item) => (
             <Link
               key={item.label}
-              href={item.href}
+              href={!isAuthenticated && item.href.startsWith("/#") ? `/login?redirect=${encodeURIComponent(item.href)}` : item.href}
+              onClick={(e) => {
+                if (!isAuthenticated && item.href.startsWith("/#")) {
+                  e.preventDefault();
+                  router.push(`/login?redirect=${encodeURIComponent(item.href)}`);
+                }
+              }}
               className={`relative px-5 py-2 rounded-full text-sm font-medium transition-all duration-500 group
               ${pathname === item.href
                   ? "bg-linear-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/25 border-none"

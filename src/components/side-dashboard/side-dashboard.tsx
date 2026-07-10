@@ -532,7 +532,8 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
     clearAuth();
     setShowLogoutConfirm(false);
     setIsOpen(false);
-    router.push("/");
+    // Use window.location.href to fully clear memory cache & redirect professionally
+    window.location.href = "/login";
   };
 
   const saveMoodText = (text: string) => {

@@ -87,7 +87,8 @@ const selectBtnClassName = (disabled = false, invalid = false) => {
 const labelClassName = "text-[10px] font-bold uppercase tracking-widest text-text-muted/90";
 
 export default function AccountCenterPage() {
-  const { user, updateUserProfile } = useAuthStore();
+  const { user, updateUserProfile, isAuthenticated } = useAuthStore();
+  const router = useRouter();
   const [activeSection, setActiveSection] = useState<SettingsSection>("personal-info");
   const [mounted, setMounted] = useState(false);
   const [isLivePartner, setIsLivePartner] = useState(false);
@@ -142,7 +143,13 @@ export default function AccountCenterPage() {
     checkPartnerStatus();
   }, [storageKey, user]);
 
-  if (!mounted) return null;
+  useEffect(() => {
+    if (mounted && !isAuthenticated) {
+      router.push("/login?redirect=/account-center");
+    }
+  }, [mounted, isAuthenticated, router]);
+
+  if (!mounted || !isAuthenticated) return null;
 
   const tabOptions: { id: SettingsSection; label: string; icon: any; desc: string; show: boolean }[] = [
     {
