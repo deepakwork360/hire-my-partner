@@ -357,9 +357,62 @@ function LoginForm() {
           </div>
 
           {/* Header */}
-          <h2 className="text-3xl font-semibold text-text-main text-center mb-10 tracking-tight">
+          <h2 className="text-3xl font-semibold text-text-main text-center mb-6 tracking-tight">
             Account Login
           </h2>
+
+          {/* Test / Mock Credentials Box */}
+          <div className="max-w-md mx-auto w-full mb-6 p-4 rounded-2xl bg-primary/10 border border-primary/20 text-xs text-text-main shadow-xs">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2 font-semibold text-primary">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                </span>
+                <span>Mock Test Credentials</span>
+              </div>
+              <span className="font-mono text-[11px] bg-primary/20 text-primary px-2 py-0.5 rounded-md font-bold">
+                OTP: 123456
+              </span>
+            </div>
+            <p className="text-[11px] text-text-muted mb-2.5">
+              Click any option below to auto-fill testing login details:
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div 
+                onClick={() => {
+                  setLoginMode("password");
+                  setFormData(prev => ({ ...prev, emailOrPhone: "sabrina@gmail.com", password: "sabrina@123", otp: "123456" }));
+                }}
+                className="cursor-pointer p-2.5 rounded-xl bg-bg-base/70 hover:bg-bg-base border border-border-main/50 hover:border-primary/50 transition-all text-left group"
+              >
+                <div className="font-semibold text-text-main group-hover:text-primary transition-colors text-[11px] flex justify-between">
+                  <span>Email Login</span>
+                  <span className="text-[10px] text-primary">Fill ⚡</span>
+                </div>
+                <div className="text-[10px] text-text-muted mt-1 space-y-0.5">
+                  <p className="truncate"><span className="text-text-muted/70">Email:</span> <span className="font-mono text-text-main font-medium">sabrina@gmail.com</span></p>
+                  <p className="truncate"><span className="text-text-muted/70">Pass:</span> <span className="font-mono text-text-main font-medium">sabrina@123</span></p>
+                </div>
+              </div>
+
+              <div 
+                onClick={() => {
+                  setFormData(prev => ({ ...prev, emailOrPhone: "9999999999", password: "password123", otp: "123456" }));
+                }}
+                className="cursor-pointer p-2.5 rounded-xl bg-bg-base/70 hover:bg-bg-base border border-border-main/50 hover:border-primary/50 transition-all text-left group"
+              >
+                <div className="font-semibold text-text-main group-hover:text-primary transition-colors text-[11px] flex justify-between">
+                  <span>Phone / OTP</span>
+                  <span className="text-[10px] text-primary">Fill ⚡</span>
+                </div>
+                <div className="text-[10px] text-text-muted mt-1 space-y-0.5">
+                  <p className="truncate"><span className="text-text-muted/70">Phone:</span> <span className="font-mono text-text-main font-medium">9999999999</span></p>
+                  <p className="truncate"><span className="text-text-muted/70">Pass/OTP:</span> <span className="font-mono text-text-main font-medium">password123 / 123456</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div className="flex justify-center mb-6">
             <div className="flex gap-4">

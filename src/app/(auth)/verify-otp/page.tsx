@@ -215,9 +215,16 @@ function VerifyOtpForm() {
             <h2 className="text-3xl font-semibold text-text-main mt-6 mb-2 tracking-tight">
               {sendVia === 'email' ? "Verify Email" : sendVia === 'phone' ? "Verify Phone Number" : "Verify Account"}
             </h2>
-            <p className="text-text-muted text-sm max-w-sm">
+            <p className="text-text-muted text-sm max-w-sm mb-3">
               Code sent to <span className="text-text-main font-medium">{displayTarget}</span>
             </p>
+            <div 
+              onClick={() => setOtp(["1", "2", "3", "4", "5", "6"])}
+              className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary px-3.5 py-1.5 rounded-full text-xs font-mono font-medium cursor-pointer hover:bg-primary/20 transition-all shadow-xs"
+            >
+              <span>Test OTP: <strong className="font-bold underline">123456</strong></span>
+              <span className="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full font-sans font-semibold">Auto-fill ⚡</span>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-10 max-w-md mx-auto w-full">

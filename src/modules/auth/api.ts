@@ -1,3 +1,4 @@
-import { authRealApi } from './api.real';
+import { authMockApi } from './api.mock';
 
-export const authApi = authRealApi;
+export const authApi = authMockApi;
+
