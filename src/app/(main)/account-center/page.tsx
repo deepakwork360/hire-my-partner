@@ -143,13 +143,7 @@ export default function AccountCenterPage() {
     checkPartnerStatus();
   }, [storageKey, user]);
 
-  useEffect(() => {
-    if (mounted && !isAuthenticated) {
-      router.push("/login?redirect=/account-center");
-    }
-  }, [mounted, isAuthenticated, router]);
-
-  if (!mounted || !isAuthenticated) return null;
+  if (!mounted) return null;
 
   const tabOptions: { id: SettingsSection; label: string; icon: any; desc: string; show: boolean }[] = [
     {

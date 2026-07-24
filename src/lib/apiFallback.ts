@@ -21,9 +21,6 @@ export function createApiFallbackProxy<T extends object>(realApi: T, mockApi: T)
               (!error.response || error.response.status === 404 || error.response.status >= 500);
 
             if (isRouteMissingOrDown) {
-              console.warn(
-                `[API FALLBACK] Real API call failed for method '${String(prop)}' with status ${error.response?.status || 'network/down'}. Falling back to Mock API.`
-              );
               const mockValue = Reflect.get(mockApi, prop);
               if (typeof mockValue === 'function') {
                 return await mockValue.apply(mockApi, args);

@@ -14,14 +14,14 @@ const outfit = Outfit({ subsets: ["latin"], weight: ["400", "500", "600", "700",
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 
 const MOCK_INTERESTED = [
-  { id: 1, name: "Sophia", age: 24, location: "Mumbai", country: "India", image: "/images/img1.webp", rating: "4.9", tag: "Friendly", rate: "₹1500/hr", interactionType: "Liked your profile", interactionDate: "2025-06-21", isRepeated: true },
-  { id: 2, name: "Emily", age: 22, location: "Delhi", country: "India", image: "/images/img2.webp", rating: "4.8", tag: "Talkative", rate: "₹1800/hr", interactionType: "Sent a message", interactionDate: "2025-06-20", isRepeated: false },
-  { id: 3, name: "Olivia", age: 25, location: "Bangalore", country: "India", image: "/images/img3.webp", rating: "5.0", tag: "BookLover", rate: "₹2000/hr", interactionType: "Liked your profile", interactionDate: "2025-06-19", isRepeated: true },
-  { id: 4, name: "Ava", age: 23, location: "Hyderabad", country: "India", image: "/images/img4.webp", rating: "4.7", tag: "MusicFan", rate: "₹1400/hr", interactionType: "Sent a message", interactionDate: "2025-06-18", isRepeated: false },
-  { id: 5, name: "Isabella", age: 26, location: "Goa", country: "India", image: "/images/img5.webp", rating: "4.9", tag: "Traveler", rate: "₹2500/hr", interactionType: "Liked your profile", interactionDate: "2025-06-17", isRepeated: false },
-  { id: 6, name: "Mia", age: 21, location: "Pune", country: "India", image: "/images/img6.webp", rating: "4.6", tag: "NatureLover", rate: "₹1200/hr", interactionType: "Sent a message", interactionDate: "2025-06-16", isRepeated: true },
-  { id: 7, name: "Charlotte", age: 24, location: "Chennai", country: "India", image: "/images/img7.webp", rating: "4.8", tag: "Artistic", rate: "₹1700/hr", interactionType: "Liked your profile", interactionDate: "2025-06-15", isRepeated: false },
-  { id: 8, name: "Amelia", age: 23, location: "Kolkata", country: "India", image: "/images/img8.webp", rating: "4.7", tag: "Chef", rate: "₹1600/hr", interactionType: "Sent a message", interactionDate: "2025-06-14", isRepeated: true },
+  { id: 1, name: "Sophia", age: 24, location: "Mumbai", country: "India", image: "/images/f10.jpg", rating: "4.9", tag: "Friendly", rate: "₹1500/hr", interactionType: "Liked your profile", interactionDate: "2025-06-21", isRepeated: true },
+  { id: 2, name: "Emily", age: 22, location: "Delhi", country: "India", image: "/images/f9.jpg", rating: "4.8", tag: "Talkative", rate: "₹1800/hr", interactionType: "Sent a message", interactionDate: "2025-06-20", isRepeated: false },
+  { id: 3, name: "Olivia", age: 25, location: "Bangalore", country: "India", image: "/images/f8.jpg", rating: "5.0", tag: "BookLover", rate: "₹2000/hr", interactionType: "Liked your profile", interactionDate: "2025-06-19", isRepeated: true },
+  { id: 4, name: "Ava", age: 23, location: "Hyderabad", country: "India", image: "/images/f7.jpg", rating: "4.7", tag: "MusicFan", rate: "₹1400/hr", interactionType: "Sent a message", interactionDate: "2025-06-18", isRepeated: false },
+  { id: 5, name: "Isabella", age: 26, location: "Goa", country: "India", image: "/images/f2.jpg", rating: "4.9", tag: "Traveler", rate: "₹2500/hr", interactionType: "Liked your profile", interactionDate: "2025-06-17", isRepeated: false },
+  { id: 6, name: "Mia", age: 21, location: "Pune", country: "India", image: "/images/f1.jpg", rating: "4.6", tag: "NatureLover", rate: "₹1200/hr", interactionType: "Sent a message", interactionDate: "2025-06-16", isRepeated: true },
+  { id: 7, name: "Charlotte", age: 24, location: "Chennai", country: "India", image: "/images/f3.jpg", rating: "4.8", tag: "Artistic", rate: "₹1700/hr", interactionType: "Liked your profile", interactionDate: "2025-06-15", isRepeated: false },
+  { id: 8, name: "Amelia", age: 23, location: "Kolkata", country: "India", image: "/images/f5.jpg", rating: "4.7", tag: "Chef", rate: "₹1600/hr", interactionType: "Sent a message", interactionDate: "2025-06-14", isRepeated: true },
 ];
 
 const CITIES = ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Goa", "Pune", "Chennai", "Kolkata"];

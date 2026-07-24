@@ -22,13 +22,7 @@ export default function MyBooking() {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (mounted && !isAuthenticated) {
-      window.location.href = "/login?redirect=/my-booking";
-    }
-  }, [mounted, isAuthenticated]);
-
-  if (!mounted || !isAuthenticated) {
+  if (!mounted) {
     return null;
   }
 

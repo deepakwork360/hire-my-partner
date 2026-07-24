@@ -58,13 +58,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     };
   }, [storageKey]);
 
-  useEffect(() => {
-    if (mounted && !isAuthenticated) {
-      router.replace("/login");
-    }
-  }, [mounted, isAuthenticated, router]);
-
-  if (!mounted || !isAuthenticated) {
+  if (!mounted) {
     return null;
   }
 

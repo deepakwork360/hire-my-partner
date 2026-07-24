@@ -18,7 +18,7 @@ const DEFAULT_USERS: MockUser[] = [
     email: "sabrina@gmail.com",
     phone: "9876543210",
     password: "sabrina@123",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256",
+    avatar: "/images/f5.jpg",
     isProfileComplete: true,
   },
   {

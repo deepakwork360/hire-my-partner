@@ -30,35 +30,5 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-    
-    if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== '/refresh') {
-      originalRequest._retry = true;
-      try {
-        // The backend uses the httpOnly cookie to authenticate this refresh call
-        const res = await axios.post(
-          `${API_URL}/refresh`, 
-          {}, 
-          { withCredentials: true }
-        );
-        
-        const newToken = res.data.token || res.data.accessToken; 
-        
-        if (newToken) {
-          useAuthStore.getState().setAccessToken(newToken);
-          originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
-          return api(originalRequest);
-        }
-      } catch (refreshError) {
-        // Refresh token failed -> forcibly clear auth and kick to login
-        useAuthStore.getState().clearAuth();
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login'; 
-        }
-        return Promise.reject(refreshError);
-      }
-    }
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );

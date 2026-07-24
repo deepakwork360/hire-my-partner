@@ -22,13 +22,7 @@ export default function MyEarning() {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (mounted && !isAuthenticated) {
-      window.location.href = "/login?redirect=/my-earning";
-    }
-  }, [mounted, isAuthenticated]);
-
-  if (!mounted || !isAuthenticated) {
+  if (!mounted) {
     return null;
   }
   return (

@@ -21,13 +21,7 @@ export default function BecomeAPartnerPage() {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (mounted && !isAuthenticated) {
-      router.push("/login?redirect=/become-a-partner");
-    }
-  }, [mounted, isAuthenticated, router]);
-
-  if (!mounted || !isAuthenticated) {
+  if (!mounted) {
     return <Loader />;
   }
 

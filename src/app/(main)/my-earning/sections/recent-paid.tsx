@@ -11,11 +11,11 @@ const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "600",
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 
 const recentBookings = [
-  { id: 1, user: "Rahul S.", img: "/images/client.png", date: "20 June 2025", time: "8:00 PM - 10:00 PM", amount: 800, tip: 200 },
-  { id: 2, user: "Riya T.", img: "/images/client1.png", date: "18 June 2025", time: "6:30 PM - 8:00 PM", amount: 1200, tip: 0 },
-  { id: 3, user: "Sagar M.", img: "/images/client2.png", date: "15 June 2025", time: "5:00 PM - 7:00 PM", amount: 1500, tip: 0 },
-  { id: 4, user: "Tara P.", img: "/images/client3.png", date: "12 June 2025", time: "7:45 PM - 9:00 PM", amount: 950, tip: 0 },
-  { id: 5, user: "Mehul V.", img: "/images/client.png", date: "08 June 2025", time: "3:30 PM - 5:00 PM", amount: 750, tip: 0 },
+  { id: 1, user: "Rahul S.", img: "/images/1.jpg", date: "20 June 2025", time: "8:00 PM - 10:00 PM", amount: 800, tip: 200 },
+  { id: 2, user: "Riya T.", img: "/images/f2.jpg", date: "18 June 2025", time: "6:30 PM - 8:00 PM", amount: 1200, tip: 0 },
+  { id: 3, user: "Sagar M.", img: "/images/4.jpg", date: "15 June 2025", time: "5:00 PM - 7:00 PM", amount: 1500, tip: 0 },
+  { id: 4, user: "Tara P.", img: "/images/5.jpg", date: "12 June 2025", time: "7:45 PM - 9:00 PM", amount: 950, tip: 0 },
+  { id: 5, user: "Mehul V.", img: "/images/2.jpg", date: "08 June 2025", time: "3:30 PM - 5:00 PM", amount: 750, tip: 0 },
 ];
 
 export default function RecentPaid() {

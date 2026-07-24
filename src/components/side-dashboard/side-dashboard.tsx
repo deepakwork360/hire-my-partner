@@ -3,14 +3,14 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Rochester, Outfit } from "next/font/google";
 
-import { 
-  Calendar, 
-  Wallet, 
-  UserRound, 
-  Heart, 
+import {
+  Calendar,
+  Wallet,
+  UserRound,
+  Heart,
   Star,
   Bookmark,
-  ChevronRight, 
+  ChevronRight,
   LayoutDashboard,
   X,
   Compass,
@@ -97,10 +97,16 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
   const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
 
   useEffect(() => {
+    if (user && user.email === "sabrina@gmail.com" && (!user.avatar || user.avatar.includes("unsplash"))) {
+      updateUserAvatar("/images/f5.jpg");
+    }
+  }, [user, updateUserAvatar]);
+
+  useEffect(() => {
     const loadBookmarks = () => {
       try {
         let bookmarksStr = localStorage.getItem("bookmarked_partners");
-        
+
         // Graceful migration from old key
         if (!bookmarksStr) {
           const oldFavs = localStorage.getItem("favourite_partners");
@@ -162,11 +168,10 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
       <Link
         href={href}
         onClick={() => setIsOpen(false)}
-        className={`flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-200 group border-l-2 ${extraClass || ""} ${
-          isActive
+        className={`flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-200 group border-l-2 ${extraClass || ""} ${isActive
             ? "bg-primary/10 border-primary text-primary font-bold shadow-sm"
             : "bg-transparent border-transparent text-text-muted hover:bg-bg-secondary/60 hover:text-text-main"
-        }`}
+          }`}
       >
         <div className="flex items-center gap-3.5">
           <IconComponent size={18} className={isActive ? "text-primary" : "text-text-muted group-hover:text-text-main group-hover:scale-105 transition-transform"} />
@@ -205,14 +210,14 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
   // Close dashboard on ESC key
   useEffect(() => {
     setMounted(true);
-    
+
     const checkPartnerStatus = () => {
       try {
         const savedData = localStorage.getItem(storageKey);
         if (savedData) {
           const parsed = JSON.parse(savedData);
           const fd = parsed.formData || {};
-          
+
           if (fd.photo) {
             setPartnerPhoto(fd.photo);
             const currentUser = useAuthStore.getState().user;
@@ -229,9 +234,9 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
             // Auto sync approved partner profile values to the logged-in User profile!
             const currentUser = useAuthStore.getState().user;
             const fd = parsed.formData;
-            
+
             const normalizeVal = (val: any) => (val === undefined || val === null ? "" : String(val).trim());
-            
+
             const needsSync =
               normalizeVal(fd.fullName) !== normalizeVal(currentUser?.name) ||
               normalizeVal(fd.gender) !== normalizeVal(currentUser?.gender) ||
@@ -363,7 +368,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
         if (!parsed.formData) parsed.formData = {};
         parsed.formData.photo = url;
         localStorage.setItem(storageKey, JSON.stringify(parsed));
-        
+
         // Update approved partners list if already verified
         if (parsed.verificationStatus === "VERIFIED" || isLivePartner) {
           const nameToFind = parsed.formData.fullName;
@@ -448,9 +453,9 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
             const nameToFind = parsed.formData.fullName;
             const updatedList = list.map((p: any) => {
               if (p.name === nameToFind || String(p.id) === String(user?.id)) {
-                return { 
-                  ...p, 
-                  location: cityName, 
+                return {
+                  ...p,
+                  location: cityName,
                   city: justCityName,
                   lat: resolvedLat,
                   lng: resolvedLng,
@@ -487,7 +492,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
       async (position) => {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
-        
+
         try {
           // Perform reverse geocoding via OpenStreetMap Nominatim API
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`, {
@@ -495,17 +500,17 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
               "User-Agent": "hire-my-partner-app"
             }
           });
-          
+
           if (!res.ok) throw new Error("Reverse geocode request failed");
-          
+
           const data = await res.json();
           const address = data.address || {};
-          
+
           // Parse city, state, country
           const city = address.city || address.town || address.village || address.suburb || "Delhi";
           const state = address.state || address.region || "Delhi";
           const country = address.country || "India";
-          
+
           setIsLocating(false);
           handleUpdateLocation(`${city}, ${country}`, lat, lng, false, state, country);
         } catch (error) {
@@ -539,14 +544,14 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
   const saveMoodText = (text: string) => {
     localStorage.setItem("user_mood_text", text);
     setActiveMoodText(text);
-    
+
     if (typeof window !== "undefined") {
       try {
         const savedTexts = JSON.parse(localStorage.getItem("partner_mood_texts") || "{}");
         const pName = user?.name;
         if (pName) {
           savedTexts[pName] = text;
-          
+
           const approvedStr = localStorage.getItem("approved_partners");
           if (approvedStr) {
             const list = JSON.parse(approvedStr);
@@ -598,7 +603,8 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                 <ChevronRight size={16} className="rotate-180 text-text-muted" />
               </button>
 
-              <style dangerouslySetInnerHTML={{__html: `
+              <style dangerouslySetInnerHTML={{
+                __html: `
                 .sidebar-scroll-container::-webkit-scrollbar {
                   display: none !important;
                 }
@@ -616,7 +622,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                       accept="image/*"
                       className="hidden"
                     />
-                    
+
                     <div className="relative w-20 h-20 rounded-full border-2 border-primary/40 shadow-lg mb-3 shrink-0">
                       {partnerPhoto ? (
                         <img
@@ -635,7 +641,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                           <DefaultSilhouette />
                         </div>
                       )}
-                      
+
                       {/* Pencil upload overlay */}
                       <button
                         onClick={handleAvatarUploadClick}
@@ -677,7 +683,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
               </div>
 
               {/* Navigation Menu */}
-              <div 
+              <div
                 className="flex-1 overflow-y-auto pr-1 flex flex-col gap-6 sidebar-scroll-container"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
               >
@@ -698,14 +704,14 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                               onClick={() => {
                                 localStorage.setItem("user_mood", m.id);
                                 setActiveMood(m.id);
-                                
+
                                 if (typeof window !== "undefined") {
                                   try {
                                     const savedMoods = JSON.parse(localStorage.getItem("partner_moods") || "{}");
                                     const pName = user?.name;
                                     if (pName) {
                                       savedMoods[pName] = m.id;
-                                      
+
                                       const approvedStr = localStorage.getItem("approved_partners");
                                       if (approvedStr) {
                                         const list = JSON.parse(approvedStr);
@@ -724,11 +730,10 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                                 window.dispatchEvent(new Event("user_mood_changed"));
                                 toast.success(`Mood set to ${m.label} ${m.emoji}`);
                               }}
-                              className={`w-8.5 h-8.5 rounded-full flex items-center justify-center text-lg transition-all duration-200 border cursor-pointer hover:scale-110 active:scale-95 ${
-                                isSelected
+                              className={`w-8.5 h-8.5 rounded-full flex items-center justify-center text-lg transition-all duration-200 border cursor-pointer hover:scale-110 active:scale-95 ${isSelected
                                   ? "bg-primary border-primary shadow-md shadow-primary/20 scale-105"
                                   : "bg-bg-secondary border-border-main hover:border-primary/30"
-                              }`}
+                                }`}
                               title={m.label}
                             >
                               {m.emoji}
@@ -786,7 +791,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                   </div>
                 )}
 
-                 {/* ACCOUNT CENTER */}
+                {/* ACCOUNT CENTER */}
                 {isAuthenticated && (
                   <div className="flex flex-col gap-1.5">
                     {renderMenuItem("/account-center", "Account Center", Settings)}
@@ -832,7 +837,7 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                     </h4>
                     <div className="flex flex-col gap-1.5">
                       {renderMenuItem("/favourites", "Bookmarks", Bookmark)}
-                      
+
                       {bookmarkedCompanions.length > 0 && (
                         <div className="mt-1 px-1.5 py-1 flex flex-col gap-2 border-t border-border-main/20 pt-2.5">
                           {bookmarkedCompanions.slice(0, 4).map((comp) => (
@@ -876,11 +881,10 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                     {/* Collapsible Theme Settings Trigger */}
                     <button
                       onClick={() => setShowThemeSettings(!showThemeSettings)}
-                      className={`w-full cursor-pointer flex items-center justify-between px-4 py-3.5 rounded-xl border-l-2 transition-all duration-200 group ${
-                        showThemeSettings
+                      className={`w-full cursor-pointer flex items-center justify-between px-4 py-3.5 rounded-xl border-l-2 transition-all duration-200 group ${showThemeSettings
                           ? "bg-primary/10 border-primary text-primary font-bold"
                           : "bg-transparent border-transparent text-text-muted hover:bg-bg-secondary/60 hover:text-text-main"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-3.5">
                         <Palette size={18} className={showThemeSettings ? "text-primary" : "text-text-muted group-hover:text-text-main group-hover:scale-105 transition-transform"} />
@@ -910,9 +914,8 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                             </span>
                             <button
                               onClick={toggleAppearance}
-                              className={`relative w-10 h-6 rounded-full transition-colors duration-300 focus:outline-none cursor-pointer ${
-                                appearance === "dark" ? "bg-primary" : "bg-bg-card border border-border-main"
-                              }`}
+                              className={`relative w-10 h-6 rounded-full transition-colors duration-300 focus:outline-none cursor-pointer ${appearance === "dark" ? "bg-primary" : "bg-bg-card border border-border-main"
+                                }`}
                             >
                               <motion.div
                                 layout
@@ -936,11 +939,10 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                                   <button
                                     key={t.id}
                                     onClick={() => setTheme(t.id)}
-                                    className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all cursor-pointer relative ${
-                                      isSelected
+                                    className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all cursor-pointer relative ${isSelected
                                         ? "border-primary/60 bg-primary/10 shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]"
                                         : "border-border-main/40 bg-bg-card hover:border-primary/20"
-                                    }`}
+                                      }`}
                                     title={t.label}
                                   >
                                     <div className={`w-4 h-4 rounded-full ${t.color}`} />
@@ -959,11 +961,10 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                           <div className="pt-3 border-t border-border-main/40">
                             <button
                               onClick={resetToRotation}
-                              className={`w-full cursor-pointer flex items-center justify-between p-2.5 rounded-xl border transition-all ${
-                                !isPreferenceSet
+                              className={`w-full cursor-pointer flex items-center justify-between p-2.5 rounded-xl border transition-all ${!isPreferenceSet
                                   ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
                                   : "bg-bg-card border-border-main/50 text-text-muted hover:text-text-main"
-                              }`}
+                                }`}
                             >
                               <div className="flex items-center gap-2.5">
                                 <RotateCcw size={14} className={!isPreferenceSet ? "animate-spin text-emerald-400" : ""} style={!isPreferenceSet ? { animationDuration: '4s' } : {}} />
@@ -979,15 +980,14 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
                     </AnimatePresence>
 
 
-                     {/* Help & Support (Navigates to Contact) */}
+                    {/* Help & Support (Navigates to Contact) */}
                     <Link
                       href="/contact"
                       onClick={() => setIsOpen(false)}
-                      className={`flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-200 group border-l-2 ${
-                        pathname === "/contact"
+                      className={`flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-200 group border-l-2 ${pathname === "/contact"
                           ? "bg-primary/10 border-primary text-primary font-bold shadow-sm"
                           : "bg-transparent border-transparent text-text-muted hover:bg-bg-secondary/60 hover:text-text-main"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-3.5">
                         <HelpCircle size={18} className={pathname === "/contact" ? "text-primary" : "text-text-muted group-hover:text-text-main group-hover:scale-105 transition-transform"} />
@@ -1111,4 +1111,3 @@ export default function SideDashboard({ activeItem = "earning", onItemClick }: S
     </div>
   );
 }
-  

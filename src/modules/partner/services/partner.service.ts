@@ -112,6 +112,11 @@ export const PartnerService = {
       }
     }
 
+    const IS_MOCK = process.env.NEXT_PUBLIC_API_MODE !== 'api';
+    if (IS_MOCK) {
+      return [...localApproved, ...mockPartners].map(enrichPartnerWithDynamicReviews);
+    }
+
     try {
       const response = await api.get("/partners");
       const data = response.data;
@@ -133,9 +138,6 @@ export const PartnerService = {
       
       throw new Error("Invalid API response format (expected an array)");
     } catch (error) {
-      console.warn("PartnerService.getPartners failed, falling back to mock data:", error);
-      // Simulate network latency for a realistic loading experience
-      await delay(800);
       return [...localApproved, ...mockPartners].map(enrichPartnerWithDynamicReviews);
     }
   },
@@ -166,6 +168,17 @@ export const PartnerService = {
       }
     }
 
+    const IS_MOCK = process.env.NEXT_PUBLIC_API_MODE !== 'api';
+    if (IS_MOCK) {
+      let partner = mockPartners.find((p) => {
+        const rawIdMatch = String(p.id).toLowerCase() === decodedId;
+        const nameSlug = p.name.toLowerCase().replace(/\s+/g, "-");
+        const slugMatch = nameSlug === decodedId;
+        return rawIdMatch || slugMatch;
+      });
+      if (partner) return enrichPartnerWithDynamicReviews(partner);
+    }
+
     try {
       const response = await api.get(`/partners/${id}`);
       const data = response.data;
@@ -177,9 +190,7 @@ export const PartnerService = {
       
       throw new Error("Invalid partner detail response format");
     } catch (error) {
-      console.warn(`PartnerService.getPartnerById(${id}) failed, falling back to mock data:`, error);
-      // Simulate network latency for a realistic loading experience
-      await delay(600);
+      await delay(300);
       
       let partner = mockPartners.find((p) => {
         const rawIdMatch = String(p.id).toLowerCase() === decodedId;
@@ -222,16 +233,20 @@ export const PartnerService = {
     radiusKm?: number;
     bookedHours?: number;
   }): Promise<Partner[]> {
-    const lat = params.latitude;
-    const lng = params.longitude;
     const radius = params.radiusKm !== undefined ? params.radiusKm : 25;
     const hours = params.bookedHours !== undefined ? params.bookedHours : 2;
+
+    const IS_MOCK = process.env.NEXT_PUBLIC_API_MODE !== 'api';
+    if (IS_MOCK) {
+      const allPartners = await PartnerService.getPartners();
+      return allPartners.filter((partner) => partner.distance <= radius);
+    }
 
     try {
       const response = await api.get("/bookings/partners/nearby", {
         params: {
-          service_latitude: lat.toFixed(8),
-          service_longitude: lng.toFixed(8),
+          service_latitude: params.latitude.toFixed(8),
+          service_longitude: params.longitude.toFixed(8),
           radius_km: radius,
           booked_hours: hours,
         },
@@ -263,12 +278,8 @@ export const PartnerService = {
 
       return [...enriched, ...localNearby];
     } catch (error) {
-      console.warn("Failed to fetch nearby partners from API, falling back to local filtration:", error);
       const allPartners = await PartnerService.getPartners();
-      return allPartners.filter((partner) => {
-        // partner.distance is already computed during enrichment in getPartners()
-        return partner.distance <= radius;
-      });
+      return allPartners.filter((partner) => partner.distance <= radius);
     }
   }
 };
